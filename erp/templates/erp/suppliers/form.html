@@ -1,0 +1,184 @@
+{% extends 'erp/form_base.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'erp:supplier_list' %}">الموردون</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block form_icon %}truck{% endblock %}
+
+{% block cancel_url %}{% url 'erp:supplier_list' %}{% endblock %}
+
+{% block form_content %}
+<!-- المعلومات الأساسية -->
+<div class="form-section">
+    <h6 class="form-section-title">المعلومات الأساسية</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3 required-field">
+            <label for="{{ form.name.id_for_label }}" class="form-label">اسم المورد</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.code.id_for_label }}" class="form-label">الرمز</label>
+            {{ form.code }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="form-check mt-4">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">نشط</label>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label">البريد الإلكتروني</label>
+            {{ form.email }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.phone.id_for_label }}" class="form-label">الهاتف</label>
+            {{ form.phone }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.website.id_for_label }}" class="form-label">الموقع الإلكتروني</label>
+            {{ form.website }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.tax_id.id_for_label }}" class="form-label">الرقم الضريبي</label>
+            {{ form.tax_id }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+            {{ form.currency }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.payment_terms.id_for_label }}" class="form-label">شروط الدفع (أيام)</label>
+            {{ form.payment_terms }}
+        </div>
+    </div>
+</div>
+
+<!-- العنوان -->
+<div class="form-section">
+    <h6 class="form-section-title">العنوان</h6>
+    <div class="row">
+        <div class="col-12 mb-3">
+            <label for="{{ form.address.id_for_label }}" class="form-label">العنوان</label>
+            {{ form.address }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.city.id_for_label }}" class="form-label">المدينة</label>
+            {{ form.city }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.state.id_for_label }}" class="form-label">المنطقة</label>
+            {{ form.state }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.country.id_for_label }}" class="form-label">الدولة</label>
+            {{ form.country }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.postal_code.id_for_label }}" class="form-label">الرمز البريدي</label>
+            {{ form.postal_code }}
+        </div>
+    </div>
+</div>
+
+<!-- ملاحظات -->
+<div class="form-section">
+    <h6 class="form-section-title">ملاحظات</h6>
+    <div class="row">
+        <div class="col-12 mb-3">
+            {{ form.notes }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block formset_content %}
+<!-- جهات الاتصال -->
+<div class="form-section">
+    <h6 class="form-section-title">جهات الاتصال</h6>
+    
+    {{ formset.management_form }}
+    
+    <div class="formset-container" data-prefix="{{ formset.prefix }}">
+        <div class="formset-body">
+            {% for contact_form in formset %}
+            <div class="formset-row {% if contact_form.instance.pk %}existing{% endif %}">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label small">الاسم</label>
+                        {{ contact_form.name }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">المسمى الوظيفي</label>
+                        {{ contact_form.title }}
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label small">البريد الإلكتروني</label>
+                        {{ contact_form.email }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">الهاتف</label>
+                        {{ contact_form.phone }}
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <div class="form-check">
+                            {{ contact_form.is_primary }}
+                            <label class="form-check-label small">رئيسي</label>
+                        </div>
+                    </div>
+                    <div class="col-md-1 mb-2 text-end">
+                        {% if contact_form.instance.pk %}
+                        {{ contact_form.id }}
+                        {% endif %}
+                        {{ contact_form.DELETE }}
+                        <button type="button" class="btn btn-sm btn-link delete-row-btn p-0">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- قالب النموذج الفارغ -->
+        <div class="empty-form d-none">
+            <div class="row align-items-end">
+                <div class="col-md-3 mb-2">
+                    <label class="form-label small">الاسم</label>
+                    <input type="text" name="{{ formset.prefix }}-__prefix__-name" class="form-control">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label small">المسمى الوظيفي</label>
+                    <input type="text" name="{{ formset.prefix }}-__prefix__-title" class="form-control">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label small">البريد الإلكتروني</label>
+                    <input type="email" name="{{ formset.prefix }}-__prefix__-email" class="form-control">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label small">الهاتف</label>
+                    <input type="text" name="{{ formset.prefix }}-__prefix__-phone" class="form-control">
+                </div>
+                <div class="col-md-1 mb-2">
+                    <div class="form-check">
+                        <input type="checkbox" name="{{ formset.prefix }}-__prefix__-is_primary" class="form-check-input">
+                        <label class="form-check-label small">رئيسي</label>
+                    </div>
+                </div>
+                <div class="col-md-1 mb-2 text-end">
+                    <input type="checkbox" name="{{ formset.prefix }}-__prefix__-DELETE" class="d-none">
+                    <button type="button" class="btn btn-sm btn-link delete-row-btn p-0">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="add-formset-row mt-3">
+            <i class="bi bi-plus-circle ms-2"></i> إضافة جهة اتصال
+        </div>
+    </div>
+</div>
+{% endblock %}

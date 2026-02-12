@@ -1,0 +1,72 @@
+{% extends 'erp/form_base.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'erp:task_list' %}">المهام</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block form_icon %}check2-square{% endblock %}
+
+{% block cancel_url %}{% url 'erp:task_list' %}{% endblock %}
+
+{% block form_content %}
+<!-- Task Details -->
+<div class="form-section">
+    <h6 class="form-section-title">تفاصيل المهمة</h6>
+    <div class="row">
+        <div class="col-12 mb-3 required-field">
+            <label for="{{ form.title.id_for_label }}" class="form-label">العنوان</label>
+            {{ form.title }}
+            {% if form.title.errors %}<div class="invalid-feedback d-block">{{ form.title.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="col-12 mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">الوصف</label>
+            {{ form.description }}
+        </div>
+    </div>
+</div>
+
+<!-- Task Settings -->
+<div class="form-section">
+    <h6 class="form-section-title">إعدادات المهمة</h6>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.task_type.id_for_label }}" class="form-label">النوع</label>
+            {{ form.task_type }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.priority.id_for_label }}" class="form-label">الأولوية</label>
+            {{ form.priority }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.status.id_for_label }}" class="form-label">الحالة</label>
+            {{ form.status }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">مسؤول عن</label>
+            {{ form.assigned_to }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.due_date.id_for_label }}" class="form-label">تاريخ الاستحقاق</label>
+            {{ form.due_date }}
+        </div>
+    </div>
+</div>
+
+<!-- Related Records -->
+<div class="form-section mb-0">
+    <h6 class="form-section-title">السجلات المرتبطة</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.related_customer.id_for_label }}" class="form-label">العميل المرتبط</label>
+            {{ form.related_customer }}
+            <div class="form-text">ربط هذه المهمة بعميل (اختياري).</div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.related_lead.id_for_label }}" class="form-label">العميل المحتمل المرتبط</label>
+            {{ form.related_lead }}
+            <div class="form-text">ربط هذه المهمة بعميل محتمل (اختياري).</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 20px auto; padding: 20px;">
+    <h2>Approve User: {{ user.email }}</h2>
+    
+    <div class="card" style="background: #f5f5f5; padding: 15px; margin: 15px 0;">
+        <h4>User Information</h4>
+        <table>
+            <tr><td><strong>Name:</strong></td><td>{{ user.get_full_name }}</td></tr>
+            <tr><td><strong>Email:</strong></td><td>{{ user.email }}</td></tr>
+            <tr><td><strong>Company:</strong></td><td>{{ user.company_name|default:"-" }}</td></tr>
+            <tr><td><strong>Phone:</strong></td><td>{{ user.phone|default:"-" }}</td></tr>
+            <tr><td><strong>Registered:</strong></td><td>{{ user.created_at }}</td></tr>
+        </table>
+    </div>
+    
+    <p>Approving this user will create a new database for them. Select a PostgreSQL server to host the database:</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_server" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                PostgreSQL Server *
+            </label>
+            {{ form.server }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                {{ form.server.help_text }}
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_database_name" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Database Name
+            </label>
+            {{ form.database_name }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                {{ form.database_name.help_text }}
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_display_name" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Display Name
+            </label>
+            {{ form.display_name }}
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-success" style="background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Approve and Create Database
+            </button>
+            <a href="{% url 'admin:tenants_tenantuser_changelist' %}" class="btn" style="margin-left: 10px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

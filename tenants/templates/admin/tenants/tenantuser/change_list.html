@@ -1,0 +1,65 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+{{ block.super }}
+{% endblock %}
+
+{% block result_list %}
+<div class="mb-3">
+    <div class="card">
+        <div class="card-header">
+            <strong>Quick Stats</strong>
+        </div>
+        <div class="card-body">
+            <span class="badge bg-warning" style="font-size: 0.9em; margin-right: 10px;">
+                Pending: {{ cl.queryset.filter.approval_status__exact_pending|default:0 }}
+            </span>
+            <span class="badge bg-success" style="font-size: 0.9em; margin-right: 10px;">
+                Approved: {{ cl.queryset.filter.approval_status__exact_approved|default:0 }}
+            </span>
+            <span class="badge bg-danger" style="font-size: 0.9em;">
+                Rejected: {{ cl.queryset.filter.approval_status__exact_rejected|default:0 }}
+            </span>
+        </div>
+    </div>
+</div>
+
+{{ block.super }}
+
+<style>
+    .badge {
+        padding: 5px 10px;
+        border-radius: 4px;
+        color: white;
+    }
+    .bg-warning { background-color: #ffc107; color: #333; }
+    .bg-success { background-color: #28a745; }
+    .bg-danger { background-color: #dc3545; }
+    .bg-secondary { background-color: #6c757d; }
+    .bg-primary { background-color: #0d6efd; }
+    .bg-info { background-color: #17a2b8; }
+    
+    /* Action buttons in list */
+    .action-btn {
+        padding: 3px 8px;
+        margin: 2px;
+        border-radius: 3px;
+        font-size: 0.85em;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .action-btn.approve {
+        background-color: #28a745;
+        color: white;
+    }
+    .action-btn.reject {
+        background-color: #dc3545;
+        color: white;
+    }
+    .action-btn.assign {
+        background-color: #0d6efd;
+        color: white;
+    }
+</style>
+{% endblock %}

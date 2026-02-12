@@ -1,0 +1,107 @@
+{% extends "erp/base.html" %}
+
+{% block title %}الفواتير{% endblock %}
+{% block page_title %}الفواتير{% endblock %}
+
+{% block content %}
+<!-- الفلاتر والإجراءات -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">بحث</label>
+                <input type="text" name="search" class="form-control" placeholder="رقم الفاتورة أو العميل..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">الحالة</label>
+                <select name="status" class="form-select">
+                    <option value="">الكل</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search ms-1"></i> بحث
+                </button>
+                <a href="{% url 'erp:invoice_list' %}" class="btn btn-outline-secondary">مسح</a>
+            </div>
+            <div class="col-md-2 text-start">
+                <a href="{% url 'erp:invoice_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg ms-1"></i> فاتورة جديدة
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- جدول الفواتير -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>تاريخ الاستحقاق</th>
+                    <th>المبلغ</th>
+                    <th>الرصيد</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="fw-medium text-decoration-none">
+                            {{ invoice.invoice_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'erp:customer_detail' invoice.customer.pk %}">{{ invoice.customer.name|truncatechars:25 }}</a>
+                    </td>
+                    <td>{{ invoice.invoice_date|date:"Y/m/d" }}</td>
+                    <td>
+                        {{ invoice.due_date|date:"Y/m/d" }}
+                        {% if invoice.status == 'overdue' %}
+                        <small class="text-danger d-block">متأخرة</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                    <td class="{% if invoice.balance_due > 0 %}text-warning{% else %}text-success{% endif %}">
+                        {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}
+                    </td>
+                    <td>
+                        <span class="badge badge-status badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="btn btn-outline-primary" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'erp:invoice_edit' invoice.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:invoice_delete' invoice.pk %}" class="btn btn-outline-danger" title="حذف">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="bi bi-receipt fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">لا توجد فواتير</p>
+                        <a href="{% url 'erp:invoice_create' %}" class="btn btn-primary mt-3">إنشاء أول فاتورة</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

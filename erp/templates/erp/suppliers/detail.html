@@ -1,0 +1,269 @@
+{% extends "erp/base.html" %}
+
+{% block title %}{{ supplier.name }}{% endblock %}
+{% block page_title %}تفاصيل المورد{% endblock %}
+
+{% block content %}
+<!-- شريط التنقل -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:supplier_list' %}">الموردون</a></li>
+        <li class="breadcrumb-item active">{{ supplier.name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Supplier Info -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-body text-center">
+                <div class="mb-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <i class="bi bi-building fs-1 text-primary"></i>
+                    </div>
+                </div>
+                <h5 class="mb-1">{{ supplier.name }}</h5>
+                <p class="text-muted mb-2">{{ supplier.supplier_id }}</p>
+                <span class="badge bg-info">{{ supplier.get_supplier_type_display }}</span>
+                {% if supplier.is_active %}
+                <span class="badge bg-success">نشط</span>
+                {% else %}
+                <span class="badge bg-secondary">غير نشط</span>
+                {% endif %}
+            </div>
+            <hr class="my-0">
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <div><a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">الهاتف</label>
+                    <div>{{ supplier.phone|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">الموقع الإلكتروني</label>
+                    <div>
+                        {% if supplier.website %}
+                        <a href="{{ supplier.website }}" target="_blank">{{ supplier.website }}</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">العنوان</label>
+                    <div>{{ supplier.address|linebreaksbr|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">التقييم</label>
+                    <div>
+                        {% if supplier.rating %}
+                        <span class="text-warning fs-5">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= supplier.rating %}
+                                <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">غير مقيّم</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="erp-card-body border-top">
+                <a href="{% url 'erp:supplier_edit' supplier.pk %}" class="btn btn-primary w-100">
+                    <i class="bi bi-pencil ms-1"></i> تعديل المورد
+                </a>
+            </div>
+        </div>
+        
+        <!-- تفاصيل الدفع -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">تفاصيل الدفع</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">شروط الدفع:</span>
+                    <span>{{ supplier.payment_terms }} يوم</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">الرقم الضريبي:</span>
+                    <span>{{ supplier.tax_id|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- جهات الاتصال -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">جهات الاتصال</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" disabled title="إدارة جهات الاتصال في تعديل المورد">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+            <div class="erp-card-body">
+                {% for contact in contacts %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="ms-3">
+                        <img src="https://ui-avatars.com/api/?name={{ contact.name|urlencode }}&background=6c757d&color=fff" 
+                             alt="{{ contact.name }}" class="rounded-circle" width="40" height="40">
+                    </div>
+                    <div>
+                        <div class="fw-medium">{{ contact.name }}</div>
+                        <small class="text-muted">{{ contact.position|default:"" }}</small>
+                        <div class="small">
+                            <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted mb-0">لا توجد جهات اتصال</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <!-- التبويبات -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#purchase-orders">
+                    أوامر الشراء
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoices">
+                    الفواتير
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">
+                    المستندات
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content">
+            <!-- تبويب أوامر الشراء -->
+            <div class="tab-pane fade show active" id="purchase-orders">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">أوامر الشراء</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
+                            <i class="bi bi-plus-lg ms-1"></i> أمر شراء جديد
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>رقم أمر الشراء</th>
+                                    <th>التاريخ</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for po in purchase_orders %}
+                                <tr>
+                                    <td>{{ po.po_number }}</td>
+                                    <td>{{ po.po_date|date:"M d, Y" }}</td>
+                                    <td>${{ po.total_amount|floatformat:2 }}</td>
+                                    <td><span class="badge bg-secondary">{{ po.get_status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد أوامر شراء</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب الفواتير -->
+            <div class="tab-pane fade" id="invoices">
+                <div class="erp-card">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0">فواتير المورد</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>رقم الفاتورة</th>
+                                    <th>التاريخ</th>
+                                    <th>تاريخ الاستحقاق</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inv in invoices %}
+                                <tr>
+                                    <td>{{ inv.invoice_number }}</td>
+                                    <td>{{ inv.invoice_date|date:"M d, Y" }}</td>
+                                    <td>{{ inv.due_date|date:"M d, Y" }}</td>
+                                    <td>${{ inv.total_amount|floatformat:2 }}</td>
+                                    <td><span class="badge bg-secondary">{{ inv.get_status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد فواتير</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب المستندات -->
+            <div class="tab-pane fade" id="documents">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">المستندات</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
+                            <i class="bi bi-plus-lg ms-1"></i> رفع
+                        </button>
+                    </div>
+                    <div class="erp-card-body">
+                        {% for doc in documents %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark fs-4 ms-3 text-primary"></i>
+                                <div>
+                                    <div class="fw-medium">{{ doc.document_type }}</div>
+                                    <small class="text-muted">{{ doc.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                            {% if doc.file %}
+                            <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-muted py-4">لا توجد مستندات</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if supplier.notes %}
+        <div class="erp-card mt-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">ملاحظات</h6>
+            </div>
+            <div class="erp-card-body">
+                {{ supplier.notes|linebreaksbr }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

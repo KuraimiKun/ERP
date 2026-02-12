@@ -1,0 +1,83 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="card" style="max-width: 700px; margin: 20px auto; padding: 20px;">
+    <h2>Create Docker PostgreSQL Server</h2>
+    
+    <p>This will create a new PostgreSQL server running in a Docker container on the local machine.</p>
+    
+    <div class="card" style="background: #e7f3ff; padding: 15px; margin: 15px 0; border: 1px solid #0d6efd;">
+        <p style="margin: 0;">
+            <strong>Note:</strong> Docker must be installed and running on this machine.
+        </p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_name" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Server Name *
+            </label>
+            {{ form.name }}
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_description" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Description
+            </label>
+            {{ form.description }}
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_container_name" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Docker Container Name
+            </label>
+            {{ form.container_name }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                Leave empty to auto-generate.
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_port" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Host Port *
+            </label>
+            {{ form.port }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                Port on the host machine to map to PostgreSQL (default: 5432).
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_postgres_password" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                PostgreSQL Password *
+            </label>
+            {{ form.postgres_password }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                Password for the PostgreSQL admin user.
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_max_databases" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Maximum Databases
+            </label>
+            {{ form.max_databases }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                Maximum number of tenant databases this server can host.
+            </p>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-success" style="background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Create Docker Server
+            </button>
+            <a href="{% url 'admin:tenants_postgresserver_changelist' %}" class="btn" style="margin-left: 10px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

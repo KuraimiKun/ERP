@@ -1,0 +1,217 @@
+{% extends "erp/base.html" %}
+
+{% block title %}{{ lead.first_name }} {{ lead.last_name }}{% endblock %}
+{% block page_title %}تفاصيل العميل المحتمل{% endblock %}
+
+{% block content %}
+<!-- شريط التنقل -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:lead_list' %}">العملاء المحتملون</a></li>
+        <li class="breadcrumb-item active">{{ lead.lead_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Lead Info -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-body text-center">
+                <div class="mb-3">
+                    <img src="https://ui-avatars.com/api/?name={{ lead.first_name }}+{{ lead.last_name }}&background=6610f2&color=fff&size=100" 
+                         alt="{{ lead.first_name }}" class="rounded-circle" width="100" height="100">
+                </div>
+                <h5 class="mb-1">{{ lead.first_name }} {{ lead.last_name }}</h5>
+                <p class="text-muted mb-2">{{ lead.lead_number }}</p>
+                {% if lead.status == 'new' %}
+                <span class="badge bg-info fs-6">{{ lead.get_status_display }}</span>
+                {% elif lead.status == 'contacted' %}
+                <span class="badge bg-primary fs-6">{{ lead.get_status_display }}</span>
+                {% elif lead.status == 'qualified' %}
+                <span class="badge bg-warning fs-6">{{ lead.get_status_display }}</span>
+                {% elif lead.status == 'won' %}
+                <span class="badge bg-success fs-6">{{ lead.get_status_display }}</span>
+                {% elif lead.status == 'lost' %}
+                <span class="badge bg-danger fs-6">{{ lead.get_status_display }}</span>
+                {% else %}
+                <span class="badge bg-secondary fs-6">{{ lead.get_status_display }}</span>
+                {% endif %}
+            </div>
+            <hr class="my-0">
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <div><a href="mailto:{{ lead.email }}">{{ lead.email }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">الهاتف</label>
+                    <div>{{ lead.phone|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">المصدر</label>
+                    <div>{{ lead.get_source_display }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">القيمة المتوقعة</label>
+                    <div class="fs-5 fw-bold text-success">
+                        {% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">الخدمة المطلوبة</label>
+                    <div>{{ lead.service_interest|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">مسؤول عن</label>
+                    <div>
+                        {% if lead.assigned_to %}
+                        {{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name }}
+                        {% else %}
+                        <span class="text-muted">غير معين</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="erp-card-body border-top d-grid gap-2">
+                <a href="{% url 'erp:lead_edit' lead.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> تعديل العميل المحتمل
+                </a>
+                {% if lead.status not in 'won,lost' %}
+                <a href="{% url 'erp:customer_create' %}" class="btn btn-success">
+                    <i class="bi bi-person-check ms-1"></i> تحويل إلى عميل
+                </a>
+                {% endif %}
+                <a href="{% url 'erp:lead_delete' lead.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> حذف العميل المحتمل
+                </a>
+            </div>
+        </div>
+        
+        <!-- التواريخ -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">الجدول الزمني</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">تاريخ الإنشاء:</span>
+                    <span>{{ lead.created_at|date:"M d, Y" }}</span>
+                </div>
+                {% if lead.last_contacted %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">آخر تواصل:</span>
+                    <span>{{ lead.last_contacted|date:"M d, Y" }}</span>
+                </div>
+                {% endif %}
+                {% if lead.next_follow_up %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">المتابعة القادمة:</span>
+                    <span class="{% if lead.next_follow_up < today %}text-danger{% endif %}">{{ lead.next_follow_up|date:"M d, Y" }}</span>
+                </div>
+                {% endif %}
+                {% if lead.converted_at %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">تم التحويل:</span>
+                    <span class="text-success">{{ lead.converted_at|date:"M d, Y" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <!-- ملاحظات -->
+        {% if lead.notes %}
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">ملاحظات</h6>
+            </div>
+            <div class="erp-card-body">
+                {{ lead.notes|linebreaksbr }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- سجل النشاطات -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">سجل النشاطات</h6>
+                <a href="{% url 'erp:lead_add_activity' lead.pk %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg ms-1"></i> تسجيل نشاط
+                </a>
+            </div>
+            <div class="erp-card-body">
+                {% for activity in activities %}
+                <div class="d-flex mb-4">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-2">
+                            {% if activity.activity_type == 'call' %}
+                            <i class="bi bi-telephone text-primary"></i>
+                            {% elif activity.activity_type == 'email' %}
+                            <i class="bi bi-envelope text-primary"></i>
+                            {% elif activity.activity_type == 'meeting' %}
+                            <i class="bi bi-calendar-event text-primary"></i>
+                            {% elif activity.activity_type == 'note' %}
+                            <i class="bi bi-sticky text-primary"></i>
+                            {% else %}
+                            <i class="bi bi-chat text-primary"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ activity.get_activity_type_display }}</strong>
+                                <span class="badge bg-light text-dark ms-2">{{ activity.outcome|default:"" }}</span>
+                            </div>
+                            <small class="text-muted">{{ activity.activity_date|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <p class="mb-1">{{ activity.description }}</p>
+                        {% if activity.performed_by %}
+                        <small class="text-muted">by {{ activity.performed_by.first_name }} {{ activity.performed_by.last_name }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted py-4">لم يتم تسجيل أي نشاطات بعد</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- عروض الأسعار -->
+        <div class="erp-card">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">عروض الأسعار</h6>
+                <a href="{% url 'erp:quote_create' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-lg ms-1"></i> إنشاء عرض سعر
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>رقم العرض</th>
+                            <th>التاريخ</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quote in quotes %}
+                        <tr>
+                            <td>{{ quote.quote_number }}</td>
+                            <td>{{ quote.quote_date|date:"M d, Y" }}</td>
+                            <td>${{ quote.total_amount|floatformat:2 }}</td>
+                            <td><span class="badge bg-secondary">{{ quote.get_status_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد عروض أسعار</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

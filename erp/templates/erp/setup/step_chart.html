@@ -1,0 +1,122 @@
+{% extends "erp/setup/base_setup.html" %}
+
+{% block title %}إعداد الحسابات{% endblock %}
+
+{% block card_content %}
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="setup-card-header">
+        <i class="bi bi-journal-text"></i>
+        <div>
+            <h2>الخطوة 6: الدليل المحاسبي</h2>
+            <p>اختر نوع الدليل المحاسبي المناسب لنشاطك</p>
+        </div>
+    </div>
+    
+    <div class="setup-card-body">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                يرجى تصحيح الأخطاء التالية
+            </div>
+        {% endif %}
+        
+        <div class="mb-4">
+            <label class="form-label mb-3">{{ form.chart_preset.label }}</label>
+            
+            <div class="row">
+                {% for value, label in form.chart_preset.field.choices %}
+                <div class="col-md-6 mb-3">
+                    <div class="checkbox-card p-4 {% if form.chart_preset.value == value %}selected{% endif %}" 
+                         onclick="selectChart('{{ value }}', this)" style="min-height: 140px;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" 
+                                   name="chart_preset" id="chart_{{ value }}" 
+                                   value="{{ value }}"
+                                   {% if form.chart_preset.value == value %}checked{% endif %}>
+                            <label class="form-check-label d-block" for="chart_{{ value }}">
+                                {% if value == 'travel_agency' %}
+                                    <i class="bi bi-airplane-engines text-primary fs-3 d-block mb-2"></i>
+                                    <strong>{{ label }}</strong>
+                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي مخصص لوكالات السفر والسياحة مع حسابات للتذاكر والفنادق والرحلات.</p>
+                                {% elif value == 'services' %}
+                                    <i class="bi bi-briefcase text-success fs-3 d-block mb-2"></i>
+                                    <strong>{{ label }}</strong>
+                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي لشركات الخدمات والاستشارات.</p>
+                                {% elif value == 'standard' %}
+                                    <i class="bi bi-grid-3x3 text-info fs-3 d-block mb-2"></i>
+                                    <strong>{{ label }}</strong>
+                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي شامل يناسب معظم أنواع الأنشطة التجارية.</p>
+                                {% else %}
+                                    <i class="bi bi-speedometer text-warning fs-3 d-block mb-2"></i>
+                                    <strong>{{ label }}</strong>
+                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي بسيط للمشاريع الصغيرة.</p>
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="section-divider">خيارات إضافية</div>
+        
+        <div class="checkbox-card p-3 {% if form.create_sample_data.value %}selected{% endif %}">
+            <div class="form-check">
+                {{ form.create_sample_data }}
+                <label class="form-check-label" for="id_create_sample_data">
+                    <i class="bi bi-database-add text-info me-2"></i>
+                    {{ form.create_sample_data.label }}
+                    <span class="d-block text-muted small mt-1">{{ form.create_sample_data.help_text }}</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>ملاحظة:</strong> يمكنك دائماً إضافة أو تعديل الحسابات من شاشة دليل الحسابات بعد إكمال الإعداد.
+        </div>
+    </div>
+    
+    <div class="setup-card-footer">
+        <a href="{% url 'erp:setup_go_back' step=5 %}" class="btn btn-setup-back">
+            <i class="bi bi-arrow-right me-2"></i>
+            السابق
+        </a>
+        <button type="submit" class="btn btn-setup-next">
+            التالي
+            <i class="bi bi-arrow-left ms-2"></i>
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function selectChart(value, card) {
+        // Update radio button
+        document.getElementById('chart_' + value).checked = true;
+        
+        // Update card styling for radios
+        document.querySelectorAll('.checkbox-card').forEach(c => {
+            if (c.querySelector('input[type="radio"]')) {
+                c.classList.remove('selected');
+            }
+        });
+        card.classList.add('selected');
+    }
+    
+    // Toggle card selection on checkbox change
+    document.querySelectorAll('.checkbox-card input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                this.closest('.checkbox-card').classList.add('selected');
+            } else {
+                this.closest('.checkbox-card').classList.remove('selected');
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}الحملات{% endblock %}
+{% block page_title %}الحملات{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">إدارة الحملات التسويقية وتتبع العملاء المحتملين</p>
+    </div>
+    <a href="{% url 'erp:campaign_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> حملة جديدة
+    </a>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary ms-3">
+                    <i class="bi bi-megaphone"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ campaigns.count }}</div>
+                    <div class="stat-label">إجمالي الحملات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Campaigns Table -->
+<div class="erp-card">
+    <div class="erp-card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">جميع الحملات</h6>
+        <div class="d-flex gap-2">
+            <input type="search" class="form-control form-control-sm" placeholder="البحث في الحملات..." style="width: 200px;">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>النوع</th>
+                    <th>تاريخ البداية</th>
+                    <th>تاريخ النهاية</th>
+                    <th>الحالة</th>
+                    <th>الميزانية</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campaign in campaigns %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:campaign_detail' campaign.pk %}" class="fw-medium text-decoration-none">
+                            {{ campaign.name }}
+                        </a>
+                    </td>
+                    <td>{{ campaign.get_campaign_type_display|default:campaign.campaign_type|default:"-" }}</td>
+                    <td>{{ campaign.start_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>{{ campaign.end_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>
+                        <span class="badge badge-status 
+                            {% if campaign.status == 'active' %}badge-paid
+                            {% elif campaign.status == 'draft' %}badge-draft
+                            {% elif campaign.status == 'completed' %}badge-sent
+                            {% elif campaign.status == 'cancelled' %}badge-overdue
+                            {% else %}badge-draft{% endif %}">
+                            {{ campaign.get_status_display|default:campaign.status }}
+                        </span>
+                    </td>
+                    <td>{{ campaign.budget|default:"0.00" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:campaign_detail' campaign.pk %}" class="btn btn-outline-secondary" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'erp:campaign_edit' campaign.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" title="حذف" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ campaign.pk }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ campaign.pk }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        هل أنت متأكد من حذف الحملة "{{ campaign.name }}"؟
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <form action="{% url 'erp:campaign_delete' campaign.pk %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="bi bi-megaphone fs-1 d-block mb-2"></i>
+                        لا توجد حملات حتى الآن
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "erp/base.html" %}
+
+{% block title %}{{ employee.first_name }} {{ employee.last_name }}{% endblock %}
+{% block page_title %}تفاصيل الموظف{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:employee_list' %}">الموظفون</a></li>
+        <li class="breadcrumb-item active">{{ employee.first_name }} {{ employee.last_name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Employee Profile -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-body text-center">
+                <div class="mb-3">
+                    <img src="https://ui-avatars.com/api/?name={{ employee.first_name }}+{{ employee.last_name }}&background=0d6efd&color=fff&size=100" 
+                         alt="{{ employee.first_name }}" class="rounded-circle" width="100" height="100">
+                </div>
+                <h5 class="mb-1">{{ employee.first_name }} {{ employee.last_name }}</h5>
+                <p class="text-muted mb-2">{{ employee.job_title|default:"No title" }}</p>
+                {% if employee.employment_status == 'active' %}
+                <span class="badge bg-success">نشط</span>
+                {% elif employee.employment_status == 'on_leave' %}
+                <span class="badge bg-warning">في إجازة</span>
+                {% elif employee.employment_status == 'terminated' %}
+                <span class="badge bg-danger">منتهي</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ employee.get_employment_status_display }}</span>
+                {% endif %}
+            </div>
+            <hr class="my-0">
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">رقم الموظف</label>
+                    <div>{{ employee.employee_id }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">القسم</label>
+                    <div>{{ employee.department.name|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <div><a href="mailto:{{ employee.email }}">{{ employee.email }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">الهاتف</label>
+                    <div>{{ employee.phone|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">تاريخ التوظيف</label>
+                    <div>{{ employee.hire_date|date:"F d, Y"|default:"-" }}</div>
+                </div>
+                {% if employee.reports_to %}
+                <div class="mb-3">
+                    <label class="text-muted small">يتبع إلى</label>
+                    <div>
+                        <a href="{% url 'erp:employee_detail' employee.reports_to.pk %}">
+                            {{ employee.reports_to.first_name }} {{ employee.reports_to.last_name }}
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="erp-card-body border-top">
+                <a href="{% url 'erp:employee_edit' employee.pk %}" class="btn btn-primary w-100">
+                    <i class="bi bi-pencil ms-1"></i> تعديل الموظف
+                </a>
+            </div>
+        </div>
+        
+        <!-- المعلومات الشخصية -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">المعلومات الشخصية</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">تاريخ الميلاد:</span>
+                    <span>{{ employee.date_of_birth|date:"M d, Y"|default:"-" }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">الجنس:</span>
+                    <span>{{ employee.get_gender_display|default:"-" }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">الجنسية:</span>
+                    <span>{{ employee.nationality|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <!-- التبويبات -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#attendance">
+                    الحضور
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#leave">
+                    طلبات الإجازة
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">
+                    المستندات
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content">
+            <!-- تبويب الحضور -->
+            <div class="tab-pane fade show active" id="attendance">
+                <div class="erp-card">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0">سجل الحضور الأخير</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>وقت الدخول</th>
+                                    <th>وقت الخروج</th>
+                                    <th>الساعات</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for att in attendances %}
+                                <tr>
+                                    <td>{{ att.date|date:"M d, Y" }}</td>
+                                    <td>{{ att.check_in|time:"H:i"|default:"-" }}</td>
+                                    <td>{{ att.check_out|time:"H:i"|default:"-" }}</td>
+                                    <td>{{ att.total_hours|floatformat:1|default:"-" }} hrs</td>
+                                    <td>
+                                        {% if att.status == 'present' %}
+                                        <span class="badge bg-success">حاضر</span>
+                                        {% elif att.status == 'absent' %}
+                                        <span class="badge bg-danger">غائب</span>
+                                        {% elif att.status == 'late' %}
+                                        <span class="badge bg-warning">متأخر</span>
+                                        {% elif att.status == 'half_day' %}
+                                        <span class="badge bg-info">نصف يوم</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ att.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد سجلات حضور</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب الإجازات -->
+            <div class="tab-pane fade" id="leave">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">طلبات الإجازة</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
+                            <i class="bi bi-plus-lg ms-1"></i> طلب جديد
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>النوع</th>
+                                    <th>من</th>
+                                    <th>إلى</th>
+                                    <th>الأيام</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leave in leave_requests %}
+                                <tr>
+                                    <td>{{ leave.leave_type.name }}</td>
+                                    <td>{{ leave.start_date|date:"M d, Y" }}</td>
+                                    <td>{{ leave.end_date|date:"M d, Y" }}</td>
+                                    <td>{{ leave.total_days }}</td>
+                                    <td>
+                                        {% if leave.status == 'pending' %}
+                                        <span class="badge bg-warning">قيد الانتظار</span>
+                                        {% elif leave.status == 'approved' %}
+                                        <span class="badge bg-success">موافق عليه</span>
+                                        {% elif leave.status == 'rejected' %}
+                                        <span class="badge bg-danger">مرفوض</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ leave.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد طلبات إجازة</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب المستندات -->
+            <div class="tab-pane fade" id="documents">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">المستندات</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
+                            <i class="bi bi-plus-lg ms-1"></i> رفع مستند
+                        </button>
+                    </div>
+                    <div class="erp-card-body">
+                        {% for doc in documents %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark fs-4 me-3 text-primary"></i>
+                                <div>
+                                    <div class="fw-medium">{{ doc.document_type }}</div>
+                                    <small class="text-muted">{{ doc.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                            {% if doc.file %}
+                            <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-muted py-4">لم يتم رفع أي مستندات</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}فئات المصروفات{% endblock %}
+{% block page_title %}فئات المصروفات{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">تصنيف المصروفات لتتبع وإعداد تقارير أفضل</p>
+    </div>
+    <a href="{% url 'erp:expense_category_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> فئة جديدة
+    </a>
+</div>
+
+<div class="erp-card">
+    <div class="erp-card-header">
+        <h6 class="mb-0">فئات المصروفات</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>الرمز</th>
+                    <th>الاسم</th>
+                    <th>الحساب المرتبط</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in expense_categories %}
+                <tr>
+                    <td><span class="badge bg-secondary">{{ category.code|default:"-" }}</span></td>
+                    <td>
+                        <span class="fw-medium">{{ category.name }}</span>
+                        {% if category.name_ar %}<br><small class="text-muted">{{ category.name_ar }}</small>{% endif %}
+                        {% if category.description %}
+                        <br><small class="text-muted">{{ category.description|truncatechars:50 }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if category.account %}
+                        {{ category.account.code }} - {{ category.account.name }}
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if category.is_active %}
+                        <span class="badge badge-status badge-paid">نشط</span>
+                        {% else %}
+                        <span class="badge badge-status badge-draft">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:expense_category_edit' category.pk %}" class="btn btn-outline-secondary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" title="Delete" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ category.pk }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="modal fade" id="deleteModal{{ category.pk }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        هل أنت متأكد من حذف الفئة "{{ category.name }}"؟
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <form action="{% url 'erp:expense_category_delete' category.pk %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="bi bi-tags fs-1 d-block mb-2"></i>
+                        لا توجد فئات مصروفات حتى الآن
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'tenants/base.html' %}
+
+{% block title %}Profile - ERP System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-circle me-2"></i>My Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Name</h6>
+                            <p>{{ user.get_full_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Email</h6>
+                            <p>{{ user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Company</h6>
+                            <p>{{ user.company_name|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Phone</h6>
+                            <p>{{ user.phone|default:"-" }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">
+                        <i class="bi bi-database me-2"></i>Database Information
+                    </h5>
+                    
+                    {% if database %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Database Name</h6>
+                            <p>{{ database.display_name|default:database.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Server</h6>
+                            <p>{{ database.server.name }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Status</h6>
+                            <span class="badge bg-{{ database.status == 'active'|yesno:'success,secondary' }}">
+                                {{ database.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Assigned</h6>
+                            <p>{{ user.database_assignments.first.assigned_at|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No database assigned yet.
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'erp:dashboard' %}" class="btn btn-primary">
+                        <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                    </a>
+                    <a href="{% url 'tenants:logout' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-box-arrow-left me-2"></i>Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

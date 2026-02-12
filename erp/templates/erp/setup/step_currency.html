@@ -1,0 +1,91 @@
+{% extends "erp/setup/base_setup.html" %}
+
+{% block title %}إعداد العملة{% endblock %}
+
+{% block card_content %}
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="setup-card-header">
+        <i class="bi bi-currency-exchange"></i>
+        <div>
+            <h2>الخطوة 1: إعداد العملة</h2>
+            <p>اختر العملة الأساسية للنظام المحاسبي</p>
+        </div>
+    </div>
+    
+    <div class="setup-card-body">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                يرجى تصحيح الأخطاء التالية
+                <ul class="mb-0 mt-2">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <div class="mb-4">
+            <label class="form-label">{{ form.base_currency.label }}</label>
+            {{ form.base_currency }}
+            <div class="form-text">{{ form.base_currency.help_text }}</div>
+        </div>
+        
+        <div id="customCurrencyFields" style="display: none;">
+            <div class="section-divider">تفاصيل العملة المخصصة</div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.custom_currency_code.label }}</label>
+                    {{ form.custom_currency_code }}
+                    <div class="form-text">{{ form.custom_currency_code.help_text }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.custom_currency_name.label }}</label>
+                    {{ form.custom_currency_name }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.custom_currency_symbol.label }}</label>
+                    {{ form.custom_currency_symbol }}
+                    <div class="form-text">{{ form.custom_currency_symbol.help_text }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>ملاحظة:</strong> العملة الأساسية هي العملة التي سيتم استخدامها في جميع التقارير المالية. يمكنك إضافة عملات أخرى لاحقاً من إعدادات النظام.
+        </div>
+    </div>
+    
+    <div class="setup-card-footer">
+        <span class="text-muted">الخطوة 1 من 7</span>
+        <button type="submit" class="btn btn-setup-next">
+            التالي
+            <i class="bi bi-arrow-left ms-2"></i>
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const currencySelect = document.getElementById('id_base_currency');
+    const customFields = document.getElementById('customCurrencyFields');
+    
+    function toggleCustomFields() {
+        if (currencySelect.value === 'OTHER') {
+            customFields.style.display = 'block';
+        } else {
+            customFields.style.display = 'none';
+        }
+    }
+    
+    currencySelect.addEventListener('change', toggleCustomFields);
+    toggleCustomFields(); // Initial check
+</script>
+{% endblock %}

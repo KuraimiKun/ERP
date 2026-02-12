@@ -1,0 +1,194 @@
+{% extends "erp/base.html" %}
+
+{% block title %}فاتورة {{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}تفاصيل الفاتورة{% endblock %}
+
+{% block content %}
+<!-- شريط التنقل -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">الفواتير</a></li>
+        <li class="breadcrumb-item active">{{ invoice.invoice_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- رأس الفاتورة -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">{{ invoice.invoice_number }}</h4>
+                    <span class="badge badge-status badge-{{ invoice.status }} fs-6">{{ invoice.get_status_display }}</span>
+                </div>
+                <div class="text-start">
+                    <div class="display-6 fw-bold">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</div>
+                    {% if invoice.balance_due > 0 %}
+                    <small class="text-warning">الرصيد: {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</small>
+                    {% else %}
+                    <small class="text-success"><i class="bi bi-check-circle ms-1"></i>مدفوعة بالكامل</small>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="erp-card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">فاتورة إلى</h6>
+                        <h5>{{ invoice.customer.name }}</h5>
+                        <p class="mb-0">{{ invoice.customer.address|linebreaksbr|default:"" }}</p>
+                        <p class="mb-0">{{ invoice.customer.city }}{% if invoice.customer.city and invoice.customer.country %}، {% endif %}{{ invoice.customer.country }}</p>
+                        <p class="mb-0"><a href="mailto:{{ invoice.customer.email }}">{{ invoice.customer.email }}</a></p>
+                    </div>
+                    <div class="col-md-6 text-md-start">
+                        <div class="mb-2">
+                            <span class="text-muted">تاريخ الفاتورة:</span>
+                            <strong>{{ invoice.invoice_date|date:"Y/m/d" }}</strong>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-muted">تاريخ الاستحقاق:</span>
+                            <strong class="{% if invoice.status == 'overdue' %}text-danger{% endif %}">
+                                {{ invoice.due_date|date:"Y/m/d" }}
+                            </strong>
+                        </div>
+                        {% if invoice.reference %}
+                        <div class="mb-2">
+                            <span class="text-muted">المرجع:</span>
+                            <strong>{{ invoice.reference }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- بنود الفاتورة -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">البنود</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>الوصف</th>
+                            <th class="text-center">الكمية</th>
+                            <th class="text-start">سعر الوحدة</th>
+                            <th class="text-start">الضريبة</th>
+                            <th class="text-start">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>
+                                <strong>{{ line.description }}</strong>
+                            </td>
+                            <td class="text-center">{{ line.quantity }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.tax_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.total_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">لا توجد بنود</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-start"><strong>المجموع الفرعي:</strong></td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% if invoice.discount_amount > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-start">الخصم:</td>
+                            <td class="text-start text-danger">-{{ invoice.currency.symbol|default:"$" }}{{ invoice.discount_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td colspan="4" class="text-start">الضريبة:</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.tax_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td colspan="4" class="text-start">الإجمالي:</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% if invoice.amount_paid > 0 %}
+                        <tr class="text-success">
+                            <td colspan="4" class="text-start">المبلغ المدفوع:</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.amount_paid|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td colspan="4" class="text-start">الرصيد المستحق:</td>
+                            <td class="text-start {% if invoice.balance_due > 0 %}text-warning{% else %}text-success{% endif %}">
+                                {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        {% if invoice.notes %}
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">ملاحظات</h6>
+            </div>
+            <div class="erp-card-body">
+                {{ invoice.notes|linebreaksbr }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- الإجراءات -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">الإجراءات</h6>
+            </div>
+            <div class="erp-card-body d-grid gap-2">
+                <a href="{% url 'erp:invoice_edit' invoice.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> تعديل الفاتورة
+                </a>
+                {% if invoice.balance_due > 0 %}
+                <button class="btn btn-success">
+                    <i class="bi bi-cash ms-1"></i> تسجيل دفعة
+                </button>
+                {% endif %}
+                <button class="btn btn-outline-secondary">
+                    <i class="bi bi-printer ms-1"></i> طباعة
+                </button>
+                <button class="btn btn-outline-secondary">
+                    <i class="bi bi-envelope ms-1"></i> إرسال للعميل
+                </button>
+                <a href="{% url 'erp:invoice_delete' invoice.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> حذف الفاتورة
+                </a>
+            </div>
+        </div>
+        
+        <!-- المدفوعات -->
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">سجل المدفوعات</h6>
+            </div>
+            <div class="erp-card-body">
+                {% for allocation in payments %}
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <div>
+                        <div class="fw-medium">{{ allocation.payment.payment_number }}</div>
+                        <small class="text-muted">{{ allocation.payment.payment_date|date:"Y/m/d" }}</small>
+                    </div>
+                    <span class="text-success">+{{ invoice.currency.symbol|default:"$" }}{{ allocation.amount|floatformat:2 }}</span>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted mb-0">لا توجد مدفوعات</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

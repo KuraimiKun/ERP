@@ -1,0 +1,80 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}{% if form.instance.pk %}تعديل القسم{% else %}قسم جديد{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}تعديل القسم{% else %}قسم جديد{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-diagram-3 ms-2"></i>
+                    {% if form.instance.pk %}تعديل القسم{% else %}إنشاء قسم{% endif %}
+                </h6>
+            </div>
+            <div class="erp-card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">الرمز</label>
+                        {{ form.code }}
+                        {% if form.code.errors %}
+                        <div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">رمز مختصر للقسم (مثال: HR, FIN, OPS)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">المدير</label>
+                        {{ form.manager }}
+                        {% if form.manager.errors %}
+                        <div class="invalid-feedback d-block">{{ form.manager.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">القسم الرئيسي</label>
+                        {{ form.parent }}
+                        {% if form.parent.errors %}
+                        <div class="invalid-feedback d-block">{{ form.parent.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">اختر إذا كان هذا قسم فرعي</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">الوصف</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg ms-1"></i>
+                            {% if form.instance.pk %}تحديث القسم{% else %}إنشاء قسم{% endif %}
+                        </button>
+                        <a href="{% url 'erp:department_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

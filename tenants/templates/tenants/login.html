@@ -1,0 +1,56 @@
+{% extends 'tenants/base.html' %}
+
+{% block title %}Sign In - ERP System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card auth-card">
+        <div class="brand-header">
+            <h2 class="mb-0">
+                <i class="bi bi-briefcase-fill me-2"></i>ERP System
+            </h2>
+            <p class="mb-0 mt-2">Sign in to your account</p>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Email Address</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="id_password" class="form-label">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    </button>
+                </div>
+                
+                <p class="text-center text-muted mb-0">
+                    Don't have an account? 
+                    <a href="{% url 'tenants:signup' %}">Sign up</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

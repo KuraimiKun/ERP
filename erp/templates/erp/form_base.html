@@ -1,0 +1,208 @@
+{% extends 'erp/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - نظام ERP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: var(--erp-card-bg);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .form-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid var(--erp-border);
+        padding: 1.25rem 1.5rem;
+    }
+    .form-card .card-body {
+        padding: 1.5rem;
+    }
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    .form-section-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--erp-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--erp-border);
+    }
+    .required-field label::after {
+        content: " *";
+        color: var(--bs-danger);
+    }
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--erp-border);
+    }
+    .formset-container {
+        background: var(--erp-bg);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .formset-row {
+        background: var(--erp-card-bg);
+        border: 1px solid var(--erp-border);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    .formset-row.deleted {
+        opacity: 0.5;
+        background: #fee;
+    }
+    .add-formset-row {
+        border: 2px dashed var(--erp-border);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .add-formset-row:hover {
+        border-color: var(--erp-primary);
+        background: rgba(var(--bs-primary-rgb), 0.05);
+    }
+    .delete-row-btn {
+        color: var(--bs-danger);
+        opacity: 0.7;
+    }
+    .delete-row-btn:hover {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- ترويسة الصفحة -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">نظام ERP</a></li>
+                    {% block breadcrumb %}{% endblock %}
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">{{ title }}</h1>
+        </div>
+    </div>
+    
+    <!-- بطاقة النموذج -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-card card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-{% block form_icon %}pencil-square{% endblock %} ms-2"></i>
+                            {% block form_title %}{{ title }}{% endblock %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        
+                        {% block form_content %}
+                        <!-- تقديم النموذج البسيط الافتراضي -->
+                        <div class="row">
+                            {% for field in form %}
+                            <div class="col-md-6 mb-3 {% if field.field.required %}required-field{% endif %}">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ field.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                                {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endblock %}
+                        
+                        {% block formset_content %}{% endblock %}
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i> {{ submit_text|default:"حفظ" }}
+                            </button>
+                            <a href="{% block cancel_url %}javascript:history.back(){% endblock %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i> إلغاء
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Formset management
+document.addEventListener('DOMContentLoaded', function() {
+    const formsetContainers = document.querySelectorAll('.formset-container');
+    
+    formsetContainers.forEach(container => {
+        const prefix = container.dataset.prefix;
+        const addBtn = container.querySelector('.add-formset-row');
+        const totalForms = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
+        const formsetBody = container.querySelector('.formset-body');
+        
+        if (addBtn && totalForms) {
+            addBtn.addEventListener('click', function() {
+                const formCount = parseInt(totalForms.value);
+                const emptyForm = container.querySelector('.empty-form');
+                
+                if (emptyForm) {
+                    const newForm = emptyForm.cloneNode(true);
+                    newForm.classList.remove('empty-form', 'd-none');
+                    newForm.classList.add('formset-row');
+                    
+                    // Update form index
+                    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formCount);
+                    
+                    formsetBody.appendChild(newForm);
+                    totalForms.value = formCount + 1;
+                    
+                    // Setup delete button
+                    setupDeleteButton(newForm);
+                }
+            });
+        }
+        
+        // Setup existing delete buttons
+        container.querySelectorAll('.formset-row').forEach(setupDeleteButton);
+    });
+    
+    function setupDeleteButton(row) {
+        const deleteBtn = row.querySelector('.delete-row-btn');
+        const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+        
+        if (deleteBtn && deleteCheckbox) {
+            deleteBtn.addEventListener('click', function() {
+                deleteCheckbox.checked = true;
+                row.classList.add('deleted');
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

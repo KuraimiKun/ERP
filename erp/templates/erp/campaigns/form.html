@@ -1,0 +1,104 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}{% if form.instance.pk %}تعديل حملة{% else %}حملة جديدة{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}تعديل حملة{% else %}حملة جديدة{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-megaphone ms-2"></i>
+                    {% if form.instance.pk %}تعديل حملة{% else %}إنشاء حملة{% endif %}
+                </h6>
+            </div>
+            <div class="erp-card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">نوع الحملة</label>
+                            {{ form.campaign_type }}
+                            {% if form.campaign_type.errors %}
+                            <div class="invalid-feedback d-block">{{ form.campaign_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">الحالة</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ البداية</label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.start_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ النهاية</label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.end_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">الميزانية</label>
+                            {{ form.budget }}
+                            {% if form.budget.errors %}
+                            <div class="invalid-feedback d-block">{{ form.budget.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">الجمهور المستهدف</label>
+                            {{ form.target_audience }}
+                            {% if form.target_audience.errors %}
+                            <div class="invalid-feedback d-block">{{ form.target_audience.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">الوصف</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg ms-1"></i>
+                            {% if form.instance.pk %}تحديث الحملة{% else %}إنشاء حملة{% endif %}
+                        </button>
+                        <a href="{% url 'erp:campaign_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

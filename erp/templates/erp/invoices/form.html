@@ -1,0 +1,164 @@
+{% extends 'erp/form_base.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">الفواتير</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block form_icon %}receipt{% endblock %}
+
+{% block cancel_url %}{% url 'erp:invoice_list' %}{% endblock %}
+
+{% block form_content %}
+<!-- تفاصيل الفاتورة -->
+<div class="form-section">
+    <h6 class="form-section-title">تفاصيل الفاتورة</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3 required-field">
+            <label for="{{ form.customer.id_for_label }}" class="form-label">العميل</label>
+            {{ form.customer }}
+            {% if form.customer.errors %}<div class="invalid-feedback d-block">{{ form.customer.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.status.id_for_label }}" class="form-label">الحالة</label>
+            {{ form.status }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">&nbsp;</label>
+            {% if invoice %}
+            <div class="form-control-plaintext">
+                <strong>رقم الفاتورة:</strong> {{ invoice.invoice_number }}
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-3 mb-3 required-field">
+            <label for="{{ form.invoice_date.id_for_label }}" class="form-label">تاريخ الفاتورة</label>
+            {{ form.invoice_date }}
+        </div>
+        <div class="col-md-3 mb-3 required-field">
+            <label for="{{ form.due_date.id_for_label }}" class="form-label">تاريخ الاستحقاق</label>
+            {{ form.due_date }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.discount_type.id_for_label }}" class="form-label">نوع الخصم</label>
+            {{ form.discount_type }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.discount_value.id_for_label }}" class="form-label">قيمة الخصم</label>
+            {{ form.discount_value }}
+        </div>
+    </div>
+</div>
+
+<!-- العناوين -->
+<div class="form-section">
+    <h6 class="form-section-title">العناوين</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.billing_address.id_for_label }}" class="form-label">عنوان الفوترة</label>
+            {{ form.billing_address }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.shipping_address.id_for_label }}" class="form-label">عنوان الشحن</label>
+            {{ form.shipping_address }}
+        </div>
+    </div>
+</div>
+
+<!-- ملاحظات -->
+<div class="form-section">
+    <h6 class="form-section-title">ملاحظات</h6>
+    <div class="row">
+        <div class="col-12 mb-3">
+            {{ form.notes }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block formset_content %}
+<!-- بنود الفاتورة -->
+<div class="form-section">
+    <h6 class="form-section-title">بنود الفاتورة</h6>
+    
+    {{ formset.management_form }}
+    
+    <div class="formset-container" data-prefix="{{ formset.prefix }}">
+        <div class="formset-body">
+            {% for line_form in formset %}
+            <div class="formset-row {% if line_form.instance.pk %}existing{% endif %}">
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-2">
+                        <label class="form-label small">الوصف</label>
+                        {{ line_form.description }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">الكمية</label>
+                        {{ line_form.quantity }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">سعر الوحدة</label>
+                        {{ line_form.unit_price }}
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <label class="form-label small">الخصم %</label>
+                        {{ line_form.discount_percent }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">نسبة الضريبة</label>
+                        {{ line_form.tax_rate }}
+                    </div>
+                    <div class="col-md-1 mb-2 text-start">
+                        {% if line_form.instance.pk %}
+                        {{ line_form.id }}
+                        {% endif %}
+                        {{ line_form.DELETE }}
+                        <button type="button" class="btn btn-sm btn-link delete-row-btn p-0">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- قالب النموذج الفارغ لإضافة بنود جديدة -->
+        <div class="empty-form d-none">
+            <div class="row align-items-end">
+                <div class="col-md-4 mb-2">
+                    <label class="form-label small">الوصف</label>
+                    <input type="text" name="{{ formset.prefix }}-__prefix__-description" class="form-control">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label small">الكمية</label>
+                    <input type="number" name="{{ formset.prefix }}-__prefix__-quantity" value="1" class="form-control" step="0.01">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label small">سعر الوحدة</label>
+                    <input type="number" name="{{ formset.prefix }}-__prefix__-unit_price" value="0.00" class="form-control" step="0.01">
+                </div>
+                <div class="col-md-1 mb-2">
+                    <label class="form-label small">الخصم %</label>
+                    <input type="number" name="{{ formset.prefix }}-__prefix__-discount_percent" value="0" class="form-control" step="0.01">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label small">نسبة الضريبة</label>
+                    <select name="{{ formset.prefix }}-__prefix__-tax_rate" class="form-select">
+                        <option value="">---------</option>
+                    </select>
+                </div>
+                <div class="col-md-1 mb-2 text-start">
+                    <input type="checkbox" name="{{ formset.prefix }}-__prefix__-DELETE" class="d-none">
+                    <button type="button" class="btn btn-sm btn-link delete-row-btn p-0">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="add-formset-row mt-3">
+            <i class="bi bi-plus-circle ms-2"></i> إضافة بند
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}قيد رقم {{ entry.entry_number }}{% endblock %}
+{% block page_title %}قيد رقم {{ entry.entry_number }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- معلومات القيد -->
+    <div class="col-lg-4">
+        <div class="erp-card">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-info-circle ms-2"></i>معلومات القيد</h6>
+                {% if entry.status == 'draft' %}
+                <span class="badge badge-status badge-draft">مسودة</span>
+                {% elif entry.status == 'posted' %}
+                <span class="badge badge-status badge-posted">مرحّل</span>
+                {% else %}
+                <span class="badge badge-status badge-cancelled">ملغي</span>
+                {% endif %}
+            </div>
+            <div class="erp-card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th class="text-muted" style="width: 40%;">رقم القيد</th>
+                        <td class="fw-bold">{{ entry.entry_number }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">التاريخ</th>
+                        <td>{{ entry.entry_date|date:"Y/m/d" }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">نوع القيد</th>
+                        <td>{{ entry.get_entry_type_display }}</td>
+                    </tr>
+                    {% if entry.reference %}
+                    <tr>
+                        <th class="text-muted">المرجع</th>
+                        <td>{{ entry.reference }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if entry.fiscal_year %}
+                    <tr>
+                        <th class="text-muted">السنة المالية</th>
+                        <td>{{ entry.fiscal_year.name }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if entry.description %}
+                    <tr>
+                        <th class="text-muted">البيان</th>
+                        <td>{{ entry.description }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+                
+                <hr>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="text-muted small">إجمالي المدين</div>
+                        <div class="fs-5 fw-bold text-success">{{ entry.total_debit|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">إجمالي الدائن</div>
+                        <div class="fs-5 fw-bold text-danger">{{ entry.total_credit|floatformat:2 }}</div>
+                    </div>
+                </div>
+                
+                {% if entry.is_balanced %}
+                <div class="alert alert-success mt-3 mb-0 text-center">
+                    <i class="bi bi-check-circle ms-1"></i> القيد متوازن
+                </div>
+                {% else %}
+                <div class="alert alert-danger mt-3 mb-0 text-center">
+                    <i class="bi bi-exclamation-triangle ms-1"></i> القيد غير متوازن
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <!-- معلومات الترحيل -->
+                {% if entry.status == 'posted' %}
+                <div class="text-muted small">
+                    <p class="mb-1">
+                        <i class="bi bi-person ms-1"></i>
+                        تم الترحيل بواسطة: {{ entry.posted_by.get_full_name|default:entry.posted_by.username }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-clock ms-1"></i>
+                        في: {{ entry.posted_at|date:"Y/m/d H:i" }}
+                    </p>
+                </div>
+                {% endif %}
+                
+                <!-- معلومات الإنشاء -->
+                <div class="text-muted small mt-3">
+                    {% if entry.created_by %}
+                    <p class="mb-1">
+                        <i class="bi bi-person-plus ms-1"></i>
+                        أنشئ بواسطة: {{ entry.created_by.get_full_name|default:entry.created_by.username }}
+                    </p>
+                    {% endif %}
+                    <p class="mb-0">
+                        <i class="bi bi-clock ms-1"></i>
+                        تاريخ الإنشاء: {{ entry.created_at|date:"Y/m/d H:i" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- إجراءات -->
+        <div class="erp-card mt-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-lightning ms-2"></i>الإجراءات</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="d-grid gap-2">
+                    {% if entry.status == 'draft' %}
+                    {% if entry.is_balanced %}
+                    <form method="post" action="{% url 'erp:journal_entry_post' entry.pk %}" class="d-grid">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" onclick="return confirm('هل أنت متأكد من ترحيل هذا القيد؟ لا يمكن التراجع عن هذا الإجراء.')">
+                            <i class="bi bi-check-circle ms-1"></i> ترحيل القيد
+                        </button>
+                    </form>
+                    {% else %}
+                    <button class="btn btn-success" disabled>
+                        <i class="bi bi-check-circle ms-1"></i> ترحيل القيد (القيد غير متوازن)
+                    </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'erp:journal_entry_edit' entry.pk %}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil ms-1"></i> تعديل
+                    </a>
+                    
+                    <a href="{% url 'erp:journal_entry_delete' entry.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash ms-1"></i> حذف
+                    </a>
+                    {% else %}
+                    <button class="btn btn-secondary" disabled>
+                        <i class="bi bi-lock ms-1"></i> القيد مرحّل - لا يمكن التعديل
+                    </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'erp:journal_entry_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-right ms-1"></i> العودة للقائمة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- سطور القيد -->
+    <div class="col-lg-8">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-list-ul ms-2"></i>سطور القيد</h6>
+            </div>
+            <div class="erp-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover erp-table mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">رمز الحساب</th>
+                                <th style="width: 30%;">اسم الحساب</th>
+                                <th style="width: 25%;">البيان</th>
+                                <th style="width: 15%;" class="text-start">مدين</th>
+                                <th style="width: 15%;" class="text-start">دائن</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for line in lines %}
+                            <tr>
+                                <td><code>{{ line.account.code }}</code></td>
+                                <td>{{ line.account.name }}</td>
+                                <td>{{ line.description|default:"-" }}</td>
+                                <td class="text-start">
+                                    {% if line.debit_amount > 0 %}
+                                    <span class="text-success fw-bold">{{ line.debit_amount|floatformat:2 }}</span>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td class="text-start">
+                                    {% if line.credit_amount > 0 %}
+                                    <span class="text-danger fw-bold">{{ line.credit_amount|floatformat:2 }}</span>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr class="fw-bold">
+                                <td colspan="3" class="text-start">الإجمالي</td>
+                                <td class="text-start text-success">{{ entry.total_debit|floatformat:2 }}</td>
+                                <td class="text-start text-danger">{{ entry.total_credit|floatformat:2 }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- شكل القيد المحاسبي التقليدي -->
+        <div class="erp-card mt-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-journal-bookmark ms-2"></i>القيد المحاسبي</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="border rounded p-3" style="background: #fafafa;">
+                    <!-- المدين -->
+                    {% for line in lines %}
+                    {% if line.debit_amount > 0 %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <span class="text-muted">من حـ/</span>
+                            <strong>{{ line.account.name }}</strong>
+                            {% if line.description %}<small class="text-muted">({{ line.description }})</small>{% endif %}
+                        </div>
+                        <div class="text-success fw-bold">{{ line.debit_amount|floatformat:2 }}</div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    <!-- الدائن -->
+                    {% for line in lines %}
+                    {% if line.credit_amount > 0 %}
+                    <div class="d-flex justify-content-between mb-2 pe-4">
+                        <div>
+                            <span class="text-muted me-4">إلى حـ/</span>
+                            <strong>{{ line.account.name }}</strong>
+                            {% if line.description %}<small class="text-muted">({{ line.description }})</small>{% endif %}
+                        </div>
+                        <div class="text-danger fw-bold">{{ line.credit_amount|floatformat:2 }}</div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if entry.description %}
+                    <hr>
+                    <div class="text-muted">
+                        <small><strong>البيان:</strong> {{ entry.description }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}دليل الحسابات{% endblock %}
+{% block page_title %}دليل الحسابات{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">إدارة دليل الحسابات للتتبع المالي</p>
+    </div>
+    <a href="{% url 'erp:account_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> حساب جديد
+    </a>
+</div>
+
+<!-- Filter by Type -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body py-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'erp:account_list' %}" class="btn btn-sm {% if not request.GET.type %}btn-primary{% else %}btn-outline-secondary{% endif %}">الكل</a>
+            <a href="?type=asset" class="btn btn-sm {% if request.GET.type == 'asset' %}btn-primary{% else %}btn-outline-secondary{% endif %}">الأصول</a>
+            <a href="?type=liability" class="btn btn-sm {% if request.GET.type == 'liability' %}btn-primary{% else %}btn-outline-secondary{% endif %}">الالتزامات</a>
+            <a href="?type=equity" class="btn btn-sm {% if request.GET.type == 'equity' %}btn-primary{% else %}btn-outline-secondary{% endif %}">حقوق الملكية</a>
+            <a href="?type=income" class="btn btn-sm {% if request.GET.type == 'income' %}btn-primary{% else %}btn-outline-secondary{% endif %}">الإيرادات</a>
+            <a href="?type=expense" class="btn btn-sm {% if request.GET.type == 'expense' %}btn-primary{% else %}btn-outline-secondary{% endif %}">المصروفات</a>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts Table -->
+<div class="erp-card">
+    <div class="erp-card-header">
+        <h6 class="mb-0">الحسابات</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>الرمز</th>
+                    <th>الاسم</th>
+                    <th>النوع</th>
+                    <th>الرصيد</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                <tr>
+                    <td><span class="fw-medium">{{ account.code }}</span></td>
+                    <td>
+                        {{ account.name }}
+                        {% if account.name_ar %}<br><small class="text-muted">{{ account.name_ar }}</small>{% endif %}
+                    </td>
+                    <td>
+                        <span class="badge 
+                            {% if account.account_type == 'asset' %}bg-success
+                            {% elif account.account_type == 'liability' %}bg-danger
+                            {% elif account.account_type == 'equity' %}bg-info
+                            {% elif account.account_type == 'income' %}bg-primary
+                            {% else %}bg-warning{% endif %} bg-opacity-75">
+                            {{ account.get_account_type_display }}
+                        </span>
+                    </td>
+                    <td class="{% if account.current_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        {{ account.current_balance }}
+                    </td>
+                    <td>
+                        {% if account.is_active %}
+                        <span class="badge badge-status badge-paid">نشط</span>
+                        {% else %}
+                        <span class="badge badge-status badge-draft">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:account_edit' account.pk %}" class="btn btn-outline-secondary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if not account.is_system %}
+                            <button type="button" class="btn btn-outline-danger" title="Delete" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ account.pk }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="modal fade" id="deleteModal{{ account.pk }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        هل أنت متأكد من حذف الحساب "{{ account.code }} - {{ account.name }}"؟
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <form action="{% url 'erp:account_delete' account.pk %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="bi bi-journal-text fs-1 d-block mb-2"></i>
+                        لا توجد حسابات حتى الآن
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

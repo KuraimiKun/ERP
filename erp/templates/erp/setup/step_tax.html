@@ -1,0 +1,123 @@
+{% extends "erp/setup/base_setup.html" %}
+
+{% block title %}إعداد الضرائب{% endblock %}
+
+{% block card_content %}
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="setup-card-header">
+        <i class="bi bi-percent"></i>
+        <div>
+            <h2>الخطوة 4: إعداد الضرائب</h2>
+            <p>اختر نوع الضريبة المطبقة على معاملاتك</p>
+        </div>
+    </div>
+    
+    <div class="setup-card-body">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                يرجى تصحيح الأخطاء التالية
+            </div>
+        {% endif %}
+        
+        <div class="mb-4">
+            <label class="form-label">{{ form.tax_preset.label }}</label>
+            
+            <div class="row">
+                {% for value, label in form.tax_preset.field.choices %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="checkbox-card {% if form.tax_preset.value == value %}selected{% endif %}" 
+                         onclick="selectTax('{{ value }}', this)">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" 
+                                   name="tax_preset" id="tax_{{ value }}" 
+                                   value="{{ value }}"
+                                   {% if form.tax_preset.value == value %}checked{% endif %}>
+                            <label class="form-check-label" for="tax_{{ value }}">
+                                {% if value == 'sa_vat' %}
+                                    <i class="bi bi-flag text-success me-2"></i>
+                                {% elif value == 'ae_vat' %}
+                                    <i class="bi bi-flag text-danger me-2"></i>
+                                {% elif value == 'eg_vat' %}
+                                    <i class="bi bi-flag text-warning me-2"></i>
+                                {% elif value == 'custom' %}
+                                    <i class="bi bi-sliders text-primary me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle text-secondary me-2"></i>
+                                {% endif %}
+                                {{ label }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="form-text">{{ form.tax_preset.help_text }}</div>
+        </div>
+        
+        <div id="customTaxFields" style="display: none;">
+            <div class="section-divider">تفاصيل الضريبة المخصصة</div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.custom_tax_name.label }}</label>
+                    {{ form.custom_tax_name }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.custom_tax_rate.label }}</label>
+                    <div class="input-group">
+                        {{ form.custom_tax_rate }}
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-warning mt-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>تنبيه:</strong> تأكد من اختيار نسبة الضريبة الصحيحة وفقاً لقوانين بلدك. يمكن تعديل نسب الضرائب لاحقاً من الإعدادات.
+        </div>
+    </div>
+    
+    <div class="setup-card-footer">
+        <a href="{% url 'erp:setup_go_back' step=3 %}" class="btn btn-setup-back">
+            <i class="bi bi-arrow-right me-2"></i>
+            السابق
+        </a>
+        <button type="submit" class="btn btn-setup-next">
+            التالي
+            <i class="bi bi-arrow-left ms-2"></i>
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const customFields = document.getElementById('customTaxFields');
+    
+    function selectTax(value, card) {
+        // Update radio button
+        document.getElementById('tax_' + value).checked = true;
+        
+        // Update card styling
+        document.querySelectorAll('.checkbox-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        
+        // Toggle custom fields
+        if (value === 'custom') {
+            customFields.style.display = 'block';
+        } else {
+            customFields.style.display = 'none';
+        }
+    }
+    
+    // Initial check
+    const checkedRadio = document.querySelector('input[name="tax_preset"]:checked');
+    if (checkedRadio && checkedRadio.value === 'custom') {
+        customFields.style.display = 'block';
+    }
+</script>
+{% endblock %}

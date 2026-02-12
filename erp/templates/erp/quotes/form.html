@@ -1,0 +1,135 @@
+{% extends 'erp/form_base.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'erp:quote_list' %}">عروض الأسعار</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block form_icon %}file-text{% endblock %}
+
+{% block cancel_url %}{% url 'erp:quote_list' %}{% endblock %}
+
+{% block form_content %}
+<!-- Quote Details -->
+<div class="form-section" dir="rtl">
+    <h6 class="form-section-title">تفاصيل عرض السعر</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.customer.id_for_label }}" class="form-label">العميل</label>
+            {{ form.customer }}
+            <div class="form-text">اختر عميلاً أو عميلاً محتملاً أدناه.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.lead.id_for_label }}" class="form-label">عميل محتمل</label>
+            {{ form.lead }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.status.id_for_label }}" class="form-label">الحالة</label>
+            {{ form.status }}
+        </div>
+        <div class="col-md-3 mb-3 required-field">
+            <label for="{{ form.quote_date.id_for_label }}" class="form-label">تاريخ العرض</label>
+            {{ form.quote_date }}
+        </div>
+        <div class="col-md-3 mb-3 required-field">
+            <label for="{{ form.valid_until.id_for_label }}" class="form-label">صالح حتى</label>
+            {{ form.valid_until }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">&nbsp;</label>
+            {% if quote %}
+            <div class="form-control-plaintext">
+                <strong>رقم العرض:</strong> {{ quote.quote_number }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Discount -->
+<div class="form-section" dir="rtl">
+    <h6 class="form-section-title">الخصم</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.discount_type.id_for_label }}" class="form-label">نوع الخصم</label>
+            {{ form.discount_type }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.discount_value.id_for_label }}" class="form-label">قيمة الخصم</label>
+            {{ form.discount_value }}
+        </div>
+    </div>
+</div>
+
+<!-- Notes -->
+<div class="form-section" dir="rtl">
+    <h6 class="form-section-title">الملاحظات والشروط</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.notes.id_for_label }}" class="form-label">ملاحظات</label>
+            {{ form.notes }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.terms_and_conditions.id_for_label }}" class="form-label">الشروط والأحكام</label>
+            {{ form.terms_and_conditions }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block formset_content %}
+<!-- Quote Lines -->
+<div class="form-section" dir="rtl">
+    <h6 class="form-section-title">بنود عرض السعر</h6>
+    
+    {{ formset.management_form }}
+    
+    <div class="formset-container" data-prefix="{{ formset.prefix }}">
+        <div class="formset-body">
+            {% for line_form in formset %}
+            <div class="formset-row {% if line_form.instance.pk %}existing{% endif %}">
+                <div class="row align-items-end">
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">الخدمة</label>
+                        {{ line_form.service }}
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label small">الوصف</label>
+                        {{ line_form.description }}
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <label class="form-label small">الكمية</label>
+                        {{ line_form.quantity }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">سعر الوحدة</label>
+                        {{ line_form.unit_price }}
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <label class="form-label small">خصم %</label>
+                        {{ line_form.discount_percent }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">نسبة الضريبة</label>
+                        {{ line_form.tax_rate }}
+                    </div>
+                    <div class="col-md-1 mb-2 text-start">
+                        {% if line_form.instance.pk %}
+                        {{ line_form.id }}
+                        {% endif %}
+                        {{ line_form.DELETE }}
+                        <button type="button" class="btn btn-sm btn-link delete-row-btn p-0">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="add-formset-row mt-3">
+            <i class="bi bi-plus-circle ms-2"></i> إضافة بند
+        </div>
+    </div>
+</div>
+{% endblock %}

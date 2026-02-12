@@ -1,0 +1,151 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}أمر شراء - {{ purchase_order.order_number|default:purchase_order.pk }}{% endblock %}
+{% block page_title %}تفاصيل أمر الشراء{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:purchase_order_list' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-right ms-1"></i> العودة إلى أوامر الشراء
+        </a>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'erp:purchase_order_edit' purchase_order.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil ms-1"></i> تعديل
+        </a>
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="bi bi-trash ms-1"></i> حذف
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">طلب رقم #{{ purchase_order.order_number|default:purchase_order.pk }}</h6>
+                <span class="badge badge-status 
+                    {% if purchase_order.status == 'draft' %}badge-draft
+                    {% elif purchase_order.status == 'sent' %}badge-sent
+                    {% elif purchase_order.status == 'received' %}badge-paid
+                    {% elif purchase_order.status == 'cancelled' %}badge-overdue
+                    {% else %}badge-draft{% endif %}">
+                    {{ purchase_order.get_status_display|default:purchase_order.status }}
+                </span>
+            </div>
+            <div class="erp-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">المورد</label>
+                        <div>
+                            {% if purchase_order.supplier %}
+                            <a href="{% url 'erp:supplier_detail' purchase_order.supplier.pk %}">
+                                {{ purchase_order.supplier.name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">تاريخ الطلب</label>
+                        <div>{{ purchase_order.order_date|date:"Y/m/d" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">التاريخ المتوقع للتسليم</label>
+                        <div>{{ purchase_order.expected_delivery_date|date:"Y/m/d"|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">المبلغ الإجمالي</label>
+                        <div class="fw-medium fs-5">{{ purchase_order.total_amount|default:"0.00" }}</div>
+                    </div>
+                    {% if purchase_order.notes %}
+                    <div class="col-12">
+                        <label class="text-muted small">ملاحظات</label>
+                        <div>{{ purchase_order.notes }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Lines -->
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">بنود الطلب</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>البند</th>
+                            <th>الوصف</th>
+                            <th>الكمية</th>
+                            <th>سعر الوحدة</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in purchase_order.lines.all %}
+                        <tr>
+                            <td>{{ line.description|default:"-" }}</td>
+                            <td>{{ line.item_description|default:"-" }}</td>
+                            <td>{{ line.quantity }}</td>
+                            <td>{{ line.unit_price }}</td>
+                            <td class="fw-medium">{{ line.total_price|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3 text-muted">
+                                لا توجد بنود في هذا الطلب
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">المعلومات</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">تاريخ الإنشاء</label>
+                    <div>{{ purchase_order.created_at|date:"Y/m/d H:i"|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">آخر تحديث</label>
+                    <div>{{ purchase_order.updated_at|date:"Y/m/d H:i"|default:"-" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من حذف أمر الشراء هذا؟ لا يمكن التراجع عن هذا الإجراء.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{% url 'erp:purchase_order_delete' purchase_order.pk %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

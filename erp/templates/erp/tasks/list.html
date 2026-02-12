@@ -1,0 +1,148 @@
+{% extends "erp/base.html" %}
+
+{% block title %}المهام{% endblock %}
+{% block page_title %}المهام{% endblock %}
+
+{% block content %}
+<!-- Filters & Actions -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">الحالة</label>
+                <select name="status" class="form-select">
+                    <option value="">جميع الحالات</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">الأولوية</label>
+                <select name="priority" class="form-select">
+                    <option value="">جميع الأولويات</option>
+                    {% for value, label in priorities %}
+                    <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check">
+                    <input type="checkbox" name="my_tasks" value="1" class="form-check-input" id="myTasks" 
+                           {% if request.GET.my_tasks %}checked{% endif %}>
+                    <label class="form-check-label" for="myTasks">مهامي فقط</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-filter ms-1"></i> تصفية
+                </button>
+                <a href="{% url 'erp:task_list' %}" class="btn btn-outline-secondary">مسح</a>
+            </div>
+            <div class="col-md-2 text-start">
+                <a href="{% url 'erp:task_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg ms-1"></i> مهمة جديدة
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tasks Table -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 40%">المهمة</th>
+                    <th>مسؤول عن</th>
+                    <th>الأولوية</th>
+                    <th>تاريخ الاستحقاق</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:task_detail' task.pk %}" class="fw-medium text-decoration-none">
+                            {{ task.title }}
+                        </a>
+                        {% if task.description %}
+                        <small class="d-block text-muted">{{ task.description|truncatechars:60 }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.assigned_to %}
+                        <div class="d-flex align-items-center">
+                            <img src="https://ui-avatars.com/api/?name={{ task.assigned_to.first_name }}+{{ task.assigned_to.last_name }}&background=0d6efd&color=fff&size=24" 
+                                 alt="" class="rounded-circle me-2" width="24" height="24">
+                            {{ task.assigned_to.first_name }} {{ task.assigned_to.last_name }}
+                        </div>
+                        {% else %}
+                        <span class="text-muted">غير معين</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.priority == 'urgent' %}
+                        <span class="badge bg-danger">عاجلة</span>
+                        {% elif task.priority == 'high' %}
+                        <span class="badge bg-warning">عالية</span>
+                        {% elif task.priority == 'medium' %}
+                        <span class="badge bg-info">متوسطة</span>
+                        {% else %}
+                        <span class="badge bg-secondary">منخفضة</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.due_date %}
+                            {{ task.due_date|date:"M d, Y" }}
+                            {% now "Y-m-d" as today %}
+                            {% if task.due_date|date:"Y-m-d" < today and task.status != 'completed' %}
+                            <small class="text-danger d-block">متأخرة</small>
+                            {% endif %}
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.status == 'todo' %}
+                        <span class="badge bg-secondary">للتنفيذ</span>
+                        {% elif task.status == 'in_progress' %}
+                        <span class="badge bg-primary">قيد التنفيذ</span>
+                        {% elif task.status == 'review' %}
+                        <span class="badge bg-info">قيد المراجعة</span>
+                        {% elif task.status == 'completed' %}
+                        <span class="badge bg-success">مكتملة</span>
+                        {% elif task.status == 'cancelled' %}
+                        <span class="badge bg-dark">ملغاة</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ task.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:task_detail' task.pk %}" class="btn btn-outline-primary" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'erp:task_edit' task.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-check2-square fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">لا توجد مهام</p>
+                        <a href="{% url 'erp:task_create' %}" class="btn btn-primary mt-3">إنشاء مهمتك الأولى</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

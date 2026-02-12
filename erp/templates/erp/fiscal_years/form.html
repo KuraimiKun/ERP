@@ -1,0 +1,83 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}{% if fiscal_year %}تعديل السنة المالية{% else %}سنة مالية جديدة{% endif %}{% endblock %}
+{% block page_title %}{% if fiscal_year %}تعديل السنة المالية{% else %}سنة مالية جديدة{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-calendar-range me-2"></i>
+                    {% if fiscal_year %}تعديل السنة المالية{% else %}إنشاء سنة مالية{% endif %}
+                </h6>
+            </div>
+            <div class="erp-card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">مثل FY 2026، 2026-2027</div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ البداية <span class="text-danger">*</span></label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.start_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ النهاية <span class="text-danger">*</span></label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.end_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="form-check">
+                                {{ form.is_current }}
+                                <label class="form-check-label" for="{{ form.is_current.id_for_label }}">
+                                    السنة الحالية/النشطة
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check">
+                                {{ form.is_closed }}
+                                <label class="form-check-label" for="{{ form.is_closed.id_for_label }}">
+                                    مغلق
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            {% if fiscal_year %}تحديث{% else %}إنشاء{% endif %}
+                        </button>
+                        <a href="{% url 'erp:fiscal_year_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,288 @@
+{% extends 'erp/base.html' %}
+{% load humanize %}
+
+{% block title %}التقارير المالية{% endblock %}
+{% block page_title %}التقارير المالية{% endblock %}
+
+{% block content %}
+<!-- Revenue & Profit Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="erp-card">
+            <div class="erp-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-cash-stack text-success fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">الإيرادات الشهرية</p>
+                        <h4 class="mb-0">${{ monthly_revenue|floatformat:2|intcomma }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="erp-card">
+            <div class="erp-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">الإيرادات السنوية</p>
+                        <h4 class="mb-0">${{ yearly_revenue|floatformat:2|intcomma }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="erp-card">
+            <div class="erp-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-danger bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-wallet2 text-danger fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">المصروفات الشهرية</p>
+                        <h4 class="mb-0">${{ monthly_expenses|floatformat:2|intcomma }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="erp-card">
+            <div class="erp-card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-piggy-bank text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="text-muted small mb-1">الربح الشهري</p>
+                        <h4 class="mb-0 {% if monthly_profit < 0 %}text-danger{% else %}text-success{% endif %}">
+                            ${{ monthly_profit|floatformat:2|intcomma }}
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-receipt me-2"></i>ملخص الذمم المدينة</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="text-center py-4">
+                    <h2 class="mb-1 text-warning">${{ total_receivables|floatformat:2|intcomma }}</h2>
+                    <p class="text-muted mb-0">إجمالي المستحقات</p>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between text-muted small">
+                    <span>المصروفات السنوية</span>
+                    <span>${{ yearly_expenses|floatformat:2|intcomma }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-muted small mt-2">
+                    <span>الربح السنوي</span>
+                    <span class="{% if yearly_profit < 0 %}text-danger{% else %}text-success{% endif %}">
+                        ${{ yearly_profit|floatformat:2|intcomma }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-8">
+        <div class="erp-card h-100">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-bank me-2"></i>دليل الحسابات</h6>
+                <a href="{% url 'erp:account_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="erp-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>الرمز</th>
+                                <th>اسم الحساب</th>
+                                <th>النوع</th>
+                                <th class="text-end">الرصيد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in accounts %}
+                            <tr>
+                                <td><code>{{ account.code }}</code></td>
+                                <td>{{ account.name }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if account.account_type == 'asset' %}bg-primary
+                                        {% elif account.account_type == 'liability' %}bg-warning
+                                        {% elif account.account_type == 'equity' %}bg-info
+                                        {% elif account.account_type == 'income' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ account.get_account_type_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end">${{ account.balance|floatformat:2|intcomma }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    لا توجد حسابات مهيأة. <a href="{% url 'erp:account_create' %}">أضف حساب</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="row g-4">
+    <!-- Recent Invoices -->
+    <div class="col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>أحدث الفواتير</h6>
+                <a href="{% url 'erp:invoice_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="erp-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for invoice in recent_invoices %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ invoice.invoice_number }}</strong>
+                            <br>
+                            <small class="text-muted">{{ invoice.customer.name|truncatechars:20 }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge 
+                                {% if invoice.status == 'paid' %}bg-success
+                                {% elif invoice.status == 'sent' %}bg-primary
+                                {% elif invoice.status == 'overdue' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ invoice.status|title }}
+                            </span>
+                            <br>
+                            <small>${{ invoice.total_amount|floatformat:2|intcomma }}</small>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted py-4">لا توجد فواتير حتى الآن</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Payments -->
+    <div class="col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-credit-card me-2"></i>أحدث المدفوعات</h6>
+                <a href="{% url 'erp:payment_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="erp-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for payment in recent_payments %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ payment.reference_number|default:"Payment" }}</strong>
+                            <br>
+                            <small class="text-muted">{{ payment.payment_date|date:"M d, Y" }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-success fw-bold">${{ payment.amount|floatformat:2|intcomma }}</span>
+                            <br>
+                            <small class="text-muted">{{ payment.payment_method|default:"-" }}</small>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted py-4">لا توجد مدفوعات حتى الآن</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Expenses -->
+    <div class="col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-wallet2 me-2"></i>أحدث المصروفات</h6>
+                <a href="{% url 'erp:expense_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="erp-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for expense in recent_expenses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ expense.description|truncatechars:25 }}</strong>
+                            <br>
+                            <small class="text-muted">{{ expense.expense_date|date:"M d, Y" }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-danger fw-bold">${{ expense.amount|floatformat:2|intcomma }}</span>
+                            <br>
+                            <small class="text-muted">
+                                {% if expense.category %}{{ expense.category.name }}{% else %}-{% endif %}
+                            </small>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted py-4">لا توجد مصروفات حتى الآن</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>إجراءات سريعة</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'erp:invoice_create' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-lg me-1"></i>فاتورة جديدة
+                    </a>
+                    <a href="{% url 'erp:payment_create' %}" class="btn btn-outline-success">
+                        <i class="bi bi-plus-lg me-1"></i>تسجيل دفعة
+                    </a>
+                    <a href="{% url 'erp:expense_create' %}" class="btn btn-outline-danger">
+                        <i class="bi bi-plus-lg me-1"></i>إضافة مصروف
+                    </a>
+                    <a href="{% url 'erp:account_create' %}" class="btn btn-outline-info">
+                        <i class="bi bi-plus-lg me-1"></i>حساب جديد
+                    </a>
+                    <a href="{% url 'erp:customer_create' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-plus-lg me-1"></i>إضافة عميل
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

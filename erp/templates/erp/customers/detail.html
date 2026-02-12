@@ -1,0 +1,252 @@
+{% extends "erp/base.html" %}
+
+{% block title %}{{ customer.name }}{% endblock %}
+{% block page_title %}تفاصيل العميل{% endblock %}
+
+{% block content %}
+<!-- المسار -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:customer_list' %}">العملاء</a></li>
+        <li class="breadcrumb-item active">{{ customer.name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- بطاقة معلومات العميل -->
+    <div class="col-lg-4">
+        <div class="erp-card mb-4">
+            <div class="erp-card-body text-center">
+                <div class="mb-3">
+                    <img src="https://ui-avatars.com/api/?name={{ customer.name|urlencode }}&background=0d6efd&color=fff&size=100" 
+                         alt="{{ customer.name }}" class="rounded-circle" width="100" height="100">
+                </div>
+                <h5 class="mb-1">{{ customer.name }}</h5>
+                <p class="text-muted mb-2">{{ customer.customer_id }}</p>
+                <span class="badge bg-{{ customer.customer_type }}">{{ customer.get_customer_type_display }}</span>
+                {% if customer.is_active %}
+                <span class="badge bg-success">نشط</span>
+                {% else %}
+                <span class="badge bg-secondary">غير نشط</span>
+                {% endif %}
+            </div>
+            <hr class="my-0">
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <div><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">الهاتف</label>
+                    <div>{{ customer.phone|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">العنوان</label>
+                    <div>{{ customer.address|linebreaksbr|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">المدينة / الدولة</label>
+                    <div>{{ customer.city|default:"" }}{% if customer.city and customer.country %}، {% endif %}{{ customer.country|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="erp-card-body border-top">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'erp:customer_edit' customer.pk %}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i> تعديل العميل
+                    </a>
+                    <a href="{% url 'erp:customer_delete' customer.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i> حذف العميل
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الملخص المالي -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">الملخص المالي</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">الرصيد:</span>
+                    <span class="fw-medium {% if customer.balance > 0 %}text-warning{% else %}text-success{% endif %}">
+                        {{ customer.currency.symbol|default:"$" }}{{ customer.balance|floatformat:2 }}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">حد الائتمان:</span>
+                    <span class="fw-medium">{{ customer.currency.symbol|default:"$" }}{{ customer.credit_limit|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">مدة الدفع:</span>
+                    <span>{{ customer.payment_terms }} يوم</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- المحتوى الرئيسي -->
+    <div class="col-lg-8">
+        <!-- التبويبات -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#invoices">
+                    الفواتير <span class="badge bg-secondary">{{ invoices|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payments">
+                    المدفوعات <span class="badge bg-secondary">{{ payments|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#quotes">
+                    عروض الأسعار <span class="badge bg-secondary">{{ quotes|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#interactions">
+                    التفاعلات <span class="badge bg-secondary">{{ interactions|length }}</span>
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content">
+            <!-- تبويب الفواتير -->
+            <div class="tab-pane fade show active" id="invoices">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">أحدث الفواتير</h6>
+                        <a href="{% url 'erp:invoice_create' %}?customer={{ customer.pk }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> فاتورة جديدة
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>رقم الفاتورة</th>
+                                    <th>التاريخ</th>
+                                    <th>المبلغ</th>
+                                    <th>المتبقي</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in invoices %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'erp:invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a>
+                                    </td>
+                                    <td>{{ invoice.invoice_date|date:"Y/m/d" }}</td>
+                                    <td>{{ customer.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                                    <td>{{ customer.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</td>
+                                    <td><span class="badge badge-status badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد فواتير</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب المدفوعات -->
+            <div class="tab-pane fade" id="payments">
+                <div class="erp-card">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0">أحدث المدفوعات</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>رقم الدفعة</th>
+                                    <th>التاريخ</th>
+                                    <th>طريقة الدفع</th>
+                                    <th>المبلغ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>{{ payment.payment_number }}</td>
+                                    <td>{{ payment.payment_date|date:"Y/m/d" }}</td>
+                                    <td>{{ payment.payment_method.name|default:"-" }}</td>
+                                    <td class="text-success">{{ customer.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد مدفوعات</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب عروض الأسعار -->
+            <div class="tab-pane fade" id="quotes">
+                <div class="erp-card">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0">أحدث عروض الأسعار</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>رقم العرض</th>
+                                    <th>التاريخ</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quote in quotes %}
+                                <tr>
+                                    <td>{{ quote.quote_number }}</td>
+                                    <td>{{ quote.quote_date|date:"Y/m/d" }}</td>
+                                    <td>{{ customer.currency.symbol|default:"$" }}{{ quote.total_amount|floatformat:2 }}</td>
+                                    <td><span class="badge bg-secondary">{{ quote.get_status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد عروض أسعار</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب التفاعلات -->
+            <div class="tab-pane fade" id="interactions">
+                <div class="erp-card">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0">سجل التفاعلات</h6>
+                    </div>
+                    <div class="erp-card-body">
+                        {% for interaction in interactions %}
+                        <div class="d-flex mb-3 pb-3 border-bottom">
+                            <div class="ms-3">
+                                <i class="bi bi-{% if interaction.interaction_type == 'call' %}telephone{% elif interaction.interaction_type == 'email' %}envelope{% elif interaction.interaction_type == 'meeting' %}calendar-event{% else %}chat{% endif %} fs-4 text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ interaction.get_interaction_type_display }}</strong>
+                                    <small class="text-muted">{{ interaction.interaction_date|date:"Y/m/d" }}</small>
+                                </div>
+                                <p class="mb-1">{{ interaction.subject }}</p>
+                                <small class="text-muted">{{ interaction.notes|truncatechars:100 }}</small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-muted py-4">لا توجد تفاعلات مسجلة</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

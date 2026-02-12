@@ -1,0 +1,190 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}تفاصيل طلب الإجازة{% endblock %}
+{% block page_title %}تفاصيل طلب الإجازة{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:leave_request_list' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> العودة إلى طلبات الإجازة
+        </a>
+    </div>
+    {% if leave_request.status == 'pending' %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+            <i class="bi bi-check-lg me-1"></i> موافقة
+        </button>
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+            <i class="bi bi-x-lg me-1"></i> رفض
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="erp-card">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">طلب الإجازة</h6>
+                <span class="badge badge-status 
+                    {% if leave_request.status == 'pending' %}badge-partial
+                    {% elif leave_request.status == 'approved' %}badge-paid
+                    {% elif leave_request.status == 'rejected' %}badge-overdue
+                    {% else %}badge-draft{% endif %}">
+                    {{ leave_request.get_status_display|default:leave_request.status }}
+                </span>
+            </div>
+            <div class="erp-card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="text-muted small">الموظف</label>
+                        <div class="d-flex align-items-center mt-1">
+                            <img src="https://ui-avatars.com/api/?name={{ leave_request.employee.first_name }}+{{ leave_request.employee.last_name }}&background=0d6efd&color=fff" 
+                                 alt="" class="rounded-circle me-2" width="40" height="40">
+                            <div>
+                                <div class="fw-medium">{{ leave_request.employee.first_name }} {{ leave_request.employee.last_name }}</div>
+                                <small class="text-muted">{{ leave_request.employee.department.name|default:"-" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">نوع الإجازة</label>
+                        <div class="fw-medium">{{ leave_request.leave_type.name|default:leave_request.leave_type|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">تاريخ البداية</label>
+                        <div>{{ leave_request.start_date|date:"F d, Y" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">تاريخ النهاية</label>
+                        <div>{{ leave_request.end_date|date:"F d, Y" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">الأيام المطلوبة</label>
+                        <div class="fw-medium fs-5">{{ leave_request.days_requested|default:"-" }} يوم</div>
+                    </div>
+                    {% if leave_request.reason %}
+                    <div class="col-12">
+                        <label class="text-muted small">السبب</label>
+                        <div class="bg-light rounded p-3 mt-1">{{ leave_request.reason }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">معلومات الحالة</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">الحالة الحالية</label>
+                    <div>
+                        <span class="badge badge-status fs-6
+                            {% if leave_request.status == 'pending' %}badge-partial
+                            {% elif leave_request.status == 'approved' %}badge-paid
+                            {% elif leave_request.status == 'rejected' %}badge-overdue
+                            {% else %}badge-draft{% endif %}">
+                            {{ leave_request.get_status_display|default:leave_request.status }}
+                        </span>
+                    </div>
+                </div>
+                {% if leave_request.approved_by %}
+                <div class="mb-3">
+                    <label class="text-muted small">تمت المراجعة بواسطة</label>
+                    <div>{{ leave_request.approved_by.get_full_name|default:leave_request.approved_by }}</div>
+                </div>
+                {% endif %}
+                {% if leave_request.approved_at %}
+                <div class="mb-3">
+                    <label class="text-muted small">تاريخ المراجعة</label>
+                    <div>{{ leave_request.approved_at|date:"M d, Y H:i" }}</div>
+                </div>
+                {% endif %}
+                {% if leave_request.rejection_reason %}
+                <div class="mb-3">
+                    <label class="text-muted small">سبب الرفض</label>
+                    <div class="text-danger">{{ leave_request.rejection_reason }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">الجدول الزمني</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">تاريخ الإرسال</label>
+                    <div>{{ leave_request.created_at|date:"M d, Y H:i"|default:"-" }}</div>
+                </div>
+                <div class="mb-0">
+                    <label class="text-muted small">آخر تحديث</label>
+                    <div>{{ leave_request.updated_at|date:"M d, Y H:i"|default:"-" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if leave_request.status == 'pending' %}
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">الموافقة على طلب الإجازة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>الموافقة على طلب إجازة <strong>{{ leave_request.employee.first_name }} {{ leave_request.employee.last_name }}</strong>؟</p>
+                <p class="text-muted">
+                    {{ leave_request.leave_type.name|default:leave_request.leave_type }} من 
+                    {{ leave_request.start_date|date:"M d, Y" }} إلى {{ leave_request.end_date|date:"M d, Y" }}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{% url 'erp:leave_request_approve' leave_request.pk %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve">
+                    <button type="submit" class="btn btn-success">موافقة</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">رفض طلب الإجازة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'erp:leave_request_approve' leave_request.pk %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reject">
+                <div class="modal-body">
+                    <p>رفض طلب إجازة <strong>{{ leave_request.employee.first_name }} {{ leave_request.employee.last_name }}</strong>؟</p>
+                    <div class="mb-3">
+                        <label class="form-label">سبب الرفض</label>
+                        <textarea name="rejection_reason" class="form-control" rows="3" placeholder="أدخل السبب..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">رفض</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

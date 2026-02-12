@@ -1,0 +1,113 @@
+{% extends "erp/base.html" %}
+
+{% block title %}الموردون{% endblock %}
+{% block page_title %}الموردون{% endblock %}
+
+{% block content %}
+<!-- الفلاتر والإجراءات -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">بحث</label>
+                <input type="text" name="search" class="form-control" placeholder="الاسم، البريد الإلكتروني، أو المعرف..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">النوع</label>
+                <select name="type" class="form-select">
+                    <option value="">جميع الأنواع</option>
+                    {% for value, label in supplier_types %}
+                    <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search ms-1"></i> بحث
+                </button>
+                <a href="{% url 'erp:supplier_list' %}" class="btn btn-outline-secondary">مسح</a>
+            </div>
+            <div class="col-md-2 text-start">
+                <a href="{% url 'erp:supplier_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg ms-1"></i> إضافة مورد
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- جدول الموردين -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>رقم المورد</th>
+                    <th>الاسم</th>
+                    <th>النوع</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الهاتف</th>
+                    <th>التقييم</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:supplier_detail' supplier.pk %}" class="fw-medium text-decoration-none">
+                            {{ supplier.supplier_id }}
+                        </a>
+                    </td>
+                    <td>{{ supplier.name }}</td>
+                    <td><span class="badge bg-light text-dark">{{ supplier.get_supplier_type_display }}</span></td>
+                    <td><a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a></td>
+                    <td>{{ supplier.phone|default:"-" }}</td>
+                    <td>
+                        {% if supplier.rating %}
+                        <span class="text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= supplier.rating %}
+                                <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if supplier.is_active %}
+                        <span class="badge bg-success">نشط</span>
+                        {% else %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:supplier_detail' supplier.pk %}" class="btn btn-outline-primary" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'erp:supplier_edit' supplier.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="bi bi-truck fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">لا يوجد موردون</p>
+                        <a href="{% url 'erp:supplier_create' %}" class="btn btn-primary mt-3">أضف أول مورد</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

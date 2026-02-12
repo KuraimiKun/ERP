@@ -1,0 +1,161 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}الحضور{% endblock %}
+{% block page_title %}الحضور{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">تتبع حضور الموظفين وساعات العمل</p>
+    </div>
+    <a href="{% url 'erp:attendance_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> تسجيل الحضور
+    </a>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ today_present|default:0 }}</div>
+                    <div class="stat-label">حاضرون اليوم</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ today_late|default:0 }}</div>
+                    <div class="stat-label">متأخرون اليوم</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ attendance_records.count }}</div>
+                    <div class="stat-label">إجمالي السجلات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">الموظف</label>
+                <select name="employee" class="form-select">
+                    <option value="">جميع الموظفين</option>
+                    {% for employee in employees %}
+                    <option value="{{ employee.pk }}" {% if request.GET.employee == employee.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ employee.first_name }} {{ employee.last_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel me-1"></i> تصفية
+                </button>
+                <a href="{% url 'erp:attendance_list' %}" class="btn btn-outline-secondary">إعادة تعيين</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Attendance Table -->
+<div class="erp-card">
+    <div class="erp-card-header">
+        <h6 class="mb-0">سجلات الحضور</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>الموظف</th>
+                    <th>التاريخ</th>
+                    <th>تسجيل الدخول</th>
+                    <th>تسجيل الخروج</th>
+                    <th>الحالة</th>
+                    <th>دقائق التأخير</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-2">
+                                <img src="https://ui-avatars.com/api/?name={{ record.employee.first_name }}+{{ record.employee.last_name }}&background=0d6efd&color=fff" 
+                                     alt="" class="rounded-circle" width="32" height="32">
+                            </div>
+                            <div>
+                                <div class="fw-medium">{{ record.employee.first_name }} {{ record.employee.last_name }}</div>
+                                <small class="text-muted">{{ record.employee.department.name|default:"-" }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ record.date|date:"M d, Y" }}</td>
+                    <td>{{ record.check_in|time:"H:i"|default:"-" }}</td>
+                    <td>{{ record.check_out|time:"H:i"|default:"-" }}</td>
+                    <td>
+                        {% if record.is_present %}
+                        <span class="badge badge-status badge-paid">
+                            <i class="bi bi-check-circle me-1"></i>حاضر
+                        </span>
+                        {% else %}
+                        <span class="badge badge-status badge-overdue">
+                            <i class="bi bi-x-circle me-1"></i>غائب
+                        </span>
+                        {% endif %}
+                        {% if record.is_late %}
+                        <span class="badge badge-status badge-partial ms-1">متأخر</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ record.late_minutes|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'erp:attendance_edit' record.pk %}" class="btn btn-sm btn-outline-secondary" title="تعديل">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                        لا توجد سجلات حضور
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

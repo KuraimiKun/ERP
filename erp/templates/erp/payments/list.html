@@ -1,0 +1,123 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}المدفوعات{% endblock %}
+{% block page_title %}المدفوعات{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">إدارة مدفوعات العملاء والمعاملات</p>
+    </div>
+    <a href="{% url 'erp:payment_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> تسجيل دفعة
+    </a>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success ms-3">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ payments.count }}</div>
+                    <div class="stat-label">إجمالي المدفوعات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="erp-card">
+    <div class="erp-card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">جميع المدفوعات</h6>
+        <div class="d-flex gap-2">
+            <input type="search" class="form-control form-control-sm" placeholder="بحث في المدفوعات..." style="width: 200px;">
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>رقم الدفعة</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>الفاتورة</th>
+                    <th>طريقة الدفع</th>
+                    <th>المبلغ</th>
+                    <th>المرجع</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:payment_detail' payment.pk %}" class="fw-medium text-decoration-none">
+                            #{{ payment.pk }}
+                        </a>
+                    </td>
+                    <td>{{ payment.payment_date|date:"Y/m/d" }}</td>
+                    <td>{{ payment.customer.name|default:"-" }}</td>
+                    <td>
+                        {% if payment.invoice %}
+                        <a href="{% url 'erp:invoice_detail' payment.invoice.pk %}">
+                            {{ payment.invoice.invoice_number }}
+                        </a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>{{ payment.payment_method.name|default:"-" }}</td>
+                    <td class="fw-medium text-success">{{ payment.amount }}</td>
+                    <td><small class="text-muted">{{ payment.reference|default:"-"|truncatechars:20 }}</small></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:payment_detail' payment.pk %}" class="btn btn-outline-secondary" title="عرض">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" title="حذف" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ payment.pk }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ payment.pk }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        هل أنت متأكد من حذف الدفعة #{{ payment.pk }}؟
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <form action="{% url 'erp:payment_delete' payment.pk %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        <i class="bi bi-credit-card fs-1 d-block mb-2"></i>
+                        لا توجد مدفوعات مسجلة بعد
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

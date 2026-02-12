@@ -1,0 +1,106 @@
+{% extends "erp/setup/base_setup.html" %}
+
+{% block title %}إعداد الشركة{% endblock %}
+
+{% block card_content %}
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="setup-card-header">
+        <i class="bi bi-building"></i>
+        <div>
+            <h2>الخطوة 2: معلومات الشركة</h2>
+            <p>أدخل البيانات الأساسية لشركتك</p>
+        </div>
+    </div>
+    
+    <div class="setup-card-body">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                يرجى تصحيح الأخطاء التالية
+            </div>
+        {% endif %}
+        
+        <!-- Company Name -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.name.label }} <span class="text-danger">*</span></label>
+                {{ form.name }}
+                <div class="form-text">{{ form.name.help_text }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.name_ar.label }}</label>
+                {{ form.name_ar }}
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <label class="form-label">{{ form.legal_name.label }}</label>
+            {{ form.legal_name }}
+            <div class="form-text">{{ form.legal_name.help_text }}</div>
+        </div>
+        
+        <div class="section-divider">معلومات الاتصال</div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.email.label }} <span class="text-danger">*</span></label>
+                {{ form.email }}
+                <div class="form-text">{{ form.email.help_text }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.phone.label }} <span class="text-danger">*</span></label>
+                {{ form.phone }}
+            </div>
+        </div>
+        
+        <div class="section-divider">التسجيل والضرائب</div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.tax_number.label }}</label>
+                {{ form.tax_number }}
+                <div class="form-text">{{ form.tax_number.help_text }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.commercial_register.label }}</label>
+                {{ form.commercial_register }}
+            </div>
+        </div>
+        
+        <div class="section-divider">العنوان</div>
+        
+        <div class="mb-3">
+            <label class="form-label">{{ form.address.label }} <span class="text-danger">*</span></label>
+            {{ form.address }}
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ form.city.label }} <span class="text-danger">*</span></label>
+                {{ form.city }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ form.country.label }} <span class="text-danger">*</span></label>
+                {{ form.country }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">{{ form.postal_code.label }}</label>
+                {{ form.postal_code }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="setup-card-footer">
+        <a href="{% url 'erp:setup_go_back' step=1 %}" class="btn btn-setup-back">
+            <i class="bi bi-arrow-right me-2"></i>
+            السابق
+        </a>
+        <button type="submit" class="btn btn-setup-next">
+            التالي
+            <i class="bi bi-arrow-left ms-2"></i>
+        </button>
+    </div>
+</form>
+{% endblock %}

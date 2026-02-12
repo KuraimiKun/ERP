@@ -1,0 +1,80 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}{% if form.instance.pk %}تعديل أمر الشراء{% else %}أمر شراء جديد{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}تعديل أمر الشراء{% else %}أمر شراء جديد{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-cart3 ms-2"></i>
+                    {% if form.instance.pk %}تعديل أمر الشراء{% else %}إنشاء أمر شراء{% endif %}
+                </h6>
+            </div>
+            <div class="erp-card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">المورد <span class="text-danger">*</span></label>
+                            {{ form.supplier }}
+                            {% if form.supplier.errors %}
+                            <div class="invalid-feedback d-block">{{ form.supplier.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ الطلب <span class="text-danger">*</span></label>
+                            {{ form.order_date }}
+                            {% if form.order_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.order_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">التاريخ المتوقع للتسليم</label>
+                            {{ form.expected_delivery_date }}
+                            {% if form.expected_delivery_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.expected_delivery_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">الحالة</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">ملاحظات</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg ms-1"></i>
+                            {% if form.instance.pk %}تحديث الطلب{% else %}إنشاء الطلب{% endif %}
+                        </button>
+                        <a href="{% url 'erp:purchase_order_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

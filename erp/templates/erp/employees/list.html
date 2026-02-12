@@ -1,0 +1,109 @@
+{% extends "erp/base.html" %}
+
+{% block title %}الموظفون{% endblock %}
+{% block page_title %}الموظفون{% endblock %}
+
+{% block content %}
+<!-- Filters & Actions -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">بحث</label>
+                <input type="text" name="search" class="form-control" placeholder="الاسم، البريد الإلكتروني، أو الرقم..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">القسم</label>
+                <select name="department" class="form-select">
+                    <option value="">جميع الأقسام</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.pk }}" {% if request.GET.department == dept.pk|stringformat:"i" %}selected{% endif %}>{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">الحالة</label>
+                <select name="status" class="form-select">
+                    <option value="">جميع الحالات</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search ms-1"></i> بحث
+                </button>
+                <a href="{% url 'erp:employee_list' %}" class="btn btn-outline-secondary">مسح</a>
+            </div>
+            <div class="col-md-2 text-start">
+                <a href="{% url 'erp:employee_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg ms-1"></i> إضافة موظف
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Employees Grid -->
+<div class="row g-3">
+    {% for employee in employees %}
+    <div class="col-md-6 col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="https://ui-avatars.com/api/?name={{ employee.first_name }}+{{ employee.last_name }}&background=0d6efd&color=fff" 
+                         alt="{{ employee.first_name }}" class="rounded-circle me-3" width="50" height="50">
+                    <div>
+                        <h6 class="mb-0">
+                            <a href="{% url 'erp:employee_detail' employee.pk %}" class="text-decoration-none">
+                                {{ employee.first_name }} {{ employee.last_name }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">{{ employee.job_title|default:"No title" }}</small>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">رقم الموظف:</small>
+                    <span>{{ employee.employee_id }}</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">القسم:</small>
+                    <span>{{ employee.department.name|default:"-" }}</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">البريد الإلكتروني:</small>
+                    <a href="mailto:{{ employee.email }}">{{ employee.email }}</a>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                    {% if employee.employment_status == 'active' %}
+                    <span class="badge bg-success">نشط</span>
+                    {% elif employee.employment_status == 'on_leave' %}
+                    <span class="badge bg-warning">في إجازة</span>
+                    {% elif employee.employment_status == 'terminated' %}
+                    <span class="badge bg-danger">منتهي</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ employee.get_employment_status_display }}</span>
+                    {% endif %}
+                    
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'erp:employee_detail' employee.pk %}" class="btn btn-outline-primary">عرض</a>
+                        <a href="{% url 'erp:employee_edit' employee.pk %}" class="btn btn-outline-secondary">تعديل</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="erp-card">
+            <div class="erp-card-body text-center py-5">
+                <i class="bi bi-person-badge fs-1 text-muted"></i>
+                <p class="mt-2 mb-0">لم يتم العثور على موظفين</p>
+                <a href="{% url 'erp:employee_create' %}" class="btn btn-primary mt-3">أضف أول موظف</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

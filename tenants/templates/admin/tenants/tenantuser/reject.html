@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 20px auto; padding: 20px;">
+    <h2>Reject User: {{ user.email }}</h2>
+    
+    <div class="card" style="background: #fff3cd; padding: 15px; margin: 15px 0; border: 1px solid #ffc107;">
+        <p style="margin: 0;">
+            <strong>Warning:</strong> This will reject the user's application. 
+            They will not be able to access the ERP system.
+        </p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_reason" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Rejection Reason (Optional)
+            </label>
+            {{ form.reason }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                This reason may be shown to the user.
+            </p>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-danger" style="background: #dc3545; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Reject Application
+            </button>
+            <a href="{% url 'admin:tenants_tenantuser_changelist' %}" class="btn" style="margin-left: 10px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'erp/form_base.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'erp:customer_list' %}">العملاء</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block form_icon %}person-plus{% endblock %}
+
+{% block cancel_url %}{% url 'erp:customer_list' %}{% endblock %}
+
+{% block form_content %}
+<!-- المعلومات الأساسية -->
+<div class="form-section">
+    <h6 class="form-section-title">المعلومات الأساسية</h6>
+    <div class="row">
+        <div class="col-md-4 mb-3 required-field">
+            <label for="{{ form.customer_type.id_for_label }}" class="form-label">نوع العميل</label>
+            {{ form.customer_type }}
+        </div>
+        <div class="col-md-8 mb-3 required-field">
+            <label for="{{ form.name.id_for_label }}" class="form-label">الاسم</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label">البريد الإلكتروني</label>
+            {{ form.email }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.phone.id_for_label }}" class="form-label">الهاتف</label>
+            {{ form.phone }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.website.id_for_label }}" class="form-label">الموقع الإلكتروني</label>
+            {{ form.website }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.tax_id.id_for_label }}" class="form-label">الرقم الضريبي</label>
+            {{ form.tax_id }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">المسؤول</label>
+            {{ form.assigned_to }}
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="form-check mt-4">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">نشط</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- عنوان الفوترة -->
+<div class="form-section">
+    <h6 class="form-section-title">عنوان الفوترة</h6>
+    <div class="row">
+        <div class="col-12 mb-3">
+            <label for="{{ form.billing_address.id_for_label }}" class="form-label">العنوان</label>
+            {{ form.billing_address }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.billing_city.id_for_label }}" class="form-label">المدينة</label>
+            {{ form.billing_city }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.billing_state.id_for_label }}" class="form-label">الولاية/المنطقة</label>
+            {{ form.billing_state }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.billing_country.id_for_label }}" class="form-label">الدولة</label>
+            {{ form.billing_country }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.billing_postal_code.id_for_label }}" class="form-label">الرمز البريدي</label>
+            {{ form.billing_postal_code }}
+        </div>
+    </div>
+</div>
+
+<!-- عنوان الشحن -->
+<div class="form-section">
+    <h6 class="form-section-title">عنوان الشحن</h6>
+    <div class="row">
+        <div class="col-12 mb-3">
+            <label for="{{ form.shipping_address.id_for_label }}" class="form-label">العنوان</label>
+            {{ form.shipping_address }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.shipping_city.id_for_label }}" class="form-label">المدينة</label>
+            {{ form.shipping_city }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.shipping_state.id_for_label }}" class="form-label">الولاية/المنطقة</label>
+            {{ form.shipping_state }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.shipping_country.id_for_label }}" class="form-label">الدولة</label>
+            {{ form.shipping_country }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.shipping_postal_code.id_for_label }}" class="form-label">الرمز البريدي</label>
+            {{ form.shipping_postal_code }}
+        </div>
+    </div>
+</div>
+
+<!-- شروط الدفع -->
+<div class="form-section">
+    <h6 class="form-section-title">شروط الدفع</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.credit_limit.id_for_label }}" class="form-label">حد الائتمان</label>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.credit_limit }}
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.payment_terms.id_for_label }}" class="form-label">مدة الدفع (بالأيام)</label>
+            {{ form.payment_terms }}
+        </div>
+    </div>
+</div>
+
+<!-- الملاحظات -->
+<div class="form-section mb-0">
+    <h6 class="form-section-title">ملاحظات</h6>
+    <div class="row">
+        <div class="col-12 mb-3">
+            {{ form.notes }}
+        </div>
+    </div>
+</div>
+{% endblock %}

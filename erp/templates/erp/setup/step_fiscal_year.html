@@ -1,0 +1,86 @@
+{% extends "erp/setup/base_setup.html" %}
+
+{% block title %}إعداد السنة المالية{% endblock %}
+
+{% block card_content %}
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="setup-card-header">
+        <i class="bi bi-calendar3"></i>
+        <div>
+            <h2>الخطوة 3: السنة المالية</h2>
+            <p>حدد تواريخ السنة المالية الحالية</p>
+        </div>
+    </div>
+    
+    <div class="setup-card-body">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                يرجى تصحيح الأخطاء التالية
+            </div>
+        {% endif %}
+        
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.fiscal_year_start.label }}</label>
+                {{ form.fiscal_year_start }}
+                <div class="form-text">{{ form.fiscal_year_start.help_text }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.fiscal_year_name.label }} <span class="text-danger">*</span></label>
+                {{ form.fiscal_year_name }}
+                <div class="form-text">{{ form.fiscal_year_name.help_text }}</div>
+            </div>
+        </div>
+        
+        <div class="section-divider">فترة السنة المالية الحالية</div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.start_date.label }} <span class="text-danger">*</span></label>
+                {{ form.start_date }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.end_date.label }} <span class="text-danger">*</span></label>
+                {{ form.end_date }}
+            </div>
+        </div>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>ملاحظة:</strong> السنة المالية تحدد الفترة التي يتم فيها إعداد القوائم المالية. معظم الشركات تستخدم السنة الميلادية (يناير - ديسمبر).
+        </div>
+    </div>
+    
+    <div class="setup-card-footer">
+        <a href="{% url 'erp:setup_go_back' step=2 %}" class="btn btn-setup-back">
+            <i class="bi bi-arrow-right me-2"></i>
+            السابق
+        </a>
+        <button type="submit" class="btn btn-setup-next">
+            التالي
+            <i class="bi bi-arrow-left ms-2"></i>
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-calculate end date based on start date
+    const startDateInput = document.getElementById('id_start_date');
+    const endDateInput = document.getElementById('id_end_date');
+    
+    startDateInput.addEventListener('change', function() {
+        const startDate = new Date(this.value);
+        if (!isNaN(startDate)) {
+            const endDate = new Date(startDate);
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            endDate.setDate(endDate.getDate() - 1);
+            endDateInput.value = endDate.toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}

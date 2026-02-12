@@ -1,0 +1,461 @@
+{% extends "erp/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}لوحة التحكم{% endblock %}
+{% block page_title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<!-- قسم الترحيب -->
+<div class="mb-4">
+    <h4 class="mb-1">مرحباً بك، {{ user.first_name|default:user.username }}!</h4>
+    <p class="text-muted mb-0">إليك ملخص لأحدث أنشطة عملك اليوم.</p>
+</div>
+
+<!-- مؤشرات الأداء الرئيسية -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-primary">{{ company.currency.symbol|default:"$" }}{{ monthly_revenue|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-label">إيرادات الشهر</div>
+                </div>
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-warning">{{ company.currency.symbol|default:"$" }}{{ outstanding_receivables|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-label">مستحقات العملاء</div>
+                </div>
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+            {% if overdue_invoices %}
+            <div class="mt-2">
+                <span class="badge bg-danger">{{ overdue_invoices }} متأخرة</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-success">{{ total_customers }}</div>
+                    <div class="stat-label">العملاء النشطون</div>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+            {% if new_customers_month %}
+            <div class="mt-2">
+                <span class="stat-change text-success">
+                    <i class="bi bi-arrow-up-short"></i>+{{ new_customers_month }} هذا الشهر
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-info">{{ total_leads }}</div>
+                    <div class="stat-label">العملاء المحتملون</div>
+                </div>
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-funnel"></i>
+                </div>
+            </div>
+            {% if new_leads_month %}
+            <div class="mt-2">
+                <span class="stat-change text-success">
+                    <i class="bi bi-arrow-up-short"></i>+{{ new_leads_month }} هذا الشهر
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- مؤشرات ثانوية -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">عروض الأسعار المعلقة</div>
+                    <div class="stat-value fs-4">{{ pending_quotes }}</div>
+                    <small class="text-muted">القيمة: {{ company.currency.symbol|default:"$" }}{{ quotes_value|floatformat:0|default:"0"|intcomma }}</small>
+                </div>
+                <i class="bi bi-file-earmark-text text-primary fs-2"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">المهام النشطة</div>
+                    <div class="stat-value fs-4">{{ active_tasks }}</div>
+                    <small class="text-muted">{{ overdue_tasks }} مهمة متأخرة</small>
+                </div>
+                <i class="bi bi-check2-square text-success fs-2"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">طلبات الإجازة المعلقة</div>
+                    <div class="stat-value fs-4">{{ pending_leaves }}</div>
+                    <small class="text-muted">تحتاج مراجعة</small>
+                </div>
+                <i class="bi bi-calendar-x text-warning fs-2"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- إجراءات سريعة -->
+<div class="erp-card mb-4">
+    <div class="erp-card-header">
+        <h6 class="mb-0"><i class="bi bi-lightning ms-2"></i>إجراءات سريعة</h6>
+    </div>
+    <div class="erp-card-body">
+        <div class="row g-3">
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'erp:invoice_create' %}" class="quick-action">
+                    <i class="bi bi-receipt text-primary"></i>
+                    <span>فاتورة جديدة</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'erp:customer_create' %}" class="quick-action">
+                    <i class="bi bi-person-plus text-success"></i>
+                    <span>عميل جديد</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'erp:journal_entry_create' %}" class="quick-action">
+                    <i class="bi bi-journal-plus text-info"></i>
+                    <span>قيد يومية</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'erp:lead_create' %}" class="quick-action">
+                    <i class="bi bi-funnel text-warning"></i>
+                    <span>عميل محتمل</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'erp:expense_create' %}" class="quick-action">
+                    <i class="bi bi-wallet2 text-danger"></i>
+                    <span>مصروف جديد</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'erp:task_create' %}" class="quick-action">
+                    <i class="bi bi-check2-square text-secondary"></i>
+                    <span>مهمة جديدة</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- المحتوى الرئيسي -->
+<div class="row g-4">
+    <!-- أحدث الفواتير -->
+    <div class="col-lg-6">
+        <div class="erp-card h-100">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-receipt ms-2"></i>أحدث الفواتير</h6>
+                <a href="{% url 'erp:invoice_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="erp-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover erp-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>رقم الفاتورة</th>
+                                <th>العميل</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in recent_invoices %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="text-decoration-none">
+                                        {{ invoice.invoice_number }}
+                                    </a>
+                                </td>
+                                <td>{{ invoice.customer.name|truncatechars:20 }}</td>
+                                <td>{{ company.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if invoice.status == 'paid' %}
+                                    <span class="badge badge-status badge-paid">مدفوعة</span>
+                                    {% elif invoice.status == 'sent' %}
+                                    <span class="badge badge-status badge-sent">مرسلة</span>
+                                    {% elif invoice.status == 'overdue' %}
+                                    <span class="badge badge-status badge-overdue">متأخرة</span>
+                                    {% elif invoice.status == 'partial' %}
+                                    <span class="badge badge-status badge-partial">جزئية</span>
+                                    {% else %}
+                                    <span class="badge badge-status badge-draft">مسودة</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">لا توجد فواتير</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- أحدث العملاء المحتملين -->
+    <div class="col-lg-6">
+        <div class="erp-card h-100">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-funnel ms-2"></i>أحدث العملاء المحتملين</h6>
+                <a href="{% url 'erp:lead_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="erp-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover erp-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>المصدر</th>
+                                <th>الحالة</th>
+                                <th>القيمة المتوقعة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in recent_leads %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'erp:lead_detail' lead.pk %}" class="text-decoration-none">
+                                        {{ lead.name }}
+                                    </a>
+                                </td>
+                                <td>{{ lead.get_source_display }}</td>
+                                <td>
+                                    {% if lead.status == 'new' %}
+                                    <span class="badge bg-info">جديد</span>
+                                    {% elif lead.status == 'contacted' %}
+                                    <span class="badge bg-primary">تم التواصل</span>
+                                    {% elif lead.status == 'qualified' %}
+                                    <span class="badge bg-success">مؤهل</span>
+                                    {% elif lead.status == 'converted' %}
+                                    <span class="badge bg-dark">تم التحويل</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ lead.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ company.currency.symbol|default:"$" }}{{ lead.estimated_value|floatformat:0|default:"0" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">لا يوجد عملاء محتملون</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- الرسوم البيانية -->
+<div class="row g-4 mt-2">
+    <!-- رسم الإيرادات -->
+    <div class="col-lg-8">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-bar-chart ms-2"></i>الإيرادات والمصروفات</h6>
+            </div>
+            <div class="erp-card-body">
+                <canvas id="revenueChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- رسم الحالة -->
+    <div class="col-lg-4">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-pie-chart ms-2"></i>حالة الفواتير</h6>
+            </div>
+            <div class="erp-card-body">
+                <canvas id="invoiceStatusChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- المهام القادمة -->
+<div class="row g-4 mt-2">
+    <div class="col-lg-6">
+        <div class="erp-card">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-check2-square ms-2"></i>المهام القادمة</h6>
+                <a href="{% url 'erp:task_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+            </div>
+            <div class="erp-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for task in upcoming_tasks %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{% url 'erp:task_detail' task.pk %}" class="text-decoration-none fw-bold">
+                                {{ task.title }}
+                            </a>
+                            <br>
+                            <small class="text-muted">{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</small>
+                        </div>
+                        <div class="text-end">
+                            {% if task.priority == 'high' %}
+                            <span class="badge bg-danger">عاجل</span>
+                            {% elif task.priority == 'medium' %}
+                            <span class="badge bg-warning">متوسط</span>
+                            {% else %}
+                            <span class="badge bg-secondary">عادي</span>
+                            {% endif %}
+                            <br>
+                            <small class="text-muted">{{ task.due_date|date:"Y/m/d" }}</small>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted py-4">لا توجد مهام قادمة</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- نشاط حديث -->
+    <div class="col-lg-6">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-clock-history ms-2"></i>النشاط الحديث</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="timeline">
+                    {% for payment in recent_payments %}
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-2">
+                                <i class="bi bi-credit-card text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 me-3">
+                            <p class="mb-0 fw-bold">دفعة جديدة</p>
+                            <small class="text-muted">{{ company.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }} - {{ payment.payment_date|date:"Y/m/d" }}</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-muted">لا يوجد نشاط حديث</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // رسم الإيرادات
+    const revenueCtx = document.getElementById('revenueChart');
+    if (revenueCtx) {
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+                datasets: [{
+                    label: 'الإيرادات',
+                    data: {{ revenue_by_month|safe|default:"[0,0,0,0,0,0,0,0,0,0,0,0]" }},
+                    backgroundColor: 'rgba(13, 110, 253, 0.8)',
+                }, {
+                    label: 'المصروفات',
+                    data: {{ expenses_by_month|safe|default:"[0,0,0,0,0,0,0,0,0,0,0,0]" }},
+                    backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        rtl: true,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    // رسم حالة الفواتير
+    const statusCtx = document.getElementById('invoiceStatusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['مدفوعة', 'معلقة', 'متأخرة'],
+                datasets: [{
+                    data: [
+                        {{ paid_invoices_count|default:0 }},
+                        {{ pending_invoices_count|default:0 }},
+                        {{ overdue_invoices|default:0 }}
+                    ],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(13, 110, 253, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        rtl: true,
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

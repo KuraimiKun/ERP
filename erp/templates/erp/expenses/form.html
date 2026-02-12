@@ -1,0 +1,88 @@
+{% extends 'erp/form_base.html' %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'erp:expense_list' %}">المصروفات</a></li>
+<li class="breadcrumb-item active">{{ title }}</li>
+{% endblock %}
+
+{% block form_icon %}receipt{% endblock %}
+
+{% block cancel_url %}{% url 'erp:expense_list' %}{% endblock %}
+
+{% block form_content %}
+<!-- Expense Details -->
+<div class="form-section" dir="rtl">
+    <h6 class="form-section-title">تفاصيل المصروف</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.category.id_for_label }}" class="form-label">الفئة</label>
+            {{ form.category }}
+        </div>
+        <div class="col-md-3 mb-3 required-field">
+            <label for="{{ form.expense_date.id_for_label }}" class="form-label">تاريخ المصروف</label>
+            {{ form.expense_date }}
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="{{ form.status.id_for_label }}" class="form-label">الحالة</label>
+            {{ form.status }}
+        </div>
+        <div class="col-12 mb-3 required-field">
+            <label for="{{ form.description.id_for_label }}" class="form-label">الوصف</label>
+            {{ form.description }}
+        </div>
+    </div>
+</div>
+
+<!-- Amounts -->
+<div class="form-section" dir="rtl">
+    <h6 class="form-section-title">المبالغ</h6>
+    <div class="row">
+        <div class="col-md-4 mb-3 required-field">
+            <label for="{{ form.amount.id_for_label }}" class="form-label">المبلغ</label>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.amount }}
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.tax_amount.id_for_label }}" class="form-label">مبلغ الضريبة</label>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{ form.tax_amount }}
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="{{ form.vendor.id_for_label }}" class="form-label">المورد</label>
+            {{ form.vendor }}
+        </div>
+    </div>
+</div>
+
+<!-- Attachments -->
+<div class="form-section" dir="rtl">
+    <h6 class="form-section-title">المرفقات</h6>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="{{ form.receipt.id_for_label }}" class="form-label">الإيصال</label>
+            {% if expense and expense.receipt %}
+            <div class="mb-2">
+                <a href="{{ expense.receipt.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-file-earmark ms-1"></i> عرض الإيصال الحالي
+                </a>
+            </div>
+            {% endif %}
+            {{ form.receipt }}
+        </div>
+    </div>
+</div>
+
+<!-- Notes -->
+<div class="form-section mb-0" dir="rtl">
+    <h6 class="form-section-title">ملاحظات</h6>
+    <div class="row">
+        <div class="col-12 mb-3">
+            {{ form.notes }}
+        </div>
+    </div>
+</div>
+{% endblock %}

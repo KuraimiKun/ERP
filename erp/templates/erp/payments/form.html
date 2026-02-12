@@ -1,0 +1,96 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}{% if form.instance.pk %}تعديل الدفعة{% else %}تسجيل دفعة{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}تعديل الدفعة{% else %}تسجيل دفعة{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-credit-card ms-2"></i>
+                    {% if form.instance.pk %}تعديل الدفعة{% else %}تسجيل دفعة جديدة{% endif %}
+                </h6>
+            </div>
+            <div class="erp-card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">العميل <span class="text-danger">*</span></label>
+                            {{ form.customer }}
+                            {% if form.customer.errors %}
+                            <div class="invalid-feedback d-block">{{ form.customer.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">الفاتورة</label>
+                            {{ form.invoice }}
+                            {% if form.invoice.errors %}
+                            <div class="invalid-feedback d-block">{{ form.invoice.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ الدفع <span class="text-danger">*</span></label>
+                            {{ form.payment_date }}
+                            {% if form.payment_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.payment_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">المبلغ <span class="text-danger">*</span></label>
+                            {{ form.amount }}
+                            {% if form.amount.errors %}
+                            <div class="invalid-feedback d-block">{{ form.amount.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">طريقة الدفع</label>
+                            {{ form.payment_method }}
+                            {% if form.payment_method.errors %}
+                            <div class="invalid-feedback d-block">{{ form.payment_method.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">المرجع</label>
+                            {{ form.reference }}
+                            {% if form.reference.errors %}
+                            <div class="invalid-feedback d-block">{{ form.reference.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">ملاحظات</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg ms-1"></i>
+                            {% if form.instance.pk %}تحديث الدفعة{% else %}تسجيل الدفعة{% endif %}
+                        </button>
+                        <a href="{% url 'erp:payment_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

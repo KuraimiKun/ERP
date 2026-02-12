@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 20px auto; padding: 20px;">
+    <h2>Assign Database to: {{ user.email }}</h2>
+    
+    <p>Assign an existing database to this user:</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_database" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Database *
+            </label>
+            {{ form.database }}
+            <p class="help" style="font-size: 0.85em; color: #666;">
+                {{ form.database.help_text }}
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_role" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Role
+            </label>
+            {{ form.role }}
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" style="background: #0d6efd; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Assign Database
+            </button>
+            <a href="{% url 'admin:tenants_tenantuser_changelist' %}" class="btn" style="margin-left: 10px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

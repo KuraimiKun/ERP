@@ -1,0 +1,164 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}القيود اليومية{% endblock %}
+{% block page_title %}القيود اليومية{% endblock %}
+
+{% block content %}
+<!-- إحصائيات -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-journal-bookmark"></i>
+                </div>
+                <div class="me-3">
+                    <div class="stat-value">{{ total_entries }}</div>
+                    <div class="stat-label">إجمالي القيود</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="me-3">
+                    <div class="stat-value">{{ posted_count }}</div>
+                    <div class="stat-label">قيود مرحّلة</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <div class="me-3">
+                    <div class="stat-value">{{ draft_count }}</div>
+                    <div class="stat-label">مسودات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- البحث والفلترة -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">الحالة</label>
+                <select name="status" class="form-select">
+                    <option value="">الكل</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">نوع القيد</label>
+                <select name="type" class="form-select">
+                    <option value="">الكل</option>
+                    {% for value, label in type_choices %}
+                    <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search ms-1"></i> بحث
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- قائمة القيود -->
+<div class="erp-card">
+    <div class="erp-card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-journal-bookmark ms-2"></i>القيود اليومية</h6>
+        <a href="{% url 'erp:journal_entry_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg ms-1"></i> قيد جديد
+        </a>
+    </div>
+    <div class="erp-card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover erp-table mb-0">
+                <thead>
+                    <tr>
+                        <th>رقم القيد</th>
+                        <th>التاريخ</th>
+                        <th>النوع</th>
+                        <th>البيان</th>
+                        <th>مدين</th>
+                        <th>دائن</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'erp:journal_entry_detail' entry.pk %}" class="text-decoration-none fw-bold">
+                                {{ entry.entry_number }}
+                            </a>
+                        </td>
+                        <td>{{ entry.entry_date|date:"Y/m/d" }}</td>
+                        <td>{{ entry.get_entry_type_display }}</td>
+                        <td>{{ entry.description|truncatechars:40 }}</td>
+                        <td class="text-success fw-bold">{{ entry.total_debit|floatformat:2 }}</td>
+                        <td class="text-danger fw-bold">{{ entry.total_credit|floatformat:2 }}</td>
+                        <td>
+                            {% if entry.status == 'draft' %}
+                            <span class="badge badge-status badge-draft">مسودة</span>
+                            {% elif entry.status == 'posted' %}
+                            <span class="badge badge-status badge-posted">مرحّل</span>
+                            {% else %}
+                            <span class="badge badge-status badge-cancelled">ملغي</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'erp:journal_entry_detail' entry.pk %}" class="btn btn-outline-primary" title="عرض">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if entry.status == 'draft' %}
+                                <a href="{% url 'erp:journal_entry_edit' entry.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-journal-x fs-1 d-block mb-3"></i>
+                            لا توجد قيود يومية
+                            <br>
+                            <a href="{% url 'erp:journal_entry_create' %}" class="btn btn-primary btn-sm mt-3">
+                                <i class="bi bi-plus-lg ms-1"></i> إنشاء قيد جديد
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

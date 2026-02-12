@@ -1,0 +1,137 @@
+{% extends "erp/base.html" %}
+
+{% block title %}العملاء المحتملون{% endblock %}
+{% block page_title %}العملاء المحتملون{% endblock %}
+
+{% block content %}
+<!-- Filters & Actions -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">بحث</label>
+                <input type="text" name="search" class="form-control" placeholder="الاسم أو البريد الإلكتروني..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">الحالة</label>
+                <select name="status" class="form-select">
+                    <option value="">جميع الحالات</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">المصدر</label>
+                <select name="source" class="form-select">
+                    <option value="">جميع المصادر</option>
+                    {% for value, label in sources %}
+                    <option value="{{ value }}" {% if request.GET.source == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search ms-1"></i> بحث
+                </button>
+                <a href="{% url 'erp:lead_list' %}" class="btn btn-outline-secondary">مسح</a>
+            </div>
+            <div class="col-md-2 text-start">
+                <a href="{% url 'erp:lead_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg ms-1"></i> إضافة عميل محتمل
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- جدول العملاء المحتملون -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>رقم العميل المحتمل</th>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الهاتف</th>
+                    <th>المصدر</th>
+                    <th>القيمة المتوقعة</th>
+                    <th>الحالة</th>
+                    <th>مسؤول عن</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:lead_detail' lead.pk %}" class="fw-medium text-decoration-none">
+                            {{ lead.lead_number }}
+                        </a>
+                    </td>
+                    <td>{{ lead.first_name }} {{ lead.last_name }}</td>
+                    <td><a href="mailto:{{ lead.email }}">{{ lead.email }}</a></td>
+                    <td>{{ lead.phone|default:"-" }}</td>
+                    <td><span class="badge bg-light text-dark">{{ lead.get_source_display }}</span></td>
+                    <td>
+                        {% if lead.estimated_value %}
+                        ${{ lead.estimated_value|floatformat:0 }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead.status == 'new' %}
+                        <span class="badge bg-info">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'contacted' %}
+                        <span class="badge bg-primary">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'qualified' %}
+                        <span class="badge bg-warning">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'proposal' %}
+                        <span class="badge bg-secondary">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'negotiation' %}
+                        <span class="badge bg-dark">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'won' %}
+                        <span class="badge bg-success">{{ lead.get_status_display }}</span>
+                        {% elif lead.status == 'lost' %}
+                        <span class="badge bg-danger">{{ lead.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ lead.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead.assigned_to %}
+                        {{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name|slice:":1" }}.
+                        {% else %}
+                        <span class="text-muted">غير معين</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:lead_detail' lead.pk %}" class="btn btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'erp:lead_edit' lead.pk %}" class="btn btn-outline-secondary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:lead_delete' lead.pk %}" class="btn btn-outline-danger" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <i class="bi bi-funnel fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">لا يوجد عملاء محتملون</p>
+                        <a href="{% url 'erp:lead_create' %}" class="btn btn-primary mt-3">أضف أول عميل محتمل</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

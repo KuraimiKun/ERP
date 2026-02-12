@@ -1,0 +1,105 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}{% if form.instance.pk %}تعديل الحضور{% else %}تسجيل الحضور{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}تعديل الحضور{% else %}تسجيل الحضور{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    {% if form.instance.pk %}تعديل سجل الحضور{% else %}تسجيل الحضور{% endif %}
+                </h6>
+            </div>
+            <div class="erp-card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">الموظف <span class="text-danger">*</span></label>
+                        {{ form.employee }}
+                        {% if form.employee.errors %}
+                        <div class="invalid-feedback d-block">{{ form.employee.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">التاريخ <span class="text-danger">*</span></label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                        <div class="invalid-feedback d-block">{{ form.date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">تسجيل الدخول</label>
+                            {{ form.check_in }}
+                            {% if form.check_in.errors %}
+                            <div class="invalid-feedback d-block">{{ form.check_in.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">تسجيل الخروج</label>
+                            {{ form.check_out }}
+                            {% if form.check_out.errors %}
+                            <div class="invalid-feedback d-block">{{ form.check_out.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.is_present }}
+                                <label class="form-check-label" for="{{ form.is_present.id_for_label }}">
+                                    حاضر
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.is_late }}
+                                <label class="form-check-label" for="{{ form.is_late.id_for_label }}">
+                                    متأخر
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">دقائق التأخير</label>
+                            {{ form.late_minutes }}
+                            {% if form.late_minutes.errors %}
+                            <div class="invalid-feedback d-block">{{ form.late_minutes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">ملاحظات</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                        <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            {% if form.instance.pk %}تحديث السجل{% else %}حفظ السجل{% endif %}
+                        </button>
+                        <a href="{% url 'erp:attendance_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

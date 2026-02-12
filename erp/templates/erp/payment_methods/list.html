@@ -1,0 +1,98 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}طرق الدفع{% endblock %}
+{% block page_title %}طرق الدفع{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">إعداد طرق الدفع للمعاملات</p>
+    </div>
+    <a href="{% url 'erp:payment_method_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> طريقة دفع جديدة
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for method in payment_methods %}
+    <div class="col-md-6 col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="mb-1">{{ method.name }}</h5>
+                        {% if method.name_ar %}
+                        <small class="text-muted">{{ method.name_ar }}</small>
+                        {% endif %}
+                    </div>
+                    <span class="badge bg-secondary">{{ method.code }}</span>
+                </div>
+                
+                <div class="d-flex gap-2 mb-3">
+                    {% if method.is_active %}
+                    <span class="badge badge-status badge-paid">نشط</span>
+                    {% else %}
+                    <span class="badge badge-status badge-draft">غير نشط</span>
+                    {% endif %}
+                    
+                    {% if method.requires_reference %}
+                    <span class="badge bg-info bg-opacity-75">يتطلب مرجع</span>
+                    {% endif %}
+                </div>
+                
+                {% if method.account %}
+                <div class="small text-muted mb-3">
+                    <i class="bi bi-journal-text me-1"></i>
+                    مرتبط بـ: {{ method.account.code }} - {{ method.account.name }}
+                </div>
+                {% endif %}
+                
+                <div class="d-flex gap-2">
+                    <a href="{% url 'erp:payment_method_edit' method.pk %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-pencil me-1"></i> تعديل
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                            data-bs-toggle="modal" data-bs-target="#deleteModal{{ method.pk }}">
+                        <i class="bi bi-trash me-1"></i> حذف
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="deleteModal{{ method.pk }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تأكيد الحذف</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        هل أنت متأكد من حذف طريقة الدفع "{{ method.name }}"؟
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <form action="{% url 'erp:payment_method_delete' method.pk %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">حذف</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="erp-card">
+            <div class="erp-card-body text-center py-5">
+                <i class="bi bi-cash-stack fs-1 text-muted d-block mb-3"></i>
+                <h5 class="text-muted">لا توجد طرق دفع مهيأة</h5>
+                <p class="text-muted mb-3">أضف طرق الدفع مثل النقد، بطاقة الائتمان، التحويل البنكي، إلخ.</p>
+                <a href="{% url 'erp:payment_method_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> إضافة طريقة دفع
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
