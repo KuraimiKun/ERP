@@ -56,11 +56,35 @@
                             {% endif %}
                         </div>
                         
+                        <div class="col-md-6">
+                            <label class="form-label">العملة <span class="text-danger">*</span></label>
+                            {{ form.currency }}
+                            {% if form.currency.errors %}
+                            <div class="invalid-feedback d-block">{{ form.currency.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">المرجع</label>
+                            {{ form.reference }}
+                            {% if form.reference.errors %}
+                            <div class="invalid-feedback d-block">{{ form.reference.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
                         <div class="col-12">
                             <label class="form-label">ملاحظات</label>
                             {{ form.notes }}
                             {% if form.notes.errors %}
                             <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">الشروط</label>
+                            {{ form.terms }}
+                            {% if form.terms.errors %}
+                            <div class="invalid-feedback d-block">{{ form.terms.errors.0 }}</div>
                             {% endif %}
                         </div>
                     </div>

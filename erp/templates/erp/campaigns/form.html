@@ -80,6 +80,30 @@
                             {% endif %}
                         </div>
                         
+                        <div class="col-md-4">
+                            <label class="form-label">العملاء المحتملون المتوقعون</label>
+                            {{ form.expected_leads }}
+                            {% if form.expected_leads.errors %}
+                            <div class="invalid-feedback d-block">{{ form.expected_leads.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">الإيرادات المتوقعة</label>
+                            {{ form.expected_revenue }}
+                            {% if form.expected_revenue.errors %}
+                            <div class="invalid-feedback d-block">{{ form.expected_revenue.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">العملة</label>
+                            {{ form.currency }}
+                            {% if form.currency.errors %}
+                            <div class="invalid-feedback d-block">{{ form.currency.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
                         <div class="col-12">
                             <label class="form-label">الوصف</label>
                             {{ form.description }}

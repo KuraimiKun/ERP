@@ -32,7 +32,22 @@
                             {% endif %}
                         </div>
                         
-
+                        <div class="col-md-6">
+                            <label class="form-label">الفاتورة</label>
+                            {{ form.invoice }}
+                            {% if form.invoice.errors %}
+                            <div class="invalid-feedback d-block">{{ form.invoice.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">اختر فاتورة لربط الدفعة بها (اختياري)</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">نوع الدفعة <span class="text-danger">*</span></label>
+                            {{ form.payment_type }}
+                            {% if form.payment_type.errors %}
+                            <div class="invalid-feedback d-block">{{ form.payment_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
                         
                         <div class="col-md-6">
                             <label class="form-label">تاريخ الدفع <span class="text-danger">*</span></label>
@@ -51,6 +66,14 @@
                         </div>
                         
                         <div class="col-md-6">
+                            <label class="form-label">العملة <span class="text-danger">*</span></label>
+                            {{ form.currency }}
+                            {% if form.currency.errors %}
+                            <div class="invalid-feedback d-block">{{ form.currency.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
                             <label class="form-label">طريقة الدفع</label>
                             {{ form.payment_method }}
                             {% if form.payment_method.errors %}
@@ -62,7 +85,7 @@
                             <label class="form-label">المرجع</label>
                             {{ form.reference_number }}
                             {% if form.reference_number.errors %}
-                            <div class="invalid-feedback d-block">{{ form.reference.errors.0 }}</div>
+                            <div class="invalid-feedback d-block">{{ form.reference_number.errors.0 }}</div>
                             {% endif %}
                         </div>
                         
@@ -72,6 +95,13 @@
                             {% if form.notes.errors %}
                             <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
                             {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div id="invoice-info" class="alert alert-info d-none mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span>الرصيد المستحق على الفاتورة:</span>
+                            <strong id="invoice-balance"></strong>
                         </div>
                     </div>
                     
@@ -87,4 +117,33 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const customerSelect = document.getElementById('id_customer');
+    const invoiceSelect = document.getElementById('id_invoice');
+    
+    if (!customerSelect || !invoiceSelect) return;
+    
+    // Store all invoice options for filtering
+    const allOptions = Array.from(invoiceSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text,
+        dataset: {...opt.dataset}
+    }));
+    
+    // When customer changes, reload page with customer filter to get proper invoice list
+    customerSelect.addEventListener('change', function() {
+        const customerId = this.value;
+        if (customerId) {
+            // Keep current form values and just reload with customer param
+            const url = new URL(window.location.href);
+            url.searchParams.set('customer', customerId);
+            window.location.href = url.toString();
+        }
+    });
+});
+</script>
 {% endblock %}

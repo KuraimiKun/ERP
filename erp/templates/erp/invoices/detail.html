@@ -87,7 +87,7 @@
                             <td class="text-center">{{ line.quantity }}</td>
                             <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
                             <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.tax_amount|floatformat:2 }}</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.total_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.line_total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -98,7 +98,7 @@
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="4" class="text-start"><strong>المجموع الفرعي:</strong></td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal|floatformat:2 }}</td>
                         </tr>
                         {% if invoice.discount_amount > 0 %}
                         <tr>
@@ -114,10 +114,10 @@
                             <td colspan="4" class="text-start">الإجمالي:</td>
                             <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
                         </tr>
-                        {% if invoice.amount_paid > 0 %}
+                        {% if invoice.paid_amount > 0 %}
                         <tr class="text-success">
                             <td colspan="4" class="text-start">المبلغ المدفوع:</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.amount_paid|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.paid_amount|floatformat:2 }}</td>
                         </tr>
                         <tr class="fw-bold">
                             <td colspan="4" class="text-start">الرصيد المستحق:</td>
@@ -154,9 +154,9 @@
                     <i class="bi bi-pencil ms-1"></i> تعديل الفاتورة
                 </a>
                 {% if invoice.balance_due > 0 %}
-                <button class="btn btn-success">
+                <a href="{% url 'erp:payment_create' %}?invoice={{ invoice.pk }}&customer={{ invoice.customer.pk }}" class="btn btn-success">
                     <i class="bi bi-cash ms-1"></i> تسجيل دفعة
-                </button>
+                </a>
                 {% endif %}
                 <button class="btn btn-outline-secondary">
                     <i class="bi bi-printer ms-1"></i> طباعة

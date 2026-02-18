@@ -35,13 +35,10 @@
             <label for="{{ form.valid_until.id_for_label }}" class="form-label">صالح حتى</label>
             {{ form.valid_until }}
         </div>
-        <div class="col-md-3 mb-3">
-            <label class="form-label">&nbsp;</label>
-            {% if quote %}
-            <div class="form-control-plaintext">
-                <strong>رقم العرض:</strong> {{ quote.quote_number }}
-            </div>
-            {% endif %}
+        <div class="col-md-3 mb-3 required-field">
+            <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+            {{ form.currency }}
+            {% if form.currency.errors %}<div class="invalid-feedback d-block">{{ form.currency.errors|join:", " }}</div>{% endif %}
         </div>
     </div>
 </div>

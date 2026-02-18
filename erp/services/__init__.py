@@ -31,6 +31,12 @@ from .notification import (
     notify_invoice_paid,
 )
 
+from .accounting import (
+    create_invoice_journal_entry,
+    create_payment_journal_entry,
+    create_expense_journal_entry,
+)
+
 __all__ = [
     # Sequence
     'SequenceService',
@@ -55,4 +61,9 @@ __all__ = [
     'notify_leave_request',
     'notify_expense_approval',
     'notify_invoice_paid',
+
+    # Accounting
+    'create_invoice_journal_entry',
+    'create_payment_journal_entry',
+    'create_expense_journal_entry',
 ]
