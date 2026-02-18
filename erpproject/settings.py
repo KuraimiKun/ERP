@@ -36,9 +36,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     
     # Third party apps
     'rest_framework',
+    'django_filters',
     'corsheaders',
     'crispy_forms',
     'crispy_bootstrap5',
@@ -95,6 +97,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
+        'DISABLE_SERVER_SIDE_CURSORS': True,
     }
 }
 

@@ -40,27 +40,12 @@
             {{ form.due_date }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.discount_type.id_for_label }}" class="form-label">نوع الخصم</label>
-            {{ form.discount_type }}
+            <label for="{{ form.reference.id_for_label }}" class="form-label">المرجع</label>
+            {{ form.reference }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.discount_value.id_for_label }}" class="form-label">قيمة الخصم</label>
-            {{ form.discount_value }}
-        </div>
-    </div>
-</div>
-
-<!-- العناوين -->
-<div class="form-section">
-    <h6 class="form-section-title">العناوين</h6>
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label for="{{ form.billing_address.id_for_label }}" class="form-label">عنوان الفوترة</label>
-            {{ form.billing_address }}
-        </div>
-        <div class="col-md-6 mb-3">
-            <label for="{{ form.shipping_address.id_for_label }}" class="form-label">عنوان الشحن</label>
-            {{ form.shipping_address }}
+            <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+            {{ form.currency }}
         </div>
     </div>
 </div>

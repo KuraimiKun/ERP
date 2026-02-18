@@ -31,28 +31,27 @@ def clear_current_db_alias():
         del _thread_locals.db_alias
 
 
-# Models that should always use the default database
-TENANT_MANAGEMENT_MODELS = {
-    'tenants.tenantuser',
+# Models that must ALWAYS go to the default database regardless of context
+# (these manage the multi-tenant infrastructure itself)
+ALWAYS_DEFAULT_MODELS = {
     'tenants.postgresserver',
     'tenants.tenantdatabase',
     'tenants.databaseassignment',
     'tenants.serverlog',
-    'auth.permission',
-    'auth.group',
-    'contenttypes.contenttype',
     'sessions.session',
     'admin.logentry',
 }
 
-# Apps that should use the default database
-TENANT_MANAGEMENT_APPS = {
-    'auth',
-    'contenttypes',
+# Apps that are ALWAYS routed to default (infrastructure only)
+ALWAYS_DEFAULT_APPS = {
     'sessions',
     'admin',
-    'tenants',
 }
+
+# Models/apps that exist in BOTH default and tenant DBs (shared apps).
+# When a tenant context is active these should be read/written on the
+# tenant DB so that FK subqueries against ERP tables work correctly.
+SHARED_APPS = {'auth', 'contenttypes', 'tenants'}
 
 
 class TenantDatabaseRouter:
@@ -60,91 +59,94 @@ class TenantDatabaseRouter:
     Database router for multi-tenant architecture.
     
     Routes queries to the appropriate database based on:
-    1. Model type (tenant management vs ERP)
-    2. Current request context
+    1. Model type (infrastructure-only vs shared vs ERP)
+    2. Current request context (tenant DB alias in thread-local)
+
+    Infrastructure models (servers, databases, assignments, logs, sessions,
+    admin log entries) always go to 'default'.
+
+    Shared models (auth, contenttypes, tenants.TenantUser) exist in both
+    default and tenant databases.  When a tenant context is active they are
+    routed to the *tenant* DB so that FK subqueries against ERP tables work.
+
+    ERP models only exist in tenant databases.
     """
     
     def _get_model_key(self, model):
         """Get a lowercase model key for comparison."""
         return f"{model._meta.app_label}.{model._meta.model_name}"
     
-    def _is_tenant_management_model(self, model):
-        """Check if the model belongs to tenant management."""
+    def _is_always_default(self, model):
+        """True for infrastructure models that must stay on the default DB."""
         model_key = self._get_model_key(model)
         return (
-            model_key in TENANT_MANAGEMENT_MODELS or
-            model._meta.app_label in TENANT_MANAGEMENT_APPS
+            model_key in ALWAYS_DEFAULT_MODELS or
+            model._meta.app_label in ALWAYS_DEFAULT_APPS
         )
-    
-    def db_for_read(self, model, **hints):
-        """
-        Route read operations to the appropriate database.
-        """
-        if self._is_tenant_management_model(model):
+
+    def _is_shared(self, model):
+        """True for models whose tables exist in both default and tenant DBs."""
+        return model._meta.app_label in SHARED_APPS
+
+    def _route(self, model):
+        """Common routing logic for reads and writes."""
+        # Infrastructure → always default
+        if self._is_always_default(model):
             return 'default'
-        
-        # Use the tenant database from thread-local storage
+
+        # Shared apps: use tenant DB when a tenant context is active
+        if self._is_shared(model):
+            db_alias = get_current_db_alias()
+            if db_alias != 'default' and db_alias in settings.DATABASES:
+                return db_alias
+            return 'default'
+
+        # ERP models → tenant DB
         db_alias = get_current_db_alias()
-        
-        # Verify the database exists in settings
         if db_alias in settings.DATABASES:
             return db_alias
-        
         return 'default'
+
+    def db_for_read(self, model, **hints):
+        return self._route(model)
     
     def db_for_write(self, model, **hints):
-        """
-        Route write operations to the appropriate database.
-        """
-        if self._is_tenant_management_model(model):
-            return 'default'
-        
-        db_alias = get_current_db_alias()
-        
-        if db_alias in settings.DATABASES:
-            return db_alias
-        
-        return 'default'
+        return self._route(model)
     
     def allow_relation(self, obj1, obj2, **hints):
         """
-        Allow relations if both objects are in the same database group.
+        Allow relations between objects.
+
+        Because shared apps (auth, contenttypes, tenants) are migrated to
+        *both* the default and tenant databases, their records can coexist
+        with ERP records on the same tenant DB.  We therefore allow all
+        relations — Django's FK integrity is enforced at the DB level anyway.
         """
-        # Get the model keys
-        model1_key = self._get_model_key(obj1.__class__)
-        model2_key = self._get_model_key(obj2.__class__)
-        
-        # Both tenant management models
-        is_mgmt1 = self._is_tenant_management_model(obj1.__class__)
-        is_mgmt2 = self._is_tenant_management_model(obj2.__class__)
-        
-        if is_mgmt1 and is_mgmt2:
-            return True
-        
-        # Both ERP models
-        if not is_mgmt1 and not is_mgmt2:
-            return True
-        
-        # Cross-database relations are not allowed
-        return False
+        return True
     
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """
         Control which databases receive migrations for which models.
-        """
-        # Tenant management apps only migrate to default
-        if app_label in TENANT_MANAGEMENT_APPS:
-            return db == 'default'
         
-        # ERP app migrates to all databases except default
+        - ERP app: tenant databases only (not default)
+        - auth, contenttypes, tenants: BOTH default AND tenant databases
+          (tenant DBs need these tables for FK constraints from ERP models)
+        - sessions, admin: default only
+        """
+        # Apps whose tables are needed in tenant databases for FK support
+        SHARED_APPS = {'auth', 'contenttypes', 'tenants'}
+
+        if app_label in SHARED_APPS:
+            # These apps migrate to both default and tenant databases
+            return True
+
+        # ERP app migrates to tenant databases only
         if app_label == 'erp':
-            # For the default database, don't migrate ERP models
             if db == 'default':
                 return False
-            # For tenant databases, allow ERP migrations
             return True
         
-        # For any other apps, use default database
+        # Everything else (sessions, admin, etc.) -> default only
         return db == 'default'
 
 
@@ -179,16 +181,34 @@ def add_tenant_database(tenant_db):
     """
     Dynamically add a tenant database to Django's DATABASES setting.
     
+    Also closes / removes any stale cached connection so Django creates
+    a fresh DatabaseWrapper with the current config (including keys like
+    DISABLE_SERVER_SIDE_CURSORS).
+    
     Args:
         tenant_db: TenantDatabase instance
         
     Returns:
         str: The database alias that was added
     """
+    from django.db import connections
+
     db_alias = f"tenant_{tenant_db.id}"
-    
-    settings.DATABASES[db_alias] = tenant_db.connection_config
-    
+    new_config = tenant_db.connection_config
+    settings.DATABASES[db_alias] = new_config
+
+    # If a cached DatabaseWrapper already exists for this alias, close its
+    # underlying connection and remove the wrapper from the cache so the
+    # next access creates a new wrapper with *new_config*.
+    if hasattr(connections, '_connections'):
+        old = getattr(connections._connections, db_alias, None)
+        if old is not None:
+            try:
+                old.close()
+            except Exception:
+                pass
+            delattr(connections._connections, db_alias)
+
     return db_alias
 
 

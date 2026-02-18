@@ -62,13 +62,6 @@ class Lead(ERPBaseModel):
     
     # Opportunity
     service_interest = models.CharField(max_length=255, blank=True, help_text='Service the lead is interested in')
-    destination_interest = models.ForeignKey(
-        'tourista.Destination',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='leads'
-    )
     estimated_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     expected_close_date = models.DateField(null=True, blank=True)
     probability = models.PositiveSmallIntegerField(
@@ -179,15 +172,6 @@ class CustomerInteraction(TimeStampedModel):
     subject = models.CharField(max_length=255)
     description = models.TextField()
     interaction_date = models.DateTimeField()
-    
-    # Related service
-    service_application = models.ForeignKey(
-        'userpanel.ServiceApplication',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='customer_interactions'
-    )
     
     handled_by = models.ForeignKey(
         'erp.Employee',
@@ -372,14 +356,6 @@ class Task(ERPBaseModel):
         blank=True,
         related_name='tasks'
     )
-    related_service_application = models.ForeignKey(
-        'userpanel.ServiceApplication',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='erp_tasks'
-    )
-    
     # Reminder
     reminder_date = models.DateTimeField(null=True, blank=True)
     reminder_sent = models.BooleanField(default=False)

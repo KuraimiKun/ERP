@@ -1,0 +1,187 @@
+{% extends "erp/form_base.html" %}
+
+{% block form_content %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- المعلومات الأساسية -->
+    <div class="form-section">
+        <h6 class="form-section-title">المعلومات الأساسية</h6>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.sku.id_for_label }}" class="form-label">SKU</label>
+                {{ form.sku }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.barcode.id_for_label }}" class="form-label">الباركود</label>
+                {{ form.barcode }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.product_type.id_for_label }}" class="form-label">النوع</label>
+                {{ form.product_type }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.category.id_for_label }}" class="form-label">التصنيف</label>
+                {{ form.category }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label">الاسم (إنجليزي)</label>
+                {{ form.name }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.name_ar.id_for_label }}" class="form-label">الاسم (عربي)</label>
+                {{ form.name_ar }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">الوصف</label>
+                {{ form.description }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.image.id_for_label }}" class="form-label">الصورة</label>
+                {{ form.image }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="form-check mt-4">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">منتج نشط</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التسعير -->
+    <div class="form-section">
+        <h6 class="form-section-title">التسعير</h6>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+                {{ form.currency }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.selling_price.id_for_label }}" class="form-label">سعر البيع</label>
+                {{ form.selling_price }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.cost_price.id_for_label }}" class="form-label">التكلفة</label>
+                {{ form.cost_price }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.min_selling_price.id_for_label }}" class="form-label">أقل سعر بيع</label>
+                {{ form.min_selling_price }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.tax_rate.id_for_label }}" class="form-label">معدل الضريبة</label>
+                {{ form.tax_rate }}
+            </div>
+        </div>
+    </div>
+
+    <!-- المخزون -->
+    <div class="form-section">
+        <h6 class="form-section-title">المخزون</h6>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="form-check mt-2">
+                    {{ form.track_inventory }}
+                    <label class="form-check-label" for="{{ form.track_inventory.id_for_label }}">تتبع المخزون</label>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.quantity_on_hand.id_for_label }}" class="form-label">الكمية المتاحة</label>
+                {{ form.quantity_on_hand }}
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="{{ form.reorder_level.id_for_label }}" class="form-label">حد إعادة الطلب</label>
+                {{ form.reorder_level }}
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="{{ form.reorder_quantity.id_for_label }}" class="form-label">كمية إعادة الطلب</label>
+                {{ form.reorder_quantity }}
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="{{ form.unit_of_measure.id_for_label }}" class="form-label">وحدة القياس</label>
+                {{ form.unit_of_measure }}
+            </div>
+        </div>
+    </div>
+
+    <!-- المورد الافتراضي -->
+    <div class="form-section">
+        <h6 class="form-section-title">المورد الافتراضي</h6>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.supplier.id_for_label }}" class="form-label">المورد المفضل</label>
+                {{ form.supplier }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.supplier_sku.id_for_label }}" class="form-label">رمز المورد</label>
+                {{ form.supplier_sku }}
+            </div>
+        </div>
+    </div>
+
+    <!-- موردون إضافيون -->
+    <div class="form-section">
+        <h6 class="form-section-title">موردون إضافيون</h6>
+        {{ supplier_formset.management_form }}
+        <div id="supplier-formset">
+            {% for sf in supplier_formset %}
+            <div class="formset-container mb-3">
+                {% if sf.instance.pk %}{{ sf.DELETE }}{% endif %}
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label small">المورد</label>
+                        {{ sf.supplier }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">رمز المورد</label>
+                        {{ sf.supplier_sku }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">السعر</label>
+                        {{ sf.supplier_price }}
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label class="form-label small">العملة</label>
+                        {{ sf.currency }}
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <label class="form-label small">أيام التسليم</label>
+                        {{ sf.lead_time_days }}
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <label class="form-label small">مفضل</label>
+                        {{ sf.is_preferred }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ملاحظات -->
+    <div class="form-section">
+        <h6 class="form-section-title">ملاحظات</h6>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                {{ form.notes }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i> {{ submit_text }}
+        </button>
+        <a href="{% url 'erp:product_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "erp/base.html" %}
+{% load humanize %}
+
+{% block title %}المنتجات{% endblock %}
+{% block page_title %}المنتجات{% endblock %}
+
+{% block content %}
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">بحث</label>
+                <input type="text" name="search" class="form-control" placeholder="الاسم، SKU، الباركود..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">التصنيف</label>
+                <select name="category" class="form-select">
+                    <option value="">الكل</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"d" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">النوع</label>
+                <select name="type" class="form-select">
+                    <option value="">الكل</option>
+                    {% for val, label in product_types %}
+                    <option value="{{ val }}" {% if request.GET.type == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input type="checkbox" name="low_stock" value="1" class="form-check-input" id="lowStock" {% if request.GET.low_stock %}checked{% endif %}>
+                    <label class="form-check-label" for="lowStock">مخزون منخفض</label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+            </div>
+            <div class="col-md-2 text-start">
+                <a href="{% url 'erp:product_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg me-1"></i> إضافة منتج
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>المنتج</th>
+                    <th>التصنيف</th>
+                    <th>النوع</th>
+                    <th>سعر البيع</th>
+                    <th>التكلفة</th>
+                    <th>المخزون</th>
+                    <th>المورد</th>
+                    <th>الحالة</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td><a href="{% url 'erp:product_detail' product.pk %}"><code>{{ product.sku }}</code></a></td>
+                    <td><a href="{% url 'erp:product_detail' product.pk %}">{{ product.name }}</a></td>
+                    <td>{{ product.category.name|default:"-" }}</td>
+                    <td>{{ product.get_product_type_display }}</td>
+                    <td>{{ product.selling_price|intcomma }}</td>
+                    <td>{{ product.cost_price|intcomma }}</td>
+                    <td>
+                        {% if product.track_inventory %}
+                            <span class="{% if product.is_low_stock %}text-danger fw-bold{% endif %}">
+                                {{ product.quantity_on_hand|floatformat:0 }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.supplier.name|default:"-" }}</td>
+                    <td>
+                        {% if product.is_active %}
+                        <span class="badge bg-success">نشط</span>
+                        {% else %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'erp:product_edit' product.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" class="text-center text-muted py-4">لا توجد منتجات</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

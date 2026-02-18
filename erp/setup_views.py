@@ -328,7 +328,15 @@ def setup_go_back(request, step):
 @transaction.atomic
 def execute_setup(request, progress):
     """Execute the actual setup based on collected data."""
-    
+
+    # Ensure the current user exists in the tenant database so that
+    # FK references (created_by, etc.) satisfy DB constraints.
+    from tenants.routers import get_current_db_alias
+    from tenants.services.database_service import sync_user_to_tenant_db
+    _db = get_current_db_alias()
+    if _db and _db != 'default':
+        sync_user_to_tenant_db(request.user, _db)
+
     currency_data = progress.get('currency_data', {})
     company_data = progress.get('company_data', {})
     fiscal_year_data = progress.get('fiscal_year_data', {})

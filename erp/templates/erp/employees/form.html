@@ -41,8 +41,8 @@
             {{ form.branch }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.manager.id_for_label }}" class="form-label">المدير</label>
-            {{ form.manager }}
+            <label for="{{ form.reports_to.id_for_label }}" class="form-label">المدير</label>
+            {{ form.reports_to }}
         </div>
         <div class="col-md-4 mb-3">
             <label for="{{ form.job_title.id_for_label }}" class="form-label">المسمى الوظيفي</label>
@@ -87,17 +87,15 @@
     <h6 class="form-section-title">التعويضات</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.base_salary.id_for_label }}" class="form-label">الراتب الأساسي</label>
+            <label for="{{ form.basic_salary.id_for_label }}" class="form-label">الراتب الأساسي</label>
             <div class="input-group">
                 <span class="input-group-text">$</span>
-                {{ form.base_salary }}
+                {{ form.basic_salary }}
             </div>
         </div>
         <div class="col-md-6 mb-3">
-            <div class="form-check mt-4">
-                {{ form.is_active }}
-                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">موظف نشط</label>
-            </div>
+            <label for="{{ form.employment_status.id_for_label }}" class="form-label">حالة التوظيف</label>
+            {{ form.employment_status }}
         </div>
     </div>
 </div>
@@ -107,13 +105,13 @@
     <h6 class="form-section-title">الصورة الشخصية</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.avatar.id_for_label }}" class="form-label">الصورة الرمزية</label>
-            {% if employee and employee.avatar %}
+            <label for="{{ form.photo.id_for_label }}" class="form-label">الصورة الرمزية</label>
+            {% if employee and employee.photo %}
             <div class="mb-2">
-                <img src="{{ employee.avatar.url }}" alt="Current avatar" class="rounded-circle" style="width: 64px; height: 64px; object-fit: cover;">
+                <img src="{{ employee.photo.url }}" alt="Current photo" class="rounded-circle" style="width: 64px; height: 64px; object-fit: cover;">
             </div>
             {% endif %}
-            {{ form.avatar }}
+            {{ form.photo }}
         </div>
     </div>
 </div>

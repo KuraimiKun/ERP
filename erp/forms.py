@@ -22,6 +22,8 @@ from .models import (
     Lead, LeadActivity, CustomerInteraction, Campaign, Task, TaskComment,
     # Services
     ServiceCategory, ServicePricing, Quote, QuoteLine,
+    # Products
+    ProductCategory, Product, ProductSupplier,
 )
 
 User = get_user_model()
@@ -193,11 +195,16 @@ class CustomerForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
         model = Customer
         fields = [
             'customer_type', 'name', 'name_ar', 'email', 'phone', 'mobile',
-            'address', 'city', 'country', 'postal_code', 'tax_number',
-            'credit_limit', 'currency', 'payment_terms', 'notes', 'is_active'
+            'website', 'tax_id', 'tax_number', 'assigned_to', 'is_active',
+            'billing_address', 'billing_city', 'billing_state',
+            'billing_country', 'billing_postal_code',
+            'shipping_address', 'shipping_city', 'shipping_state',
+            'shipping_country', 'shipping_postal_code',
+            'credit_limit', 'currency', 'payment_terms', 'notes',
         ]
         widgets = {
-            'address': forms.Textarea(attrs={'rows': 2}),
+            'billing_address': forms.Textarea(attrs={'rows': 2}),
+            'shipping_address': forms.Textarea(attrs={'rows': 2}),
             'notes': forms.Textarea(attrs={'rows': 3}),
         }
 
@@ -224,7 +231,7 @@ class InvoiceLineForm(BootstrapFormMixin, forms.ModelForm):
     
     class Meta:
         model = InvoiceLine
-        fields = ['description', 'quantity', 'unit_price', 'discount_percent', 'tax_rate']
+        fields = ['product', 'service_pricing', 'description', 'quantity', 'unit_price', 'discount_percent', 'tax_rate']
 
 
 InvoiceLineFormSet = forms.inlineformset_factory(
@@ -331,7 +338,7 @@ class PurchaseOrderLineForm(BootstrapFormMixin, forms.ModelForm):
     
     class Meta:
         model = PurchaseOrderLine
-        fields = ['description', 'quantity', 'unit_price', 'tax_rate']
+        fields = ['product', 'description', 'quantity', 'unit_price', 'tax_rate']
 
 
 PurchaseOrderLineFormSet = forms.inlineformset_factory(
@@ -354,7 +361,7 @@ class LeadForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
         fields = [
             'title', 'first_name', 'last_name', 'email', 'phone', 'mobile',
             'company_name', 'job_title', 'address', 'city', 'country',
-            'source', 'status', 'service_interest', 'destination_interest',
+            'source', 'status', 'service_interest',
             'estimated_value', 'expected_close_date', 'probability',
             'assigned_to', 'notes'
         ]
@@ -631,4 +638,61 @@ JournalEntryLineFormSet = forms.inlineformset_factory(
     can_delete=True,
     min_num=2,
     validate_min=True,
+)
+
+
+# =============================================================================
+# Product Forms
+# =============================================================================
+
+class ProductCategoryForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
+    """Form for ProductCategory model."""
+
+    class Meta:
+        model = ProductCategory
+        fields = ['name', 'name_ar', 'code', 'description', 'parent', 'is_active', 'sort_order']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 2}),
+        }
+
+
+class ProductForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
+    """Form for Product model."""
+
+    class Meta:
+        model = Product
+        fields = [
+            'sku', 'barcode', 'name', 'name_ar', 'description', 'image',
+            'product_type', 'category', 'currency',
+            'selling_price', 'cost_price', 'min_selling_price', 'tax_rate',
+            'track_inventory', 'quantity_on_hand', 'reorder_level',
+            'reorder_quantity', 'unit_of_measure',
+            'supplier', 'supplier_sku',
+            'is_active', 'notes',
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'notes': forms.Textarea(attrs={'rows': 2}),
+        }
+
+
+class ProductSupplierForm(BootstrapFormMixin, forms.ModelForm):
+    """Form for ProductSupplier (additional suppliers per product)."""
+
+    class Meta:
+        model = ProductSupplier
+        fields = [
+            'supplier', 'supplier_sku', 'supplier_price', 'currency',
+            'lead_time_days', 'min_order_qty', 'is_preferred', 'notes',
+        ]
+        widgets = {
+            'notes': forms.Textarea(attrs={'rows': 2}),
+        }
+
+
+ProductSupplierFormSet = forms.inlineformset_factory(
+    Product, ProductSupplier,
+    form=ProductSupplierForm,
+    extra=1,
+    can_delete=True,
 )

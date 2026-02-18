@@ -17,6 +17,38 @@ from ..routers import add_tenant_database, TenantDatabaseContext
 logger = logging.getLogger(__name__)
 
 
+def sync_user_to_tenant_db(user, db_alias):
+    """
+    Ensure a TenantUser record exists in the given tenant database.
+
+    ERP models have FK references to AUTH_USER_MODEL.  Because the
+    tenants app is migrated to tenant databases (so the table exists),
+    the FK constraint requires the referenced row to be present.
+    This helper copies the minimal user record if it is missing.
+    """
+    from ..models import TenantUser
+
+    if TenantUser.objects.using(db_alias).filter(pk=user.pk).exists():
+        return  # already synced
+
+    # Build a copy with the same PK so FK values stay consistent
+    TenantUser.objects.using(db_alias).create(
+        id=user.id,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        company_name=getattr(user, 'company_name', ''),
+        phone=getattr(user, 'phone', ''),
+        password=user.password,          # hashed – not used for login here
+        is_active=user.is_active,
+        is_staff=user.is_staff,
+        is_superuser=user.is_superuser,
+        is_approved=getattr(user, 'is_approved', True),
+        approval_status=getattr(user, 'approval_status', 'approved'),
+    )
+    logger.info(f"Synced user {user.email} to tenant DB {db_alias}")
+
+
 class DatabaseService:
     """
     Service for managing tenant databases.
@@ -306,18 +338,19 @@ class DatabaseService:
         db_alias = add_tenant_database(tenant_db)
         
         try:
-            # Capture migration output
             out = StringIO()
             
-            # Run migrations for the ERP app
-            call_command(
-                'migrate',
-                'erp',
-                database=db_alias,
-                verbosity=1,
-                interactive=False,
-                stdout=out
-            )
+            # Run dependent app migrations first (ERP models have FKs
+            # to auth.User / tenants.TenantUser and contenttypes)
+            for app in ('contenttypes', 'auth', 'tenants', 'erp'):
+                call_command(
+                    'migrate',
+                    app,
+                    database=db_alias,
+                    verbosity=1,
+                    interactive=False,
+                    stdout=out
+                )
             
             migration_output = out.getvalue()
             

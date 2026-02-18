@@ -1,0 +1,97 @@
+{% extends "erp/form_base.html" %}
+
+{% block form_content %}
+<form method="post">
+    {% csrf_token %}
+
+    <div class="form-section">
+        <h6 class="form-section-title">معلومات الخدمة</h6>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.code.id_for_label }}" class="form-label">الكود</label>
+                {{ form.code }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label">الاسم (إنجليزي)</label>
+                {{ form.name }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.name_ar.id_for_label }}" class="form-label">الاسم (عربي)</label>
+                {{ form.name_ar }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.category.id_for_label }}" class="form-label">التصنيف</label>
+                {{ form.category }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.website_service_name.id_for_label }}" class="form-label">اسم الخدمة على الموقع</label>
+                {{ form.website_service_name }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">الوصف</label>
+                {{ form.description }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h6 class="form-section-title">التسعير</h6>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.pricing_type.id_for_label }}" class="form-label">نوع التسعير</label>
+                {{ form.pricing_type }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+                {{ form.currency }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.base_price.id_for_label }}" class="form-label">السعر الأساسي</label>
+                {{ form.base_price }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ form.cost_price.id_for_label }}" class="form-label">التكلفة</label>
+                {{ form.cost_price }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.tax_rate.id_for_label }}" class="form-label">معدل الضريبة</label>
+                {{ form.tax_rate }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="form-check mt-4">
+                    {{ form.is_tax_inclusive }}
+                    <label class="form-check-label" for="{{ form.is_tax_inclusive.id_for_label }}">شامل الضريبة</label>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.agent_commission_percent.id_for_label }}" class="form-label">نسبة عمولة الوكيل %</label>
+                {{ form.agent_commission_percent }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="form-check">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">خدمة نشطة</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i> {{ submit_text }}
+        </button>
+        <a href="{% url 'erp:service_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+    </div>
+</form>
+{% endblock %}

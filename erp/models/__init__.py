@@ -83,6 +83,9 @@ from .services import (
     PackageItem,
     Quote,
     QuoteLine,
+    ProductCategory,
+    Product,
+    ProductSupplier,
 )
 
 # Reporting models
@@ -173,6 +176,11 @@ __all__ = [
     'PackageItem',
     'Quote',
     'QuoteLine',
+    
+    # Products
+    'ProductCategory',
+    'Product',
+    'ProductSupplier',
     
     # Reporting
     'ReportTemplate',

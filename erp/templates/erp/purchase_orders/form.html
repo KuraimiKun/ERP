@@ -34,17 +34,17 @@
                         
                         <div class="col-md-6">
                             <label class="form-label">تاريخ الطلب <span class="text-danger">*</span></label>
-                            {{ form.order_date }}
-                            {% if form.order_date.errors %}
-                            <div class="invalid-feedback d-block">{{ form.order_date.errors.0 }}</div>
+                            {{ form.po_date }}
+                            {% if form.po_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.po_date.errors.0 }}</div>
                             {% endif %}
                         </div>
                         
                         <div class="col-md-6">
                             <label class="form-label">التاريخ المتوقع للتسليم</label>
-                            {{ form.expected_delivery_date }}
-                            {% if form.expected_delivery_date.errors %}
-                            <div class="invalid-feedback d-block">{{ form.expected_delivery_date.errors.0 }}</div>
+                            {{ form.expected_date }}
+                            {% if form.expected_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.expected_date.errors.0 }}</div>
                             {% endif %}
                         </div>
                         

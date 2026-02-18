@@ -188,15 +188,6 @@ class PurchaseOrder(ERPBaseModel):
     # Reference
     reference = models.CharField(max_length=100, blank=True)
     
-    # Link to service application (optional)
-    service_application = models.ForeignKey(
-        'userpanel.ServiceApplication',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='purchase_orders'
-    )
-    
     # Amounts
     currency = models.ForeignKey(
         'erp.Currency',
@@ -246,6 +237,15 @@ class PurchaseOrderLine(TimeStampedModel):
         PurchaseOrder,
         on_delete=models.CASCADE,
         related_name='lines'
+    )
+    
+    # Optional product link
+    product = models.ForeignKey(
+        'erp.Product',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='purchase_order_lines'
     )
     
     description = models.CharField(max_length=500)

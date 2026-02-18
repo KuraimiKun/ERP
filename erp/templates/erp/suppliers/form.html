@@ -20,8 +20,8 @@
             {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.code.id_for_label }}" class="form-label">الرمز</label>
-            {{ form.code }}
+            <label for="{{ form.supplier_type.id_for_label }}" class="form-label">نوع المورد</label>
+            {{ form.supplier_type }}
         </div>
         <div class="col-md-3 mb-3">
             <div class="form-check mt-4">
@@ -42,8 +42,8 @@
             {{ form.website }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.tax_id.id_for_label }}" class="form-label">الرقم الضريبي</label>
-            {{ form.tax_id }}
+            <label for="{{ form.tax_number.id_for_label }}" class="form-label">الرقم الضريبي</label>
+            {{ form.tax_number }}
         </div>
         <div class="col-md-4 mb-3">
             <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
@@ -67,10 +67,6 @@
         <div class="col-md-3 mb-3">
             <label for="{{ form.city.id_for_label }}" class="form-label">المدينة</label>
             {{ form.city }}
-        </div>
-        <div class="col-md-3 mb-3">
-            <label for="{{ form.state.id_for_label }}" class="form-label">المنطقة</label>
-            {{ form.state }}
         </div>
         <div class="col-md-3 mb-3">
             <label for="{{ form.country.id_for_label }}" class="form-label">الدولة</label>
@@ -112,7 +108,7 @@
                     </div>
                     <div class="col-md-2 mb-2">
                         <label class="form-label small">المسمى الوظيفي</label>
-                        {{ contact_form.title }}
+                        {{ contact_form.position }}
                     </div>
                     <div class="col-md-3 mb-2">
                         <label class="form-label small">البريد الإلكتروني</label>
@@ -151,7 +147,7 @@
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label small">المسمى الوظيفي</label>
-                    <input type="text" name="{{ formset.prefix }}-__prefix__-title" class="form-control">
+                    <input type="text" name="{{ formset.prefix }}-__prefix__-position" class="form-control">
                 </div>
                 <div class="col-md-3 mb-2">
                     <label class="form-label small">البريد الإلكتروني</label>

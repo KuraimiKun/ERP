@@ -20,6 +20,9 @@ from .models import (
     Supplier, PurchaseOrder, SupplierInvoice,
     Lead, Campaign, Task,
     Quote, Account, JournalEntry,
+    # Services & Products
+    ServiceCategory, ServicePricing, ServicePackage,
+    Product, ProductCategory, ProductSupplier,
 )
 
 # Import tenant_required decorator and use it as staff_member_required
@@ -513,6 +516,9 @@ from .forms import (
     ExpenseForm, PaymentForm,
     QuoteForm, QuoteLineFormSet,
     JournalEntryForm, JournalEntryLineFormSet,
+    # Services & Products
+    ServiceCategoryForm, ServicePricingForm,
+    ProductCategoryForm, ProductForm, ProductSupplierFormSet,
 )
 
 
@@ -2530,3 +2536,327 @@ def journal_entry_post(request, pk):
             messages.error(request, str(e))
     
     return redirect('erp:journal_entry_detail', pk=pk)
+
+
+# =============================================================================
+# PRODUCT CATEGORIES
+# =============================================================================
+
+@staff_member_required
+def product_category_list(request):
+    """List product categories."""
+    company = get_user_company(request.user)
+    categories = ProductCategory.objects.filter(company=company)
+    return render(request, 'erp/product_categories/list.html', {
+        'categories': categories,
+    })
+
+
+@staff_member_required
+def product_category_create(request):
+    company = get_user_company(request.user)
+    if request.method == 'POST':
+        form = ProductCategoryForm(request.POST, company=company)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.company = company
+            obj.save()
+            messages.success(request, f'تمت إضافة تصنيف المنتج "{obj.name}" بنجاح.')
+            return redirect('erp:product_category_list')
+    else:
+        form = ProductCategoryForm(company=company)
+    return render(request, 'erp/product_categories/form.html', {
+        'form': form, 'title': 'إضافة تصنيف منتج', 'submit_text': 'حفظ',
+    })
+
+
+@staff_member_required
+def product_category_edit(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(ProductCategory, pk=pk, company=company)
+    if request.method == 'POST':
+        form = ProductCategoryForm(request.POST, instance=obj, company=company)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'تم تحديث تصنيف المنتج بنجاح.')
+            return redirect('erp:product_category_list')
+    else:
+        form = ProductCategoryForm(instance=obj, company=company)
+    return render(request, 'erp/product_categories/form.html', {
+        'form': form, 'title': 'تعديل تصنيف منتج', 'submit_text': 'حفظ التغييرات',
+    })
+
+
+@staff_member_required
+def product_category_delete(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(ProductCategory, pk=pk, company=company)
+    if request.method == 'POST':
+        obj.delete()
+        messages.success(request, 'تم حذف تصنيف المنتج بنجاح.')
+        return redirect('erp:product_category_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': obj, 'object_type': 'تصنيف منتج',
+        'cancel_url': reverse('erp:product_category_list'),
+    })
+
+
+# =============================================================================
+# PRODUCTS
+# =============================================================================
+
+@staff_member_required
+def product_list(request):
+    """List products with search & filters."""
+    company = get_user_company(request.user)
+    products = Product.objects.filter(company=company).select_related(
+        'category', 'supplier', 'currency', 'tax_rate'
+    )
+
+    search = request.GET.get('search', '').strip()
+    if search:
+        products = products.filter(
+            Q(name__icontains=search) | Q(sku__icontains=search) |
+            Q(barcode__icontains=search) | Q(name_ar__icontains=search)
+        )
+    cat = request.GET.get('category')
+    if cat:
+        products = products.filter(category_id=cat)
+    ptype = request.GET.get('type')
+    if ptype:
+        products = products.filter(product_type=ptype)
+    low_stock = request.GET.get('low_stock')
+    if low_stock:
+        products = products.filter(
+            track_inventory=True,
+            quantity_on_hand__lte=F('reorder_level')
+        )
+
+    return render(request, 'erp/products/list.html', {
+        'products': products.order_by('name')[:200],
+        'categories': ProductCategory.objects.filter(company=company, is_active=True),
+        'product_types': Product.ProductType.choices,
+    })
+
+
+@staff_member_required
+def product_detail(request, pk):
+    company = get_user_company(request.user)
+    product = get_object_or_404(Product, pk=pk, company=company)
+    suppliers = product.product_suppliers.select_related('supplier', 'currency').all()
+    invoice_lines = product.invoice_lines.select_related('invoice__customer').order_by('-invoice__invoice_date')[:20]
+    po_lines = product.purchase_order_lines.select_related('purchase_order__supplier').order_by('-purchase_order__po_date')[:20]
+    return render(request, 'erp/products/detail.html', {
+        'product': product,
+        'suppliers': suppliers,
+        'invoice_lines': invoice_lines,
+        'po_lines': po_lines,
+    })
+
+
+@staff_member_required
+def product_create(request):
+    company = get_user_company(request.user)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, company=company)
+        supplier_formset = ProductSupplierFormSet(request.POST)
+        if form.is_valid() and supplier_formset.is_valid():
+            product = form.save(commit=False)
+            product.company = company
+            product.save()
+            supplier_formset.instance = product
+            supplier_formset.save()
+            messages.success(request, f'تمت إضافة المنتج "{product.name}" بنجاح.')
+            return redirect('erp:product_detail', pk=product.pk)
+    else:
+        form = ProductForm(company=company)
+        supplier_formset = ProductSupplierFormSet()
+    return render(request, 'erp/products/form.html', {
+        'form': form, 'supplier_formset': supplier_formset,
+        'title': 'إضافة منتج', 'submit_text': 'حفظ المنتج',
+    })
+
+
+@staff_member_required
+def product_edit(request, pk):
+    company = get_user_company(request.user)
+    product = get_object_or_404(Product, pk=pk, company=company)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product, company=company)
+        supplier_formset = ProductSupplierFormSet(request.POST, instance=product)
+        if form.is_valid() and supplier_formset.is_valid():
+            form.save()
+            supplier_formset.save()
+            messages.success(request, 'تم تحديث المنتج بنجاح.')
+            return redirect('erp:product_detail', pk=product.pk)
+    else:
+        form = ProductForm(instance=product, company=company)
+        supplier_formset = ProductSupplierFormSet(instance=product)
+    return render(request, 'erp/products/form.html', {
+        'form': form, 'supplier_formset': supplier_formset,
+        'title': 'تعديل منتج', 'submit_text': 'حفظ التغييرات', 'product': product,
+    })
+
+
+@staff_member_required
+def product_delete(request, pk):
+    company = get_user_company(request.user)
+    product = get_object_or_404(Product, pk=pk, company=company)
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, 'تم حذف المنتج بنجاح.')
+        return redirect('erp:product_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': product, 'object_type': 'منتج',
+        'cancel_url': reverse('erp:product_detail', args=[pk]),
+    })
+
+
+# =============================================================================
+# SERVICE CATEGORIES
+# =============================================================================
+
+@staff_member_required
+def service_category_list(request):
+    company = get_user_company(request.user)
+    categories = ServiceCategory.objects.filter(company=company)
+    return render(request, 'erp/service_categories/list.html', {
+        'categories': categories,
+    })
+
+
+@staff_member_required
+def service_category_create(request):
+    company = get_user_company(request.user)
+    if request.method == 'POST':
+        form = ServiceCategoryForm(request.POST, company=company)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.company = company
+            obj.save()
+            messages.success(request, f'تمت إضافة تصنيف الخدمة "{obj.name}" بنجاح.')
+            return redirect('erp:service_category_list')
+    else:
+        form = ServiceCategoryForm(company=company)
+    return render(request, 'erp/service_categories/form.html', {
+        'form': form, 'title': 'إضافة تصنيف خدمة', 'submit_text': 'حفظ',
+    })
+
+
+@staff_member_required
+def service_category_edit(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(ServiceCategory, pk=pk, company=company)
+    if request.method == 'POST':
+        form = ServiceCategoryForm(request.POST, instance=obj, company=company)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'تم تحديث تصنيف الخدمة بنجاح.')
+            return redirect('erp:service_category_list')
+    else:
+        form = ServiceCategoryForm(instance=obj, company=company)
+    return render(request, 'erp/service_categories/form.html', {
+        'form': form, 'title': 'تعديل تصنيف خدمة', 'submit_text': 'حفظ التغييرات',
+    })
+
+
+@staff_member_required
+def service_category_delete(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(ServiceCategory, pk=pk, company=company)
+    if request.method == 'POST':
+        obj.delete()
+        messages.success(request, 'تم حذف تصنيف الخدمة بنجاح.')
+        return redirect('erp:service_category_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': obj, 'object_type': 'تصنيف خدمة',
+        'cancel_url': reverse('erp:service_category_list'),
+    })
+
+
+# =============================================================================
+# SERVICES (ServicePricing)
+# =============================================================================
+
+@staff_member_required
+def service_list(request):
+    company = get_user_company(request.user)
+    services = ServicePricing.objects.filter(company=company).select_related('category', 'currency', 'tax_rate')
+
+    search = request.GET.get('search', '').strip()
+    if search:
+        services = services.filter(
+            Q(name__icontains=search) | Q(code__icontains=search) | Q(name_ar__icontains=search)
+        )
+    cat = request.GET.get('category')
+    if cat:
+        services = services.filter(category_id=cat)
+
+    return render(request, 'erp/services/list.html', {
+        'services': services.order_by('name')[:200],
+        'categories': ServiceCategory.objects.filter(company=company, is_active=True),
+    })
+
+
+@staff_member_required
+def service_detail(request, pk):
+    company = get_user_company(request.user)
+    service = get_object_or_404(ServicePricing, pk=pk, company=company)
+    price_tiers = service.price_tiers.all().order_by('min_quantity')
+    quote_lines = service.quote_lines.select_related('quote__customer').order_by('-quote__quote_date')[:20]
+    invoice_lines = service.invoice_lines.select_related('invoice__customer').order_by('-invoice__invoice_date')[:20]
+    return render(request, 'erp/services/detail.html', {
+        'service': service,
+        'price_tiers': price_tiers,
+        'quote_lines': quote_lines,
+        'invoice_lines': invoice_lines,
+    })
+
+
+@staff_member_required
+def service_create(request):
+    company = get_user_company(request.user)
+    if request.method == 'POST':
+        form = ServicePricingForm(request.POST, company=company)
+        if form.is_valid():
+            service = form.save(commit=False)
+            service.company = company
+            service.save()
+            messages.success(request, f'تمت إضافة الخدمة "{service.name}" بنجاح.')
+            return redirect('erp:service_detail', pk=service.pk)
+    else:
+        form = ServicePricingForm(company=company)
+    return render(request, 'erp/services/form.html', {
+        'form': form, 'title': 'إضافة خدمة', 'submit_text': 'حفظ الخدمة',
+    })
+
+
+@staff_member_required
+def service_edit(request, pk):
+    company = get_user_company(request.user)
+    service = get_object_or_404(ServicePricing, pk=pk, company=company)
+    if request.method == 'POST':
+        form = ServicePricingForm(request.POST, instance=service, company=company)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'تم تحديث الخدمة بنجاح.')
+            return redirect('erp:service_detail', pk=service.pk)
+    else:
+        form = ServicePricingForm(instance=service, company=company)
+    return render(request, 'erp/services/form.html', {
+        'form': form, 'title': 'تعديل خدمة', 'submit_text': 'حفظ التغييرات',
+    })
+
+
+@staff_member_required
+def service_delete(request, pk):
+    company = get_user_company(request.user)
+    service = get_object_or_404(ServicePricing, pk=pk, company=company)
+    if request.method == 'POST':
+        service.delete()
+        messages.success(request, 'تم حذف الخدمة بنجاح.')
+        return redirect('erp:service_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': service, 'object_type': 'خدمة',
+        'cancel_url': reverse('erp:service_detail', args=[pk]),
+    })

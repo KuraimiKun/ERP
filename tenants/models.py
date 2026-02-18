@@ -317,7 +317,13 @@ class TenantDatabase(models.Model):
     
     @property
     def connection_config(self):
-        """Get Django database configuration for this tenant."""
+        """Get Django database configuration for this tenant.
+        
+        Includes all standard Django database config keys so that
+        dynamically-added databases behave identically to statically
+        defined ones (Django's ConnectionHandler.databases only applies
+        setdefault() on initial load, not on later additions).
+        """
         return {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': self.name,
@@ -325,6 +331,14 @@ class TenantDatabase(models.Model):
             'PASSWORD': self.db_password,
             'HOST': self.server.host,
             'PORT': str(self.server.port),
+            'ATOMIC_REQUESTS': False,
+            'AUTOCOMMIT': True,
+            'CONN_MAX_AGE': 0,
+            'CONN_HEALTH_CHECKS': False,
+            'DISABLE_SERVER_SIDE_CURSORS': True,
+            'OPTIONS': {},
+            'TIME_ZONE': None,
+            'TEST': {},
         }
     
     @property
@@ -387,7 +401,8 @@ class DatabaseAssignment(models.Model):
         ordering = ['-assigned_at']
     
     def __str__(self):
-        return f"{self.user.email} -> {self.database.name} ({self.get_role_display()})"
+        db_name = self.database.name if self.database_id else 'unassigned'
+        return f"{self.user.email} -> {db_name} ({self.get_role_display()})"
     
     def deactivate(self):
         """Deactivate this assignment."""

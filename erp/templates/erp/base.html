@@ -340,6 +340,24 @@
                 أوامر الشراء
             </a>
             
+            <div class="erp-nav-section mt-3">المنتجات والخدمات</div>
+            <a href="{% url 'erp:product_list' %}" class="erp-nav-link {% if 'product_list' in request.resolver_match.url_name or 'product_create' in request.resolver_match.url_name or 'product_detail' in request.resolver_match.url_name or 'product_edit' in request.resolver_match.url_name or 'product_delete' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-box-seam"></i>
+                المنتجات
+            </a>
+            <a href="{% url 'erp:product_category_list' %}" class="erp-nav-link {% if 'product_category' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-folder2"></i>
+                تصنيفات المنتجات
+            </a>
+            <a href="{% url 'erp:service_list' %}" class="erp-nav-link {% if 'service_list' in request.resolver_match.url_name or 'service_create' in request.resolver_match.url_name or 'service_detail' in request.resolver_match.url_name or 'service_edit' in request.resolver_match.url_name or 'service_delete' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-gear-wide-connected"></i>
+                الخدمات
+            </a>
+            <a href="{% url 'erp:service_category_list' %}" class="erp-nav-link {% if 'service_category' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-tags-fill"></i>
+                تصنيفات الخدمات
+            </a>
+            
             <div class="erp-nav-section mt-3">العمليات</div>
             <a href="{% url 'erp:task_list' %}" class="erp-nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-check2-square"></i>
@@ -420,6 +438,9 @@
                         <li><a class="dropdown-item" href="{% url 'erp:journal_entry_create' %}"><i class="bi bi-journal-plus ms-2"></i>قيد يومية</a></li>
                         <li><a class="dropdown-item" href="{% url 'erp:lead_create' %}"><i class="bi bi-funnel ms-2"></i>عميل محتمل</a></li>
                         <li><a class="dropdown-item" href="{% url 'erp:task_create' %}"><i class="bi bi-check2-square ms-2"></i>مهمة جديدة</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:product_create' %}"><i class="bi bi-box-seam ms-2"></i>منتج جديد</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:service_create' %}"><i class="bi bi-gear-wide-connected ms-2"></i>خدمة جديدة</a></li>
                     </ul>
                 </div>
                 
@@ -434,7 +455,7 @@
                         <li class="dropdown-header">{{ user.get_full_name|default:user.username }}</li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear ms-2"></i>الإعدادات</a></li>
-                        <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="bi bi-box-arrow-left ms-2"></i>تسجيل الخروج</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tenants:logout' %}"><i class="bi bi-box-arrow-left ms-2"></i>تسجيل الخروج</a></li>
                     </ul>
                 </div>
             </div>

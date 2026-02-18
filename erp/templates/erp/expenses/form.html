@@ -52,8 +52,8 @@
             </div>
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.vendor.id_for_label }}" class="form-label">المورد</label>
-            {{ form.vendor }}
+            <label for="{{ form.supplier.id_for_label }}" class="form-label">المورد</label>
+            {{ form.supplier }}
         </div>
     </div>
 </div>
@@ -63,15 +63,8 @@
     <h6 class="form-section-title">المرفقات</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.receipt.id_for_label }}" class="form-label">الإيصال</label>
-            {% if expense and expense.receipt %}
-            <div class="mb-2">
-                <a href="{{ expense.receipt.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-file-earmark ms-1"></i> عرض الإيصال الحالي
-                </a>
-            </div>
-            {% endif %}
-            {{ form.receipt }}
+            <label class="form-label">الإيصال</label>
+            <div class="form-text text-muted">يمكنك إرفاق الإيصالات من صفحة تفاصيل المصروف بعد الحفظ.</div>
         </div>
     </div>
 </div>

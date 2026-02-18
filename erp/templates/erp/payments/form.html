@@ -32,13 +32,7 @@
                             {% endif %}
                         </div>
                         
-                        <div class="col-md-6">
-                            <label class="form-label">الفاتورة</label>
-                            {{ form.invoice }}
-                            {% if form.invoice.errors %}
-                            <div class="invalid-feedback d-block">{{ form.invoice.errors.0 }}</div>
-                            {% endif %}
-                        </div>
+
                         
                         <div class="col-md-6">
                             <label class="form-label">تاريخ الدفع <span class="text-danger">*</span></label>
@@ -66,8 +60,8 @@
                         
                         <div class="col-md-6">
                             <label class="form-label">المرجع</label>
-                            {{ form.reference }}
-                            {% if form.reference.errors %}
+                            {{ form.reference_number }}
+                            {% if form.reference_number.errors %}
                             <div class="invalid-feedback d-block">{{ form.reference.errors.0 }}</div>
                             {% endif %}
                         </div>

@@ -156,15 +156,34 @@ class Customer(ERPBaseModel):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     mobile = models.CharField(max_length=20, blank=True)
+    website = models.URLField(blank=True)
     
-    # Address
-    address = models.TextField(blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    country = models.CharField(max_length=100, blank=True)
-    postal_code = models.CharField(max_length=20, blank=True)
+    # Billing Address
+    billing_address = models.TextField(blank=True)
+    billing_city = models.CharField(max_length=100, blank=True)
+    billing_state = models.CharField(max_length=100, blank=True)
+    billing_country = models.CharField(max_length=100, blank=True)
+    billing_postal_code = models.CharField(max_length=20, blank=True)
+    
+    # Shipping Address
+    shipping_address = models.TextField(blank=True)
+    shipping_city = models.CharField(max_length=100, blank=True)
+    shipping_state = models.CharField(max_length=100, blank=True)
+    shipping_country = models.CharField(max_length=100, blank=True)
+    shipping_postal_code = models.CharField(max_length=20, blank=True)
     
     # Tax
+    tax_id = models.CharField(max_length=50, blank=True)
     tax_number = models.CharField(max_length=50, blank=True)
+    
+    # Assignment
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_customers'
+    )
     
     # Credit
     credit_limit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -228,15 +247,6 @@ class Invoice(ERPBaseModel):
     # Reference
     reference = models.CharField(max_length=100, blank=True, help_text='PO number or reference')
     
-    # Link to service application (optional)
-    service_application = models.ForeignKey(
-        'userpanel.ServiceApplication',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='invoices'
-    )
-    
     # Amounts
     currency = models.ForeignKey(
         'erp.Currency',
@@ -291,6 +301,22 @@ class InvoiceLine(TimeStampedModel):
         Invoice,
         on_delete=models.CASCADE,
         related_name='lines'
+    )
+    
+    # Optional product / service link
+    product = models.ForeignKey(
+        'erp.Product',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='invoice_lines'
+    )
+    service_pricing = models.ForeignKey(
+        'erp.ServicePricing',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='invoice_lines'
     )
     
     description = models.CharField(max_length=500)

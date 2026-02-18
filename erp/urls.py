@@ -175,6 +175,36 @@ urlpatterns = [
     path('journal-entries/<int:pk>/delete/', views.journal_entry_delete, name='journal_entry_delete'),
     path('journal-entries/<int:pk>/post/', views.journal_entry_post, name='journal_entry_post'),
     
+    # =========================================================================
+    # PRODUCTS & SERVICES - المنتجات والخدمات
+    # =========================================================================
+    
+    # Product Categories
+    path('product-categories/', views.product_category_list, name='product_category_list'),
+    path('product-categories/add/', views.product_category_create, name='product_category_create'),
+    path('product-categories/<int:pk>/edit/', views.product_category_edit, name='product_category_edit'),
+    path('product-categories/<int:pk>/delete/', views.product_category_delete, name='product_category_delete'),
+    
+    # Products
+    path('products/', views.product_list, name='product_list'),
+    path('products/add/', views.product_create, name='product_create'),
+    path('products/<int:pk>/', views.product_detail, name='product_detail'),
+    path('products/<int:pk>/edit/', views.product_edit, name='product_edit'),
+    path('products/<int:pk>/delete/', views.product_delete, name='product_delete'),
+    
+    # Service Categories
+    path('service-categories/', views.service_category_list, name='service_category_list'),
+    path('service-categories/add/', views.service_category_create, name='service_category_create'),
+    path('service-categories/<int:pk>/edit/', views.service_category_edit, name='service_category_edit'),
+    path('service-categories/<int:pk>/delete/', views.service_category_delete, name='service_category_delete'),
+    
+    # Services
+    path('services/', views.service_list, name='service_list'),
+    path('services/add/', views.service_create, name='service_create'),
+    path('services/<int:pk>/', views.service_detail, name='service_detail'),
+    path('services/<int:pk>/edit/', views.service_edit, name='service_edit'),
+    path('services/<int:pk>/delete/', views.service_delete, name='service_delete'),
+    
     # API endpoints
     path('api/', include('erp.api.urls')),
 ]
