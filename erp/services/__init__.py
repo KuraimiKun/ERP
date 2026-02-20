@@ -15,6 +15,8 @@ from .sequence import (
     get_customer_id,
     get_supplier_id,
     get_employee_id,
+    get_supplier_invoice_number,
+    get_supplier_payment_number,
 )
 
 from .audit import (
@@ -35,6 +37,9 @@ from .accounting import (
     create_invoice_journal_entry,
     create_payment_journal_entry,
     create_expense_journal_entry,
+    create_supplier_invoice_journal_entry,
+    create_supplier_payment_journal_entry,
+    create_purchase_order_journal_entry,
 )
 
 __all__ = [
@@ -48,6 +53,8 @@ __all__ = [
     'get_lead_number',
     'get_customer_id',
     'get_supplier_id',
+    'get_supplier_invoice_number',
+    'get_supplier_payment_number',
     'get_employee_id',
     
     # Audit
@@ -66,4 +73,7 @@ __all__ = [
     'create_invoice_journal_entry',
     'create_payment_journal_entry',
     'create_expense_journal_entry',
+    'create_supplier_invoice_journal_entry',
+    'create_supplier_payment_journal_entry',
+    'create_purchase_order_journal_entry',
 ]

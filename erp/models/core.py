@@ -207,6 +207,8 @@ class Sequence(TimeStampedModel):
         EMPLOYEE = 'employee', 'Employee'
         CUSTOMER = 'customer', 'Customer'
         SUPPLIER = 'supplier', 'Supplier'
+        SUPPLIER_INVOICE = 'supplier_invoice', 'Supplier Invoice'
+        SUPPLIER_PAYMENT = 'supplier_payment', 'Supplier Payment'
 
     company = models.ForeignKey(
         Company,

@@ -1,0 +1,154 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}دفعة مورد {{ payment.payment_number }}{% endblock %}
+{% block page_title %}تفاصيل دفعة المورد{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'erp:supplier_payment_list' %}">مدفوعات الموردين</a></li>
+                <li class="breadcrumb-item active">{{ payment.payment_number }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="bi bi-trash ms-1"></i> حذف
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ payment.payment_number }}</h5>
+            </div>
+            <div class="erp-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">المورد</label>
+                        <div class="fw-medium">
+                            <a href="{% url 'erp:supplier_detail' payment.supplier.pk %}">{{ payment.supplier.name }}</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">المبلغ</label>
+                        <div class="fw-bold fs-4 text-primary">
+                            {{ payment.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">تاريخ الدفع</label>
+                        <div class="fw-medium">{{ payment.payment_date|date:"Y/m/d" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">طريقة الدفع</label>
+                        <div>{{ payment.payment_method.name|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">المرجع</label>
+                        <div>{{ payment.reference_number|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">المبلغ المخصص</label>
+                        <div>{{ payment.currency.symbol|default:"$" }}{{ payment.allocated_amount|floatformat:2 }}</div>
+                    </div>
+                    {% if payment.unallocated_amount > 0 %}
+                    <div class="col-md-6">
+                        <label class="text-muted small">المبلغ غير المخصص</label>
+                        <div class="text-warning">{{ payment.currency.symbol|default:"$" }}{{ payment.unallocated_amount|floatformat:2 }}</div>
+                    </div>
+                    {% endif %}
+                    {% if payment.notes %}
+                    <div class="col-12">
+                        <label class="text-muted small">ملاحظات</label>
+                        <div>{{ payment.notes }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Linked Invoices -->
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">الفواتير المرتبطة</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>رقم الفاتورة</th>
+                            <th>المورد</th>
+                            <th class="text-start">إجمالي الفاتورة</th>
+                            <th class="text-start">المبلغ المخصص</th>
+                            <th class="text-start">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alloc in allocations %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'erp:supplier_invoice_detail' alloc.invoice.pk %}">{{ alloc.invoice.invoice_number }}</a>
+                            </td>
+                            <td>{{ alloc.invoice.supplier.name }}</td>
+                            <td class="text-start">{{ payment.currency.symbol|default:"$" }}{{ alloc.invoice.total_amount|floatformat:2 }}</td>
+                            <td class="text-start text-success">{{ payment.currency.symbol|default:"$" }}{{ alloc.amount|floatformat:2 }}</td>
+                            <td class="text-start">
+                                <span class="badge badge-status badge-{{ alloc.invoice.status }}">{{ alloc.invoice.get_status_display }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3 text-muted">لا توجد فواتير مرتبطة بهذه الدفعة</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="erp-card">
+            <div class="erp-card-header"><h6 class="mb-0">معلومات</h6></div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">تاريخ الإنشاء</label>
+                    <div>{{ payment.created_at|date:"Y/m/d H:i"|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">آخر تحديث</label>
+                    <div>{{ payment.updated_at|date:"Y/m/d H:i"|default:"-" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                هل أنت متأكد من حذف هذه الدفعة؟ سيتم إلغاء تخصيصها من الفواتير.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{% url 'erp:supplier_payment_delete' payment.pk %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

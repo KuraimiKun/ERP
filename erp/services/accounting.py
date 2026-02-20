@@ -5,12 +5,12 @@ Creates double-entry journal entries when invoices, payments, and
 expenses are recorded.
 
 Standard accounting entries:
-  Invoice created:
+  Invoice created (Sales):
     DR  Accounts Receivable    (total_amount)
     CR  Sales Revenue          (subtotal)
     CR  Tax Payable            (tax_amount)
 
-  Payment received:
+  Payment received (Customer):
     DR  Cash / Bank            (amount)
     CR  Accounts Receivable    (amount)
 
@@ -18,6 +18,19 @@ Standard accounting entries:
     DR  Expense Account        (amount)
     DR  Tax Receivable         (tax_amount)   [if any]
     CR  Cash / Accounts Payable (total_amount)
+
+  Supplier Invoice (Bill):
+    DR  Purchases / Inventory  (subtotal)
+    DR  Input Tax              (tax_amount)   [if any]
+    CR  Accounts Payable       (total_amount)
+
+  Supplier Payment:
+    DR  Accounts Payable       (amount)
+    CR  Cash / Bank            (amount)
+
+  Purchase Order (on approval — accrual):
+    DR  Goods Received / Inventory  (total_amount)
+    CR  Accrued Liabilities         (total_amount)
 """
 
 from decimal import Decimal
@@ -303,6 +316,228 @@ def create_expense_journal_entry(expense, user):
             credit_amount=expense.total_amount,
             reference_type='expense',
             reference_id=expense.pk,
+        )
+
+        journal_entry.calculate_totals()
+        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+
+    return journal_entry
+
+
+# =========================================================================
+# Supplier-side (Accounts Payable) journal entries
+# =========================================================================
+
+def create_supplier_invoice_journal_entry(supplier_invoice, user):
+    """
+    Create journal entry for a supplier invoice (bill).
+
+    DR  Purchases / COGS      subtotal
+    DR  Input Tax (VAT)       tax_amount  (if > 0)
+    CR  Accounts Payable      total_amount
+    """
+    if supplier_invoice.total_amount <= 0:
+        return None
+
+    db_alias = get_current_db_alias()
+    company = supplier_invoice.company
+
+    with transaction.atomic(using=db_alias):
+        purchases_account = _get_or_create_account(
+            company, '5100', 'Purchases / COGS', 'المشتريات', 'expense', db_alias
+        )
+        ap_account = _get_or_create_account(
+            company, '2000', 'Accounts Payable', 'ذمم دائنة', 'liability', db_alias
+        )
+
+        fiscal_year = _get_current_fiscal_year(company, db_alias)
+        entry_number = _next_journal_number(company, 'SINV', db_alias)
+
+        journal_entry = JournalEntry.objects.using(db_alias).create(
+            company=company,
+            entry_number=entry_number,
+            entry_date=supplier_invoice.invoice_date,
+            entry_type=JournalEntry.EntryType.INVOICE,
+            description=f'فاتورة مورد {supplier_invoice.invoice_number} - {supplier_invoice.supplier.name}',
+            reference=supplier_invoice.invoice_number,
+            fiscal_year=fiscal_year,
+            status=JournalEntry.Status.POSTED,
+            posted_by=user,
+            posted_at=timezone.now(),
+            created_by=user,
+        )
+
+        # DR Purchases / COGS
+        JournalEntryLine.objects.using(db_alias).create(
+            journal_entry=journal_entry,
+            account=purchases_account,
+            description=f'مشتريات - {supplier_invoice.supplier.name}',
+            debit_amount=supplier_invoice.subtotal,
+            credit_amount=Decimal('0'),
+            reference_type='supplier_invoice',
+            reference_id=supplier_invoice.pk,
+        )
+
+        # DR Input Tax (if tax)
+        if supplier_invoice.tax_amount > 0:
+            tax_input_account = _get_or_create_account(
+                company, '1300', 'Input Tax (VAT Receivable)', 'ضريبة مدخلات', 'asset', db_alias
+            )
+            JournalEntryLine.objects.using(db_alias).create(
+                journal_entry=journal_entry,
+                account=tax_input_account,
+                description=f'ضريبة مدخلات - {supplier_invoice.invoice_number}',
+                debit_amount=supplier_invoice.tax_amount,
+                credit_amount=Decimal('0'),
+                reference_type='supplier_invoice',
+                reference_id=supplier_invoice.pk,
+            )
+
+        # CR Accounts Payable
+        JournalEntryLine.objects.using(db_alias).create(
+            journal_entry=journal_entry,
+            account=ap_account,
+            description=f'ذمم دائنة - {supplier_invoice.supplier.name}',
+            debit_amount=Decimal('0'),
+            credit_amount=supplier_invoice.total_amount,
+            reference_type='supplier_invoice',
+            reference_id=supplier_invoice.pk,
+        )
+
+        journal_entry.calculate_totals()
+        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+
+    return journal_entry
+
+
+def create_supplier_payment_journal_entry(supplier_payment, user):
+    """
+    Create journal entry for a supplier payment.
+
+    DR  Accounts Payable      amount
+    CR  Cash / Bank           amount
+    """
+    if supplier_payment.amount <= 0:
+        return None
+
+    db_alias = get_current_db_alias()
+    company = supplier_payment.company
+
+    with transaction.atomic(using=db_alias):
+        ap_account = _get_or_create_account(
+            company, '2000', 'Accounts Payable', 'ذمم دائنة', 'liability', db_alias
+        )
+
+        if supplier_payment.payment_method and supplier_payment.payment_method.account:
+            bank_account = supplier_payment.payment_method.account
+        else:
+            bank_account = _get_or_create_account(
+                company, '1100', 'Cash', 'الصندوق', 'asset', db_alias
+            )
+
+        fiscal_year = _get_current_fiscal_year(company, db_alias)
+        entry_number = _next_journal_number(company, 'SPAY', db_alias)
+
+        journal_entry = JournalEntry.objects.using(db_alias).create(
+            company=company,
+            entry_number=entry_number,
+            entry_date=supplier_payment.payment_date,
+            entry_type=JournalEntry.EntryType.PAYMENT,
+            description=f'دفعة مورد {supplier_payment.payment_number} - {supplier_payment.supplier.name}',
+            reference=supplier_payment.payment_number,
+            fiscal_year=fiscal_year,
+            status=JournalEntry.Status.POSTED,
+            posted_by=user,
+            posted_at=timezone.now(),
+            created_by=user,
+        )
+
+        # DR Accounts Payable
+        JournalEntryLine.objects.using(db_alias).create(
+            journal_entry=journal_entry,
+            account=ap_account,
+            description=f'سداد ذمم دائنة - {supplier_payment.supplier.name}',
+            debit_amount=supplier_payment.amount,
+            credit_amount=Decimal('0'),
+            reference_type='supplier_payment',
+            reference_id=supplier_payment.pk,
+        )
+
+        # CR Cash / Bank
+        JournalEntryLine.objects.using(db_alias).create(
+            journal_entry=journal_entry,
+            account=bank_account,
+            description=f'دفعة لمورد - {supplier_payment.payment_number}',
+            debit_amount=Decimal('0'),
+            credit_amount=supplier_payment.amount,
+            reference_type='supplier_payment',
+            reference_id=supplier_payment.pk,
+        )
+
+        journal_entry.calculate_totals()
+        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+
+    return journal_entry
+
+
+def create_purchase_order_journal_entry(purchase_order, user):
+    """
+    Create accrual journal entry when a PO is approved.
+
+    DR  Goods Received Not Invoiced    total_amount
+    CR  Accrued Liabilities            total_amount
+    """
+    if purchase_order.total_amount <= 0:
+        return None
+
+    db_alias = get_current_db_alias()
+    company = purchase_order.company
+
+    with transaction.atomic(using=db_alias):
+        grni_account = _get_or_create_account(
+            company, '1400', 'Goods Received Not Invoiced', 'بضاعة مستلمة بدون فاتورة', 'asset', db_alias
+        )
+        accrued_account = _get_or_create_account(
+            company, '2200', 'Accrued Liabilities', 'مصاريف مستحقة', 'liability', db_alias
+        )
+
+        fiscal_year = _get_current_fiscal_year(company, db_alias)
+        entry_number = _next_journal_number(company, 'PO', db_alias)
+
+        journal_entry = JournalEntry.objects.using(db_alias).create(
+            company=company,
+            entry_number=entry_number,
+            entry_date=purchase_order.po_date,
+            entry_type=JournalEntry.EntryType.ADJUSTMENT,
+            description=f'أمر شراء {purchase_order.po_number} - {purchase_order.supplier.name}',
+            reference=purchase_order.po_number,
+            fiscal_year=fiscal_year,
+            status=JournalEntry.Status.POSTED,
+            posted_by=user,
+            posted_at=timezone.now(),
+            created_by=user,
+        )
+
+        # DR Goods Received Not Invoiced
+        JournalEntryLine.objects.using(db_alias).create(
+            journal_entry=journal_entry,
+            account=grni_account,
+            description=f'أمر شراء - {purchase_order.po_number}',
+            debit_amount=purchase_order.total_amount,
+            credit_amount=Decimal('0'),
+            reference_type='purchase_order',
+            reference_id=purchase_order.pk,
+        )
+
+        # CR Accrued Liabilities
+        JournalEntryLine.objects.using(db_alias).create(
+            journal_entry=journal_entry,
+            account=accrued_account,
+            description=f'التزام مستحق - {purchase_order.po_number}',
+            debit_amount=Decimal('0'),
+            credit_amount=purchase_order.total_amount,
+            reference_type='purchase_order',
+            reference_id=purchase_order.pk,
         )
 
         journal_entry.calculate_totals()

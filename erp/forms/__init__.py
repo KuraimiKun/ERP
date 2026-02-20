@@ -36,6 +36,10 @@ from .supplier import (
     PurchaseOrderForm,
     PurchaseOrderLineForm,
     PurchaseOrderLineFormSet,
+    SupplierInvoiceForm,
+    SupplierInvoiceLineForm,
+    SupplierInvoiceLineFormSet,
+    SupplierPaymentForm,
 )
 
 # ── CRM ─────────────────────────────────────────────────────────
@@ -87,6 +91,8 @@ __all__ = [
     # Supplier
     'SupplierForm', 'SupplierContactForm', 'SupplierContactFormSet',
     'PurchaseOrderForm', 'PurchaseOrderLineForm', 'PurchaseOrderLineFormSet',
+    'SupplierInvoiceForm', 'SupplierInvoiceLineForm', 'SupplierInvoiceLineFormSet',
+    'SupplierPaymentForm',
     # CRM
     'LeadForm', 'LeadActivityForm', 'CustomerInteractionForm',
     'CampaignForm', 'TaskForm', 'TaskCommentForm',

@@ -195,8 +195,11 @@ class PurchaseOrder(ERPBaseModel):
         related_name='purchase_orders'
     )
     subtotal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    paid_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    balance_due = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     
     # Status
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
@@ -228,7 +231,8 @@ class PurchaseOrder(ERPBaseModel):
         lines = self.lines.all()
         self.subtotal = sum(line.line_total for line in lines)
         self.tax_amount = sum(line.tax_amount for line in lines)
-        self.total_amount = self.subtotal + self.tax_amount
+        self.total_amount = self.subtotal + self.tax_amount - self.discount_amount
+        self.balance_due = self.total_amount - self.paid_amount
 
 
 class PurchaseOrderLine(TimeStampedModel):
@@ -346,6 +350,20 @@ class SupplierInvoice(ERPBaseModel):
     def __str__(self):
         return f"{self.invoice_number} - {self.supplier.name}"
 
+    def calculate_totals(self):
+        """Calculate invoice totals from line items."""
+        lines = self.lines.all()
+        self.subtotal = sum(line.line_total for line in lines)
+        self.tax_amount = sum(line.tax_amount for line in lines)
+        self.total_amount = self.subtotal + self.tax_amount
+        self.balance_due = self.total_amount - self.paid_amount
+
+        # Update status based on payment
+        if self.total_amount > 0 and self.paid_amount >= self.total_amount:
+            self.status = self.Status.PAID
+        elif self.paid_amount > 0:
+            self.status = self.Status.PARTIAL
+
     def save(self, *args, **kwargs):
         self.balance_due = self.total_amount - self.paid_amount
         super().save(*args, **kwargs)
@@ -431,6 +449,7 @@ class SupplierPayment(ERPBaseModel):
     # Allocation
     allocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     
+    unallocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     notes = models.TextField(blank=True)
 
     class Meta:
@@ -440,6 +459,10 @@ class SupplierPayment(ERPBaseModel):
 
     def __str__(self):
         return f"{self.payment_number} - {self.supplier.name}"
+
+    def save(self, *args, **kwargs):
+        self.unallocated_amount = self.amount - self.allocated_amount
+        super().save(*args, **kwargs)
 
 
 class SupplierPaymentAllocation(TimeStampedModel):

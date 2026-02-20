@@ -1,0 +1,65 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}فواتير الموردين{% endblock %}
+{% block page_title %}فواتير الموردين{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <form class="d-flex gap-2" method="get">
+            <select name="status" class="form-select form-select-sm" style="width: auto" onchange="this.form.submit()">
+                <option value="">جميع الحالات</option>
+                {% for value, label in statuses %}
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="search" class="form-control form-control-sm" placeholder="بحث..." value="{{ request.GET.search|default:'' }}" style="width: 200px">
+            <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+    <a href="{% url 'erp:supplier_invoice_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> فاتورة مورد جديدة
+    </a>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>المورد</th>
+                    <th>رقم فاتورة المورد</th>
+                    <th>التاريخ</th>
+                    <th>الاستحقاق</th>
+                    <th class="text-start">الإجمالي</th>
+                    <th class="text-start">المتبقي</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:supplier_invoice_detail' inv.pk %}" class="fw-medium">{{ inv.invoice_number }}</a>
+                    </td>
+                    <td>{{ inv.supplier.name }}</td>
+                    <td>{{ inv.supplier_invoice_number|default:"-" }}</td>
+                    <td>{{ inv.invoice_date|date:"Y/m/d" }}</td>
+                    <td>{{ inv.due_date|date:"Y/m/d" }}</td>
+                    <td class="text-start">{{ inv.currency.symbol|default:"$" }}{{ inv.total_amount|floatformat:2 }}</td>
+                    <td class="text-start {% if inv.balance_due > 0 %}text-warning{% else %}text-success{% endif %}">
+                        {{ inv.currency.symbol|default:"$" }}{{ inv.balance_due|floatformat:2 }}
+                    </td>
+                    <td><span class="badge badge-status badge-{{ inv.status }}">{{ inv.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">لا توجد فواتير موردين</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

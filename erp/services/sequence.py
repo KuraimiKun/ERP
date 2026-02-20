@@ -26,6 +26,8 @@ _SEQUENCE_TYPE_MAP = {
     'employee': Sequence.SequenceType.EMPLOYEE,
     'customer': Sequence.SequenceType.CUSTOMER,
     'supplier': Sequence.SequenceType.SUPPLIER,
+    'supplier_invoice': Sequence.SequenceType.SUPPLIER_INVOICE,
+    'supplier_payment': Sequence.SequenceType.SUPPLIER_PAYMENT,
 }
 
 # Default prefixes when auto-creating a missing sequence
@@ -39,6 +41,8 @@ _DEFAULT_PREFIXES = {
     'employee': 'EMP-',
     'customer': 'CUS-',
     'supplier': 'SUP-',
+    'supplier_invoice': 'SINV-',
+    'supplier_payment': 'SPAY-',
 }
 
 
@@ -150,6 +154,16 @@ def get_customer_id(company):
 def get_supplier_id(company):
     """Get next supplier ID."""
     return SequenceService.get_next_number(company, 'supplier')
+
+
+def get_supplier_invoice_number(company):
+    """Get next supplier invoice number."""
+    return SequenceService.get_next_number(company, 'supplier_invoice')
+
+
+def get_supplier_payment_number(company):
+    """Get next supplier payment number."""
+    return SequenceService.get_next_number(company, 'supplier_payment')
 
 
 def get_employee_id(company):

@@ -1,0 +1,149 @@
+{% extends 'erp/form_base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block form_content %}
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+        <p class="mb-0">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="erp-card mb-4">
+        <div class="erp-card-header">
+            <h6 class="mb-0">معلومات الفاتورة</h6>
+        </div>
+        <div class="erp-card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">المورد <span class="text-danger">*</span></label>
+                    {{ form.supplier }}
+                    {% if form.supplier.errors %}<div class="text-danger small">{{ form.supplier.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">أمر الشراء</label>
+                    {{ form.purchase_order }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تاريخ الفاتورة <span class="text-danger">*</span></label>
+                    {{ form.invoice_date }}
+                    {% if form.invoice_date.errors %}<div class="text-danger small">{{ form.invoice_date.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تاريخ الاستحقاق <span class="text-danger">*</span></label>
+                    {{ form.due_date }}
+                    {% if form.due_date.errors %}<div class="text-danger small">{{ form.due_date.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">رقم فاتورة المورد</label>
+                    {{ form.supplier_invoice_number }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">العملة <span class="text-danger">*</span></label>
+                    {{ form.currency }}
+                    {% if form.currency.errors %}<div class="text-danger small">{{ form.currency.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الحالة</label>
+                    {{ form.status }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">ملاحظات</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Line Items -->
+    <div class="erp-card mb-4">
+        <div class="erp-card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">بنود الفاتورة</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="add-line">
+                <i class="bi bi-plus-lg ms-1"></i> إضافة بند
+            </button>
+        </div>
+        <div class="erp-card-body">
+            {{ formset.management_form }}
+            <div id="line-items">
+                {% for line_form in formset %}
+                <div class="line-item border rounded p-3 mb-3 {% if line_form.errors %}border-danger{% endif %}">
+                    {% if line_form.non_field_errors %}
+                    <div class="alert alert-danger py-1">{{ line_form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="row g-2">
+                        {% for hidden in line_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        <div class="col-12">
+                            <label class="form-label small">الوصف</label>
+                            {{ line_form.description }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">الكمية</label>
+                            {{ line_form.quantity }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">سعر الوحدة</label>
+                            {{ line_form.unit_price }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">الضريبة</label>
+                            {{ line_form.tax_rate }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">الحساب</label>
+                            {{ line_form.account }}
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            {% if line_form.DELETE %}
+                            <div class="form-check">
+                                {{ line_form.DELETE }}
+                                <label class="form-check-label text-danger small">حذف</label>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'erp:supplier_invoice_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+        <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('add-line')?.addEventListener('click', function() {
+    const container = document.getElementById('line-items');
+    const totalForms = document.getElementById('id_lines-TOTAL_FORMS');
+    const formNum = parseInt(totalForms.value);
+    const template = container.querySelector('.line-item').cloneNode(true);
+    
+    // Update form indices
+    template.innerHTML = template.innerHTML.replace(/lines-\d+-/g, `lines-${formNum}-`);
+    template.innerHTML = template.innerHTML.replace(/lines-\d+-/g, `lines-${formNum}-`);
+    
+    // Clear values
+    template.querySelectorAll('input:not([type=hidden]), textarea').forEach(el => {
+        if (el.type === 'checkbox') el.checked = false;
+        else el.value = '';
+    });
+    template.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+    template.classList.remove('border-danger');
+    
+    container.appendChild(template);
+    totalForms.value = formNum + 1;
+});
+</script>
+{% endblock %}

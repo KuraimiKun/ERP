@@ -59,7 +59,7 @@ class QuoteLineForm(BootstrapFormMixin, forms.ModelForm):
 
     class Meta:
         model = QuoteLine
-        fields = ['service_pricing', 'description', 'quantity', 'unit_price', 'discount_percent', 'tax_rate']
+        fields = ['product', 'service_pricing', 'description', 'quantity', 'unit_price', 'discount_percent', 'tax_rate']
 
 
 QuoteLineFormSet = forms.inlineformset_factory(

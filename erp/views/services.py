@@ -4,7 +4,7 @@ ERP Views – Quotes, Service Categories & Services (ServicePricing)
 
 from django.db.models import Q
 
-from erp.models import ServiceCategory, ServicePricing, Quote
+from erp.models import ServiceCategory, ServicePricing, Quote, Product, TaxRate
 from erp.forms import (
     ServiceCategoryForm, ServicePricingForm,
     QuoteForm, QuoteLineFormSet,
@@ -72,6 +72,9 @@ def quote_create(request):
     return render(request, 'erp/quotes/form.html', {
         'form': form,
         'formset': formset,
+        'products': Product.objects.filter(company=company, is_active=True),
+        'services': ServicePricing.objects.filter(company=company, is_active=True),
+        'tax_rates': TaxRate.objects.filter(company=company, is_active=True),
         'title': 'Create Quote',
         'submit_text': 'Create Quote',
     })
@@ -102,6 +105,9 @@ def quote_edit(request, pk):
         'form': form,
         'formset': formset,
         'quote': quote,
+        'products': Product.objects.filter(company=company, is_active=True),
+        'services': ServicePricing.objects.filter(company=company, is_active=True),
+        'tax_rates': TaxRate.objects.filter(company=company, is_active=True),
         'title': f'Edit Quote: {quote.quote_number}',
         'submit_text': 'Save Changes',
     })

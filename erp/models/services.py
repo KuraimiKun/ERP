@@ -343,6 +343,15 @@ class QuoteLine(TimeStampedModel):
         related_name='lines'
     )
     
+    # Product (optional)
+    product = models.ForeignKey(
+        'erp.Product',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='quote_lines'
+    )
+    
     # Service (optional)
     service_pricing = models.ForeignKey(
         ServicePricing,

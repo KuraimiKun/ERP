@@ -331,13 +331,21 @@
             </a>
             
             <div class="erp-nav-section mt-3">المشتريات</div>
-            <a href="{% url 'erp:supplier_list' %}" class="erp-nav-link {% if 'supplier' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'erp:supplier_list' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_detail' or request.resolver_match.url_name == 'supplier_edit' or request.resolver_match.url_name == 'supplier_delete' %}active{% endif %}">
                 <i class="bi bi-truck"></i>
                 الموردون
             </a>
             <a href="{% url 'erp:purchase_order_list' %}" class="erp-nav-link {% if 'purchase_order' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-cart3"></i>
                 أوامر الشراء
+            </a>
+            <a href="{% url 'erp:supplier_invoice_list' %}" class="erp-nav-link {% if 'supplier_invoice' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-receipt"></i>
+                فواتير الموردين
+            </a>
+            <a href="{% url 'erp:supplier_payment_list' %}" class="erp-nav-link {% if 'supplier_payment' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-credit-card-2-back"></i>
+                مدفوعات الموردين
             </a>
             
             <div class="erp-nav-section mt-3">المنتجات والخدمات</div>

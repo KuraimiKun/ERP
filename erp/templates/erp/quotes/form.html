@@ -10,6 +10,18 @@
 {% block cancel_url %}{% url 'erp:quote_list' %}{% endblock %}
 
 {% block form_content %}
+<!-- Global errors -->
+{% if form.errors %}
+<div class="alert alert-danger mb-3">
+    <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> يرجى تصحيح الأخطاء التالية:</h6>
+    <ul class="mb-0">
+        {% for field, errors in form.errors.items %}
+        <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
 <!-- Quote Details -->
 <div class="form-section" dir="rtl">
     <h6 class="form-section-title">تفاصيل عرض السعر</h6>
@@ -17,6 +29,7 @@
         <div class="col-md-6 mb-3">
             <label for="{{ form.customer.id_for_label }}" class="form-label">العميل</label>
             {{ form.customer }}
+            {% if form.customer.errors %}<div class="invalid-feedback d-block">{{ form.customer.errors|join:", " }}</div>{% endif %}
             <div class="form-text">اختر عميلاً أو عميلاً محتملاً أدناه.</div>
         </div>
         <div class="col-md-6 mb-3">
@@ -30,10 +43,12 @@
         <div class="col-md-3 mb-3 required-field">
             <label for="{{ form.quote_date.id_for_label }}" class="form-label">تاريخ العرض</label>
             {{ form.quote_date }}
+            {% if form.quote_date.errors %}<div class="invalid-feedback d-block">{{ form.quote_date.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
             <label for="{{ form.valid_until.id_for_label }}" class="form-label">صالح حتى</label>
             {{ form.valid_until }}
+            {% if form.valid_until.errors %}<div class="invalid-feedback d-block">{{ form.valid_until.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
             <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
@@ -73,56 +88,203 @@
 {% block formset_content %}
 <!-- Quote Lines -->
 <div class="form-section" dir="rtl">
-    <h6 class="form-section-title">بنود عرض السعر</h6>
-    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="form-section-title mb-0">بنود عرض السعر</h6>
+        <button type="button" id="add-line-btn" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-plus-circle ms-1"></i> إضافة بند
+        </button>
+    </div>
+
     {{ formset.management_form }}
-    
-    <div class="formset-container" data-prefix="{{ formset.prefix }}">
-        <div class="formset-body">
-            {% for line_form in formset %}
-            <div class="formset-row {% if line_form.instance.pk %}existing{% endif %}">
-                <div class="row align-items-end">
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label small">الخدمة</label>
-                        {{ line_form.service_pricing }}
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <label class="form-label small">الوصف</label>
-                        {{ line_form.description }}
-                    </div>
-                    <div class="col-md-1 mb-2">
-                        <label class="form-label small">الكمية</label>
-                        {{ line_form.quantity }}
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label small">سعر الوحدة</label>
-                        {{ line_form.unit_price }}
-                    </div>
-                    <div class="col-md-1 mb-2">
-                        <label class="form-label small">خصم %</label>
-                        {{ line_form.discount_percent }}
-                    </div>
-                    <div class="col-md-2 mb-2">
-                        <label class="form-label small">نسبة الضريبة</label>
-                        {{ line_form.tax_rate }}
-                    </div>
-                    <div class="col-md-1 mb-2 text-start">
-                        {% if line_form.instance.pk %}
-                        {{ line_form.id }}
-                        {% endif %}
-                        {{ line_form.DELETE }}
-                        <button type="button" class="btn btn-sm btn-link delete-row-btn p-0">
+
+    {% for line_error in formset.errors %}
+    {% if line_error %}
+    <div class="alert alert-danger mb-2">
+        <small>بند {{ forloop.counter }}: {% for f, errs in line_error.items %}{{ f }}: {{ errs|join:", " }} {% endfor %}</small>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0" id="lines-table">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:15%">المنتج</th>
+                    <th style="width:15%">الخدمة</th>
+                    <th style="width:20%">الوصف</th>
+                    <th style="width:8%" class="text-center">الكمية</th>
+                    <th style="width:10%" class="text-center">سعر الوحدة</th>
+                    <th style="width:7%" class="text-center">خصم %</th>
+                    <th style="width:13%">الضريبة</th>
+                    <th style="width:9%" class="text-center">الإجمالي</th>
+                    <th style="width:3%"></th>
+                </tr>
+            </thead>
+            <tbody id="lines-body">
+                {% for line_form in formset %}
+                <tr class="line-row {% if line_form.DELETE.value %}d-none{% endif %}" data-index="{{ forloop.counter0 }}">
+                    <td>{{ line_form.id }}{{ line_form.product }}</td>
+                    <td>{{ line_form.service_pricing }}</td>
+                    <td>{{ line_form.description }}</td>
+                    <td>{{ line_form.quantity }}</td>
+                    <td>{{ line_form.unit_price }}</td>
+                    <td>{{ line_form.discount_percent }}</td>
+                    <td>{{ line_form.tax_rate }}</td>
+                    <td class="text-center line-total fw-medium">0.00</td>
+                    <td class="text-center">
+                        <span class="d-none">{{ line_form.DELETE }}</span>
+                        <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-line-btn" title="حذف">
                             <i class="bi bi-trash"></i>
                         </button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <div class="add-formset-row mt-3">
-            <i class="bi bi-plus-circle ms-2"></i> إضافة بند
-        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="7" class="text-start fw-bold">الإجمالي</td>
+                    <td class="text-center fw-bold" id="grand-total">0.00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 </div>
+
+<!-- Empty row template -->
+<template id="empty-line-template">
+    <tr class="line-row" data-index="__prefix__">
+        <td>
+            <select name="{{ formset.prefix }}-__prefix__-product" class="form-select form-select-sm item-product-select">
+                <option value="">---</option>
+                {% for p in products %}
+                <option value="{{ p.pk }}">{{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <select name="{{ formset.prefix }}-__prefix__-service_pricing" class="form-select form-select-sm item-service-select">
+                <option value="">---</option>
+                {% for s in services %}
+                <option value="{{ s.pk }}">{{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td><input type="text" name="{{ formset.prefix }}-__prefix__-description" class="form-control form-control-sm"></td>
+        <td><input type="number" name="{{ formset.prefix }}-__prefix__-quantity" class="form-control form-control-sm text-center line-qty" value="1" step="0.01" min="0"></td>
+        <td><input type="number" name="{{ formset.prefix }}-__prefix__-unit_price" class="form-control form-control-sm text-center line-price" value="0" step="0.01" min="0"></td>
+        <td><input type="number" name="{{ formset.prefix }}-__prefix__-discount_percent" class="form-control form-control-sm text-center line-discount" value="0" step="0.01" min="0"></td>
+        <td>
+            <select name="{{ formset.prefix }}-__prefix__-tax_rate" class="form-select form-select-sm line-tax">
+                <option value="">بدون ضريبة</option>
+                {% for tr in tax_rates %}
+                <option value="{{ tr.pk }}" data-rate="{{ tr.rate }}">{{ tr.name }} ({{ tr.rate }}%)</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="text-center line-total fw-medium">0.00</td>
+        <td class="text-center">
+            <input type="checkbox" name="{{ formset.prefix }}-__prefix__-DELETE" class="d-none">
+            <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-line-btn" title="حذف">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const prefix = '{{ formset.prefix }}';
+    const totalInput = document.getElementById('id_' + prefix + '-TOTAL_FORMS');
+    const tbody = document.getElementById('lines-body');
+    const addBtn = document.getElementById('add-line-btn');
+    const tmpl = document.getElementById('empty-line-template');
+    const PRICE_URL = '{% url "erp:ajax_item_price" %}';
+
+    addBtn.addEventListener('click', function() {
+        const idx = parseInt(totalInput.value);
+        const html = tmpl.innerHTML.replace(/__prefix__/g, idx);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = html;
+        const row = temp.firstElementChild;
+        tbody.appendChild(row);
+        totalInput.value = idx + 1;
+        setupRow(row);
+    });
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.delete-line-btn');
+        if (!btn) return;
+        const row = btn.closest('tr');
+        const delCheck = row.querySelector('input[name$="-DELETE"]');
+        if (delCheck) { delCheck.checked = true; row.classList.add('d-none'); }
+        else { row.remove(); }
+        calcGrandTotal();
+    });
+
+    function fetchPrice(type, id, row) {
+        if (!id) return;
+        fetch(PRICE_URL + '?type=' + type + '&id=' + id)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) return;
+                const priceInput = row.querySelector('input[name$="-unit_price"]');
+                const descInput = row.querySelector('input[name$="-description"]');
+                const taxSelect = row.querySelector('select[name$="-tax_rate"]');
+                if (priceInput) priceInput.value = data.price;
+                if (descInput && !descInput.value) descInput.value = data.description;
+                if (taxSelect && data.tax_rate_id) {
+                    for (let opt of taxSelect.options) {
+                        if (opt.value == data.tax_rate_id) { opt.selected = true; break; }
+                    }
+                }
+                calcLineTotal(row);
+            });
+    }
+
+    function calcLineTotal(row) {
+        const qty = parseFloat(row.querySelector('input[name$="-quantity"]')?.value) || 0;
+        const price = parseFloat(row.querySelector('input[name$="-unit_price"]')?.value) || 0;
+        const disc = parseFloat(row.querySelector('input[name$="-discount_percent"]')?.value) || 0;
+        const subtotal = qty * price;
+        const total = subtotal - (subtotal * disc / 100);
+        const cell = row.querySelector('.line-total');
+        if (cell) cell.textContent = total.toFixed(2);
+        calcGrandTotal();
+    }
+
+    function setupRow(row) {
+        const productSel = row.querySelector('select[name$="-product"]');
+        const serviceSel = row.querySelector('select[name$="-service_pricing"]');
+        if (productSel) {
+            productSel.addEventListener('change', function() {
+                if (this.value) { if (serviceSel) serviceSel.value = ''; fetchPrice('product', this.value, row); }
+            });
+        }
+        if (serviceSel) {
+            serviceSel.addEventListener('change', function() {
+                if (this.value) { if (productSel) productSel.value = ''; fetchPrice('service', this.value, row); }
+            });
+        }
+        row.querySelectorAll('input[name$="-quantity"], input[name$="-unit_price"], input[name$="-discount_percent"]')
+            .forEach(inp => inp.addEventListener('input', () => calcLineTotal(row)));
+        calcLineTotal(row);
+    }
+
+    function calcGrandTotal() {
+        let total = 0;
+        tbody.querySelectorAll('tr.line-row:not(.d-none)').forEach(row => {
+            const cell = row.querySelector('.line-total');
+            if (cell) total += parseFloat(cell.textContent) || 0;
+        });
+        document.getElementById('grand-total').textContent = total.toFixed(2);
+    }
+
+    tbody.querySelectorAll('tr.line-row').forEach(setupRow);
+    calcGrandTotal();
+    if (tbody.querySelectorAll('tr.line-row:not(.d-none)').length === 0) { addBtn.click(); }
+});
+</script>
 {% endblock %}

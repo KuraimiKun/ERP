@@ -40,6 +40,15 @@ class ProductForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
             'notes': forms.Textarea(attrs={'rows': 2}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Auto-select the base currency if none chosen yet
+        if not self.instance.pk and not self.initial.get('currency'):
+            from erp.models import Currency
+            base = Currency.objects.filter(is_base=True).first()
+            if base:
+                self.initial['currency'] = base.pk
+
 
 class ProductSupplierForm(BootstrapFormMixin, forms.ModelForm):
     """Form for ProductSupplier (additional suppliers per product)."""

@@ -1,0 +1,178 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}فاتورة مورد {{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}تفاصيل فاتورة المورد{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:supplier_invoice_list' %}">فواتير الموردين</a></li>
+        <li class="breadcrumb-item active">{{ invoice.invoice_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Header -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">{{ invoice.invoice_number }}</h4>
+                    <span class="badge badge-status badge-{{ invoice.status }} fs-6">{{ invoice.get_status_display }}</span>
+                </div>
+                <div class="text-start">
+                    <div class="display-6 fw-bold">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</div>
+                    {% if invoice.balance_due > 0 %}
+                    <small class="text-warning">المتبقي: {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</small>
+                    {% else %}
+                    <small class="text-success"><i class="bi bi-check-circle ms-1"></i>مسددة بالكامل</small>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="erp-card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2">المورد</h6>
+                        <h5><a href="{% url 'erp:supplier_detail' invoice.supplier.pk %}">{{ invoice.supplier.name }}</a></h5>
+                        <p class="mb-0">{{ invoice.supplier.address|linebreaksbr|default:"" }}</p>
+                        {% if invoice.supplier.email %}
+                        <p class="mb-0"><a href="mailto:{{ invoice.supplier.email }}">{{ invoice.supplier.email }}</a></p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 text-md-start">
+                        <div class="mb-2">
+                            <span class="text-muted">تاريخ الفاتورة:</span>
+                            <strong>{{ invoice.invoice_date|date:"Y/m/d" }}</strong>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-muted">تاريخ الاستحقاق:</span>
+                            <strong>{{ invoice.due_date|date:"Y/m/d" }}</strong>
+                        </div>
+                        {% if invoice.supplier_invoice_number %}
+                        <div class="mb-2">
+                            <span class="text-muted">رقم فاتورة المورد:</span>
+                            <strong>{{ invoice.supplier_invoice_number }}</strong>
+                        </div>
+                        {% endif %}
+                        {% if invoice.purchase_order %}
+                        <div class="mb-2">
+                            <span class="text-muted">أمر الشراء:</span>
+                            <a href="{% url 'erp:purchase_order_detail' invoice.purchase_order.pk %}">
+                                <strong>{{ invoice.purchase_order.po_number }}</strong>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">البنود</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>الوصف</th>
+                            <th class="text-center">الكمية</th>
+                            <th class="text-start">سعر الوحدة</th>
+                            <th class="text-start">الضريبة</th>
+                            <th class="text-start">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td><strong>{{ line.description }}</strong></td>
+                            <td class="text-center">{{ line.quantity }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.tax_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.line_total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">لا توجد بنود</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-start"><strong>المجموع الفرعي:</strong></td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-start">الضريبة:</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.tax_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td colspan="4" class="text-start">الإجمالي:</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% if invoice.paid_amount > 0 %}
+                        <tr class="text-success">
+                            <td colspan="4" class="text-start">المبلغ المسدد:</td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.paid_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td colspan="4" class="text-start">الرصيد المستحق:</td>
+                            <td class="text-start {% if invoice.balance_due > 0 %}text-warning{% else %}text-success{% endif %}">
+                                {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        {% if invoice.notes %}
+        <div class="erp-card mb-4">
+            <div class="erp-card-header"><h6 class="mb-0">ملاحظات</h6></div>
+            <div class="erp-card-body">{{ invoice.notes|linebreaksbr }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Actions -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header"><h6 class="mb-0">الإجراءات</h6></div>
+            <div class="erp-card-body d-grid gap-2">
+                <a href="{% url 'erp:supplier_invoice_edit' invoice.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> تعديل الفاتورة
+                </a>
+                {% if invoice.balance_due > 0 %}
+                <a href="{% url 'erp:supplier_payment_create' %}?supplier={{ invoice.supplier.pk }}&invoice={{ invoice.pk }}" class="btn btn-success">
+                    <i class="bi bi-cash ms-1"></i> تسجيل دفعة
+                </a>
+                {% endif %}
+                <a href="{% url 'erp:supplier_invoice_delete' invoice.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> حذف
+                </a>
+            </div>
+        </div>
+
+        <!-- Payments -->
+        <div class="erp-card">
+            <div class="erp-card-header"><h6 class="mb-0">سجل المدفوعات</h6></div>
+            <div class="erp-card-body">
+                {% for alloc in payments %}
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <div>
+                        <a href="{% url 'erp:supplier_payment_detail' alloc.payment.pk %}" class="fw-medium">{{ alloc.payment.payment_number }}</a>
+                        <br><small class="text-muted">{{ alloc.payment.payment_date|date:"Y/m/d" }}</small>
+                    </div>
+                    <span class="text-success">{{ invoice.currency.symbol|default:"$" }}{{ alloc.amount|floatformat:2 }}</span>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted mb-0">لا توجد مدفوعات</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -158,6 +158,19 @@ _supplier_patterns = [
     path('purchase-orders/<int:pk>/', views.purchase_order_detail, name='purchase_order_detail'),
     path('purchase-orders/<int:pk>/edit/', views.purchase_order_edit, name='purchase_order_edit'),
     path('purchase-orders/<int:pk>/delete/', views.purchase_order_delete, name='purchase_order_delete'),
+    path('purchase-orders/<int:pk>/approve/', views.purchase_order_approve, name='purchase_order_approve'),
+    path('purchase-orders/<int:pk>/create-invoice/', views.purchase_order_create_invoice, name='purchase_order_create_invoice'),
+    # Supplier Invoices
+    path('supplier-invoices/', views.supplier_invoice_list, name='supplier_invoice_list'),
+    path('supplier-invoices/add/', views.supplier_invoice_create, name='supplier_invoice_create'),
+    path('supplier-invoices/<int:pk>/', views.supplier_invoice_detail, name='supplier_invoice_detail'),
+    path('supplier-invoices/<int:pk>/edit/', views.supplier_invoice_edit, name='supplier_invoice_edit'),
+    path('supplier-invoices/<int:pk>/delete/', views.supplier_invoice_delete, name='supplier_invoice_delete'),
+    # Supplier Payments
+    path('supplier-payments/', views.supplier_payment_list, name='supplier_payment_list'),
+    path('supplier-payments/add/', views.supplier_payment_create, name='supplier_payment_create'),
+    path('supplier-payments/<int:pk>/', views.supplier_payment_detail, name='supplier_payment_detail'),
+    path('supplier-payments/<int:pk>/delete/', views.supplier_payment_delete, name='supplier_payment_delete'),
 ]
 
 # ── Journal Entries ─────────────────────────────────────────────────────────
@@ -197,6 +210,11 @@ _api_patterns = [
     path('api/', include('erp.api.urls')),
 ]
 
+# ── AJAX helpers ────────────────────────────────────────────────────────────
+_ajax_patterns = [
+    path('ajax/item-price/', views.ajax_item_price, name='ajax_item_price'),
+]
+
 # ── Combined ────────────────────────────────────────────────────────────────
 urlpatterns = (
     _setup_patterns
@@ -208,5 +226,6 @@ urlpatterns = (
     + _supplier_patterns
     + _journal_patterns
     + _product_patterns
+    + _ajax_patterns
     + _api_patterns
 )

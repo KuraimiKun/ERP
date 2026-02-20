@@ -63,7 +63,7 @@
                         <td>{{ expense.expense_date|date:"Y/m/d" }}</td>
                         <td>{{ expense.category.name|default:"-" }}</td>
                         <td>{{ expense.description|truncatewords:10 }}</td>
-                        <td>{{ expense.submitted_by.get_full_name|default:expense.submitted_by.username }}</td>
+                        <td>{{ expense.employee.first_name|default:"-" }} {{ expense.employee.last_name|default:"" }}</td>
                         <td class="fw-bold">{{ expense.total_amount|floatformat:2 }} $</td>
                         <td>
                             {% if expense.status == 'draft' %}

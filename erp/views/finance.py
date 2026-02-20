@@ -12,6 +12,7 @@ from django.utils import timezone
 from erp.models import (
     Invoice, Payment, PaymentAllocation, Expense, ExpenseCategory,
     Account, TaxRate, PaymentMethod, Currency, FiscalYear,
+    Product, ServicePricing,
 )
 from erp.services import get_invoice_number, get_payment_number, get_expense_number
 from erp.forms import (
@@ -82,6 +83,10 @@ def invoice_create(request):
             invoice.calculate_totals()
             invoice.save()
 
+            # Adjust inventory for product lines
+            from erp.services.inventory import adjust_inventory_for_invoice
+            adjust_inventory_for_invoice(invoice, direction='out')
+
             # Auto-generate journal entry
             from erp.services.accounting import create_invoice_journal_entry
             create_invoice_journal_entry(invoice, request.user)
@@ -95,6 +100,9 @@ def invoice_create(request):
     return render(request, 'erp/invoices/form.html', {
         'form': form,
         'formset': formset,
+        'products': Product.objects.filter(company=company, is_active=True),
+        'services': ServicePricing.objects.filter(company=company, is_active=True),
+        'tax_rates': TaxRate.objects.filter(company=company, is_active=True),
         'title': 'Create Invoice',
         'submit_text': 'Create Invoice',
     })
@@ -126,6 +134,9 @@ def invoice_edit(request, pk):
         'form': form,
         'formset': formset,
         'invoice': invoice,
+        'products': Product.objects.filter(company=company, is_active=True),
+        'services': ServicePricing.objects.filter(company=company, is_active=True),
+        'tax_rates': TaxRate.objects.filter(company=company, is_active=True),
         'title': f'Edit Invoice: {invoice.invoice_number}',
         'submit_text': 'Save Changes',
     })
