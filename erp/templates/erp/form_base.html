@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}{{ title }} - نظام ERP{% endblock %}
+{% block title %}{{ title }} - {% trans "ERP System" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -83,12 +84,12 @@
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- ترويسة الصفحة -->
+    <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">نظام ERP</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "ERP System" %}</a></li>
                     {% block breadcrumb %}{% endblock %}
                 </ol>
             </nav>
@@ -96,7 +97,7 @@
         </div>
     </div>
     
-    <!-- بطاقة النموذج -->
+    <!-- Form Card -->
     <div class="row justify-content-center">
         <div class="col-12 col-xl-10">
             <form method="post" enctype="multipart/form-data" novalidate>
@@ -117,7 +118,7 @@
                         {% endif %}
                         
                         {% block form_content %}
-                        <!-- تقديم النموذج البسيط الافتراضي -->
+                        <!-- Default Simple Form Rendering -->
                         <div class="row">
                             {% for field in form %}
                             <div class="col-md-6 mb-3 {% if field.field.required %}required-field{% endif %}">
@@ -140,10 +141,10 @@
                         
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i> {{ submit_text|default:"حفظ" }}
+                                <i class="bi bi-check-lg me-1"></i> {% trans "Save" %}
                             </button>
                             <a href="{% block cancel_url %}javascript:history.back(){% endblock %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-lg me-1"></i> إلغاء
+                                <i class="bi bi-x-lg me-1"></i> {% trans "Cancel" %}
                             </a>
                         </div>
                     </div>

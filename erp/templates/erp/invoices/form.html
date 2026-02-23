@@ -1,7 +1,8 @@
 {% extends 'erp/form_base.html' %}
+{% load i18n %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">الفواتير</a></li>
+<li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">{% trans "Invoices" %}</a></li>
 <li class="breadcrumb-item active">{{ title }}</li>
 {% endblock %}
 
@@ -13,7 +14,7 @@
 <!-- Global errors -->
 {% if form.errors %}
 <div class="alert alert-danger mb-3">
-    <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> يرجى تصحيح الأخطاء التالية:</h6>
+    <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> {% trans "Please correct the following errors:" %}</h6>
     <ul class="mb-0">
         {% for field, errors in form.errors.items %}
         <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
@@ -24,46 +25,46 @@
 
 <!-- تفاصيل الفاتورة -->
 <div class="form-section">
-    <h6 class="form-section-title">تفاصيل الفاتورة</h6>
+    <h6 class="form-section-title">{% trans "Invoice Details" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3 required-field">
-            <label for="{{ form.customer.id_for_label }}" class="form-label">العميل</label>
+            <label for="{{ form.customer.id_for_label }}" class="form-label">{% trans "Customer" %}</label>
             {{ form.customer }}
             {% if form.customer.errors %}<div class="invalid-feedback d-block">{{ form.customer.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-4 mb-3 required-field">
-            <label for="{{ form.invoice_type.id_for_label }}" class="form-label">نوع الفاتورة</label>
+            <label for="{{ form.invoice_type.id_for_label }}" class="form-label">{% trans "Invoice Type" %}</label>
             {{ form.invoice_type }}
             {% if form.invoice_type.errors %}<div class="invalid-feedback d-block">{{ form.invoice_type.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.status.id_for_label }}" class="form-label">الحالة</label>
+            <label for="{{ form.status.id_for_label }}" class="form-label">{% trans "Status" %}</label>
             {{ form.status }}
         </div>
         <div class="col-md-3 mb-3">
             <label class="form-label">&nbsp;</label>
             {% if invoice %}
             <div class="form-control-plaintext">
-                <strong>رقم الفاتورة:</strong> {{ invoice.invoice_number }}
+                <strong>{% trans "Invoice Number" %}:</strong> {{ invoice.invoice_number }}
             </div>
             {% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.invoice_date.id_for_label }}" class="form-label">تاريخ الفاتورة</label>
+            <label for="{{ form.invoice_date.id_for_label }}" class="form-label">{% trans "Invoice Date" %}</label>
             {{ form.invoice_date }}
             {% if form.invoice_date.errors %}<div class="invalid-feedback d-block">{{ form.invoice_date.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.due_date.id_for_label }}" class="form-label">تاريخ الاستحقاق</label>
+            <label for="{{ form.due_date.id_for_label }}" class="form-label">{% trans "Due Date" %}</label>
             {{ form.due_date }}
             {% if form.due_date.errors %}<div class="invalid-feedback d-block">{{ form.due_date.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.reference.id_for_label }}" class="form-label">المرجع</label>
+            <label for="{{ form.reference.id_for_label }}" class="form-label">{% trans "Reference" %}</label>
             {{ form.reference }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+            <label for="{{ form.currency.id_for_label }}" class="form-label">{% trans "Currency" %}</label>
             {{ form.currency }}
             {% if form.currency.errors %}<div class="invalid-feedback d-block">{{ form.currency.errors|join:", " }}</div>{% endif %}
         </div>
@@ -72,14 +73,14 @@
 
 <!-- ملاحظات والشروط -->
 <div class="form-section">
-    <h6 class="form-section-title">ملاحظات والشروط</h6>
+    <h6 class="form-section-title">{% trans "Notes & Terms" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.notes.id_for_label }}" class="form-label">ملاحظات</label>
+            <label for="{{ form.notes.id_for_label }}" class="form-label">{% trans "Notes" %}</label>
             {{ form.notes }}
         </div>
         <div class="col-md-6 mb-3">
-            <label for="{{ form.terms.id_for_label }}" class="form-label">الشروط</label>
+            <label for="{{ form.terms.id_for_label }}" class="form-label">{% trans "Terms" %}</label>
             {{ form.terms }}
         </div>
     </div>
@@ -90,9 +91,9 @@
 <!-- بنود الفاتورة -->
 <div class="form-section">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="form-section-title mb-0">بنود الفاتورة</h6>
+        <h6 class="form-section-title mb-0">{% trans "Invoice Lines" %}</h6>
         <button type="button" id="add-line-btn" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-plus-circle ms-1"></i> إضافة بند
+            <i class="bi bi-plus-circle ms-1"></i> {% trans "Add Line" %}
         </button>
     </div>
     

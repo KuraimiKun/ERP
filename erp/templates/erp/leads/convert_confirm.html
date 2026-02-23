@@ -1,51 +1,52 @@
 {% extends 'erp/base.html' %}
-{% block title %}تحويل إلى عميل{% endblock %}
-{% block page_title %}تحويل العميل المحتمل إلى عميل{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Convert to Customer" %}{% endblock %}
+{% block page_title %}{% trans "Convert Lead to Customer" %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-person-check me-2"></i>تحويل إلى عميل</h6>
+                <h6 class="mb-0"><i class="bi bi-person-check me-2"></i>{% trans "Convert to Customer" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle me-2"></i>
-                    سيتم إنشاء حساب عميل جديد من بيانات العميل المحتمل وتغيير حالته إلى "تم الفوز".
+                    {% trans "A new customer account will be created from the lead data and its status will be changed to Won." %}
                 </div>
 
                 <form method="post">
                     {% csrf_token %}
                     
                     <div class="mb-3">
-                        <label class="form-label">اسم العميل <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Customer Name" %} <span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control" 
                                value="{{ lead.first_name }} {{ lead.last_name }}" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">نوع العميل</label>
+                        <label class="form-label">{% trans "Customer Type" %}</label>
                         <select name="customer_type" class="form-select">
-                            <option value="individual" {% if not lead.company_name %}selected{% endif %}>فرد</option>
-                            <option value="company" {% if lead.company_name %}selected{% endif %}>شركة</option>
-                            <option value="government">حكومي</option>
+                            <option value="individual" {% if not lead.company_name %}selected{% endif %}>{% trans "Individual" %}</option>
+                            <option value="company" {% if lead.company_name %}selected{% endif %}>{% trans "Company" %}</option>
+                            <option value="government">{% trans "Government" %}</option>
                         </select>
                     </div>
 
                     <table class="table table-sm mb-4">
-                        <tr><td class="text-muted">البريد الإلكتروني:</td><td>{{ lead.email|default:"-" }}</td></tr>
-                        <tr><td class="text-muted">الهاتف:</td><td>{{ lead.phone|default:"-" }}</td></tr>
-                        <tr><td class="text-muted">الشركة:</td><td>{{ lead.company_name|default:"-" }}</td></tr>
-                        <tr><td class="text-muted">المدينة:</td><td>{{ lead.city|default:"-" }}</td></tr>
-                        <tr><td class="text-muted">القيمة المتوقعة:</td><td>{% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}</td></tr>
+                        <tr><td class="text-muted">{% trans "Email" %}:</td><td>{{ lead.email|default:"-" }}</td></tr>
+                        <tr><td class="text-muted">{% trans "Phone" %}:</td><td>{{ lead.phone|default:"-" }}</td></tr>
+                        <tr><td class="text-muted">{% trans "Company" %}:</td><td>{{ lead.company_name|default:"-" }}</td></tr>
+                        <tr><td class="text-muted">{% trans "City" %}:</td><td>{{ lead.city|default:"-" }}</td></tr>
+                        <tr><td class="text-muted">{% trans "Expected Value" %}:</td><td>{% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}</td></tr>
                     </table>
                     
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-success">
-                            <i class="bi bi-person-check me-1"></i> تأكيد التحويل
+                            <i class="bi bi-person-check me-1"></i> {% trans "Confirm Conversion" %}
                         </button>
-                        <a href="{% url 'erp:lead_detail' lead.pk %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:lead_detail' lead.pk %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

@@ -1,4 +1,5 @@
 {% extends "erp/pdf/base_pdf.html" %}
+{% load i18n %}
 {% block content %}
 <div class="header">
     <table><tr>
@@ -13,15 +14,15 @@
         </td>
         <td style="width:40%;text-align:left">
             <div style="font-size:16px;font-weight:bold;color:{% if invoice.invoice_type == 'credit' %}#9d174d{% elif invoice.invoice_type == 'debit' %}#6d28d9{% else %}#0d6efd{% endif %}">
-                {% if invoice.invoice_type == 'credit' %}إشعار دائن
-                {% elif invoice.invoice_type == 'debit' %}إشعار مدين
-                {% elif invoice.invoice_type == 'proforma' %}فاتورة مبدئية
-                {% else %}فاتورة{% endif %}
+                {% if invoice.invoice_type == 'credit' %}{% trans "Credit Note" %}
+                {% elif invoice.invoice_type == 'debit' %}{% trans "Debit Note" %}
+                {% elif invoice.invoice_type == 'proforma' %}{% trans "Proforma Invoice" %}
+                {% else %}{% trans "Invoice" %}{% endif %}
             </div>
             <div style="font-size:14px;font-weight:bold">{{ invoice.invoice_number }}</div>
             <div class="company-details">
-                التاريخ: {{ invoice.invoice_date|date:"Y/m/d" }}<br>
-                الاستحقاق: {{ invoice.due_date|date:"Y/m/d" }}
+                {% trans "Date:" %} {{ invoice.invoice_date|date:"Y/m/d" }}<br>
+                {% trans "Due:" %} {{ invoice.due_date|date:"Y/m/d" }}
             </div>
         </td>
     </tr></table>
@@ -29,17 +30,17 @@
 
 <table class="info-table"><tr>
     <td style="width:50%">
-        <div class="info-label">فاتورة إلى</div>
+        <div class="info-label">{% trans "Bill To" %}</div>
         <div class="info-value">{{ invoice.customer.name }}</div>
         <div class="company-details">
             {{ invoice.customer.billing_address|default:"" }}<br>
             {{ invoice.customer.billing_city|default:"" }}{% if invoice.customer.billing_country %}, {{ invoice.customer.billing_country }}{% endif %}
-            {% if invoice.customer.tax_number %}<br>الرقم الضريبي: {{ invoice.customer.tax_number }}{% endif %}
+            {% if invoice.customer.tax_number %}<br>{% trans "Tax Number:" %} {{ invoice.customer.tax_number }}{% endif %}
         </div>
     </td>
     <td style="width:50%;text-align:left">
-        {% if invoice.reference %}<div class="info-label">المرجع</div><div class="info-value">{{ invoice.reference }}</div>{% endif %}
-        <div class="info-label">الحالة</div>
+        {% if invoice.reference %}<div class="info-label">{% trans "Reference" %}</div><div class="info-value">{{ invoice.reference }}</div>{% endif %}
+        <div class="info-label">{% trans "Status" %}</div>
         <span class="badge badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
     </td>
 </tr></table>
@@ -47,11 +48,11 @@
 <table class="items-table">
     <thead><tr>
         <th style="width:5%">#</th>
-        <th style="width:40%">الوصف</th>
-        <th style="width:10%">الكمية</th>
-        <th style="width:15%" class="text-left">سعر الوحدة</th>
-        <th style="width:15%" class="text-left">الضريبة</th>
-        <th style="width:15%" class="text-left">الإجمالي</th>
+        <th style="width:40%">{% trans "Description" %}</th>
+        <th style="width:10%">{% trans "Quantity" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Unit Price" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Tax" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Total" %}</th>
     </tr></thead>
     <tbody>
     {% for line in lines %}
@@ -68,30 +69,30 @@
 </table>
 
 <table class="totals-table">
-    <tr><td>المجموع الفرعي:</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Subtotal:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal|floatformat:2 }}</td></tr>
     {% if invoice.discount_amount > 0 %}
-    <tr><td>الخصم:</td><td class="text-left" style="color:#dc3545">-{{ invoice.currency.symbol|default:"$" }}{{ invoice.discount_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Discount:" %}</td><td class="text-left" style="color:#dc3545">-{{ invoice.currency.symbol|default:"$" }}{{ invoice.discount_amount|floatformat:2 }}</td></tr>
     {% endif %}
-    <tr><td>الضريبة:</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.tax_amount|floatformat:2 }}</td></tr>
-    <tr class="total-row"><td>الإجمالي:</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Tax:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.tax_amount|floatformat:2 }}</td></tr>
+    <tr class="total-row"><td>{% trans "Total:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td></tr>
     {% if invoice.paid_amount > 0 %}
-    <tr><td>المدفوع:</td><td class="text-left" style="color:#198754">{{ invoice.currency.symbol|default:"$" }}{{ invoice.paid_amount|floatformat:2 }}</td></tr>
-    <tr style="font-weight:bold"><td>المتبقي:</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Paid:" %}</td><td class="text-left" style="color:#198754">{{ invoice.currency.symbol|default:"$" }}{{ invoice.paid_amount|floatformat:2 }}</td></tr>
+    <tr style="font-weight:bold"><td>{% trans "Balance:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</td></tr>
     {% endif %}
 </table>
 
 {% if invoice.notes %}
-<div class="notes"><strong>ملاحظات:</strong><br>{{ invoice.notes|linebreaksbr }}</div>
+<div class="notes"><strong>{% trans "Notes:" %}</strong><br>{{ invoice.notes|linebreaksbr }}</div>
 {% endif %}
 
 {% if invoice.terms %}
-<div class="notes"><strong>الشروط:</strong><br>{{ invoice.terms|linebreaksbr }}</div>
+<div class="notes"><strong>{% trans "Terms:" %}</strong><br>{{ invoice.terms|linebreaksbr }}</div>
 {% endif %}
 
 {% if company.bank_name %}
 <div class="notes">
-    <strong>معلومات بنكية:</strong><br>
-    البنك: {{ company.bank_name }}
+    <strong>{% trans "Bank Information:" %}</strong><br>
+    {% trans "Bank:" %} {{ company.bank_name }}
     {% if company.iban %} | IBAN: {{ company.iban }}{% endif %}
     {% if company.swift_code %} | SWIFT: {{ company.swift_code }}{% endif %}
 </div>

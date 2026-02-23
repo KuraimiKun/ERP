@@ -1,14 +1,15 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
 {% block title %}{{ employee.first_name }} {{ employee.last_name }}{% endblock %}
-{% block page_title %}تفاصيل الموظف{% endblock %}
+{% block page_title %}{% trans "Employee Details" %}{% endblock %}
 
 {% block content %}
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:employee_list' %}">الموظفون</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:employee_list' %}">{% trans "Employees" %}</a></li>
         <li class="breadcrumb-item active">{{ employee.first_name }} {{ employee.last_name }}</li>
     </ol>
 </nav>
@@ -25,11 +26,11 @@
                 <h5 class="mb-1">{{ employee.first_name }} {{ employee.last_name }}</h5>
                 <p class="text-muted mb-2">{{ employee.job_title|default:"No title" }}</p>
                 {% if employee.employment_status == 'active' %}
-                <span class="badge bg-success">نشط</span>
+                <span class="badge bg-success">{% trans "Active" %}</span>
                 {% elif employee.employment_status == 'on_leave' %}
-                <span class="badge bg-warning">في إجازة</span>
+                <span class="badge bg-warning">{% trans "On Leave" %}</span>
                 {% elif employee.employment_status == 'terminated' %}
-                <span class="badge bg-danger">منتهي</span>
+                <span class="badge bg-danger">{% trans "Terminated" %}</span>
                 {% else %}
                 <span class="badge bg-secondary">{{ employee.get_employment_status_display }}</span>
                 {% endif %}
@@ -37,28 +38,28 @@
             <hr class="my-0">
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">رقم الموظف</label>
+                    <label class="text-muted small">{% trans "Employee ID" %}</label>
                     <div>{{ employee.employee_id }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">القسم</label>
+                    <label class="text-muted small">{% trans "Department" %}</label>
                     <div>{{ employee.department.name|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <label class="text-muted small">{% trans "Email" %}</label>
                     <div><a href="mailto:{{ employee.email }}">{{ employee.email }}</a></div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">الهاتف</label>
+                    <label class="text-muted small">{% trans "Phone" %}</label>
                     <div>{{ employee.phone|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">تاريخ التوظيف</label>
+                    <label class="text-muted small">{% trans "Hire Date" %}</label>
                     <div>{{ employee.hire_date|date:"F d, Y"|default:"-" }}</div>
                 </div>
                 {% if employee.reports_to %}
                 <div class="mb-3">
-                    <label class="text-muted small">يتبع إلى</label>
+                    <label class="text-muted small">{% trans "Reports To" %}</label>
                     <div>
                         <a href="{% url 'erp:employee_detail' employee.reports_to.pk %}">
                             {{ employee.reports_to.first_name }} {{ employee.reports_to.last_name }}
@@ -69,7 +70,7 @@
             </div>
             <div class="erp-card-body border-top">
                 <a href="{% url 'erp:employee_edit' employee.pk %}" class="btn btn-primary w-100">
-                    <i class="bi bi-pencil ms-1"></i> تعديل الموظف
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit Employee" %}
                 </a>
             </div>
         </div>
@@ -77,19 +78,19 @@
         <!-- المعلومات الشخصية -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">المعلومات الشخصية</h6>
+                <h6 class="mb-0">{% trans "Personal Information" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">تاريخ الميلاد:</span>
+                    <span class="text-muted">{% trans "Date of Birth:" %}</span>
                     <span>{{ employee.date_of_birth|date:"M d, Y"|default:"-" }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">الجنس:</span>
+                    <span class="text-muted">{% trans "Gender:" %}</span>
                     <span>{{ employee.get_gender_display|default:"-" }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">الجنسية:</span>
+                    <span class="text-muted">{% trans "Nationality:" %}</span>
                     <span>{{ employee.nationality|default:"-" }}</span>
                 </div>
             </div>
@@ -101,17 +102,17 @@
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#attendance">
-                    الحضور
+                    {% trans "Attendance" %}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#leave">
-                    طلبات الإجازة
+                    {% trans "Leave Requests" %}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">
-                    المستندات
+                    {% trans "Documents" %}
                 </button>
             </li>
         </ul>
@@ -121,17 +122,17 @@
             <div class="tab-pane fade show active" id="attendance">
                 <div class="erp-card">
                     <div class="erp-card-header">
-                        <h6 class="mb-0">سجل الحضور الأخير</h6>
+                        <h6 class="mb-0">{% trans "Recent Attendance Record" %}</h6>
                     </div>
                     <div class="table-responsive">
                         <table class="table erp-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>التاريخ</th>
-                                    <th>وقت الدخول</th>
-                                    <th>وقت الخروج</th>
-                                    <th>الساعات</th>
-                                    <th>الحالة</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Check In" %}</th>
+                                    <th>{% trans "Check Out" %}</th>
+                                    <th>{% trans "Hours" %}</th>
+                                    <th>{% trans "Status" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -143,16 +144,16 @@
                                     <td>{{ att.hours_worked|floatformat:1|default:"-" }} hrs</td>
                                     <td>
                                         {% if att.is_present and not att.is_late %}
-                                        <span class="badge bg-success">حاضر</span>
+                                        <span class="badge bg-success">{% trans "Present" %}</span>
                                         {% elif att.is_present and att.is_late %}
-                                        <span class="badge bg-warning">متأخر</span>
+                                        <span class="badge bg-warning">{% trans "Late" %}</span>
                                         {% elif not att.is_present %}
-                                        <span class="badge bg-danger">غائب</span>
+                                        <span class="badge bg-danger">{% trans "Absent" %}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد سجلات حضور</td></tr>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">{% trans "No attendance records found" %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -164,20 +165,20 @@
             <div class="tab-pane fade" id="leave">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">طلبات الإجازة</h6>
-                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
-                            <i class="bi bi-plus-lg ms-1"></i> طلب جديد
+                        <h6 class="mb-0">{% trans "Leave Requests" %}</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="{% trans "Coming Soon" %}">
+                            <i class="bi bi-plus-lg ms-1"></i> {% trans "New Request" %}
                         </button>
                     </div>
                     <div class="table-responsive">
                         <table class="table erp-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>النوع</th>
-                                    <th>من</th>
-                                    <th>إلى</th>
-                                    <th>الأيام</th>
-                                    <th>الحالة</th>
+                                    <th>{% trans "Type" %}</th>
+                                    <th>{% trans "From" %}</th>
+                                    <th>{% trans "To" %}</th>
+                                    <th>{% trans "Days" %}</th>
+                                    <th>{% trans "Status" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -189,18 +190,18 @@
                                     <td>{{ leave.days_requested }}</td>
                                     <td>
                                         {% if leave.status == 'pending' %}
-                                        <span class="badge bg-warning">قيد الانتظار</span>
+                                        <span class="badge bg-warning">{% trans "Pending" %}</span>
                                         {% elif leave.status == 'approved' %}
-                                        <span class="badge bg-success">موافق عليه</span>
+                                        <span class="badge bg-success">{% trans "Approved" %}</span>
                                         {% elif leave.status == 'rejected' %}
-                                        <span class="badge bg-danger">مرفوض</span>
+                                        <span class="badge bg-danger">{% trans "Rejected" %}</span>
                                         {% else %}
                                         <span class="badge bg-secondary">{{ leave.get_status_display }}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد طلبات إجازة</td></tr>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">{% trans "No leave requests found" %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -212,9 +213,9 @@
             <div class="tab-pane fade" id="documents">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">المستندات</h6>
-                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
-                            <i class="bi bi-plus-lg ms-1"></i> رفع مستند
+                        <h6 class="mb-0">{% trans "Documents" %}</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="{% trans 'Coming Soon' %}">
+                            <i class="bi bi-plus-lg ms-1"></i> {% trans "Upload Document" %}
                         </button>
                     </div>
                     <div class="erp-card-body">
@@ -234,7 +235,7 @@
                             {% endif %}
                         </div>
                         {% empty %}
-                        <p class="text-center text-muted py-4">لم يتم رفع أي مستندات</p>
+                        <p class="text-center text-muted py-4">{% trans "No documents uploaded" %}</p>
                         {% endfor %}
                     </div>
                 </div>

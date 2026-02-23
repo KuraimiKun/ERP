@@ -1,4 +1,5 @@
 {% extends "erp/pdf/base_pdf.html" %}
+{% load i18n %}
 {% block content %}
 <div class="header">
     <table><tr>
@@ -12,11 +13,11 @@
             </div>
         </td>
         <td style="width:40%;text-align:left">
-            <div style="font-size:16px;font-weight:bold;color:#0d6efd">عرض سعر</div>
+            <div style="font-size:16px;font-weight:bold;color:#0d6efd">{% trans "Quote" %}</div>
             <div style="font-size:14px;font-weight:bold">{{ quote.quote_number }}</div>
             <div class="company-details">
-                التاريخ: {{ quote.quote_date|date:"Y/m/d" }}<br>
-                صالح حتى: {{ quote.valid_until|date:"Y/m/d" }}
+                {% trans "Date:" %} {{ quote.quote_date|date:"Y/m/d" }}<br>
+                {% trans "Valid Until:" %} {{ quote.valid_until|date:"Y/m/d" }}
             </div>
         </td>
     </tr></table>
@@ -24,7 +25,7 @@
 
 <table class="info-table"><tr>
     <td style="width:50%">
-        <div class="info-label">عرض سعر إلى</div>
+        <div class="info-label">{% trans "Quote To" %}</div>
         {% if quote.customer %}
         <div class="info-value">{{ quote.customer.name }}</div>
         <div class="company-details">{{ quote.customer.billing_address|default:"" }}<br>{{ quote.customer.email|default:"" }}</div>
@@ -34,19 +35,19 @@
         {% endif %}
     </td>
     <td style="width:50%;text-align:left">
-        {% if quote.reference %}<div class="info-label">المرجع</div><div class="info-value">{{ quote.reference }}</div>{% endif %}
-        {% if quote.prepared_by %}<div class="info-label">أعد بواسطة</div><div class="info-value">{{ quote.prepared_by.first_name }} {{ quote.prepared_by.last_name }}</div>{% endif %}
+        {% if quote.reference %}<div class="info-label">{% trans "Reference" %}</div><div class="info-value">{{ quote.reference }}</div>{% endif %}
+        {% if quote.prepared_by %}<div class="info-label">{% trans "Prepared By" %}</div><div class="info-value">{{ quote.prepared_by.first_name }} {{ quote.prepared_by.last_name }}</div>{% endif %}
     </td>
 </tr></table>
 
 <table class="items-table">
     <thead><tr>
         <th style="width:5%">#</th>
-        <th style="width:40%">الوصف</th>
-        <th style="width:10%">الكمية</th>
-        <th style="width:15%" class="text-left">سعر الوحدة</th>
-        <th style="width:15%" class="text-left">الضريبة</th>
-        <th style="width:15%" class="text-left">الإجمالي</th>
+        <th style="width:40%">{% trans "Description" %}</th>
+        <th style="width:10%">{% trans "Quantity" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Unit Price" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Tax" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Total" %}</th>
     </tr></thead>
     <tbody>
     {% for line in lines %}
@@ -63,18 +64,18 @@
 </table>
 
 <table class="totals-table">
-    <tr><td>المجموع الفرعي:</td><td class="text-left">${{ quote.subtotal|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Subtotal:" %}</td><td class="text-left">${{ quote.subtotal|floatformat:2 }}</td></tr>
     {% if quote.discount_amount > 0 %}
-    <tr><td>الخصم:</td><td class="text-left" style="color:#dc3545">-${{ quote.discount_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Discount:" %}</td><td class="text-left" style="color:#dc3545">-${{ quote.discount_amount|floatformat:2 }}</td></tr>
     {% endif %}
-    <tr><td>الضريبة:</td><td class="text-left">${{ quote.tax_amount|floatformat:2 }}</td></tr>
-    <tr class="total-row"><td>الإجمالي:</td><td class="text-left">${{ quote.total_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Tax:" %}</td><td class="text-left">${{ quote.tax_amount|floatformat:2 }}</td></tr>
+    <tr class="total-row"><td>{% trans "Total:" %}</td><td class="text-left">${{ quote.total_amount|floatformat:2 }}</td></tr>
 </table>
 
 {% if quote.notes %}
-<div class="notes"><strong>ملاحظات:</strong><br>{{ quote.notes|linebreaksbr }}</div>
+<div class="notes"><strong>{% trans "Notes:" %}</strong><br>{{ quote.notes|linebreaksbr }}</div>
 {% endif %}
 {% if quote.terms %}
-<div class="notes"><strong>الشروط والأحكام:</strong><br>{{ quote.terms|linebreaksbr }}</div>
+<div class="notes"><strong>{% trans "Terms & Conditions:" %}</strong><br>{{ quote.terms|linebreaksbr }}</div>
 {% endif %}
 {% endblock %}

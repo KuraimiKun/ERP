@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}القيود اليومية{% endblock %}
-{% block page_title %}القيود اليومية{% endblock %}
+{% block title %}{% trans "Journal Entries" %}{% endblock %}
+{% block page_title %}{% trans "Journal Entries" %}{% endblock %}
 
 {% block content %}
 <!-- إحصائيات -->
@@ -14,7 +15,7 @@
                 </div>
                 <div class="me-3">
                     <div class="stat-value">{{ total_entries }}</div>
-                    <div class="stat-label">إجمالي القيود</div>
+                    <div class="stat-label">{% trans "Total Entries" %}</div>
                 </div>
             </div>
         </div>
@@ -27,7 +28,7 @@
                 </div>
                 <div class="me-3">
                     <div class="stat-value">{{ posted_count }}</div>
-                    <div class="stat-label">قيود مرحّلة</div>
+                    <div class="stat-label">{% trans "Posted Entries" %}</div>
                 </div>
             </div>
         </div>
@@ -40,7 +41,7 @@
                 </div>
                 <div class="me-3">
                     <div class="stat-value">{{ draft_count }}</div>
-                    <div class="stat-label">مسودات</div>
+                    <div class="stat-label">{% trans "Drafts" %}</div>
                 </div>
             </div>
         </div>
@@ -52,34 +53,34 @@
     <div class="erp-card-body">
         <form method="get" class="row g-3">
             <div class="col-md-3">
-                <label class="form-label">الحالة</label>
+                <label class="form-label">{% trans "Status" %}</label>
                 <select name="status" class="form-select">
-                    <option value="">الكل</option>
+                    <option value="">{% trans "All" %}</option>
                     {% for value, label in status_choices %}
                     <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">نوع القيد</label>
+                <label class="form-label">{% trans "Entry Type" %}</label>
                 <select name="type" class="form-select">
-                    <option value="">الكل</option>
+                    <option value="">{% trans "All" %}</option>
                     {% for value, label in type_choices %}
                     <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">من تاريخ</label>
+                <label class="form-label">{% trans "From Date" %}</label>
                 <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
             </div>
             <div class="col-md-2">
-                <label class="form-label">إلى تاريخ</label>
+                <label class="form-label">{% trans "To Date" %}</label>
                 <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-search ms-1"></i> بحث
+                    <i class="bi bi-search ms-1"></i> {% trans "Search" %}
                 </button>
             </div>
         </form>
@@ -89,9 +90,9 @@
 <!-- قائمة القيود -->
 <div class="erp-card">
     <div class="erp-card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0"><i class="bi bi-journal-bookmark ms-2"></i>القيود اليومية</h6>
+        <h6 class="mb-0"><i class="bi bi-journal-bookmark ms-2"></i>{% trans "Journal Entries" %}</h6>
         <a href="{% url 'erp:journal_entry_create' %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg ms-1"></i> قيد جديد
+            <i class="bi bi-plus-lg ms-1"></i> {% trans "New Entry" %}
         </a>
     </div>
     <div class="erp-card-body p-0">
@@ -99,14 +100,14 @@
             <table class="table table-hover erp-table mb-0">
                 <thead>
                     <tr>
-                        <th>رقم القيد</th>
-                        <th>التاريخ</th>
-                        <th>النوع</th>
-                        <th>البيان</th>
-                        <th>مدين</th>
-                        <th>دائن</th>
-                        <th>الحالة</th>
-                        <th>الإجراءات</th>
+                        <th>{% trans "Entry Number" %}</th>
+                        <th>{% trans "Date" %}</th>
+                        <th>{% trans "Type" %}</th>
+                        <th>{% trans "Description" %}</th>
+                        <th>{% trans "Debit" %}</th>
+                        <th>{% trans "Credit" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -124,20 +125,20 @@
                         <td class="text-danger fw-bold">{{ entry.total_credit|floatformat:2 }}</td>
                         <td>
                             {% if entry.status == 'draft' %}
-                            <span class="badge badge-status badge-draft">مسودة</span>
+                            <span class="badge badge-status badge-draft">{% trans "Draft" %}</span>
                             {% elif entry.status == 'posted' %}
-                            <span class="badge badge-status badge-posted">مرحّل</span>
+                            <span class="badge badge-status badge-posted">{% trans "Posted" %}</span>
                             {% else %}
-                            <span class="badge badge-status badge-cancelled">ملغي</span>
+                            <span class="badge badge-status badge-cancelled">{% trans "Cancelled" %}</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{% url 'erp:journal_entry_detail' entry.pk %}" class="btn btn-outline-primary" title="عرض">
+                                <a href="{% url 'erp:journal_entry_detail' entry.pk %}" class="btn btn-outline-primary" title="{% trans "View" %}">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 {% if entry.status == 'draft' %}
-                                <a href="{% url 'erp:journal_entry_edit' entry.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                                <a href="{% url 'erp:journal_entry_edit' entry.pk %}" class="btn btn-outline-secondary" title="{% trans "Edit" %}">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 {% endif %}
@@ -148,10 +149,10 @@
                     <tr>
                         <td colspan="8" class="text-center text-muted py-5">
                             <i class="bi bi-journal-x fs-1 d-block mb-3"></i>
-                            لا توجد قيود يومية
+                            {% trans "No journal entries found" %}
                             <br>
                             <a href="{% url 'erp:journal_entry_create' %}" class="btn btn-primary btn-sm mt-3">
-                                <i class="bi bi-plus-lg ms-1"></i> إنشاء قيد جديد
+                                <i class="bi bi-plus-lg ms-1"></i> {% trans "Create New Entry" %}
                             </a>
                         </td>
                     </tr>

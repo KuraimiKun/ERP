@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if expense_category %}تعديل فئة المصروفات{% else %}فئة مصروفات جديدة{% endif %}{% endblock %}
-{% block page_title %}{% if expense_category %}تعديل فئة المصروفات{% else %}فئة مصروفات جديدة{% endif %}{% endblock %}
+{% block title %}{% if expense_category %}{% trans "Edit Expense Category" %}{% else %}{% trans "New Expense Category" %}{% endif %}{% endblock %}
+{% block page_title %}{% if expense_category %}{% trans "Edit Expense Category" %}{% else %}{% trans "New Expense Category" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +11,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-tags me-2"></i>
-                    {% if expense_category %}تعديل الفئة{% else %}إنشاء فئة{% endif %}
+                    {% if expense_category %}{% trans "Edit Category" %}{% else %}{% trans "Create Category" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -24,7 +25,7 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label class="form-label">الرمز</label>
+                        <label class="form-label">{% trans "Code" %}</label>
                         {{ form.code }}
                         {% if form.code.errors %}
                         <div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>
@@ -32,7 +33,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم (إنجليزي) <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Name (English)" %} <span class="text-danger">*</span></label>
                         {{ form.name }}
                         {% if form.name.errors %}
                         <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
@@ -40,7 +41,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم (عربي)</label>
+                        <label class="form-label">{% trans "Name (Arabic)" %}</label>
                         {{ form.name_ar }}
                         {% if form.name_ar.errors %}
                         <div class="invalid-feedback d-block">{{ form.name_ar.errors.0 }}</div>
@@ -48,28 +49,28 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الفئة الرئيسية</label>
+                        <label class="form-label">{% trans "Parent Category" %}</label>
                         {{ form.parent }}
                         {% if form.parent.errors %}
                         <div class="invalid-feedback d-block">{{ form.parent.errors.0 }}</div>
                         {% endif %}
-                        <div class="form-text">اختر فئة رئيسية لإنشاء فئة فرعية</div>
+                        <div class="form-text">{% trans "Select a parent category to create a sub-category" %}</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الحساب المرتبط</label>
+                        <label class="form-label">{% trans "Linked Account" %}</label>
                         {{ form.account }}
                         {% if form.account.errors %}
                         <div class="invalid-feedback d-block">{{ form.account.errors.0 }}</div>
                         {% endif %}
-                        <div class="form-text">حساب المصروفات لهذه الفئة</div>
+                        <div class="form-text">{% trans "Expense account for this category" %}</div>
                     </div>
                     
                     <div class="mb-3">
                         <div class="form-check">
                             {{ form.is_active }}
                             <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
-                                نشط
+                                {% trans "Active" %}
                             </label>
                         </div>
                     </div>
@@ -77,9 +78,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>
-                            {% if expense_category %}تحديث{% else %}إنشاء{% endif %}
+                            {% if expense_category %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:expense_category_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:expense_category_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

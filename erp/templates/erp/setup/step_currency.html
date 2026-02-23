@@ -1,6 +1,7 @@
 {% extends "erp/setup/base_setup.html" %}
+{% load i18n %}
 
-{% block title %}إعداد العملة{% endblock %}
+{% block title %}{% trans "Currency Setup" %}{% endblock %}
 
 {% block card_content %}
 <form method="post">
@@ -9,8 +10,8 @@
     <div class="setup-card-header">
         <i class="bi bi-currency-exchange"></i>
         <div>
-            <h2>الخطوة 1: إعداد العملة</h2>
-            <p>اختر العملة الأساسية للنظام المحاسبي</p>
+            <h2>{% trans "Step 1: Currency Setup" %}</h2>
+            <p>{% trans "Choose the base currency for the accounting system" %}</p>
         </div>
     </div>
     
@@ -18,7 +19,7 @@
         {% if form.errors %}
             <div class="alert alert-danger">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                يرجى تصحيح الأخطاء التالية
+                {% trans "Please correct the following errors" %}
                 <ul class="mb-0 mt-2">
                     {% for field in form %}
                         {% for error in field.errors %}
@@ -36,7 +37,7 @@
         </div>
         
         <div id="customCurrencyFields" style="display: none;">
-            <div class="section-divider">تفاصيل العملة المخصصة</div>
+            <div class="section-divider">{% trans "Custom Currency Details" %}</div>
             
             <div class="row">
                 <div class="col-md-4 mb-3">
@@ -58,14 +59,14 @@
         
         <div class="alert alert-info mt-4">
             <i class="bi bi-info-circle-fill me-2"></i>
-            <strong>ملاحظة:</strong> العملة الأساسية هي العملة التي سيتم استخدامها في جميع التقارير المالية. يمكنك إضافة عملات أخرى لاحقاً من إعدادات النظام.
+            <strong>{% trans "Note:" %}</strong> {% trans "The base currency is the currency that will be used in all financial reports. You can add other currencies later from the system settings." %}
         </div>
     </div>
     
     <div class="setup-card-footer">
-        <span class="text-muted">الخطوة 1 من 7</span>
+        <span class="text-muted">{% trans "Step 1 of 7" %}</span>
         <button type="submit" class="btn btn-setup-next">
-            التالي
+            {% trans "Next" %}
             <i class="bi bi-arrow-left ms-2"></i>
         </button>
     </div>

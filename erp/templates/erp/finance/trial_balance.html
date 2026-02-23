@@ -1,14 +1,15 @@
 {% extends 'erp/base.html' %}
 {% load humanize %}
+{% load i18n %}
 
-{% block title %}ميزان المراجعة{% endblock %}
-{% block page_title %}ميزان المراجعة{% endblock %}
+{% block title %}{% trans "Trial Balance" %}{% endblock %}
+{% block page_title %}{% trans "Trial Balance" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <a href="{% url 'erp:financial_reports' %}" class="text-decoration-none">
-            <i class="bi bi-arrow-left me-1"></i> العودة إلى التقارير المالية
+            <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Financial Reports" %}
         </a>
     </div>
 </div>
@@ -18,16 +19,16 @@
     <div class="erp-card-body py-3">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label small text-muted">من تاريخ</label>
+                <label class="form-label small text-muted">{% trans "From Date" %}</label>
                 <input type="date" name="start" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
             </div>
             <div class="col-md-4">
-                <label class="form-label small text-muted">إلى تاريخ</label>
+                <label class="form-label small text-muted">{% trans "To Date" %}</label>
                 <input type="date" name="end" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-funnel me-1"></i> تصفية
+                    <i class="bi bi-funnel me-1"></i> {% trans "Filter" %}
                 </button>
             </div>
         </form>
@@ -39,7 +40,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">إجمالي المدين</p>
+                <p class="text-muted small mb-1">{% trans "Total Debit" %}</p>
                 <h4 class="text-primary mb-0">{{ total_debit|floatformat:2|intcomma }}</h4>
             </div>
         </div>
@@ -47,7 +48,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">إجمالي الدائن</p>
+                <p class="text-muted small mb-1">{% trans "Total Credit" %}</p>
                 <h4 class="text-info mb-0">{{ total_credit|floatformat:2|intcomma }}</h4>
             </div>
         </div>
@@ -55,11 +56,11 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">الحالة</p>
+                <p class="text-muted small mb-1">{% trans "Status" %}</p>
                 {% if is_balanced %}
-                <h4 class="text-success mb-0"><i class="bi bi-check-circle me-1"></i>متوازن</h4>
+                <h4 class="text-success mb-0"><i class="bi bi-check-circle me-1"></i>{% trans "Balanced" %}</h4>
                 {% else %}
-                <h4 class="text-danger mb-0"><i class="bi bi-exclamation-triangle me-1"></i>غير متوازن</h4>
+                <h4 class="text-danger mb-0"><i class="bi bi-exclamation-triangle me-1"></i>{% trans "Unbalanced" %}</h4>
                 {% endif %}
             </div>
         </div>
@@ -69,19 +70,19 @@
 <!-- Trial Balance Table -->
 <div class="erp-card">
     <div class="erp-card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0"><i class="bi bi-table me-2"></i>ميزان المراجعة</h6>
+        <h6 class="mb-0"><i class="bi bi-table me-2"></i>{% trans "Trial Balance" %}</h6>
         <small class="text-muted">{{ start_date|date:"Y/m/d" }} — {{ end_date|date:"Y/m/d" }}</small>
     </div>
     <div class="table-responsive">
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>الرمز</th>
-                    <th>اسم الحساب</th>
-                    <th>النوع</th>
-                    <th class="text-end">مدين</th>
-                    <th class="text-end">دائن</th>
-                    <th class="text-end">الرصيد</th>
+                    <th>{% trans "Code" %}</th>
+                    <th>{% trans "Account Name" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th class="text-end">{% trans "Debit" %}</th>
+                    <th class="text-end">{% trans "Credit" %}</th>
+                    <th class="text-end">{% trans "Balance" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -114,7 +115,7 @@
                 <tr>
                     <td colspan="6" class="text-center py-4 text-muted">
                         <i class="bi bi-journal-text fs-1 d-block mb-2"></i>
-                        لا توجد قيود مرحّلة في هذه الفترة
+                        {% trans "No posted entries in this period" %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -122,7 +123,7 @@
             {% if accounts %}
             <tfoot class="table-light">
                 <tr class="fw-bold">
-                    <td colspan="3">الإجمالي</td>
+                    <td colspan="3">{% trans "Total" %}</td>
                     <td class="text-end">{{ total_debit|floatformat:2|intcomma }}</td>
                     <td class="text-end">{{ total_credit|floatformat:2|intcomma }}</td>
                     <td></td>

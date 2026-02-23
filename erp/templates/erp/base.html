@@ -1,13 +1,21 @@
 {% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-bs-theme="light">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}نظام إدارة المؤسسات{% endblock %} - {{ company.name|default:"تورستا" }}</title>
+    <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {{ company.name|default:"تورستا" }}</title>
     
-    <!-- Bootstrap 5 RTL CSS -->
+    <!-- Bootstrap 5 CSS -->
+    {% if LANGUAGE_BIDI %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    {% else %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% endif %}
+
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Google Fonts - Arabic -->
@@ -28,13 +36,13 @@
         body {
             font-family: 'Tajawal', sans-serif;
             background-color: #f1f5f9;
-            direction: rtl;
+            direction: {% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %};
         }
         
-        /* Sidebar - RTL */
+        /* Sidebar */
         .erp-sidebar {
             position: fixed;
-            right: 0;
+            {% if LANGUAGE_BIDI %}right: 0;{% else %}left: 0;{% endif %}
             top: 0;
             bottom: 0;
             width: var(--sidebar-width);
@@ -87,18 +95,18 @@
         .erp-nav-link.active {
             color: var(--sidebar-active);
             background: rgba(255,255,255,0.1);
-            border-right: 3px solid var(--primary-color);
+            {% if LANGUAGE_BIDI %}border-right: 3px solid var(--primary-color);{% else %}border-left: 3px solid var(--primary-color);{% endif %}
         }
         
         .erp-nav-link i {
             width: 24px;
-            margin-left: 0.75rem;
+            {% if LANGUAGE_BIDI %}margin-left: 0.75rem;{% else %}margin-right: 0.75rem;{% endif %}
             font-size: 1.1rem;
         }
         
-        /* Main Content - RTL */
+        /* Main Content */
         .erp-main {
-            margin-right: var(--sidebar-width);
+            {% if LANGUAGE_BIDI %}margin-right: var(--sidebar-width);{% else %}margin-left: var(--sidebar-width);{% endif %}
             min-height: 100vh;
         }
         
@@ -114,6 +122,7 @@
             top: 0;
             z-index: 999;
         }
+
         
         .erp-content {
             padding: 1.5rem;
@@ -204,10 +213,10 @@
         .badge-posted { background: #dcfce7; color: #166534; }
         .badge-cancelled { background: #fee2e2; color: #991b1b; }
         
-        /* Responsive - RTL */
+        /* Responsive */
         @media (max-width: 991.98px) {
             .erp-sidebar {
-                transform: translateX(100%);
+                transform: {% if LANGUAGE_BIDI %}translateX(100%){% else %}translateX(-100%){% endif %};
             }
             
             .erp-sidebar.show {
@@ -215,7 +224,7 @@
             }
             
             .erp-main {
-                margin-right: 0;
+                {% if LANGUAGE_BIDI %}margin-right: 0;{% else %}margin-left: 0;{% endif %}
             }
         }
         
@@ -280,186 +289,186 @@
         </div>
         
         <nav class="erp-sidebar-nav">
-            <div class="erp-nav-section">الرئيسية</div>
+            <div class="erp-nav-section">{% trans "Main" %}</div>
             <a href="{% url 'erp:dashboard' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="bi bi-grid-1x2"></i>
-                لوحة التحكم
+                {% trans "Dashboard" %}
             </a>
             
-            <div class="erp-nav-section mt-3">المبيعات والعملاء</div>
+            <div class="erp-nav-section mt-3">{% trans "Sales & Customers" %}</div>
             <a href="{% url 'erp:customer_list' %}" class="erp-nav-link {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-people"></i>
-                العملاء
+                {% trans "Customers" %}
             </a>
             <a href="{% url 'erp:lead_list' %}" class="erp-nav-link {% if 'lead' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-funnel"></i>
-                العملاء المحتملون
+                {% trans "Leads" %}
             </a>
             <a href="{% url 'erp:campaign_list' %}" class="erp-nav-link {% if 'campaign' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-megaphone"></i>
-                الحملات التسويقية
+                {% trans "Campaigns" %}
             </a>
             <a href="{% url 'erp:quote_list' %}" class="erp-nav-link {% if 'quote' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-file-earmark-text"></i>
-                عروض الأسعار
+                {% trans "Quotes" %}
             </a>
             
-            <div class="erp-nav-section mt-3">المالية</div>
+            <div class="erp-nav-section mt-3">{% trans "Finance" %}</div>
             <a href="{% url 'erp:invoice_list' %}" class="erp-nav-link {% if 'invoice' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-receipt"></i>
-                الفواتير
+                {% trans "Invoices" %}
             </a>
             <a href="{% url 'erp:payment_list' %}" class="erp-nav-link {% if 'payment_' in request.resolver_match.url_name and 'method' not in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-credit-card"></i>
-                المدفوعات
+                {% trans "Payments" %}
             </a>
             <a href="{% url 'erp:expense_list' %}" class="erp-nav-link {% if 'expense_list' in request.resolver_match.url_name or 'expense_create' in request.resolver_match.url_name or 'expense_edit' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-wallet2"></i>
-                المصروفات
+                {% trans "Expenses" %}
             </a>
             <a href="{% url 'erp:journal_entry_list' %}" class="erp-nav-link {% if 'journal_entry' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-journal-bookmark"></i>
-                القيود اليومية
+                {% trans "Journal Entries" %}
             </a>
             <a href="{% url 'erp:account_list' %}" class="erp-nav-link {% if 'account_list' in request.resolver_match.url_name or 'account_create' in request.resolver_match.url_name or 'account_edit' in request.resolver_match.url_name or 'account_delete' in request.resolver_match.url_name or 'account_detail' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-journal-text"></i>
-                دليل الحسابات
+                {% trans "Chart of Accounts" %}
             </a>
             <a href="{% url 'erp:financial_reports' %}" class="erp-nav-link {% if 'financial_reports' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-graph-up"></i>
-                التقارير المالية
+                {% trans "Financial Reports" %}
             </a>
             <a href="{% url 'erp:trial_balance' %}" class="erp-nav-link {% if 'trial_balance' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-balance-scale"></i>
-                ميزان المراجعة
+                {% trans "Trial Balance" %}
             </a>
             <a href="{% url 'erp:profit_and_loss' %}" class="erp-nav-link {% if 'profit_and_loss' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-bar-chart-line"></i>
-                الأرباح والخسائر
+                {% trans "Profit & Loss" %}
             </a>
             <a href="{% url 'erp:balance_sheet' %}" class="erp-nav-link {% if 'balance_sheet' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-file-earmark-spreadsheet"></i>
-                الميزانية العمومية
+                {% trans "Balance Sheet" %}
             </a>
             <a href="{% url 'erp:cash_flow' %}" class="erp-nav-link {% if 'cash_flow' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-currency-exchange"></i>
-                التدفقات النقدية
+                {% trans "Cash Flow" %}
             </a>
             <a href="{% url 'erp:aging_receivables' %}" class="erp-nav-link {% if 'aging_receivables' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-clock-history"></i>
-                تقادم الذمم المدينة
+                {% trans "Aging Receivables" %}
             </a>
             <a href="{% url 'erp:aging_payables' %}" class="erp-nav-link {% if 'aging_payables' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-hourglass-split"></i>
-                تقادم الذمم الدائنة
+                {% trans "Aging Payables" %}
             </a>
             <a href="{% url 'erp:tax_report' %}" class="erp-nav-link {% if 'tax_report' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-file-earmark-ruled"></i>
-                تقرير الضريبة
+                {% trans "Tax Report" %}
             </a>
             
-            <div class="erp-nav-section mt-3">المشتريات</div>
+            <div class="erp-nav-section mt-3">{% trans "Purchases" %}</div>
             <a href="{% url 'erp:supplier_list' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_detail' or request.resolver_match.url_name == 'supplier_edit' or request.resolver_match.url_name == 'supplier_delete' %}active{% endif %}">
                 <i class="bi bi-truck"></i>
-                الموردون
+                {% trans "Suppliers" %}
             </a>
             <a href="{% url 'erp:purchase_order_list' %}" class="erp-nav-link {% if 'purchase_order' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-cart3"></i>
-                أوامر الشراء
+                {% trans "Purchase Orders" %}
             </a>
             <a href="{% url 'erp:supplier_invoice_list' %}" class="erp-nav-link {% if 'supplier_invoice' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-receipt"></i>
-                فواتير الموردين
+                {% trans "Supplier Invoices" %}
             </a>
             <a href="{% url 'erp:supplier_payment_list' %}" class="erp-nav-link {% if 'supplier_payment' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-credit-card-2-back"></i>
-                مدفوعات الموردين
+                {% trans "Supplier Payments" %}
             </a>
             
-            <div class="erp-nav-section mt-3">المنتجات والخدمات</div>
+            <div class="erp-nav-section mt-3">{% trans "Products & Services" %}</div>
             <a href="{% url 'erp:product_list' %}" class="erp-nav-link {% if 'product_list' in request.resolver_match.url_name or 'product_create' in request.resolver_match.url_name or 'product_detail' in request.resolver_match.url_name or 'product_edit' in request.resolver_match.url_name or 'product_delete' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-box-seam"></i>
-                المنتجات
+                {% trans "Products" %}
             </a>
             <a href="{% url 'erp:product_category_list' %}" class="erp-nav-link {% if 'product_category' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-folder2"></i>
-                تصنيفات المنتجات
+                {% trans "Product Categories" %}
             </a>
             <a href="{% url 'erp:service_list' %}" class="erp-nav-link {% if 'service_list' in request.resolver_match.url_name or 'service_create' in request.resolver_match.url_name or 'service_detail' in request.resolver_match.url_name or 'service_edit' in request.resolver_match.url_name or 'service_delete' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-gear-wide-connected"></i>
-                الخدمات
+                {% trans "Services" %}
             </a>
             <a href="{% url 'erp:service_category_list' %}" class="erp-nav-link {% if 'service_category' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-tags-fill"></i>
-                تصنيفات الخدمات
+                {% trans "Service Categories" %}
             </a>
             
-            <div class="erp-nav-section mt-3">العمليات</div>
+            <div class="erp-nav-section mt-3">{% trans "Operations" %}</div>
             <a href="{% url 'erp:task_list' %}" class="erp-nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-check2-square"></i>
-                المهام
+                {% trans "Tasks" %}
             </a>
             
-            <div class="erp-nav-section mt-3">الموارد البشرية</div>
+            <div class="erp-nav-section mt-3">{% trans "Human Resources" %}</div>
             <a href="{% url 'erp:employee_list' %}" class="erp-nav-link {% if 'employee' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-person-badge"></i>
-                الموظفون
+                {% trans "Employees" %}
             </a>
             <a href="{% url 'erp:department_list' %}" class="erp-nav-link {% if 'department' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-diagram-3"></i>
-                الأقسام
+                {% trans "Departments" %}
             </a>
             <a href="{% url 'erp:attendance_list' %}" class="erp-nav-link {% if 'attendance' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-clock-history"></i>
-                الحضور والانصراف
+                {% trans "Attendance" %}
             </a>
             <a href="{% url 'erp:leave_request_list' %}" class="erp-nav-link {% if 'leave_request' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-calendar-x"></i>
-                طلبات الإجازة
+                {% trans "Leave Requests" %}
             </a>
             <a href="{% url 'erp:payroll_list' %}" class="erp-nav-link {% if 'payroll' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-cash-coin"></i>
-                الرواتب
+                {% trans "Payroll" %}
             </a>
             
-            <div class="erp-nav-section mt-3">الإعدادات</div>
+            <div class="erp-nav-section mt-3">{% trans "Settings" %}</div>
             <a href="{% url 'erp:tax_rate_list' %}" class="erp-nav-link {% if 'tax_rate' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-percent"></i>
-                معدلات الضريبة
+                {% trans "Tax Rates" %}
             </a>
             <a href="{% url 'erp:payment_method_list' %}" class="erp-nav-link {% if 'payment_method' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-cash-stack"></i>
-                طرق الدفع
+                {% trans "Payment Methods" %}
             </a>
             <a href="{% url 'erp:expense_category_list' %}" class="erp-nav-link {% if 'expense_category' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-tags"></i>
-                فئات المصروفات
+                {% trans "Expense Categories" %}
             </a>
             <a href="{% url 'erp:currency_list' %}" class="erp-nav-link {% if 'currency' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-currency-exchange"></i>
-                العملات
+                {% trans "Currencies" %}
             </a>
             <a href="{% url 'erp:fiscal_year_list' %}" class="erp-nav-link {% if 'fiscal_year' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-calendar-range"></i>
-                السنوات المالية
+                {% trans "Fiscal Years" %}
             </a>
             
-            <div class="erp-nav-section mt-3">الإدارة</div>
+            <div class="erp-nav-section mt-3">{% trans "Administration" %}</div>
             <a href="{% url 'erp:notification_list' %}" class="erp-nav-link {% if 'notification' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-bell"></i>
-                الإشعارات
+                {% trans "Notifications" %}
             </a>
             <a href="{% url 'erp:audit_log_list' %}" class="erp-nav-link {% if 'audit_log' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-clock-history"></i>
-                سجل التدقيق
+                {% trans "Audit Log" %}
             </a>
             <a href="{% url 'admin:index' %}" class="erp-nav-link">
                 <i class="bi bi-gear"></i>
-                لوحة الإدارة
+                {% trans "Admin Panel" %}
             </a>
             <a href="/" class="erp-nav-link">
                 <i class="bi bi-globe"></i>
-                الموقع الرئيسي
+                {% trans "Main Site" %}
             </a>
         </nav>
     </aside>
@@ -476,19 +485,35 @@
             </div>
             
             <div class="d-flex align-items-center gap-3">
+                <!-- Language Switcher -->
+                <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ redirect_to }}">
+                    <select name="language" class="form-select form-select-sm border-0 bg-transparent" onchange="this.form.submit()" style="width: auto; cursor: pointer;">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                        <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+                            {{ language.code|upper }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm" data-bs-toggle="dropdown">
-                        <i class="bi bi-plus-lg ms-1"></i> إضافة سريعة
+                        <i class="bi bi-plus-lg ms-1"></i> {% trans "Quick Add" %}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-start">
-                        <li><a class="dropdown-item" href="{% url 'erp:customer_create' %}"><i class="bi bi-person-plus ms-2"></i>عميل جديد</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:invoice_create' %}"><i class="bi bi-receipt ms-2"></i>فاتورة جديدة</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:journal_entry_create' %}"><i class="bi bi-journal-plus ms-2"></i>قيد يومية</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:lead_create' %}"><i class="bi bi-funnel ms-2"></i>عميل محتمل</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:task_create' %}"><i class="bi bi-check2-square ms-2"></i>مهمة جديدة</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:customer_create' %}"><i class="bi bi-person-plus ms-2"></i>{% trans "New Customer" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:invoice_create' %}"><i class="bi bi-receipt ms-2"></i>{% trans "New Invoice" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:journal_entry_create' %}"><i class="bi bi-journal-plus ms-2"></i>{% trans "Journal Entry" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:lead_create' %}"><i class="bi bi-funnel ms-2"></i>{% trans "New Lead" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:task_create' %}"><i class="bi bi-check2-square ms-2"></i>{% trans "New Task" %}</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:product_create' %}"><i class="bi bi-box-seam ms-2"></i>منتج جديد</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:service_create' %}"><i class="bi bi-gear-wide-connected ms-2"></i>خدمة جديدة</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:product_create' %}"><i class="bi bi-box-seam ms-2"></i>{% trans "New Product" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:service_create' %}"><i class="bi bi-gear-wide-connected ms-2"></i>{% trans "New Service" %}</a></li>
                     </ul>
                 </div>
 
@@ -500,14 +525,14 @@
                     </button>
                     <div class="dropdown-menu dropdown-menu-start shadow" style="width:360px; max-height:420px; overflow-y:auto;" id="notifDropdown">
                         <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                            <h6 class="mb-0">الإشعارات</h6>
-                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn">تعليم الكل كمقروء</button>
+                            <h6 class="mb-0">{% trans "Notifications" %}</h6>
+                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn">{% trans "Mark all as read" %}</button>
                         </div>
                         <div id="notifList" class="py-1">
-                            <div class="text-center text-muted py-3"><small>جاري التحميل...</small></div>
+                            <div class="text-center text-muted py-3"><small>{% trans "Loading..." %}</small></div>
                         </div>
                         <div class="border-top text-center py-2">
-                            <a href="{% url 'erp:notification_list' %}" class="text-decoration-none small">عرض كل الإشعارات</a>
+                            <a href="{% url 'erp:notification_list' %}" class="text-decoration-none small">{% trans "View all notifications" %}</a>
                         </div>
                     </div>
                 </div>
@@ -522,8 +547,8 @@
                     <ul class="dropdown-menu dropdown-menu-start">
                         <li class="dropdown-header">{{ user.get_full_name|default:user.username }}</li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear ms-2"></i>الإعدادات</a></li>
-                        <li><a class="dropdown-item" href="{% url 'tenants:logout' %}"><i class="bi bi-box-arrow-left ms-2"></i>تسجيل الخروج</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear ms-2"></i>{% trans "Settings" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tenants:logout' %}"><i class="bi bi-box-arrow-left ms-2"></i>{% trans "Logout" %}</a></li>
                     </ul>
                 </div>
             </div>
@@ -577,7 +602,7 @@
                     }
                     const list = document.getElementById('notifList');
                     if (!data.items.length) {
-                        list.innerHTML = '<div class="text-center text-muted py-3"><i class="bi bi-bell-slash d-block fs-4 mb-1"></i><small>لا توجد إشعارات</small></div>';
+                        list.innerHTML = '<div class="text-center text-muted py-3"><i class="bi bi-bell-slash d-block fs-4 mb-1"></i><small>{% trans "No notifications" %}</small></div>';
                         return;
                     }
                     list.innerHTML = data.items.map(n => {

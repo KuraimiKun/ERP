@@ -1,9 +1,10 @@
 {% extends 'erp/form_base.html' %}
+{% load i18n %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'erp:lead_list' %}">Leads</a></li>
+<li class="breadcrumb-item"><a href="{% url 'erp:lead_list' %}">{% trans "Leads" %}</a></li>
 <li class="breadcrumb-item"><a href="{% url 'erp:lead_detail' lead.pk %}">{{ lead.full_name }}</a></li>
-<li class="breadcrumb-item active">Add Activity</li>
+<li class="breadcrumb-item active">{% trans "Add Activity" %}</li>
 {% endblock %}
 
 {% block form_icon %}activity{% endblock %}
@@ -13,19 +14,19 @@
 {% block form_content %}
 <div class="row">
     <div class="col-md-4 mb-3 required-field">
-        <label for="{{ form.activity_type.id_for_label }}" class="form-label">Activity Type</label>
+        <label for="{{ form.activity_type.id_for_label }}" class="form-label">{% trans "Activity Type" %}</label>
         {{ form.activity_type }}
     </div>
     <div class="col-md-8 mb-3 required-field">
-        <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+        <label for="{{ form.subject.id_for_label }}" class="form-label">{% trans "Subject" %}</label>
         {{ form.subject }}
     </div>
     <div class="col-12 mb-3">
-        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+        <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Description" %}</label>
         {{ form.description }}
     </div>
     <div class="col-md-6 mb-3">
-        <label for="{{ form.activity_date.id_for_label }}" class="form-label">Activity Date</label>
+        <label for="{{ form.activity_date.id_for_label }}" class="form-label">{% trans "Activity Date" %}</label>
         {{ form.activity_date }}
     </div>
 </div>

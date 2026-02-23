@@ -1,15 +1,16 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}الحضور{% endblock %}
-{% block page_title %}الحضور{% endblock %}
+{% block title %}{% trans "Attendance" %}{% endblock %}
+{% block page_title %}{% trans "Attendance" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">تتبع حضور الموظفين وساعات العمل</p>
+        <p class="text-muted mb-0">{% trans "Track employee attendance and work hours" %}</p>
     </div>
     <a href="{% url 'erp:attendance_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> تسجيل الحضور
+        <i class="bi bi-plus-lg me-1"></i> {% trans "Check In/Out" %}
     </a>
 </div>
 
@@ -23,7 +24,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ today_present|default:0 }}</div>
-                    <div class="stat-label">حاضرون اليوم</div>
+                    <div class="stat-label">{% trans "Present Today" %}</div>
                 </div>
             </div>
         </div>
@@ -36,7 +37,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ today_late|default:0 }}</div>
-                    <div class="stat-label">متأخرون اليوم</div>
+                    <div class="stat-label">{% trans "Late Today" %}</div>
                 </div>
             </div>
         </div>
@@ -49,7 +50,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ attendance_records.count }}</div>
-                    <div class="stat-label">إجمالي السجلات</div>
+                    <div class="stat-label">{% trans "Total Records" %}</div>
                 </div>
             </div>
         </div>
@@ -61,17 +62,17 @@
     <div class="erp-card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label">من تاريخ</label>
+                <label class="form-label">{% trans "From Date" %}</label>
                 <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
             </div>
             <div class="col-md-3">
-                <label class="form-label">إلى تاريخ</label>
+                <label class="form-label">{% trans "To Date" %}</label>
                 <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
             </div>
             <div class="col-md-3">
-                <label class="form-label">الموظف</label>
+                <label class="form-label">{% trans "Employee" %}</label>
                 <select name="employee" class="form-select">
-                    <option value="">جميع الموظفين</option>
+                    <option value="">{% trans "All Employees" %}</option>
                     {% for employee in employees %}
                     <option value="{{ employee.pk }}" {% if request.GET.employee == employee.pk|stringformat:"s" %}selected{% endif %}>
                         {{ employee.first_name }} {{ employee.last_name }}
@@ -81,9 +82,9 @@
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary me-2">
-                    <i class="bi bi-funnel me-1"></i> تصفية
+                    <i class="bi bi-funnel me-1"></i> {% trans "Filter" %}
                 </button>
-                <a href="{% url 'erp:attendance_list' %}" class="btn btn-outline-secondary">إعادة تعيين</a>
+                <a href="{% url 'erp:attendance_list' %}" class="btn btn-outline-secondary">{% trans "Reset" %}</a>
             </div>
         </form>
     </div>
@@ -92,19 +93,19 @@
 <!-- Attendance Table -->
 <div class="erp-card">
     <div class="erp-card-header">
-        <h6 class="mb-0">سجلات الحضور</h6>
+        <h6 class="mb-0">{% trans "Attendance Records" %}</h6>
     </div>
     <div class="table-responsive">
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>الموظف</th>
-                    <th>التاريخ</th>
-                    <th>تسجيل الدخول</th>
-                    <th>تسجيل الخروج</th>
-                    <th>الحالة</th>
-                    <th>دقائق التأخير</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Employee" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Check In" %}</th>
+                    <th>{% trans "Check Out" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Late Minutes" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -128,20 +129,20 @@
                     <td>
                         {% if record.is_present %}
                         <span class="badge badge-status badge-paid">
-                            <i class="bi bi-check-circle me-1"></i>حاضر
+                            <i class="bi bi-check-circle me-1"></i>{% trans "Present" %}
                         </span>
                         {% else %}
                         <span class="badge badge-status badge-overdue">
-                            <i class="bi bi-x-circle me-1"></i>غائب
+                            <i class="bi bi-x-circle me-1"></i>{% trans "Absent" %}
                         </span>
                         {% endif %}
                         {% if record.is_late %}
-                        <span class="badge badge-status badge-partial ms-1">متأخر</span>
+                        <span class="badge badge-status badge-partial ms-1">{% trans "Late" %}</span>
                         {% endif %}
                     </td>
                     <td>{{ record.late_minutes|default:"-" }}</td>
                     <td>
-                        <a href="{% url 'erp:attendance_edit' record.pk %}" class="btn btn-sm btn-outline-secondary" title="تعديل">
+                        <a href="{% url 'erp:attendance_edit' record.pk %}" class="btn btn-sm btn-outline-secondary" title="{% trans "Edit" %}">
                             <i class="bi bi-pencil"></i>
                         </a>
                     </td>
@@ -150,7 +151,7 @@
                 <tr>
                     <td colspan="7" class="text-center py-4 text-muted">
                         <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
-                        لا توجد سجلات حضور
+                        {% trans "No attendance records found" %}
                     </td>
                 </tr>
                 {% endfor %}

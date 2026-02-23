@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if fiscal_year %}تعديل السنة المالية{% else %}سنة مالية جديدة{% endif %}{% endblock %}
-{% block page_title %}{% if fiscal_year %}تعديل السنة المالية{% else %}سنة مالية جديدة{% endif %}{% endblock %}
+{% block title %}{% if fiscal_year %}{% trans "Edit Fiscal Year" %}{% else %}{% trans "New Fiscal Year" %}{% endif %}{% endblock %}
+{% block page_title %}{% if fiscal_year %}{% trans "Edit Fiscal Year" %}{% else %}{% trans "New Fiscal Year" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +11,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-calendar-range me-2"></i>
-                    {% if fiscal_year %}تعديل السنة المالية{% else %}إنشاء سنة مالية{% endif %}
+                    {% if fiscal_year %}{% trans "Edit Fiscal Year" %}{% else %}{% trans "Create Fiscal Year" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -24,24 +25,24 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
                         {{ form.name }}
                         {% if form.name.errors %}
                         <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
                         {% endif %}
-                        <div class="form-text">مثل FY 2026، 2026-2027</div>
+                        <div class="form-text">{% trans "e.g., FY 2026, 2026-2027" %}</div>
                     </div>
                     
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ البداية <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Start Date" %} <span class="text-danger">*</span></label>
                             {{ form.start_date }}
                             {% if form.start_date.errors %}
                             <div class="invalid-feedback d-block">{{ form.start_date.errors.0 }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ النهاية <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "End Date" %} <span class="text-danger">*</span></label>
                             {{ form.end_date }}
                             {% if form.end_date.errors %}
                             <div class="invalid-feedback d-block">{{ form.end_date.errors.0 }}</div>
@@ -54,7 +55,7 @@
                             <div class="form-check">
                                 {{ form.is_current }}
                                 <label class="form-check-label" for="{{ form.is_current.id_for_label }}">
-                                    السنة الحالية/النشطة
+                                    {% trans "Current/Active Year" %}
                                 </label>
                             </div>
                         </div>
@@ -62,7 +63,7 @@
                             <div class="form-check">
                                 {{ form.is_closed }}
                                 <label class="form-check-label" for="{{ form.is_closed.id_for_label }}">
-                                    مغلق
+                                    {% trans "Closed" %}
                                 </label>
                             </div>
                         </div>
@@ -71,9 +72,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>
-                            {% if fiscal_year %}تحديث{% else %}إنشاء{% endif %}
+                            {% if fiscal_year %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:fiscal_year_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:fiscal_year_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

@@ -1,22 +1,22 @@
 {% extends 'erp/base.html' %}
-
-{% block title %}دفعة {{ payment.payment_number }}{% endblock %}
-{% block page_title %}تفاصيل الدفعة{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Payment" %} {{ payment.payment_number }}{% endblock %}
+{% block page_title %}{% trans "Payment Details" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'erp:payment_list' %}">المدفوعات</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'erp:payment_list' %}">{% trans "Payments" %}</a></li>
                 <li class="breadcrumb-item active">{{ payment.payment_number }}</li>
             </ol>
         </nav>
     </div>
     <div class="btn-group">
         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-            <i class="bi bi-trash ms-1"></i> حذف
+            <i class="bi bi-trash ms-1"></i> {% trans "Delete" %}
         </button>
     </div>
 </div>
@@ -31,7 +31,7 @@
             <div class="erp-card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="text-muted small">العميل</label>
+                        <label class="text-muted small">{% trans "Customer" %}</label>
                         <div class="fw-medium">
                             {% if payment.customer %}
                             <a href="{% url 'erp:customer_detail' payment.customer.pk %}">
@@ -43,36 +43,36 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">المبلغ</label>
+                        <label class="text-muted small">{% trans "Amount" %}</label>
                         <div class="fw-bold fs-4 text-success">
                             {{ payment.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }}
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">تاريخ الدفع</label>
+                        <label class="text-muted small">{% trans "Payment Date" %}</label>
                         <div class="fw-medium">{{ payment.payment_date|date:"Y/m/d" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">طريقة الدفع</label>
+                        <label class="text-muted small">{% trans "Payment Method" %}</label>
                         <div>{{ payment.payment_method.name|default:"-" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">المرجع</label>
+                        <label class="text-muted small">{% trans "Reference" %}</label>
                         <div>{{ payment.reference_number|default:"-" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">المبلغ المخصص</label>
+                        <label class="text-muted small">{% trans "Allocated Amount" %}</label>
                         <div>{{ payment.currency.symbol|default:"$" }}{{ payment.allocated_amount|floatformat:2 }}</div>
                     </div>
                     {% if payment.unallocated_amount > 0 %}
                     <div class="col-md-6">
-                        <label class="text-muted small">المبلغ غير المخصص</label>
+                        <label class="text-muted small">{% trans "Unallocated Amount" %}</label>
                         <div class="text-warning">{{ payment.currency.symbol|default:"$" }}{{ payment.unallocated_amount|floatformat:2 }}</div>
                     </div>
                     {% endif %}
                     {% if payment.notes %}
                     <div class="col-12">
-                        <label class="text-muted small">ملاحظات</label>
+                        <label class="text-muted small">{% trans "Notes" %}</label>
                         <div>{{ payment.notes }}</div>
                     </div>
                     {% endif %}
@@ -80,20 +80,20 @@
             </div>
         </div>
         
-        <!-- الفواتير المرتبطة -->
+        <!-- {% trans "Related Invoices" %} -->
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0">الفواتير المرتبطة</h6>
+                <h6 class="mb-0">{% trans "Related Invoices" %}</h6>
             </div>
             <div class="table-responsive">
                 <table class="table erp-table mb-0">
                     <thead>
                         <tr>
-                            <th>رقم الفاتورة</th>
-                            <th>العميل</th>
-                            <th class="text-start">إجمالي الفاتورة</th>
-                            <th class="text-start">المبلغ المخصص</th>
-                            <th class="text-start">الحالة</th>
+                            <th>{% trans "Invoice Number" %}</th>
+                            <th>{% trans "Customer" %}</th>
+                            <th class="text-start">{% trans "Invoice Total" %}</th>
+                            <th class="text-start">{% trans "Allocated Amount" %}</th>
+                            <th class="text-start">{% trans "Status" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -113,7 +113,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center py-3 text-muted">لا توجد فواتير مرتبطة بهذه الدفعة</td>
+                            <td colspan="5" class="text-center py-3 text-muted">{% trans "No invoices linked to this payment" %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -125,15 +125,15 @@
     <div class="col-lg-4">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0">معلومات</h6>
+                <h6 class="mb-0">{% trans "Information" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">تاريخ الإنشاء</label>
+                    <label class="text-muted small">{% trans "Created Date" %}</label>
                     <div>{{ payment.created_at|date:"Y/m/d H:i"|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">آخر تحديث</label>
+                    <label class="text-muted small">{% trans "Last Updated" %}</label>
                     <div>{{ payment.updated_at|date:"Y/m/d H:i"|default:"-" }}</div>
                 </div>
             </div>
@@ -146,17 +146,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">تأكيد الحذف</h5>
+                <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                هل أنت متأكد من حذف هذه الدفعة؟ لا يمكن التراجع عن هذا الإجراء.
+                {% trans "Are you sure you want to delete this payment? This action cannot be undone." %}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                 <form action="{% url 'erp:payment_delete' payment.pk %}" method="post" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">حذف</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                 </form>
             </div>
         </div>

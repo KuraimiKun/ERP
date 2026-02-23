@@ -1,6 +1,7 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}عروض الأسعار - ERP{% endblock %}
+{% block title %}{% trans "Quotes" %} - ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4" dir="rtl">
@@ -9,14 +10,14 @@
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-                    <li class="breadcrumb-item active">عروض الأسعار</li>
+                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+                    <li class="breadcrumb-item active">{% trans "Quotes" %}</li>
                 </ol>
             </nav>
-            <h1 class="h3 mb-0">عروض الأسعار</h1>
+            <h1 class="h3 mb-0">{% trans "Quotes" %}</h1>
         </div>
         <a href="{% url 'erp:quote_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-lg ms-1"></i> إنشاء عرض سعر
+            <i class="bi bi-plus-lg ms-1"></i> {% trans "Create Quote" %}
         </a>
     </div>
     
@@ -25,9 +26,9 @@
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">الحالة</label>
+                    <label class="form-label">{% trans "Status" %}</label>
                     <select name="status" class="form-select">
-                        <option value="">جميع الحالات</option>
+                        <option value="">{% trans "All Statuses" %}</option>
                         {% for value, label in statuses %}
                         <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -35,7 +36,7 @@
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-secondary">
-                        <i class="bi bi-funnel ms-1"></i> تصفية
+                        <i class="bi bi-funnel ms-1"></i> {% trans "Filter" %}
                     </button>
                 </div>
             </form>
@@ -48,13 +49,13 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>رقم العرض</th>
-                        <th>التاريخ</th>
-                        <th>العميل/عميل محتمل</th>
-                        <th>صالح حتى</th>
-                        <th>الإجمالي</th>
-                        <th>الحالة</th>
-                        <th class="text-start">الإجراءات</th>
+                        <th>{% trans "Quote Number" %}</th>
+                        <th>{% trans "Date" %}</th>
+                        <th>{% trans "Customer/Lead" %}</th>
+                        <th>{% trans "Valid Until" %}</th>
+                        <th>{% trans "Total" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th class="text-start">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,23 +79,23 @@
                         <td>
                             {{ quote.valid_until|date:"Y/m/d" }}
                             {% if quote.valid_until < today %}
-                            <span class="badge bg-danger me-1">منتهي الصلاحية</span>
+                            <span class="badge bg-danger me-1">{% trans "Expired" %}</span>
                             {% endif %}
                         </td>
                         <td class="fw-bold">${{ quote.total_amount|floatformat:2 }}</td>
                         <td>
                             {% if quote.status == 'draft' %}
-                            <span class="badge bg-secondary">مسودة</span>
+                            <span class="badge bg-secondary">{% trans "Draft" %}</span>
                             {% elif quote.status == 'sent' %}
-                            <span class="badge bg-info">مرسل</span>
+                            <span class="badge bg-info">{% trans "Sent" %}</span>
                             {% elif quote.status == 'accepted' %}
-                            <span class="badge bg-success">مقبول</span>
+                            <span class="badge bg-success">{% trans "Accepted" %}</span>
                             {% elif quote.status == 'rejected' %}
-                            <span class="badge bg-danger">مرفوض</span>
+                            <span class="badge bg-danger">{% trans "Rejected" %}</span>
                             {% elif quote.status == 'expired' %}
-                            <span class="badge bg-warning text-dark">منتهي الصلاحية</span>
+                            <span class="badge bg-warning text-dark">{% trans "Expired" %}</span>
                             {% elif quote.status == 'cancelled' %}
-                            <span class="badge bg-dark">ملغي</span>
+                            <span class="badge bg-dark">{% trans "Cancelled" %}</span>
                             {% endif %}
                         </td>
                         <td class="text-start">
@@ -113,7 +114,7 @@
                     <tr>
                         <td colspan="7" class="text-center py-4 text-muted">
                             <i class="bi bi-file-text fs-1 d-block mb-2"></i>
-                            لا توجد عروض أسعار
+                            {% trans "No quotes found" %}
                         </td>
                     </tr>
                     {% endfor %}

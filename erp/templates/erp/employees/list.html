@@ -1,7 +1,8 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
-{% block title %}الموظفون{% endblock %}
-{% block page_title %}الموظفون{% endblock %}
+{% block title %}{% trans "Employees" %}{% endblock %}
+{% block page_title %}{% trans "Employees" %}{% endblock %}
 
 {% block content %}
 <!-- Filters & Actions -->
@@ -9,22 +10,22 @@
     <div class="erp-card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label">بحث</label>
-                <input type="text" name="search" class="form-control" placeholder="الاسم، البريد الإلكتروني، أو الرقم..." value="{{ request.GET.search }}">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans "Name, Email, or Number..." %}" value="{{ request.GET.search }}">
             </div>
             <div class="col-md-2">
-                <label class="form-label">القسم</label>
+                <label class="form-label">{% trans "Department" %}</label>
                 <select name="department" class="form-select">
-                    <option value="">جميع الأقسام</option>
+                    <option value="">{% trans "All Departments" %}</option>
                     {% for dept in departments %}
                     <option value="{{ dept.pk }}" {% if request.GET.department == dept.pk|stringformat:"i" %}selected{% endif %}>{{ dept.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">الحالة</label>
+                <label class="form-label">{% trans "Status" %}</label>
                 <select name="status" class="form-select">
-                    <option value="">جميع الحالات</option>
+                    <option value="">{% trans "All Statuses" %}</option>
                     {% for value, label in statuses %}
                     <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -32,13 +33,13 @@
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search ms-1"></i> بحث
+                    <i class="bi bi-search ms-1"></i> {% trans "Search" %}
                 </button>
-                <a href="{% url 'erp:employee_list' %}" class="btn btn-outline-secondary">مسح</a>
+                <a href="{% url 'erp:employee_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
             </div>
             <div class="col-md-2 text-start">
                 <a href="{% url 'erp:employee_create' %}" class="btn btn-success">
-                    <i class="bi bi-plus-lg ms-1"></i> إضافة موظف
+                    <i class="bi bi-plus-lg ms-1"></i> {% trans "Add Employee" %}
                 </a>
             </div>
         </form>
@@ -64,31 +65,31 @@
                     </div>
                 </div>
                 <div class="mb-2">
-                    <small class="text-muted">رقم الموظف:</small>
+                    <small class="text-muted">{% trans "Employee ID:" %}</small>
                     <span>{{ employee.employee_id }}</span>
                 </div>
                 <div class="mb-2">
-                    <small class="text-muted">القسم:</small>
+                    <small class="text-muted">{% trans "Department:" %}</small>
                     <span>{{ employee.department.name|default:"-" }}</span>
                 </div>
                 <div class="mb-2">
-                    <small class="text-muted">البريد الإلكتروني:</small>
+                    <small class="text-muted">{% trans "Email:" %}</small>
                     <a href="mailto:{{ employee.email }}">{{ employee.email }}</a>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                     {% if employee.employment_status == 'active' %}
-                    <span class="badge bg-success">نشط</span>
+                    <span class="badge bg-success">{% trans "Active" %}</span>
                     {% elif employee.employment_status == 'on_leave' %}
-                    <span class="badge bg-warning">في إجازة</span>
+                    <span class="badge bg-warning">{% trans "On Leave" %}</span>
                     {% elif employee.employment_status == 'terminated' %}
-                    <span class="badge bg-danger">منتهي</span>
+                    <span class="badge bg-danger">{% trans "Terminated" %}</span>
                     {% else %}
                     <span class="badge bg-secondary">{{ employee.get_employment_status_display }}</span>
                     {% endif %}
                     
                     <div class="btn-group btn-group-sm">
-                        <a href="{% url 'erp:employee_detail' employee.pk %}" class="btn btn-outline-primary">عرض</a>
-                        <a href="{% url 'erp:employee_edit' employee.pk %}" class="btn btn-outline-secondary">تعديل</a>
+                        <a href="{% url 'erp:employee_detail' employee.pk %}" class="btn btn-outline-primary">{% trans "View" %}</a>
+                        <a href="{% url 'erp:employee_edit' employee.pk %}" class="btn btn-outline-secondary">{% trans "Edit" %}</a>
                     </div>
                 </div>
             </div>
@@ -99,8 +100,8 @@
         <div class="erp-card">
             <div class="erp-card-body text-center py-5">
                 <i class="bi bi-person-badge fs-1 text-muted"></i>
-                <p class="mt-2 mb-0">لم يتم العثور على موظفين</p>
-                <a href="{% url 'erp:employee_create' %}" class="btn btn-primary mt-3">أضف أول موظف</a>
+                <p class="mt-2 mb-0">{% trans "No employees found" %}</p>
+                <a href="{% url 'erp:employee_create' %}" class="btn btn-primary mt-3">{% trans "Add First Employee" %}</a>
             </div>
         </div>
     </div>

@@ -1,4 +1,5 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
 {% block title %}{{ quote.quote_number }} - ERP{% endblock %}
 
@@ -9,19 +10,19 @@
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'erp:quote_list' %}">عروض الأسعار</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'erp:quote_list' %}">{% trans "Quotes" %}</a></li>
                     <li class="breadcrumb-item active">{{ quote.quote_number }}</li>
                 </ol>
             </nav>
-            <h1 class="h3 mb-0">عرض سعر {{ quote.quote_number }}</h1>
+            <h1 class="h3 mb-0">{% trans "Quote" %} {{ quote.quote_number }}</h1>
         </div>
         <div class="d-flex gap-2">
             <a href="{% url 'erp:quote_edit' quote.pk %}" class="btn btn-primary">
-                <i class="bi bi-pencil ms-1"></i> تعديل
+                <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
             </a>
             <a href="{% url 'erp:quote_delete' quote.pk %}" class="btn btn-outline-danger">
-                <i class="bi bi-trash ms-1"></i> حذف
+                <i class="bi bi-trash ms-1"></i> {% trans "Delete" %}
             </a>
         </div>
     </div>
@@ -31,12 +32,12 @@
         <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">تفاصيل عرض السعر</h5>
+                    <h5 class="mb-0">{% trans "Quote Details" %}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <h6 class="text-muted">العميل/عميل محتمل</h6>
+                            <h6 class="text-muted">{% trans "Customer/Lead" %}</h6>
                             {% if quote.customer %}
                             <p class="mb-0">
                                 <a href="{% url 'erp:customer_detail' quote.customer.pk %}">{{ quote.customer.name }}</a>
@@ -50,26 +51,26 @@
                             {% endif %}
                         </div>
                         <div class="col-md-3">
-                            <h6 class="text-muted">تاريخ العرض</h6>
+                            <h6 class="text-muted">{% trans "Quote Date" %}</h6>
                             <p class="mb-0">{{ quote.quote_date|date:"Y/m/d" }}</p>
                         </div>
                         <div class="col-md-3">
-                            <h6 class="text-muted">صالح حتى</h6>
+                            <h6 class="text-muted">{% trans "Valid Until" %}</h6>
                             <p class="mb-0">{{ quote.valid_until|date:"Y/m/d" }}</p>
                         </div>
                     </div>
                     
                     <!-- Line Items -->
-                    <h6 class="text-muted mb-3">البنود</h6>
+                    <h6 class="text-muted mb-3">{% trans "Lines" %}</h6>
                     <div class="table-responsive">
                         <table class="table">
                             <thead class="table-light">
                                 <tr>
-                                    <th>الخدمة</th>
-                                    <th>الوصف</th>
-                                    <th class="text-center">الكمية</th>
-                                    <th class="text-start">سعر الوحدة</th>
-                                    <th class="text-start">الإجمالي</th>
+                                    <th>{% trans "Service" %}</th>
+                                    <th>{% trans "Description" %}</th>
+                                    <th class="text-center">{% trans "Quantity" %}</th>
+                                    <th class="text-start">{% trans "Unit Price" %}</th>
+                                    <th class="text-start">{% trans "Total" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -83,27 +84,27 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">لا توجد بنود</td>
+                                    <td colspan="5" class="text-center text-muted">{% trans "No lines found" %}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="4" class="text-start"><strong>المجموع الفرعي:</strong></td>
+                                    <td colspan="4" class="text-start"><strong>{% trans "Subtotal:" %}</strong></td>
                                     <td class="text-start">${{ quote.subtotal|floatformat:2 }}</td>
                                 </tr>
                                 {% if quote.discount_amount %}
                                 <tr>
-                                    <td colspan="4" class="text-start"><strong>الخصم:</strong></td>
+                                    <td colspan="4" class="text-start"><strong>{% trans "Discount:" %}</strong></td>
                                     <td class="text-start text-danger">-${{ quote.discount_amount|floatformat:2 }}</td>
                                 </tr>
                                 {% endif %}
                                 <tr>
-                                    <td colspan="4" class="text-start"><strong>الضريبة:</strong></td>
+                                    <td colspan="4" class="text-start"><strong>{% trans "Tax:" %}</strong></td>
                                     <td class="text-start">${{ quote.tax_amount|floatformat:2 }}</td>
                                 </tr>
                                 <tr class="table-primary">
-                                    <td colspan="4" class="text-start"><strong>الإجمالي:</strong></td>
+                                    <td colspan="4" class="text-start"><strong>{% trans "Total:" %}</strong></td>
                                     <td class="text-start"><strong>${{ quote.total_amount|floatformat:2 }}</strong></td>
                                 </tr>
                             </tfoot>
@@ -112,13 +113,13 @@
                     
                     {% if quote.notes %}
                     <hr>
-                    <h6 class="text-muted">ملاحظات</h6>
+                    <h6 class="text-muted">{% trans "Notes" %}</h6>
                     <p class="mb-0">{{ quote.notes }}</p>
                     {% endif %}
                     
                     {% if quote.terms %}
                     <hr>
-                    <h6 class="text-muted">الشروط والأحكام</h6>
+                    <h6 class="text-muted">{% trans "Terms and Conditions" %}</h6>
                     <p class="mb-0">{{ quote.terms }}</p>
                     {% endif %}
                 </div>
@@ -131,22 +132,22 @@
             <div class="card mb-4">
                 <div class="card-body text-center">
                     {% if quote.status == 'draft' %}
-                    <span class="badge bg-secondary fs-6 px-3 py-2">مسودة</span>
+                    <span class="badge bg-secondary fs-6 px-3 py-2">{% trans "Draft" %}</span>
                     {% elif quote.status == 'sent' %}
-                    <span class="badge bg-info fs-6 px-3 py-2">مرسل</span>
+                    <span class="badge bg-info fs-6 px-3 py-2">{% trans "Sent" %}</span>
                     {% elif quote.status == 'accepted' %}
-                    <span class="badge bg-success fs-6 px-3 py-2">مقبول</span>
+                    <span class="badge bg-success fs-6 px-3 py-2">{% trans "Accepted" %}</span>
                     {% elif quote.status == 'rejected' %}
-                    <span class="badge bg-danger fs-6 px-3 py-2">مرفوض</span>
+                    <span class="badge bg-danger fs-6 px-3 py-2">{% trans "Rejected" %}</span>
                     {% elif quote.status == 'expired' %}
-                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">منتهي الصلاحية</span>
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">{% trans "Expired" %}</span>
                     {% elif quote.status == 'cancelled' %}
-                    <span class="badge bg-dark fs-6 px-3 py-2">ملغي</span>
+                    <span class="badge bg-dark fs-6 px-3 py-2">{% trans "Cancelled" %}</span>
                     {% endif %}
                     
                     <div class="mt-3">
                         <h3 class="mb-0">${{ quote.total_amount|floatformat:2 }}</h3>
-                        <small class="text-muted">المبلغ الإجمالي</small>
+                        <small class="text-muted">{% trans "Total Amount" %}</small>
                     </div>
                 </div>
             </div>
@@ -154,19 +155,19 @@
             <!-- Actions -->
             <div class="card">
                 <div class="card-header">
-                    <h6 class="mb-0">الإجراءات</h6>
+                    <h6 class="mb-0">{% trans "Actions" %}</h6>
                 </div>
                 <div class="card-body d-grid gap-2">
                     {% if quote.status == 'accepted' and not quote.converted_to_invoice %}
                     <a href="{% url 'erp:quote_convert_to_invoice' quote.pk %}" class="btn btn-success">
-                        <i class="bi bi-receipt ms-1"></i> تحويل إلى فاتورة
+                        <i class="bi bi-receipt ms-1"></i> {% trans "Convert to Invoice" %}
                     </a>
                     {% endif %}
                     <a href="{% url 'erp:quote_pdf' quote.pk %}" class="btn btn-outline-secondary" target="_blank">
-                        <i class="bi bi-printer ms-1"></i> طباعة PDF
+                        <i class="bi bi-printer ms-1"></i> {% trans "Print PDF" %}
                     </a>
                     <button type="button" class="btn btn-outline-secondary">
-                        <i class="bi bi-envelope ms-1"></i> إرسال للعميل
+                        <i class="bi bi-envelope ms-1"></i> {% trans "Send to Customer" %}
                     </button>
                 </div>
             </div>

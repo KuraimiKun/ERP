@@ -1,4 +1,5 @@
 {% extends "erp/pdf/base_pdf.html" %}
+{% load i18n %}
 {% block content %}
 <div class="header">
     <table><tr>
@@ -12,11 +13,11 @@
             </div>
         </td>
         <td style="width:40%;text-align:left">
-            <div style="font-size:16px;font-weight:bold;color:#0d6efd">أمر شراء</div>
+            <div style="font-size:16px;font-weight:bold;color:#0d6efd">{% trans "Purchase Order" %}</div>
             <div style="font-size:14px;font-weight:bold">{{ order.po_number }}</div>
             <div class="company-details">
-                التاريخ: {{ order.po_date|date:"Y/m/d" }}<br>
-                {% if order.expected_date %}التسليم المتوقع: {{ order.expected_date|date:"Y/m/d" }}{% endif %}
+                {% trans "Date:" %} {{ order.po_date|date:"Y/m/d" }}<br>
+                {% if order.expected_date %}{% trans "Expected Delivery:" %} {{ order.expected_date|date:"Y/m/d" }}{% endif %}
             </div>
         </td>
     </tr></table>
@@ -24,7 +25,7 @@
 
 <table class="info-table"><tr>
     <td style="width:50%">
-        <div class="info-label">المورد</div>
+        <div class="info-label">{% trans "Supplier" %}</div>
         <div class="info-value">{{ order.supplier.name }}</div>
         <div class="company-details">
             {{ order.supplier.address|default:"" }}<br>
@@ -33,20 +34,20 @@
         </div>
     </td>
     <td style="width:50%;text-align:left">
-        <div class="info-label">الحالة</div>
+        <div class="info-label">{% trans "Status" %}</div>
         <span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
-        {% if order.reference %}<br><div class="info-label" style="margin-top:5px">المرجع</div><div class="info-value">{{ order.reference }}</div>{% endif %}
+        {% if order.reference %}<br><div class="info-label" style="margin-top:5px">{% trans "Reference" %}</div><div class="info-value">{{ order.reference }}</div>{% endif %}
     </td>
 </tr></table>
 
 <table class="items-table">
     <thead><tr>
         <th style="width:5%">#</th>
-        <th style="width:45%">الوصف</th>
-        <th style="width:10%">الكمية</th>
-        <th style="width:15%" class="text-left">سعر الوحدة</th>
-        <th style="width:10%" class="text-left">الضريبة</th>
-        <th style="width:15%" class="text-left">الإجمالي</th>
+        <th style="width:45%">{% trans "Description" %}</th>
+        <th style="width:10%">{% trans "Quantity" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Unit Price" %}</th>
+        <th style="width:10%" class="text-left">{% trans "Tax" %}</th>
+        <th style="width:15%" class="text-left">{% trans "Total" %}</th>
     </tr></thead>
     <tbody>
     {% for line in lines %}
@@ -63,18 +64,18 @@
 </table>
 
 <table class="totals-table">
-    <tr><td>المجموع الفرعي:</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.subtotal|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Subtotal:" %}</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.subtotal|floatformat:2 }}</td></tr>
     {% if order.discount_amount > 0 %}
-    <tr><td>الخصم:</td><td class="text-left" style="color:#dc3545">-{{ order.currency.symbol|default:"$" }}{{ order.discount_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Discount:" %}</td><td class="text-left" style="color:#dc3545">-{{ order.currency.symbol|default:"$" }}{{ order.discount_amount|floatformat:2 }}</td></tr>
     {% endif %}
-    <tr><td>الضريبة:</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.tax_amount|floatformat:2 }}</td></tr>
-    <tr class="total-row"><td>الإجمالي:</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.total_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Tax:" %}</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.tax_amount|floatformat:2 }}</td></tr>
+    <tr class="total-row"><td>{% trans "Total:" %}</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.total_amount|floatformat:2 }}</td></tr>
 </table>
 
 {% if order.notes %}
-<div class="notes"><strong>ملاحظات:</strong><br>{{ order.notes|linebreaksbr }}</div>
+<div class="notes"><strong>{% trans "Notes:" %}</strong><br>{{ order.notes|linebreaksbr }}</div>
 {% endif %}
 {% if order.terms %}
-<div class="notes"><strong>الشروط:</strong><br>{{ order.terms|linebreaksbr }}</div>
+<div class="notes"><strong>{% trans "Terms:" %}</strong><br>{{ order.terms|linebreaksbr }}</div>
 {% endif %}
 {% endblock %}

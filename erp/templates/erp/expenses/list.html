@@ -1,22 +1,23 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}المصروفات - ERP{% endblock %}
+{% block title %}{% trans "Expenses - ERP" %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" dir="rtl">
+<div class="container-fluid py-4">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-                    <li class="breadcrumb-item active">المصروفات</li>
+                    <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+                    <li class="breadcrumb-item active">{% trans "Expenses" %}</li>
                 </ol>
             </nav>
-            <h1 class="h3 mb-0">المصروفات</h1>
+            <h1 class="h3 mb-0">{% trans "Expenses" %}</h1>
         </div>
         <a href="{% url 'erp:expense_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-lg ms-1"></i> إضافة مصروف
+            <i class="bi bi-plus-lg ms-1"></i> {% trans "Add Expense" %}
         </a>
     </div>
     
@@ -25,9 +26,9 @@
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">الحالة</label>
+                    <label class="form-label">{% trans "Status" %}</label>
                     <select name="status" class="form-select">
-                        <option value="">جميع الحالات</option>
+                        <option value="">{% trans "All Statuses" %}</option>
                         {% for value, label in statuses %}
                         <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -35,7 +36,7 @@
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-secondary">
-                        <i class="bi bi-funnel ms-1"></i> تصفية
+                        <i class="bi bi-funnel ms-1"></i> {% trans "Filter" %}
                     </button>
                 </div>
             </form>
@@ -48,13 +49,13 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>التاريخ</th>
-                        <th>الفئة</th>
-                        <th>الوصف</th>
-                        <th>مقدم من</th>
-                        <th>المبلغ</th>
-                        <th>الحالة</th>
-                        <th class="text-start">الإجراءات</th>
+                        <th>{% trans "Date" %}</th>
+                        <th>{% trans "Category" %}</th>
+                        <th>{% trans "Description" %}</th>
+                        <th>{% trans "Submitted By" %}</th>
+                        <th>{% trans "Amount" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th class="text-start">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,15 +68,15 @@
                         <td class="fw-bold">{{ expense.total_amount|floatformat:2 }} $</td>
                         <td>
                             {% if expense.status == 'draft' %}
-                            <span class="badge bg-secondary">مسودة</span>
+                            <span class="badge bg-secondary">{% trans "Draft" %}</span>
                             {% elif expense.status == 'submitted' %}
-                            <span class="badge bg-info">مُقدم</span>
+                            <span class="badge bg-info">{% trans "Submitted" %}</span>
                             {% elif expense.status == 'approved' %}
-                            <span class="badge bg-success">معتمد</span>
+                            <span class="badge bg-success">{% trans "Approved" %}</span>
                             {% elif expense.status == 'rejected' %}
-                            <span class="badge bg-danger">مرفوض</span>
+                            <span class="badge bg-danger">{% trans "Rejected" %}</span>
                             {% elif expense.status == 'paid' %}
-                            <span class="badge bg-primary">مدفوع</span>
+                            <span class="badge bg-primary">{% trans "Paid" %}</span>
                             {% endif %}
                         </td>
                         <td class="text-start">
@@ -91,7 +92,7 @@
                     <tr>
                         <td colspan="7" class="text-center py-4 text-muted">
                             <i class="bi bi-receipt fs-1 d-block mb-2"></i>
-                            لا توجد مصروفات
+                            {% trans "No expenses found" %}
                         </td>
                     </tr>
                     {% endfor %}

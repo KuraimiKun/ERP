@@ -1,13 +1,14 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}أمر شراء - {{ order.po_number }}{% endblock %}
-{% block page_title %}تفاصيل أمر الشراء{% endblock %}
+{% block title %}{% trans "Purchase Order" %} - {{ order.po_number }}{% endblock %}
+{% block page_title %}{% trans "Purchase Order Details" %}{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:purchase_order_list' %}">أوامر الشراء</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:purchase_order_list' %}">{% trans "Purchase Orders" %}</a></li>
         <li class="breadcrumb-item active">{{ order.po_number }}</li>
     </ol>
 </nav>
@@ -23,41 +24,41 @@
                 <div class="text-start">
                     <div class="display-6 fw-bold">{{ order.currency.symbol|default:"$" }}{{ order.total_amount|floatformat:2 }}</div>
                     {% if order.balance_due > 0 %}
-                    <small class="text-warning">المتبقي: {{ order.currency.symbol|default:"$" }}{{ order.balance_due|floatformat:2 }}</small>
+                    <small class="text-warning">{% trans "Balance Due:" %} {{ order.currency.symbol|default:"$" }}{{ order.balance_due|floatformat:2 }}</small>
                     {% endif %}
                 </div>
             </div>
             <div class="erp-card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="text-muted small">المورد</label>
+                        <label class="text-muted small">{% trans "Supplier" %}</label>
                         <div class="fw-medium">
                             <a href="{% url 'erp:supplier_detail' order.supplier.pk %}">{{ order.supplier.name }}</a>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">تاريخ الطلب</label>
+                        <label class="text-muted small">{% trans "Order Date" %}</label>
                         <div>{{ order.po_date|date:"Y/m/d" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">تاريخ التسليم المتوقع</label>
+                        <label class="text-muted small">{% trans "Expected Delivery Date" %}</label>
                         <div>{{ order.expected_date|date:"Y/m/d"|default:"-" }}</div>
                     </div>
                     {% if order.reference %}
                     <div class="col-md-6">
-                        <label class="text-muted small">المرجع</label>
+                        <label class="text-muted small">{% trans "Reference" %}</label>
                         <div>{{ order.reference }}</div>
                     </div>
                     {% endif %}
                     {% if order.approved_by %}
                     <div class="col-md-6">
-                        <label class="text-muted small">معتمد بواسطة</label>
+                        <label class="text-muted small">{% trans "Approved By" %}</label>
                         <div>{{ order.approved_by }} - {{ order.approval_date|date:"Y/m/d H:i" }}</div>
                     </div>
                     {% endif %}
                     {% if order.notes %}
                     <div class="col-12">
-                        <label class="text-muted small">ملاحظات</label>
+                        <label class="text-muted small">{% trans "Notes" %}</label>
                         <div>{{ order.notes }}</div>
                     </div>
                     {% endif %}
@@ -67,16 +68,16 @@
 
         <!-- Order Lines -->
         <div class="erp-card mb-4">
-            <div class="erp-card-header"><h6 class="mb-0">بنود الطلب</h6></div>
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Order Lines" %}</h6></div>
             <div class="table-responsive">
                 <table class="table erp-table mb-0">
                     <thead>
                         <tr>
-                            <th>الوصف</th>
-                            <th class="text-center">الكمية</th>
-                            <th class="text-start">سعر الوحدة</th>
-                            <th class="text-start">الضريبة</th>
-                            <th class="text-start">الإجمالي</th>
+                            <th>{% trans "Description" %}</th>
+                            <th class="text-center">{% trans "Quantity" %}</th>
+                            <th class="text-start">{% trans "Unit Price" %}</th>
+                            <th class="text-start">{% trans "Tax" %}</th>
+                            <th class="text-start">{% trans "Total" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -93,27 +94,27 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center py-3 text-muted">لا توجد بنود</td>
+                            <td colspan="5" class="text-center py-3 text-muted">{% trans "No lines found" %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot class="table-light">
                         <tr>
-                            <td colspan="4" class="text-start"><strong>المجموع الفرعي:</strong></td>
+                            <td colspan="4" class="text-start"><strong>{% trans "Subtotal:" %}</strong></td>
                             <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ order.subtotal|floatformat:2 }}</td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-start">الضريبة:</td>
+                            <td colspan="4" class="text-start">{% trans "Tax:" %}</td>
                             <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ order.tax_amount|floatformat:2 }}</td>
                         </tr>
                         {% if order.discount_amount > 0 %}
                         <tr>
-                            <td colspan="4" class="text-start">الخصم:</td>
+                            <td colspan="4" class="text-start">{% trans "Discount:" %}</td>
                             <td class="text-start text-danger">-{{ order.currency.symbol|default:"$" }}{{ order.discount_amount|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
                         <tr class="fw-bold">
-                            <td colspan="4" class="text-start">الإجمالي:</td>
+                            <td colspan="4" class="text-start">{% trans "Total:" %}</td>
                             <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ order.total_amount|floatformat:2 }}</td>
                         </tr>
                     </tfoot>
@@ -124,15 +125,15 @@
         <!-- Linked Supplier Invoices -->
         {% if supplier_invoices %}
         <div class="erp-card mb-4">
-            <div class="erp-card-header"><h6 class="mb-0">فواتير الموردين المرتبطة</h6></div>
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Linked Supplier Invoices" %}</h6></div>
             <div class="table-responsive">
                 <table class="table erp-table mb-0">
                     <thead>
                         <tr>
-                            <th>رقم الفاتورة</th>
-                            <th>التاريخ</th>
-                            <th class="text-start">الإجمالي</th>
-                            <th>الحالة</th>
+                            <th>{% trans "Invoice Number" %}</th>
+                            <th>{% trans "Date" %}</th>
+                            <th class="text-start">{% trans "Total" %}</th>
+                            <th>{% trans "Status" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,19 +155,19 @@
     <div class="col-lg-4">
         <!-- Actions -->
         <div class="erp-card mb-4">
-            <div class="erp-card-header"><h6 class="mb-0">الإجراءات</h6></div>
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
             <div class="erp-card-body d-grid gap-2">
                 <a href="{% url 'erp:purchase_order_pdf' order.pk %}" class="btn btn-outline-secondary" target="_blank">
-                    <i class="bi bi-printer ms-1"></i> طباعة PDF
+                    <i class="bi bi-printer ms-1"></i> {% trans "Print PDF" %}
                 </a>
                 <a href="{% url 'erp:purchase_order_edit' order.pk %}" class="btn btn-primary">
-                    <i class="bi bi-pencil ms-1"></i> تعديل
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
                 </a>
                 {% if order.status == 'draft' or order.status == 'pending' %}
                 <form method="post" action="{% url 'erp:purchase_order_approve' order.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-success w-100">
-                        <i class="bi bi-check-circle ms-1"></i> اعتماد أمر الشراء
+                        <i class="bi bi-check-circle ms-1"></i> {% trans "Approve Purchase Order" %}
                     </button>
                 </form>
                 {% endif %}
@@ -174,29 +175,29 @@
                 <form method="post" action="{% url 'erp:purchase_order_create_invoice' order.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-info w-100">
-                        <i class="bi bi-receipt ms-1"></i> إنشاء فاتورة مورد
+                        <i class="bi bi-receipt ms-1"></i> {% trans "Create Supplier Invoice" %}
                     </button>
                 </form>
                 {% endif %}
                 <a href="{% url 'erp:supplier_invoice_create' %}?supplier={{ order.supplier.pk }}&po={{ order.pk }}" class="btn btn-outline-info">
-                    <i class="bi bi-file-earmark-plus ms-1"></i> فاتورة مورد يدوية
+                    <i class="bi bi-file-earmark-plus ms-1"></i> {% trans "Manual Supplier Invoice" %}
                 </a>
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                    <i class="bi bi-trash ms-1"></i> حذف
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete" %}
                 </button>
             </div>
         </div>
 
         <!-- Info -->
         <div class="erp-card">
-            <div class="erp-card-header"><h6 class="mb-0">المعلومات</h6></div>
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Information" %}</h6></div>
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">تاريخ الإنشاء</label>
+                    <label class="text-muted small">{% trans "Created At" %}</label>
                     <div>{{ order.created_at|date:"Y/m/d H:i"|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">آخر تحديث</label>
+                    <label class="text-muted small">{% trans "Last Updated" %}</label>
                     <div>{{ order.updated_at|date:"Y/m/d H:i"|default:"-" }}</div>
                 </div>
             </div>
@@ -209,17 +210,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">تأكيد الحذف</h5>
+                <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                هل أنت متأكد من حذف أمر الشراء هذا؟ لا يمكن التراجع عن هذا الإجراء.
+                {% trans "Are you sure you want to delete this purchase order? This action cannot be undone." %}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                 <form action="{% url 'erp:purchase_order_delete' order.pk %}" method="post" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">حذف</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                 </form>
             </div>
         </div>

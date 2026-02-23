@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if tax_rate %}تعديل معدل الضريبة{% else %}معدل ضريبة جديد{% endif %}{% endblock %}
-{% block page_title %}{% if tax_rate %}تعديل معدل الضريبة{% else %}معدل ضريبة جديد{% endif %}{% endblock %}
+{% block title %}{% if tax_rate %}{% trans "Edit Tax Rate" %}{% else %}{% trans "New Tax Rate" %}{% endif %}{% endblock %}
+{% block page_title %}{% if tax_rate %}{% trans "Edit Tax Rate" %}{% else %}{% trans "New Tax Rate" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +11,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-percent me-2"></i>
-                    {% if tax_rate %}تعديل معدل الضريبة{% else %}إنشاء معدل ضريبة{% endif %}
+                    {% if tax_rate %}{% trans "Edit Tax Rate" %}{% else %}{% trans "Create Tax Rate" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -24,7 +25,7 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم (إنجليزي) <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Name (English)" %} <span class="text-danger">*</span></label>
                         {{ form.name }}
                         {% if form.name.errors %}
                         <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
@@ -32,7 +33,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم (عربي)</label>
+                        <label class="form-label">{% trans "Name (Arabic)" %}</label>
                         {{ form.name_ar }}
                         {% if form.name_ar.errors %}
                         <div class="invalid-feedback d-block">{{ form.name_ar.errors.0 }}</div>
@@ -40,7 +41,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">المعدل (%) <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Rate (%)" %} <span class="text-danger">*</span></label>
                         {{ form.rate }}
                         {% if form.rate.errors %}
                         <div class="invalid-feedback d-block">{{ form.rate.errors.0 }}</div>
@@ -52,7 +53,7 @@
                             <div class="form-check">
                                 {{ form.is_default }}
                                 <label class="form-check-label" for="{{ form.is_default.id_for_label }}">
-                                    معدل ضريبة افتراضي
+                                    {% trans "Default Tax Rate" %}
                                 </label>
                             </div>
                         </div>
@@ -60,7 +61,7 @@
                             <div class="form-check">
                                 {{ form.is_active }}
                                 <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
-                                    نشط
+                                    {% trans "Active" %}
                                 </label>
                             </div>
                         </div>
@@ -69,9 +70,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>
-                            {% if tax_rate %}تحديث{% else %}إنشاء{% endif %}
+                            {% if tax_rate %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:tax_rate_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:tax_rate_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

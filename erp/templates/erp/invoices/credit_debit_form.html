@@ -1,13 +1,14 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}إنشاء {{ note_type_ar }} — {{ invoice.invoice_number }}{% endblock %}
-{% block page_title %}إنشاء {{ note_type_ar }}{% endblock %}
+{% block title %}{% trans "Create" %} {{ note_type_ar }} — {{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}{% trans "Create" %} {{ note_type_ar }}{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">الفواتير</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">{% trans "Invoices" %}</a></li>
         <li class="breadcrumb-item"><a href="{% url 'erp:invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></li>
         <li class="breadcrumb-item active">{{ note_type_ar }}</li>
     </ol>
@@ -15,10 +16,10 @@
 
 <div class="erp-card mb-4">
     <div class="erp-card-header">
-        <h5 class="mb-1">إنشاء {{ note_type_ar }} للفاتورة {{ invoice.invoice_number }}</h5>
+        <h5 class="mb-1">{% trans "Create" %} {{ note_type_ar }} {% trans "for Invoice" %} {{ invoice.invoice_number }}</h5>
         <small class="text-muted">
-            العميل: {{ invoice.customer.name }} — 
-            المبلغ الأصلي: {{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}
+            {% trans "Customer" %}: {{ invoice.customer.name }} — 
+            {% trans "Original Amount" %}: {{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}
         </small>
     </div>
     <div class="erp-card-body">
@@ -26,12 +27,12 @@
             {% csrf_token %}
 
             <div class="mb-4">
-                <label class="form-label fw-bold">سبب {{ note_type_ar }}</label>
-                <textarea name="reason" class="form-control" rows="3" placeholder="أدخل سبب إصدار {{ note_type_ar }}"></textarea>
+                <label class="form-label fw-bold">{% trans "Reason for" %} {{ note_type_ar }}</label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="{% trans "Enter reason for issuing" %} {{ note_type_ar }}"></textarea>
             </div>
 
-            <h6 class="mb-3">بنود الفاتورة الأصلية</h6>
-            <p class="text-muted small">حدد البنود التي تريد إدراجها و يمكنك تعديل الكمية. اتركها فارغة لإدراج جميع البنود.</p>
+            <h6 class="mb-3">{% trans "Original Invoice Lines" %}</h6>
+            <p class="text-muted small">{% trans "Select lines to include and adjust quantity if needed. Leave unchecked to include all lines." %}</p>
 
             <div class="table-responsive">
                 <table class="table erp-table">
@@ -40,11 +41,11 @@
                             <th style="width: 40px">
                                 <input type="checkbox" class="form-check-input" id="selectAll" checked>
                             </th>
-                            <th>الوصف</th>
-                            <th class="text-center">الكمية الأصلية</th>
-                            <th class="text-center" style="width: 140px">الكمية الجديدة</th>
-                            <th class="text-start">سعر الوحدة</th>
-                            <th class="text-start">الضريبة</th>
+                            <th>{% trans "Description" %}</th>
+                            <th class="text-center">{% trans "Original Quantity" %}</th>
+                            <th class="text-center" style="width: 140px">{% trans "New Quantity" %}</th>
+                            <th class="text-start">{% trans "Unit Price" %}</th>
+                            <th class="text-start">{% trans "Tax" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,9 +72,9 @@
 
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-{% if note_type == 'credit' %}success{% else %}warning{% endif %}">
-                    <i class="bi bi-check-lg ms-1"></i> إنشاء {{ note_type_ar }}
+                    <i class="bi bi-check-lg ms-1"></i> {% trans "Create" %} {{ note_type_ar }}
                 </button>
-                <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="btn btn-outline-secondary">إلغاء</a>
+                <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
             </div>
         </form>
     </div>

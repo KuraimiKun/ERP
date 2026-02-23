@@ -1,7 +1,8 @@
 {% extends 'erp/form_base.html' %}
+{% load i18n %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'erp:customer_list' %}">العملاء</a></li>
+<li class="breadcrumb-item"><a href="{% url 'erp:customer_list' %}">{% trans "Customers" %}</a></li>
 <li class="breadcrumb-item active">{{ title }}</li>
 {% endblock %}
 
@@ -12,41 +13,41 @@
 {% block form_content %}
 <!-- المعلومات الأساسية -->
 <div class="form-section">
-    <h6 class="form-section-title">المعلومات الأساسية</h6>
+    <h6 class="form-section-title">{% trans "Basic Information" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3 required-field">
-            <label for="{{ form.customer_type.id_for_label }}" class="form-label">نوع العميل</label>
+            <label for="{{ form.customer_type.id_for_label }}" class="form-label">{% trans "Customer Type" %}</label>
             {{ form.customer_type }}
         </div>
         <div class="col-md-8 mb-3 required-field">
-            <label for="{{ form.name.id_for_label }}" class="form-label">الاسم</label>
+            <label for="{{ form.name.id_for_label }}" class="form-label">{% trans "Name" %}</label>
             {{ form.name }}
             {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">البريد الإلكتروني</label>
+            <label for="{{ form.email.id_for_label }}" class="form-label">{% trans "Email" %}</label>
             {{ form.email }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.phone.id_for_label }}" class="form-label">الهاتف</label>
+            <label for="{{ form.phone.id_for_label }}" class="form-label">{% trans "Phone" %}</label>
             {{ form.phone }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.website.id_for_label }}" class="form-label">الموقع الإلكتروني</label>
+            <label for="{{ form.website.id_for_label }}" class="form-label">{% trans "Website" %}</label>
             {{ form.website }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.tax_id.id_for_label }}" class="form-label">الرقم الضريبي</label>
+            <label for="{{ form.tax_id.id_for_label }}" class="form-label">{% trans "Tax ID" %}</label>
             {{ form.tax_id }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">المسؤول</label>
+            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">{% trans "Assigned To" %}</label>
             {{ form.assigned_to }}
         </div>
         <div class="col-md-4 mb-3">
             <div class="form-check mt-4">
                 {{ form.is_active }}
-                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">نشط</label>
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{% trans "Active" %}</label>
             </div>
         </div>
     </div>
@@ -54,26 +55,26 @@
 
 <!-- عنوان الفوترة -->
 <div class="form-section">
-    <h6 class="form-section-title">عنوان الفوترة</h6>
+    <h6 class="form-section-title">{% trans "Billing Address" %}</h6>
     <div class="row">
         <div class="col-12 mb-3">
-            <label for="{{ form.billing_address.id_for_label }}" class="form-label">العنوان</label>
+            <label for="{{ form.billing_address.id_for_label }}" class="form-label">{% trans "Address" %}</label>
             {{ form.billing_address }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.billing_city.id_for_label }}" class="form-label">المدينة</label>
+            <label for="{{ form.billing_city.id_for_label }}" class="form-label">{% trans "City" %}</label>
             {{ form.billing_city }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.billing_state.id_for_label }}" class="form-label">الولاية/المنطقة</label>
+            <label for="{{ form.billing_state.id_for_label }}" class="form-label">{% trans "State/Region" %}</label>
             {{ form.billing_state }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.billing_country.id_for_label }}" class="form-label">الدولة</label>
+            <label for="{{ form.billing_country.id_for_label }}" class="form-label">{% trans "Country" %}</label>
             {{ form.billing_country }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.billing_postal_code.id_for_label }}" class="form-label">الرمز البريدي</label>
+            <label for="{{ form.billing_postal_code.id_for_label }}" class="form-label">{% trans "Postal Code" %}</label>
             {{ form.billing_postal_code }}
         </div>
     </div>
@@ -81,26 +82,26 @@
 
 <!-- عنوان الشحن -->
 <div class="form-section">
-    <h6 class="form-section-title">عنوان الشحن</h6>
+    <h6 class="form-section-title">{% trans "Shipping Address" %}</h6>
     <div class="row">
         <div class="col-12 mb-3">
-            <label for="{{ form.shipping_address.id_for_label }}" class="form-label">العنوان</label>
+            <label for="{{ form.shipping_address.id_for_label }}" class="form-label">{% trans "Address" %}</label>
             {{ form.shipping_address }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.shipping_city.id_for_label }}" class="form-label">المدينة</label>
+            <label for="{{ form.shipping_city.id_for_label }}" class="form-label">{% trans "City" %}</label>
             {{ form.shipping_city }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.shipping_state.id_for_label }}" class="form-label">الولاية/المنطقة</label>
+            <label for="{{ form.shipping_state.id_for_label }}" class="form-label">{% trans "State/Region" %}</label>
             {{ form.shipping_state }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.shipping_country.id_for_label }}" class="form-label">الدولة</label>
+            <label for="{{ form.shipping_country.id_for_label }}" class="form-label">{% trans "Country" %}</label>
             {{ form.shipping_country }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.shipping_postal_code.id_for_label }}" class="form-label">الرمز البريدي</label>
+            <label for="{{ form.shipping_postal_code.id_for_label }}" class="form-label">{% trans "Postal Code" %}</label>
             {{ form.shipping_postal_code }}
         </div>
     </div>
@@ -108,17 +109,17 @@
 
 <!-- شروط الدفع -->
 <div class="form-section">
-    <h6 class="form-section-title">شروط الدفع</h6>
+    <h6 class="form-section-title">{% trans "Payment Terms" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.credit_limit.id_for_label }}" class="form-label">حد الائتمان</label>
+            <label for="{{ form.credit_limit.id_for_label }}" class="form-label">{% trans "Credit Limit" %}</label>
             <div class="input-group">
                 <span class="input-group-text">$</span>
                 {{ form.credit_limit }}
             </div>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="{{ form.payment_terms.id_for_label }}" class="form-label">مدة الدفع (بالأيام)</label>
+            <label for="{{ form.payment_terms.id_for_label }}" class="form-label">{% trans "Payment Terms (Days)" %}</label>
             {{ form.payment_terms }}
         </div>
     </div>
@@ -126,7 +127,7 @@
 
 <!-- الملاحظات -->
 <div class="form-section mb-0">
-    <h6 class="form-section-title">ملاحظات</h6>
+    <h6 class="form-section-title">{% trans "Notes" %}</h6>
     <div class="row">
         <div class="col-12 mb-3">
             {{ form.notes }}

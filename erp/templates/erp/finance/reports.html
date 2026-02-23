@@ -1,8 +1,9 @@
 {% extends 'erp/base.html' %}
 {% load humanize %}
+{% load i18n %}
 
-{% block title %}التقارير المالية{% endblock %}
-{% block page_title %}التقارير المالية{% endblock %}
+{% block title %}{% trans "Financial Reports" %}{% endblock %}
+{% block page_title %}{% trans "Financial Reports" %}{% endblock %}
 
 {% block content %}
 <!-- Revenue & Profit Summary -->
@@ -17,7 +18,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <p class="text-muted small mb-1">الإيرادات الشهرية</p>
+                        <p class="text-muted small mb-1">{% trans "Monthly Revenue" %}</p>
                         <h4 class="mb-0">${{ monthly_revenue|floatformat:2|intcomma }}</h4>
                     </div>
                 </div>
@@ -34,7 +35,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <p class="text-muted small mb-1">الإيرادات السنوية</p>
+                        <p class="text-muted small mb-1">{% trans "Yearly Revenue" %}</p>
                         <h4 class="mb-0">${{ yearly_revenue|floatformat:2|intcomma }}</h4>
                     </div>
                 </div>
@@ -51,7 +52,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <p class="text-muted small mb-1">المصروفات الشهرية</p>
+                        <p class="text-muted small mb-1">{% trans "Monthly Expenses" %}</p>
                         <h4 class="mb-0">${{ monthly_expenses|floatformat:2|intcomma }}</h4>
                     </div>
                 </div>
@@ -68,7 +69,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <p class="text-muted small mb-1">الربح الشهري</p>
+                        <p class="text-muted small mb-1">{% trans "Monthly Profit" %}</p>
                         <h4 class="mb-0 {% if monthly_profit < 0 %}text-danger{% else %}text-success{% endif %}">
                             ${{ monthly_profit|floatformat:2|intcomma }}
                         </h4>
@@ -84,20 +85,20 @@
     <div class="col-md-6 col-xl-4">
         <div class="erp-card h-100">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-receipt me-2"></i>ملخص الذمم المدينة</h6>
+                <h6 class="mb-0"><i class="bi bi-receipt me-2"></i>{% trans "Total Receivables Summary" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="text-center py-4">
                     <h2 class="mb-1 text-warning">${{ total_receivables|floatformat:2|intcomma }}</h2>
-                    <p class="text-muted mb-0">إجمالي المستحقات</p>
+                    <p class="text-muted mb-0">{% trans "Total Receivables" %}</p>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between text-muted small">
-                    <span>المصروفات السنوية</span>
+                    <span>{% trans "Yearly Expenses" %}</span>
                     <span>${{ yearly_expenses|floatformat:2|intcomma }}</span>
                 </div>
                 <div class="d-flex justify-content-between text-muted small mt-2">
-                    <span>الربح السنوي</span>
+                    <span>{% trans "Yearly Profit" %}</span>
                     <span class="{% if yearly_profit < 0 %}text-danger{% else %}text-success{% endif %}">
                         ${{ yearly_profit|floatformat:2|intcomma }}
                     </span>
@@ -109,18 +110,18 @@
     <div class="col-md-6 col-xl-8">
         <div class="erp-card h-100">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-bank me-2"></i>دليل الحسابات</h6>
-                <a href="{% url 'erp:account_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                <h6 class="mb-0"><i class="bi bi-bank me-2"></i>{% trans "Chart of Accounts" %}</h6>
+                <a href="{% url 'erp:account_list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
             </div>
             <div class="erp-card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>الرمز</th>
-                                <th>اسم الحساب</th>
-                                <th>النوع</th>
-                                <th class="text-end">الرصيد</th>
+                                <th>{% trans "Code" %}</th>
+                                <th>{% trans "Account Name" %}</th>
+                                <th>{% trans "Type" %}</th>
+                                <th class="text-end">{% trans "Balance" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,7 +144,7 @@
                             {% empty %}
                             <tr>
                                 <td colspan="4" class="text-center text-muted py-4">
-                                    لا توجد حسابات مهيأة. <a href="{% url 'erp:account_create' %}">أضف حساب</a>
+                                    {% trans "No accounts configured." %} <a href="{% url 'erp:account_create' %}">{% trans "Add Account" %}</a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -161,8 +162,8 @@
     <div class="col-lg-4">
         <div class="erp-card h-100">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>أحدث الفواتير</h6>
-                <a href="{% url 'erp:invoice_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>{% trans "Recent Invoices" %}</h6>
+                <a href="{% url 'erp:invoice_list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
             </div>
             <div class="erp-card-body p-0">
                 <ul class="list-group list-group-flush">
@@ -186,7 +187,7 @@
                         </div>
                     </li>
                     {% empty %}
-                    <li class="list-group-item text-center text-muted py-4">لا توجد فواتير حتى الآن</li>
+                    <li class="list-group-item text-center text-muted py-4">{% trans "No invoices found" %}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -197,8 +198,8 @@
     <div class="col-lg-4">
         <div class="erp-card h-100">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-credit-card me-2"></i>أحدث المدفوعات</h6>
-                <a href="{% url 'erp:payment_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                <h6 class="mb-0"><i class="bi bi-credit-card me-2"></i>{% trans "Recent Payments" %}</h6>
+                <a href="{% url 'erp:payment_list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
             </div>
             <div class="erp-card-body p-0">
                 <ul class="list-group list-group-flush">
@@ -216,7 +217,7 @@
                         </div>
                     </li>
                     {% empty %}
-                    <li class="list-group-item text-center text-muted py-4">لا توجد مدفوعات حتى الآن</li>
+                    <li class="list-group-item text-center text-muted py-4">{% trans "No payments found" %}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -227,8 +228,8 @@
     <div class="col-lg-4">
         <div class="erp-card h-100">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-wallet2 me-2"></i>أحدث المصروفات</h6>
-                <a href="{% url 'erp:expense_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                <h6 class="mb-0"><i class="bi bi-wallet2 me-2"></i>{% trans "Recent Expenses" %}</h6>
+                <a href="{% url 'erp:expense_list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
             </div>
             <div class="erp-card-body p-0">
                 <ul class="list-group list-group-flush">
@@ -248,7 +249,7 @@
                         </div>
                     </li>
                     {% empty %}
-                    <li class="list-group-item text-center text-muted py-4">لا توجد مصروفات حتى الآن</li>
+                    <li class="list-group-item text-center text-muted py-4">{% trans "No expenses found" %}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -261,24 +262,24 @@
     <div class="col-12">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>إجراءات سريعة</h6>
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>{% trans "Quick Actions" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="d-flex flex-wrap gap-2">
                     <a href="{% url 'erp:invoice_create' %}" class="btn btn-outline-primary">
-                        <i class="bi bi-plus-lg me-1"></i>فاتورة جديدة
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "New Invoice" %}
                     </a>
                     <a href="{% url 'erp:payment_create' %}" class="btn btn-outline-success">
-                        <i class="bi bi-plus-lg me-1"></i>تسجيل دفعة
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "Record Payment" %}
                     </a>
                     <a href="{% url 'erp:expense_create' %}" class="btn btn-outline-danger">
-                        <i class="bi bi-plus-lg me-1"></i>إضافة مصروف
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "Add Expense" %}
                     </a>
                     <a href="{% url 'erp:account_create' %}" class="btn btn-outline-info">
-                        <i class="bi bi-plus-lg me-1"></i>حساب جديد
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "New Account" %}
                     </a>
                     <a href="{% url 'erp:customer_create' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-plus-lg me-1"></i>إضافة عميل
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "Add Customer" %}
                     </a>
                 </div>
             </div>

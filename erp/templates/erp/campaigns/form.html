@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if form.instance.pk %}تعديل حملة{% else %}حملة جديدة{% endif %}{% endblock %}
-{% block page_title %}{% if form.instance.pk %}تعديل حملة{% else %}حملة جديدة{% endif %}{% endblock %}
+{% block title %}{% if form.instance.pk %}{% trans "Edit Campaign" %}{% else %}{% trans "New Campaign" %}{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}{% trans "Edit Campaign" %}{% else %}{% trans "New Campaign" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +11,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-megaphone ms-2"></i>
-                    {% if form.instance.pk %}تعديل حملة{% else %}إنشاء حملة{% endif %}
+                    {% if form.instance.pk %}{% trans "Edit Campaign" %}{% else %}{% trans "Create Campaign" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -25,7 +26,7 @@
                     
                     <div class="row g-3">
                         <div class="col-md-12">
-                            <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
                             {{ form.name }}
                             {% if form.name.errors %}
                             <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
@@ -33,7 +34,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">نوع الحملة</label>
+                            <label class="form-label">{% trans "Campaign Type" %}</label>
                             {{ form.campaign_type }}
                             {% if form.campaign_type.errors %}
                             <div class="invalid-feedback d-block">{{ form.campaign_type.errors.0 }}</div>
@@ -41,7 +42,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">الحالة</label>
+                            <label class="form-label">{% trans "Status" %}</label>
                             {{ form.status }}
                             {% if form.status.errors %}
                             <div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>
@@ -49,7 +50,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ البداية</label>
+                            <label class="form-label">{% trans "Start Date" %}</label>
                             {{ form.start_date }}
                             {% if form.start_date.errors %}
                             <div class="invalid-feedback d-block">{{ form.start_date.errors.0 }}</div>
@@ -57,7 +58,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ النهاية</label>
+                            <label class="form-label">{% trans "End Date" %}</label>
                             {{ form.end_date }}
                             {% if form.end_date.errors %}
                             <div class="invalid-feedback d-block">{{ form.end_date.errors.0 }}</div>
@@ -65,7 +66,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">الميزانية</label>
+                            <label class="form-label">{% trans "Budget" %}</label>
                             {{ form.budget }}
                             {% if form.budget.errors %}
                             <div class="invalid-feedback d-block">{{ form.budget.errors.0 }}</div>
@@ -73,7 +74,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">الجمهور المستهدف</label>
+                            <label class="form-label">{% trans "Target Audience" %}</label>
                             {{ form.target_audience }}
                             {% if form.target_audience.errors %}
                             <div class="invalid-feedback d-block">{{ form.target_audience.errors.0 }}</div>
@@ -81,7 +82,7 @@
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label">العملاء المحتملون المتوقعون</label>
+                            <label class="form-label">{% trans "Expected Leads" %}</label>
                             {{ form.expected_leads }}
                             {% if form.expected_leads.errors %}
                             <div class="invalid-feedback d-block">{{ form.expected_leads.errors.0 }}</div>
@@ -89,7 +90,7 @@
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label">الإيرادات المتوقعة</label>
+                            <label class="form-label">{% trans "Expected Revenue" %}</label>
                             {{ form.expected_revenue }}
                             {% if form.expected_revenue.errors %}
                             <div class="invalid-feedback d-block">{{ form.expected_revenue.errors.0 }}</div>
@@ -97,7 +98,7 @@
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label">العملة</label>
+                            <label class="form-label">{% trans "Currency" %}</label>
                             {{ form.currency }}
                             {% if form.currency.errors %}
                             <div class="invalid-feedback d-block">{{ form.currency.errors.0 }}</div>
@@ -105,7 +106,7 @@
                         </div>
                         
                         <div class="col-12">
-                            <label class="form-label">الوصف</label>
+                            <label class="form-label">{% trans "Description" %}</label>
                             {{ form.description }}
                             {% if form.description.errors %}
                             <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
@@ -116,9 +117,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg ms-1"></i>
-                            {% if form.instance.pk %}تحديث الحملة{% else %}إنشاء حملة{% endif %}
+                            {% if form.instance.pk %}{% trans "Update Campaign" %}{% else %}{% trans "Create Campaign" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:campaign_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:campaign_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

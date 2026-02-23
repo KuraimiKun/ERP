@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}قيد رقم {{ entry.entry_number }}{% endblock %}
-{% block page_title %}قيد رقم {{ entry.entry_number }}{% endblock %}
+{% block title %}{% trans "Entry #" %}{{ entry.entry_number }}{% endblock %}
+{% block page_title %}{% trans "Entry #" %}{{ entry.entry_number }}{% endblock %}
 
 {% block content %}
 <div class="row g-4">
@@ -9,44 +10,44 @@
     <div class="col-lg-4">
         <div class="erp-card">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-info-circle ms-2"></i>معلومات القيد</h6>
+                <h6 class="mb-0"><i class="bi bi-info-circle ms-2"></i>{% trans "Entry Information" %}</h6>
                 {% if entry.status == 'draft' %}
-                <span class="badge badge-status badge-draft">مسودة</span>
+                <span class="badge badge-status badge-draft">{% trans "Draft" %}</span>
                 {% elif entry.status == 'posted' %}
-                <span class="badge badge-status badge-posted">مرحّل</span>
+                <span class="badge badge-status badge-posted">{% trans "Posted" %}</span>
                 {% else %}
-                <span class="badge badge-status badge-cancelled">ملغي</span>
+                <span class="badge badge-status badge-cancelled">{% trans "Cancelled" %}</span>
                 {% endif %}
             </div>
             <div class="erp-card-body">
                 <table class="table table-borderless mb-0">
                     <tr>
-                        <th class="text-muted" style="width: 40%;">رقم القيد</th>
+                        <th class="text-muted" style="width: 40%;">{% trans "Entry Number" %}</th>
                         <td class="fw-bold">{{ entry.entry_number }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted">التاريخ</th>
+                        <th class="text-muted">{% trans "Date" %}</th>
                         <td>{{ entry.entry_date|date:"Y/m/d" }}</td>
                     </tr>
                     <tr>
-                        <th class="text-muted">نوع القيد</th>
+                        <th class="text-muted">{% trans "Entry Type" %}</th>
                         <td>{{ entry.get_entry_type_display }}</td>
                     </tr>
                     {% if entry.reference %}
                     <tr>
-                        <th class="text-muted">المرجع</th>
+                        <th class="text-muted">{% trans "Reference" %}</th>
                         <td>{{ entry.reference }}</td>
                     </tr>
                     {% endif %}
                     {% if entry.fiscal_year %}
                     <tr>
-                        <th class="text-muted">السنة المالية</th>
+                        <th class="text-muted">{% trans "Fiscal Year" %}</th>
                         <td>{{ entry.fiscal_year.name }}</td>
                     </tr>
                     {% endif %}
                     {% if entry.description %}
                     <tr>
-                        <th class="text-muted">البيان</th>
+                        <th class="text-muted">{% trans "Description" %}</th>
                         <td>{{ entry.description }}</td>
                     </tr>
                     {% endif %}
@@ -56,22 +57,22 @@
                 
                 <div class="row text-center">
                     <div class="col-6">
-                        <div class="text-muted small">إجمالي المدين</div>
+                        <div class="text-muted small">{% trans "Total Debit" %}</div>
                         <div class="fs-5 fw-bold text-success">{{ entry.total_debit|floatformat:2 }}</div>
                     </div>
                     <div class="col-6">
-                        <div class="text-muted small">إجمالي الدائن</div>
+                        <div class="text-muted small">{% trans "Total Credit" %}</div>
                         <div class="fs-5 fw-bold text-danger">{{ entry.total_credit|floatformat:2 }}</div>
                     </div>
                 </div>
                 
                 {% if entry.is_balanced %}
                 <div class="alert alert-success mt-3 mb-0 text-center">
-                    <i class="bi bi-check-circle ms-1"></i> القيد متوازن
+                    <i class="bi bi-check-circle ms-1"></i> {% trans "Entry is Balanced" %}
                 </div>
                 {% else %}
                 <div class="alert alert-danger mt-3 mb-0 text-center">
-                    <i class="bi bi-exclamation-triangle ms-1"></i> القيد غير متوازن
+                    <i class="bi bi-exclamation-triangle ms-1"></i> {% trans "Entry is Unbalanced" %}
                 </div>
                 {% endif %}
                 
@@ -82,11 +83,11 @@
                 <div class="text-muted small">
                     <p class="mb-1">
                         <i class="bi bi-person ms-1"></i>
-                        تم الترحيل بواسطة: {{ entry.posted_by.get_full_name|default:entry.posted_by.username }}
+                        {% trans "Posted by" %}: {{ entry.posted_by.get_full_name|default:entry.posted_by.username }}
                     </p>
                     <p class="mb-0">
                         <i class="bi bi-clock ms-1"></i>
-                        في: {{ entry.posted_at|date:"Y/m/d H:i" }}
+                        {% trans "At" %}: {{ entry.posted_at|date:"Y/m/d H:i" }}
                     </p>
                 </div>
                 {% endif %}
@@ -96,12 +97,12 @@
                     {% if entry.created_by %}
                     <p class="mb-1">
                         <i class="bi bi-person-plus ms-1"></i>
-                        أنشئ بواسطة: {{ entry.created_by.get_full_name|default:entry.created_by.username }}
+                        {% trans "Created by" %}: {{ entry.created_by.get_full_name|default:entry.created_by.username }}
                     </p>
                     {% endif %}
                     <p class="mb-0">
                         <i class="bi bi-clock ms-1"></i>
-                        تاريخ الإنشاء: {{ entry.created_at|date:"Y/m/d H:i" }}
+                        {% trans "Created at" %}: {{ entry.created_at|date:"Y/m/d H:i" }}
                     </p>
                 </div>
             </div>
@@ -110,7 +111,7 @@
         <!-- إجراءات -->
         <div class="erp-card mt-4">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-lightning ms-2"></i>الإجراءات</h6>
+                <h6 class="mb-0"><i class="bi bi-lightning ms-2"></i>{% trans "Actions" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="d-grid gap-2">
@@ -118,31 +119,31 @@
                     {% if entry.is_balanced %}
                     <form method="post" action="{% url 'erp:journal_entry_post' entry.pk %}" class="d-grid">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success" onclick="return confirm('هل أنت متأكد من ترحيل هذا القيد؟ لا يمكن التراجع عن هذا الإجراء.')">
-                            <i class="bi bi-check-circle ms-1"></i> ترحيل القيد
+                        <button type="submit" class="btn btn-success" onclick="return confirm('{% trans "Are you sure you want to post this entry? This action cannot be undone." %}')">
+                            <i class="bi bi-check-circle ms-1"></i> {% trans "Post Entry" %}
                         </button>
                     </form>
                     {% else %}
                     <button class="btn btn-success" disabled>
-                        <i class="bi bi-check-circle ms-1"></i> ترحيل القيد (القيد غير متوازن)
+                        <i class="bi bi-check-circle ms-1"></i> {% trans "Post Entry (Unbalanced)" %}
                     </button>
                     {% endif %}
                     
                     <a href="{% url 'erp:journal_entry_edit' entry.pk %}" class="btn btn-outline-primary">
-                        <i class="bi bi-pencil ms-1"></i> تعديل
+                        <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
                     </a>
                     
                     <a href="{% url 'erp:journal_entry_delete' entry.pk %}" class="btn btn-outline-danger">
-                        <i class="bi bi-trash ms-1"></i> حذف
+                        <i class="bi bi-trash ms-1"></i> {% trans "Delete" %}
                     </a>
                     {% else %}
                     <button class="btn btn-secondary" disabled>
-                        <i class="bi bi-lock ms-1"></i> القيد مرحّل - لا يمكن التعديل
+                        <i class="bi bi-lock ms-1"></i> {% trans "Entry Posted - Cannot Edit" %}
                     </button>
                     {% endif %}
                     
                     <a href="{% url 'erp:journal_entry_list' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-right ms-1"></i> العودة للقائمة
+                        <i class="bi bi-arrow-right ms-1"></i> {% trans "Back to List" %}
                     </a>
                 </div>
             </div>
@@ -153,18 +154,18 @@
     <div class="col-lg-8">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-list-ul ms-2"></i>سطور القيد</h6>
+                <h6 class="mb-0"><i class="bi bi-list-ul ms-2"></i>{% trans "Journal Lines" %}</h6>
             </div>
             <div class="erp-card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover erp-table mb-0">
                         <thead>
                             <tr>
-                                <th style="width: 15%;">رمز الحساب</th>
-                                <th style="width: 30%;">اسم الحساب</th>
-                                <th style="width: 25%;">البيان</th>
-                                <th style="width: 15%;" class="text-start">مدين</th>
-                                <th style="width: 15%;" class="text-start">دائن</th>
+                                <th style="width: 15%;">{% trans "Account Code" %}</th>
+                                <th style="width: 30%;">{% trans "Account Name" %}</th>
+                                <th style="width: 25%;">{% trans "Description" %}</th>
+                                <th style="width: 15%;" class="text-start">{% trans "Debit" %}</th>
+                                <th style="width: 15%;" class="text-start">{% trans "Credit" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -192,7 +193,7 @@
                         </tbody>
                         <tfoot class="table-light">
                             <tr class="fw-bold">
-                                <td colspan="3" class="text-start">الإجمالي</td>
+                                <td colspan="3" class="text-start">{% trans "Total" %}</td>
                                 <td class="text-start text-success">{{ entry.total_debit|floatformat:2 }}</td>
                                 <td class="text-start text-danger">{{ entry.total_credit|floatformat:2 }}</td>
                             </tr>
@@ -205,7 +206,7 @@
         <!-- شكل القيد المحاسبي التقليدي -->
         <div class="erp-card mt-4">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-journal-bookmark ms-2"></i>القيد المحاسبي</h6>
+                <h6 class="mb-0"><i class="bi bi-journal-bookmark ms-2"></i>{% trans "Journal View" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="border rounded p-3" style="background: #fafafa;">
@@ -214,7 +215,7 @@
                     {% if line.debit_amount > 0 %}
                     <div class="d-flex justify-content-between mb-2">
                         <div>
-                            <span class="text-muted">من حـ/</span>
+                            <span class="text-muted">{% trans "Dr." %}</span>
                             <strong>{{ line.account.name }}</strong>
                             {% if line.description %}<small class="text-muted">({{ line.description }})</small>{% endif %}
                         </div>
@@ -228,7 +229,7 @@
                     {% if line.credit_amount > 0 %}
                     <div class="d-flex justify-content-between mb-2 pe-4">
                         <div>
-                            <span class="text-muted me-4">إلى حـ/</span>
+                            <span class="text-muted me-4">{% trans "Cr." %}</span>
                             <strong>{{ line.account.name }}</strong>
                             {% if line.description %}<small class="text-muted">({{ line.description }})</small>{% endif %}
                         </div>
@@ -240,7 +241,7 @@
                     {% if entry.description %}
                     <hr>
                     <div class="text-muted">
-                        <small><strong>البيان:</strong> {{ entry.description }}</small>
+                        <small><strong>{% trans "Description" %}:</strong> {{ entry.description }}</small>
                     </div>
                     {% endif %}
                 </div>

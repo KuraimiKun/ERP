@@ -1,7 +1,7 @@
 {% extends 'erp/base.html' %}
-
-{% block title %}{% if form.instance.pk %}تعديل طلب الإجازة{% else %}طلب إجازة جديد{% endif %}{% endblock %}
-{% block page_title %}{% if form.instance.pk %}تعديل طلب الإجازة{% else %}طلب إجازة جديد{% endif %}{% endblock %}
+{% load i18n %}
+{% block title %}{% if form.instance.pk %}{% trans "Edit Leave Request" %}{% else %}{% trans "New Leave Request" %}{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}{% trans "Edit Leave Request" %}{% else %}{% trans "New Leave Request" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +10,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-calendar-x me-2"></i>
-                    {% if form.instance.pk %}تعديل طلب الإجازة{% else %}إرسال طلب إجازة{% endif %}
+                    {% if form.instance.pk %}{% trans "Edit Leave Request" %}{% else %}{% trans "Submit Leave Request" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -24,7 +24,7 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label class="form-label">الموظف <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Employee" %} <span class="text-danger">*</span></label>
                         {{ form.employee }}
                         {% if form.employee.errors %}
                         <div class="invalid-feedback d-block">{{ form.employee.errors.0 }}</div>
@@ -32,7 +32,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">نوع الإجازة <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Leave Type" %} <span class="text-danger">*</span></label>
                         {{ form.leave_type }}
                         {% if form.leave_type.errors %}
                         <div class="invalid-feedback d-block">{{ form.leave_type.errors.0 }}</div>
@@ -41,14 +41,14 @@
                     
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ البداية <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Start Date" %} <span class="text-danger">*</span></label>
                             {{ form.start_date }}
                             {% if form.start_date.errors %}
                             <div class="invalid-feedback d-block">{{ form.start_date.errors.0 }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ النهاية <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "End Date" %} <span class="text-danger">*</span></label>
                             {{ form.end_date }}
                             {% if form.end_date.errors %}
                             <div class="invalid-feedback d-block">{{ form.end_date.errors.0 }}</div>
@@ -57,7 +57,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">السبب</label>
+                        <label class="form-label">{% trans "Reason" %}</label>
                         {{ form.reason }}
                         {% if form.reason.errors %}
                         <div class="invalid-feedback d-block">{{ form.reason.errors.0 }}</div>
@@ -67,9 +67,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>
-                            {% if form.instance.pk %}تحديث الطلب{% else %}إرسال الطلب{% endif %}
+                            {% if form.instance.pk %}{% trans "Update Request" %}{% else %}{% trans "Submit Request" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:leave_request_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:leave_request_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

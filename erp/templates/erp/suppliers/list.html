@@ -1,7 +1,7 @@
 {% extends "erp/base.html" %}
-
-{% block title %}الموردون{% endblock %}
-{% block page_title %}الموردون{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Suppliers" %}{% endblock %}
+{% block page_title %}{% trans "Suppliers" %}{% endblock %}
 
 {% block content %}
 <!-- الفلاتر والإجراءات -->
@@ -9,13 +9,13 @@
     <div class="erp-card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label">بحث</label>
-                <input type="text" name="search" class="form-control" placeholder="الاسم، البريد الإلكتروني، أو المعرف..." value="{{ request.GET.search }}">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans 'Name, Email, or ID...' %}" value="{{ request.GET.search }}">>
             </div>
             <div class="col-md-3">
-                <label class="form-label">النوع</label>
+                <label class="form-label">{% trans "Type" %}</label>
                 <select name="type" class="form-select">
-                    <option value="">جميع الأنواع</option>
+                    <option value="">{% trans "All Types" %}</option>
                     {% for value, label in supplier_types %}
                     <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -23,13 +23,13 @@
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search ms-1"></i> بحث
+                    <i class="bi bi-search ms-1"></i> {% trans "Search" %}
                 </button>
-                <a href="{% url 'erp:supplier_list' %}" class="btn btn-outline-secondary">مسح</a>
+                <a href="{% url 'erp:supplier_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
             </div>
             <div class="col-md-2 text-start">
                 <a href="{% url 'erp:supplier_create' %}" class="btn btn-success">
-                    <i class="bi bi-plus-lg ms-1"></i> إضافة مورد
+                    <i class="bi bi-plus-lg ms-1"></i> {% trans "Add Supplier" %}
                 </a>
             </div>
         </form>
@@ -42,14 +42,14 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>رقم المورد</th>
-                    <th>الاسم</th>
-                    <th>النوع</th>
-                    <th>البريد الإلكتروني</th>
-                    <th>الهاتف</th>
-                    <th>التقييم</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Supplier ID" %}</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Email" %}</th>
+                    <th>{% trans "Phone" %}</th>
+                    <th>{% trans "Rating" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,17 +81,17 @@
                     </td>
                     <td>
                         {% if supplier.is_active %}
-                        <span class="badge bg-success">نشط</span>
+                        <span class="badge bg-success">{% trans "Active" %}</span>
                         {% else %}
-                        <span class="badge bg-secondary">غير نشط</span>
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
                         {% endif %}
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'erp:supplier_detail' supplier.pk %}" class="btn btn-outline-primary" title="عرض">
+                            <a href="{% url 'erp:supplier_detail' supplier.pk %}" class="btn btn-outline-primary" title="{% trans 'View' %}">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{% url 'erp:supplier_edit' supplier.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                            <a href="{% url 'erp:supplier_edit' supplier.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
                                 <i class="bi bi-pencil"></i>
                             </a>
                         </div>
@@ -101,8 +101,8 @@
                 <tr>
                     <td colspan="8" class="text-center py-5">
                         <i class="bi bi-truck fs-1 text-muted"></i>
-                        <p class="mt-2 mb-0">لا يوجد موردون</p>
-                        <a href="{% url 'erp:supplier_create' %}" class="btn btn-primary mt-3">أضف أول مورد</a>
+                        <p class="mt-2 mb-0">{% trans "No suppliers found" %}</p>
+                        <a href="{% url 'erp:supplier_create' %}" class="btn btn-primary mt-3">{% trans "Add First Supplier" %}</a>
                     </td>
                 </tr>
                 {% endfor %}

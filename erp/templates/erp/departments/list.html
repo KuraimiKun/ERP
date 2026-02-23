@@ -1,15 +1,16 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}الأقسام{% endblock %}
-{% block page_title %}الأقسام{% endblock %}
+{% block title %}{% trans "Departments" %}{% endblock %}
+{% block page_title %}{% trans "Departments" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة أقسام الشركة والهيكل التنظيمي</p>
+        <p class="text-muted mb-0">{% trans "Manage company departments and organizational structure" %}</p>
     </div>
     <a href="{% url 'erp:department_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg ms-1"></i> قسم جديد
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Department" %}
     </a>
 </div>
 
@@ -23,7 +24,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ departments.count }}</div>
-                    <div class="stat-label">إجمالي الأقسام</div>
+                    <div class="stat-label">{% trans "Total Departments" %}</div>
                 </div>
             </div>
         </div>
@@ -39,7 +40,7 @@
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
                         <h5 class="mb-1">{{ department.name }}</h5>
-                        <small class="text-muted">{{ department.code|default:"بدون رمز" }}</small>
+                        <small class="text-muted">{{ department.code|default:_("No Code") }}</small>
                     </div>
                     <div class="dropdown">
                         <button class="btn btn-link btn-sm p-0" data-bs-toggle="dropdown">
@@ -47,12 +48,12 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-start">
                             <li><a class="dropdown-item" href="{% url 'erp:department_edit' department.pk %}">
-                                <i class="bi bi-pencil ms-2"></i>تعديل
+                                <i class="bi bi-pencil ms-2"></i>{% trans "Edit" %}
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" 
                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ department.pk }}">
-                                <i class="bi bi-trash ms-2"></i>حذف
+                                <i class="bi bi-trash ms-2"></i>{% trans "Delete" %}
                             </a></li>
                         </ul>
                     </div>
@@ -64,13 +65,13 @@
                 
                 <div class="d-flex align-items-center text-muted small">
                     <i class="bi bi-people ms-1"></i>
-                    {{ department.employees.count|default:0 }} موظف
+                    {{ department.employees.count|default:0 }} {% trans "Employees" %}
                 </div>
                 
                 {% if department.manager %}
                 <div class="d-flex align-items-center text-muted small mt-2">
                     <i class="bi bi-person-badge ms-1"></i>
-                    المدير: {{ department.manager.full_name|default:department.manager }}
+                    {% trans "Manager:" %} {{ department.manager.full_name|default:department.manager }}
                 </div>
                 {% endif %}
             </div>
@@ -81,23 +82,23 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">تأكيد الحذف</h5>
+                        <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        هل أنت متأكد من حذف القسم "{{ department.name }}"؟
+                        {% trans "Are you sure you want to delete department" %} "{{ department.name }}"?
                         {% if department.employees.count > 0 %}
                         <div class="alert alert-warning mt-3 mb-0">
                             <i class="bi bi-exclamation-triangle ms-2"></i>
-                            هذا القسم يحتوي على {{ department.employees.count }} موظف/موظفين.
+                            {% trans "This department contains" %} {{ department.employees.count }} {% trans "employee(s)" %}.
                         </div>
                         {% endif %}
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                         <form action="{% url 'erp:department_delete' department.pk %}" method="post" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">حذف</button>
+                            <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                         </form>
                     </div>
                 </div>
@@ -109,10 +110,10 @@
         <div class="erp-card">
             <div class="erp-card-body text-center py-5">
                 <i class="bi bi-diagram-3 fs-1 text-muted d-block mb-3"></i>
-                <h5 class="text-muted">لم يتم إنشاء أي أقسام بعد</h5>
-                <p class="text-muted mb-3">قم بإنشاء أول قسم لتنظيم موظفيك</p>
+                <h5 class="text-muted">{% trans "No departments created yet" %}</h5>
+                <p class="text-muted mb-3">{% trans "Create your first department to organize your employees" %}</p>
                 <a href="{% url 'erp:department_create' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-lg ms-1"></i> إنشاء قسم
+                    <i class="bi bi-plus-lg ms-1"></i> {% trans "Create Department" %}
                 </a>
             </div>
         </div>

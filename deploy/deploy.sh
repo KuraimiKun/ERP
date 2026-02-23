@@ -106,6 +106,7 @@ apt-get install -yqq \
     libpango1.0-dev \
     ufw \
     logrotate \
+    gettext \
     acl
 
 # ─── Python ────────────────────────────────────────────────────────────────
@@ -264,6 +265,10 @@ ok "Migrations complete"
 info "Collecting static files..."
 python manage.py collectstatic --noinput --clear -v 0
 ok "Static files collected"
+
+info "Compiling translations..."
+python manage.py compilemessages
+ok "Translations compiled"
 
 info "Running system check..."
 python manage.py check --deploy

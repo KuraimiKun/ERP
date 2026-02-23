@@ -1,15 +1,16 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
-{% block title %}{{ product.name }} - تفاصيل المنتج{% endblock %}
-{% block page_title %}تفاصيل المنتج{% endblock %}
+{% block title %}{{ product.name }} - {% trans "Product Details" %}{% endblock %}
+{% block page_title %}{% trans "Product Details" %}{% endblock %}
 {% block page_subtitle %}{{ product.sku }} - {{ product.name }}{% endblock %}
 
 {% block extra_actions %}
 <a href="{% url 'erp:product_edit' product.pk %}" class="btn btn-warning btn-sm">
-    <i class="bi bi-pencil me-1"></i> تعديل
+    <i class="bi bi-pencil me-1"></i> {% trans "Edit" %}
 </a>
 <a href="{% url 'erp:product_delete' product.pk %}" class="btn btn-danger btn-sm">
-    <i class="bi bi-trash me-1"></i> حذف
+    <i class="bi bi-trash me-1"></i> {% trans "Delete" %}
 </a>
 {% endblock %}
 
@@ -19,49 +20,49 @@
     <div class="col-md-8">
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h5>المعلومات الأساسية</h5>
+                <h5>{% trans "Basic Information" %}</h5>
             </div>
             <div class="erp-card-body">
                 <div class="row">
                     <div class="col-md-6">
                         <table class="table table-borderless">
                             <tr><th class="text-muted" style="width:40%">SKU</th><td>{{ product.sku }}</td></tr>
-                            <tr><th class="text-muted">الباركود</th><td>{{ product.barcode|default:"-" }}</td></tr>
-                            <tr><th class="text-muted">الاسم</th><td>{{ product.name }}</td></tr>
-                            <tr><th class="text-muted">الاسم (عربي)</th><td>{{ product.name_ar|default:"-" }}</td></tr>
-                            <tr><th class="text-muted">النوع</th><td>{{ product.get_product_type_display }}</td></tr>
-                            <tr><th class="text-muted">التصنيف</th><td>{{ product.category|default:"-" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Barcode" %}</th><td>{{ product.barcode|default:"-" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Name" %}</th><td>{{ product.name }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Name (Arabic)" %}</th><td>{{ product.name_ar|default:"-" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Type" %}</th><td>{{ product.get_product_type_display }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Category" %}</th><td>{{ product.category|default:"-" }}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
                         <table class="table table-borderless">
                             <tr>
-                                <th class="text-muted" style="width:40%">الحالة</th>
+                                <th class="text-muted" style="width:40%">{% trans "Status" %}</th>
                                 <td>
                                     {% if product.is_active %}
-                                    <span class="badge bg-success">نشط</span>
+                                    <span class="badge bg-success">{% trans "Active" %}</span>
                                     {% else %}
-                                    <span class="badge bg-secondary">غير نشط</span>
+                                    <span class="badge bg-secondary">{% trans "Inactive" %}</span>
                                     {% endif %}
                                 </td>
                             </tr>
-                            <tr><th class="text-muted">المورد المفضل</th><td>{{ product.supplier|default:"-" }}</td></tr>
-                            <tr><th class="text-muted">رمز المورد</th><td>{{ product.supplier_sku|default:"-" }}</td></tr>
-                            <tr><th class="text-muted">معدل الضريبة</th><td>{{ product.tax_rate|default:"-" }}</td></tr>
-                            <tr><th class="text-muted">تاريخ الإنشاء</th><td>{{ product.created_at|date:"Y-m-d H:i" }}</td></tr>
-                            <tr><th class="text-muted">آخر تحديث</th><td>{{ product.updated_at|date:"Y-m-d H:i" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Preferred Supplier" %}</th><td>{{ product.supplier|default:"-" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Supplier SKU" %}</th><td>{{ product.supplier_sku|default:"-" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Tax Rate" %}</th><td>{{ product.tax_rate|default:"-" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Created At" %}</th><td>{{ product.created_at|date:"Y-m-d H:i" }}</td></tr>
+                            <tr><th class="text-muted">{% trans "Last Updated" %}</th><td>{{ product.updated_at|date:"Y-m-d H:i" }}</td></tr>
                         </table>
                     </div>
                 </div>
                 {% if product.description %}
                 <div class="mt-3">
-                    <h6 class="text-muted">الوصف</h6>
+                    <h6 class="text-muted">{% trans "Description" %}</h6>
                     <p>{{ product.description }}</p>
                 </div>
                 {% endif %}
                 {% if product.notes %}
                 <div class="mt-3">
-                    <h6 class="text-muted">ملاحظات</h6>
+                    <h6 class="text-muted">{% trans "Notes" %}</h6>
                     <p>{{ product.notes }}</p>
                 </div>
                 {% endif %}
@@ -71,31 +72,31 @@
         <!-- التسعير -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h5>التسعير</h5>
+                <h5>{% trans "Pricing" %}</h5>
             </div>
             <div class="erp-card-body">
                 <div class="row text-center">
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
-                            <div class="text-muted small">سعر البيع</div>
+                            <div class="text-muted small">{% trans "Selling Price" %}</div>
                             <div class="fs-4 fw-bold text-primary">{{ product.selling_price }}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
-                            <div class="text-muted small">التكلفة</div>
+                            <div class="text-muted small">{% trans "Cost" %}</div>
                             <div class="fs-4 fw-bold">{{ product.cost_price }}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
-                            <div class="text-muted small">أقل سعر بيع</div>
+                            <div class="text-muted small">{% trans "Min Selling Price" %}</div>
                             <div class="fs-4 fw-bold">{{ product.min_selling_price|default:"—" }}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="p-3 border rounded">
-                            <div class="text-muted small">هامش الربح</div>
+                            <div class="text-muted small">{% trans "Profit Margin" %}</div>
                             <div class="fs-4 fw-bold text-success">
                                 {% if product.profit_margin is not None %}{{ product.profit_margin|floatformat:1 }}%{% else %}—{% endif %}
                             </div>
@@ -108,7 +109,7 @@
         <!-- الموردون -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h5>الموردون</h5>
+                <h5>{% trans "Suppliers" %}</h5>
             </div>
             <div class="erp-card-body">
                 {% if suppliers %}
@@ -116,12 +117,12 @@
                     <table class="table erp-table">
                         <thead>
                             <tr>
-                                <th>المورد</th>
-                                <th>رمز المورد</th>
-                                <th>السعر</th>
-                                <th>أيام التسليم</th>
-                                <th>الحد الأدنى للطلب</th>
-                                <th>مفضل</th>
+                                <th>{% trans "Supplier" %}</th>
+                                <th>{% trans "Supplier SKU" %}</th>
+                                <th>{% trans "Price" %}</th>
+                                <th>{% trans "Lead Time Days" %}</th>
+                                <th>{% trans "Min Order" %}</th>
+                                <th>{% trans "Preferred" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -134,7 +135,7 @@
                                 <td>{{ ps.min_order_qty|default:1 }}</td>
                                 <td>
                                     {% if ps.is_preferred %}
-                                    <span class="badge bg-success">مفضل</span>
+                                    <span class="badge bg-success">{% trans "Preferred" %}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -143,7 +144,7 @@
                     </table>
                 </div>
                 {% else %}
-                <p class="text-muted text-center py-3">لا يوجد موردون مرتبطون</p>
+                <p class="text-muted text-center py-3">{% trans "No linked suppliers" %}</p>
                 {% endif %}
             </div>
         </div>
@@ -154,7 +155,7 @@
         <!-- المخزون -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h5>المخزون</h5>
+                <h5>{% trans "Inventory" %}</h5>
             </div>
             <div class="erp-card-body">
                 {% if product.track_inventory %}
@@ -162,20 +163,20 @@
                     <div class="fs-1 fw-bold {% if product.is_low_stock %}text-danger{% else %}text-success{% endif %}">
                         {{ product.quantity_on_hand }}
                     </div>
-                    <div class="text-muted">الكمية المتاحة</div>
+                    <div class="text-muted">{% trans "Available Quantity" %}</div>
                     {% if product.is_low_stock %}
                     <div class="text-danger mt-2">
-                        <i class="bi bi-exclamation-triangle"></i> مخزون منخفض
+                        <i class="bi bi-exclamation-triangle"></i> {% trans "Low Stock" %}
                     </div>
                     {% endif %}
                 </div>
                 <table class="table table-sm table-borderless">
-                    <tr><td class="text-muted">حد إعادة الطلب</td><td>{{ product.reorder_level }}</td></tr>
-                    <tr><td class="text-muted">كمية إعادة الطلب</td><td>{{ product.reorder_quantity }}</td></tr>
-                    <tr><td class="text-muted">وحدة القياس</td><td>{{ product.unit_of_measure|default:"-" }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Reorder Level" %}</td><td>{{ product.reorder_level }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Reorder Quantity" %}</td><td>{{ product.reorder_quantity }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Unit of Measure" %}</td><td>{{ product.unit_of_measure|default:"-" }}</td></tr>
                 </table>
                 {% else %}
-                <p class="text-muted text-center">تتبع المخزون غير مفعل</p>
+                <p class="text-muted text-center">{% trans "Inventory tracking disabled" %}</p>
                 {% endif %}
             </div>
         </div>
@@ -183,7 +184,7 @@
         {% if product.image %}
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h5>صورة المنتج</h5>
+                <h5>{% trans "Product Image" %}</h5>
             </div>
             <div class="erp-card-body text-center">
                 <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded" style="max-height: 250px;">
@@ -194,7 +195,7 @@
         <!-- آخر الفواتير -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h5>آخر الفواتير</h5>
+                <h5>{% trans "Recent Invoices" %}</h5>
             </div>
             <div class="erp-card-body">
                 {% if invoice_lines %}
@@ -207,7 +208,7 @@
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p class="text-muted text-center py-2">لا توجد فواتير</p>
+                <p class="text-muted text-center py-2">{% trans "No invoices" %}</p>
                 {% endif %}
             </div>
         </div>
@@ -215,7 +216,7 @@
         <!-- آخر أوامر الشراء -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h5>آخر أوامر الشراء</h5>
+                <h5>{% trans "Recent Purchase Orders" %}</h5>
             </div>
             <div class="erp-card-body">
                 {% if po_lines %}
@@ -228,7 +229,7 @@
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p class="text-muted text-center py-2">لا توجد أوامر شراء</p>
+                <p class="text-muted text-center py-2">{% trans "No purchase orders" %}</p>
                 {% endif %}
             </div>
         </div>

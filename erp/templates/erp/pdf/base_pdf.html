@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -38,7 +39,7 @@
 
 <div class="footer">
     {{ company.name }} | {{ company.phone }} | {{ company.email }}
-    {% if company.tax_number %} | الرقم الضريبي: {{ company.tax_number }}{% endif %}
+    {% if company.tax_number %} | {% trans "Tax Number:" %} {{ company.tax_number }}{% endif %}
 </div>
 </body>
 </html>

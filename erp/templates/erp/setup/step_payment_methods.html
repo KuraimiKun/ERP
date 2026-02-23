@@ -1,6 +1,7 @@
 {% extends "erp/setup/base_setup.html" %}
+{% load i18n %}
 
-{% block title %}إعداد طرق الدفع{% endblock %}
+{% block title %}{% trans "Payment Methods Setup" %}{% endblock %}
 
 {% block card_content %}
 <form method="post">
@@ -9,8 +10,8 @@
     <div class="setup-card-header">
         <i class="bi bi-credit-card"></i>
         <div>
-            <h2>الخطوة 5: طرق الدفع</h2>
-            <p>اختر طرق الدفع المتاحة لعملائك</p>
+            <h2>{% trans "Step 5: Payment Methods" %}</h2>
+            <p>{% trans "Choose the available payment methods for your customers" %}</p>
         </div>
     </div>
     
@@ -18,12 +19,12 @@
         {% if form.errors %}
             <div class="alert alert-danger">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                يرجى تصحيح الأخطاء التالية
+                {% trans "Please correct the following errors" %}
             </div>
         {% endif %}
         
         <div class="mb-4">
-            <label class="form-label mb-3">طرق الدفع المتاحة</label>
+            <label class="form-label mb-3">{% trans "Available Payment Methods" %}</label>
             
             <div class="checkbox-grid">
                 <div class="checkbox-card {% if form.enable_cash.value %}selected{% endif %}">
@@ -88,7 +89,7 @@
             </div>
         </div>
         
-        <div class="section-divider">معلومات الحساب البنكي</div>
+        <div class="section-divider">{% trans "Bank Account Information" %}</div>
         
         <div class="row mb-4">
             <div class="col-md-4 mb-3">
@@ -108,17 +109,17 @@
         
         <div class="alert alert-info">
             <i class="bi bi-info-circle-fill me-2"></i>
-            يمكنك إضافة طرق دفع إضافية أو تعديل الموجودة لاحقاً من إعدادات طرق الدفع.
+            {% trans "You can add additional payment methods or modify existing ones later from the payment methods settings." %}
         </div>
     </div>
     
     <div class="setup-card-footer">
         <a href="{% url 'erp:setup_go_back' step=4 %}" class="btn btn-setup-back">
             <i class="bi bi-arrow-right me-2"></i>
-            السابق
+            {% trans "Previous" %}
         </a>
         <button type="submit" class="btn btn-setup-next">
-            التالي
+            {% trans "Next" %}
             <i class="bi bi-arrow-left ms-2"></i>
         </button>
     </div>

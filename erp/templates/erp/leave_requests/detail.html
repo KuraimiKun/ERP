@@ -1,22 +1,22 @@
 {% extends 'erp/base.html' %}
-
-{% block title %}تفاصيل طلب الإجازة{% endblock %}
-{% block page_title %}تفاصيل طلب الإجازة{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Leave Request Details" %}{% endblock %}
+{% block page_title %}{% trans "Leave Request Details" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <a href="{% url 'erp:leave_request_list' %}" class="text-decoration-none">
-            <i class="bi bi-arrow-left me-1"></i> العودة إلى طلبات الإجازة
+            <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Leave Requests" %}
         </a>
     </div>
     {% if leave_request.status == 'pending' %}
     <div class="btn-group">
         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
-            <i class="bi bi-check-lg me-1"></i> موافقة
+            <i class="bi bi-check-lg me-1"></i> {% trans "Approve" %}
         </button>
         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-            <i class="bi bi-x-lg me-1"></i> رفض
+            <i class="bi bi-x-lg me-1"></i> {% trans "Reject" %}
         </button>
     </div>
     {% endif %}
@@ -26,7 +26,7 @@
     <div class="col-lg-8">
         <div class="erp-card">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">طلب الإجازة</h6>
+                <h6 class="mb-0">{% trans "Leave Request" %}</h6>
                 <span class="badge badge-status 
                     {% if leave_request.status == 'pending' %}badge-partial
                     {% elif leave_request.status == 'approved' %}badge-paid
@@ -38,7 +38,7 @@
             <div class="erp-card-body">
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <label class="text-muted small">الموظف</label>
+                        <label class="text-muted small">{% trans "Employee" %}</label>
                         <div class="d-flex align-items-center mt-1">
                             <img src="https://ui-avatars.com/api/?name={{ leave_request.employee.first_name }}+{{ leave_request.employee.last_name }}&background=0d6efd&color=fff" 
                                  alt="" class="rounded-circle me-2" width="40" height="40">
@@ -49,24 +49,24 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">نوع الإجازة</label>
+                        <label class="text-muted small">{% trans "Leave Type" %}</label>
                         <div class="fw-medium">{{ leave_request.leave_type.name|default:leave_request.leave_type|default:"-" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">تاريخ البداية</label>
+                        <label class="text-muted small">{% trans "Start Date" %}</label>
                         <div>{{ leave_request.start_date|date:"F d, Y" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">تاريخ النهاية</label>
+                        <label class="text-muted small">{% trans "End Date" %}</label>
                         <div>{{ leave_request.end_date|date:"F d, Y" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">الأيام المطلوبة</label>
-                        <div class="fw-medium fs-5">{{ leave_request.days_requested|default:"-" }} يوم</div>
+                        <label class="text-muted small">{% trans "Days Requested" %}</label>
+                        <div class="fw-medium fs-5">{{ leave_request.days_requested|default:"-" }} {% trans "day" %}</div>
                     </div>
                     {% if leave_request.reason %}
                     <div class="col-12">
-                        <label class="text-muted small">السبب</label>
+                        <label class="text-muted small">{% trans "Reason" %}</label>
                         <div class="bg-light rounded p-3 mt-1">{{ leave_request.reason }}</div>
                     </div>
                     {% endif %}
@@ -78,11 +78,11 @@
     <div class="col-lg-4">
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">معلومات الحالة</h6>
+                <h6 class="mb-0">{% trans "Status Information" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">الحالة الحالية</label>
+                    <label class="text-muted small">{% trans "Current Status" %}</label>
                     <div>
                         <span class="badge badge-status fs-6
                             {% if leave_request.status == 'pending' %}badge-partial
@@ -95,19 +95,19 @@
                 </div>
                 {% if leave_request.approved_by %}
                 <div class="mb-3">
-                    <label class="text-muted small">تمت المراجعة بواسطة</label>
+                    <label class="text-muted small">{% trans "Reviewed By" %}</label>
                     <div>{{ leave_request.approved_by.full_name|default:leave_request.approved_by }}</div>
                 </div>
                 {% endif %}
                 {% if leave_request.approval_date %}
                 <div class="mb-3">
-                    <label class="text-muted small">تاريخ المراجعة</label>
+                    <label class="text-muted small">{% trans "Review Date" %}</label>
                     <div>{{ leave_request.approval_date|date:"M d, Y H:i" }}</div>
                 </div>
                 {% endif %}
                 {% if leave_request.approval_notes %}
                 <div class="mb-3">
-                    <label class="text-muted small">سبب الرفض</label>
+                    <label class="text-muted small">{% trans "Rejection Reason" %}</label>
                     <div class="text-danger">{{ leave_request.approval_notes }}</div>
                 </div>
                 {% endif %}
@@ -116,15 +116,15 @@
         
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0">الجدول الزمني</h6>
+                <h6 class="mb-0">{% trans "Timeline" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">تاريخ الإرسال</label>
+                    <label class="text-muted small">{% trans "Submission Date" %}</label>
                     <div>{{ leave_request.created_at|date:"M d, Y H:i"|default:"-" }}</div>
                 </div>
                 <div class="mb-0">
-                    <label class="text-muted small">آخر تحديث</label>
+                    <label class="text-muted small">{% trans "Last Updated" %}</label>
                     <div>{{ leave_request.updated_at|date:"M d, Y H:i"|default:"-" }}</div>
                 </div>
             </div>
@@ -138,22 +138,22 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">الموافقة على طلب الإجازة</h5>
+                <h5 class="modal-title">{% trans "Approve Leave Request" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>الموافقة على طلب إجازة <strong>{{ leave_request.employee.first_name }} {{ leave_request.employee.last_name }}</strong>؟</p>
+                <p>{% trans "Approve leave request for" %} <strong>{{ leave_request.employee.first_name }} {{ leave_request.employee.last_name }}</strong>?</p>
                 <p class="text-muted">
-                    {{ leave_request.leave_type.name|default:leave_request.leave_type }} من 
-                    {{ leave_request.start_date|date:"M d, Y" }} إلى {{ leave_request.end_date|date:"M d, Y" }}
+                    {{ leave_request.leave_type.name|default:leave_request.leave_type }} {% trans "from" %} 
+                    {{ leave_request.start_date|date:"M d, Y" }} {% trans "to" %} {{ leave_request.end_date|date:"M d, Y" }}
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                 <form action="{% url 'erp:leave_request_approve' leave_request.pk %}" method="post" class="d-inline">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="approve">
-                    <button type="submit" class="btn btn-success">موافقة</button>
+                    <button type="submit" class="btn btn-success">{% trans "Approve" %}</button>
                 </form>
             </div>
         </div>
@@ -165,22 +165,22 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">رفض طلب الإجازة</h5>
+                <h5 class="modal-title">{% trans "Reject Leave Request" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{% url 'erp:leave_request_approve' leave_request.pk %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="reject">
                 <div class="modal-body">
-                    <p>رفض طلب إجازة <strong>{{ leave_request.employee.first_name }} {{ leave_request.employee.last_name }}</strong>؟</p>
+                    <p>{% trans "Reject leave request for" %} <strong>{{ leave_request.employee.first_name }} {{ leave_request.employee.last_name }}</strong>?</p>
                     <div class="mb-3">
-                        <label class="form-label">سبب الرفض</label>
-                        <textarea name="rejection_reason" class="form-control" rows="3" placeholder="أدخل السبب..."></textarea>
+                        <label class="form-label">{% trans "Rejection Reason" %}</label>
+                        <textarea name="rejection_reason" class="form-control" rows="3" placeholder="{% trans 'Enter reason...' %}"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-danger">رفض</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Reject" %}</button>
                 </div>
             </form>
         </div>

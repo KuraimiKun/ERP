@@ -1,32 +1,33 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}العملات{% endblock %}
-{% block page_title %}العملات{% endblock %}
+{% block title %}{% trans "Currencies" %}{% endblock %}
+{% block page_title %}{% trans "Currencies" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة العملات وأسعار الصرف</p>
+        <p class="text-muted mb-0">{% trans "Manage currencies and exchange rates" %}</p>
     </div>
     <a href="{% url 'erp:currency_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> عملة جديدة
+        <i class="bi bi-plus-lg me-1"></i> {% trans "New Currency" %}
     </a>
 </div>
 
 <div class="erp-card">
     <div class="erp-card-header">
-        <h6 class="mb-0">العملات</h6>
+        <h6 class="mb-0">{% trans "Currencies" %}</h6>
     </div>
     <div class="table-responsive">
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>الرمز</th>
-                    <th>الاسم</th>
-                    <th>الرمز</th>
-                    <th>سعر الصرف</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Code" %}</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Symbol" %}</th>
+                    <th>{% trans "Exchange Rate" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,17 +42,17 @@
                     <td>{{ currency.exchange_rate }}</td>
                     <td>
                         {% if currency.is_active %}
-                        <span class="badge badge-status badge-paid">نشط</span>
+                        <span class="badge badge-status badge-paid">{% trans "Active" %}</span>
                         {% else %}
-                        <span class="badge badge-status badge-draft">غير نشط</span>
+                        <span class="badge badge-status badge-draft">{% trans "Inactive" %}</span>
                         {% endif %}
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'erp:currency_edit' currency.pk %}" class="btn btn-outline-secondary" title="Edit">
+                            <a href="{% url 'erp:currency_edit' currency.pk %}" class="btn btn-outline-secondary" title="{% trans "Edit" %}">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <button type="button" class="btn btn-outline-danger" title="Delete" 
+                            <button type="button" class="btn btn-outline-danger" title="{% trans "Delete" %}" 
                                     data-bs-toggle="modal" data-bs-target="#deleteModal{{ currency.pk }}">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -61,17 +62,17 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        هل أنت متأكد من حذف العملة "{{ currency.code }}"؟
+                                        {% trans "Are you sure you want to delete currency" %} "{{ currency.code }}"?
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                                         <form action="{% url 'erp:currency_delete' currency.pk %}" method="post" class="d-inline">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                            <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                                         </form>
                                     </div>
                                 </div>
@@ -83,7 +84,7 @@
                 <tr>
                     <td colspan="6" class="text-center py-4 text-muted">
                         <i class="bi bi-currency-exchange fs-1 d-block mb-2"></i>
-                        لا توجد عملات مهيأة حتى الآن
+                        {% trans "No currencies configured yet" %}
                     </td>
                 </tr>
                 {% endfor %}

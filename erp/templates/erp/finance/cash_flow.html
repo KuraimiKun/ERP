@@ -1,14 +1,15 @@
 {% extends 'erp/base.html' %}
 {% load humanize %}
+{% load i18n %}
 
-{% block title %}قائمة التدفقات النقدية{% endblock %}
-{% block page_title %}قائمة التدفقات النقدية{% endblock %}
+{% block title %}{% trans "Cash Flow Statement" %}{% endblock %}
+{% block page_title %}{% trans "Cash Flow Statement" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <a href="{% url 'erp:financial_reports' %}" class="text-decoration-none">
-            <i class="bi bi-arrow-left me-1"></i> العودة إلى التقارير المالية
+            <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Financial Reports" %}
         </a>
     </div>
 </div>
@@ -18,16 +19,16 @@
     <div class="erp-card-body py-3">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label small text-muted">من تاريخ</label>
+                <label class="form-label small text-muted">{% trans "From Date" %}</label>
                 <input type="date" name="start" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
             </div>
             <div class="col-md-4">
-                <label class="form-label small text-muted">إلى تاريخ</label>
+                <label class="form-label small text-muted">{% trans "To Date" %}</label>
                 <input type="date" name="end" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-funnel me-1"></i> تصفية
+                    <i class="bi bi-funnel me-1"></i> {% trans "Filter" %}
                 </button>
             </div>
         </form>
@@ -39,7 +40,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">التدفقات الداخلة</p>
+                <p class="text-muted small mb-1">{% trans "Operating Inflows" %}</p>
                 <h4 class="text-success mb-0">{{ operating_inflows|floatformat:2|intcomma }}</h4>
             </div>
         </div>
@@ -47,7 +48,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">التدفقات الخارجة</p>
+                <p class="text-muted small mb-1">{% trans "Operating Outflows" %}</p>
                 <h4 class="text-danger mb-0">{{ operating_outflows|floatformat:2|intcomma }}</h4>
             </div>
         </div>
@@ -55,7 +56,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">صافي التدفق النقدي</p>
+                <p class="text-muted small mb-1">{% trans "Net Cash Change" %}</p>
                 <h4 class="mb-0 {% if net_cash_change >= 0 %}text-success{% else %}text-danger{% endif %}">
                     {{ net_cash_change|floatformat:2|intcomma }}
                 </h4>
@@ -67,7 +68,7 @@
 <!-- Operating Activities -->
 <div class="erp-card">
     <div class="erp-card-header">
-        <h6 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>الأنشطة التشغيلية</h6>
+        <h6 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>{% trans "Operating Activities" %}</h6>
     </div>
     <div class="erp-card-body p-0">
         <table class="table erp-table mb-0">
@@ -75,40 +76,40 @@
                 <!-- Inflows -->
                 <tr class="table-light">
                     <td colspan="2" class="fw-bold text-success">
-                        <i class="bi bi-arrow-down-circle me-1"></i> التدفقات الداخلة
+                        <i class="bi bi-arrow-down-circle me-1"></i> {% trans "Inflows" %}
                     </td>
                 </tr>
                 <tr>
-                    <td class="ps-4">مدفوعات العملاء المستلمة</td>
+                    <td class="ps-4">{% trans "Payments Received from Customers" %}</td>
                     <td class="text-end text-success">{{ payments_received|floatformat:2|intcomma }}</td>
                 </tr>
                 <tr class="fw-bold">
-                    <td class="ps-4">إجمالي التدفقات الداخلة</td>
+                    <td class="ps-4">{% trans "Total Inflows" %}</td>
                     <td class="text-end text-success">{{ operating_inflows|floatformat:2|intcomma }}</td>
                 </tr>
 
                 <!-- Outflows -->
                 <tr class="table-light">
                     <td colspan="2" class="fw-bold text-danger">
-                        <i class="bi bi-arrow-up-circle me-1"></i> التدفقات الخارجة
+                        <i class="bi bi-arrow-up-circle me-1"></i> {% trans "Outflows" %}
                     </td>
                 </tr>
                 <tr>
-                    <td class="ps-4">مدفوعات الموردين</td>
+                    <td class="ps-4">{% trans "Payments Made to Suppliers" %}</td>
                     <td class="text-end text-danger">({{ payments_made_supplier|floatformat:2|intcomma }})</td>
                 </tr>
                 <tr>
-                    <td class="ps-4">المصروفات المدفوعة</td>
+                    <td class="ps-4">{% trans "Expenses Paid" %}</td>
                     <td class="text-end text-danger">({{ expenses_paid|floatformat:2|intcomma }})</td>
                 </tr>
                 <tr class="fw-bold">
-                    <td class="ps-4">إجمالي التدفقات الخارجة</td>
+                    <td class="ps-4">{% trans "Total Outflows" %}</td>
                     <td class="text-end text-danger">({{ operating_outflows|floatformat:2|intcomma }})</td>
                 </tr>
 
                 <!-- Net -->
                 <tr class="table-light fw-bold fs-5">
-                    <td>صافي التدفق النقدي التشغيلي</td>
+                    <td>{% trans "Net Operating Cash Flow" %}</td>
                     <td class="text-end {% if net_operating >= 0 %}text-success{% else %}text-danger{% endif %}">
                         {{ net_operating|floatformat:2|intcomma }}
                     </td>
@@ -124,12 +125,11 @@
         <div class="d-flex align-items-start">
             <i class="bi bi-info-circle text-info me-2 mt-1"></i>
             <div>
-                <strong>ملاحظة:</strong>
-                يعرض هذا التقرير التدفقات النقدية التشغيلية فقط (المدفوعات المستلمة، مدفوعات الموردين، المصروفات). 
-                الأنشطة الاستثمارية والتمويلية غير مدرجة حالياً.
+                <strong>{% trans "Note" %}:</strong>
+                {% trans "This report shows operating cash flows only (customer payments, supplier payments, expenses). Investing and financing activities are not included yet." %}
             </div>
         </div>
-        <small class="text-muted">الفترة: {{ start_date|date:"Y/m/d" }} — {{ end_date|date:"Y/m/d" }}</small>
+        <small class="text-muted">{% trans "Period" %}: {{ start_date|date:"Y/m/d" }} — {{ end_date|date:"Y/m/d" }}</small>
     </div>
 </div>
 {% endblock %}

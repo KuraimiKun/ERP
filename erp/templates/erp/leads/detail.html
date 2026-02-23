@@ -1,14 +1,15 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
 {% block title %}{{ lead.first_name }} {{ lead.last_name }}{% endblock %}
-{% block page_title %}تفاصيل العميل المحتمل{% endblock %}
+{% block page_title %}{% trans "Lead Details" %}{% endblock %}
 
 {% block content %}
 <!-- شريط التنقل -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:lead_list' %}">العملاء المحتملون</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:lead_list' %}">{% trans "Leads" %}</a></li>
         <li class="breadcrumb-item active">{{ lead.lead_number }}</li>
     </ol>
 </nav>
@@ -41,49 +42,49 @@
             <hr class="my-0">
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <label class="text-muted small">{% trans "Email" %}</label>
                     <div><a href="mailto:{{ lead.email }}">{{ lead.email }}</a></div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">الهاتف</label>
+                    <label class="text-muted small">{% trans "Phone" %}</label>
                     <div>{{ lead.phone|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">المصدر</label>
+                    <label class="text-muted small">{% trans "Source" %}</label>
                     <div>{{ lead.get_source_display }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">القيمة المتوقعة</label>
+                    <label class="text-muted small">{% trans "Expected Value" %}</label>
                     <div class="fs-5 fw-bold text-success">
                         {% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">الخدمة المطلوبة</label>
+                    <label class="text-muted small">{% trans "Service Required" %}</label>
                     <div>{{ lead.service_interest|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">مسؤول عن</label>
+                    <label class="text-muted small">{% trans "Assigned To" %}</label>
                     <div>
                         {% if lead.assigned_to %}
                         {{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name }}
                         {% else %}
-                        <span class="text-muted">غير معين</span>
+                        <span class="text-muted">{% trans "Unassigned" %}</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
             <div class="erp-card-body border-top d-grid gap-2">
                 <a href="{% url 'erp:lead_edit' lead.pk %}" class="btn btn-primary">
-                    <i class="bi bi-pencil ms-1"></i> تعديل العميل المحتمل
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit Lead" %}
                 </a>
                 {% if lead.status not in 'won,lost' and not lead.converted_customer %}
                 <a href="{% url 'erp:lead_convert_to_customer' lead.pk %}" class="btn btn-success">
-                    <i class="bi bi-person-check ms-1"></i> تحويل إلى عميل
+                    <i class="bi bi-person-check ms-1"></i> {% trans "Convert to Customer" %}
                 </a>
                 {% endif %}
                 <a href="{% url 'erp:lead_delete' lead.pk %}" class="btn btn-outline-danger">
-                    <i class="bi bi-trash ms-1"></i> حذف العميل المحتمل
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete Lead" %}
                 </a>
             </div>
         </div>
@@ -91,28 +92,28 @@
         <!-- التواريخ -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">الجدول الزمني</h6>
+                <h6 class="mb-0">{% trans "Timeline" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">تاريخ الإنشاء:</span>
+                    <span class="text-muted">{% trans "Created Date" %}:</span>
                     <span>{{ lead.created_at|date:"M d, Y" }}</span>
                 </div>
                 {% if lead.last_contact_date %}
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">آخر تواصل:</span>
+                    <span class="text-muted">{% trans "Last Contact" %}:</span>
                     <span>{{ lead.last_contact_date|date:"M d, Y" }}</span>
                 </div>
                 {% endif %}
                 {% if lead.next_follow_up %}
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">المتابعة القادمة:</span>
+                    <span class="text-muted">{% trans "Next Follow-up" %}:</span>
                     <span class="{% if lead.next_follow_up < today %}text-danger{% endif %}">{{ lead.next_follow_up|date:"M d, Y" }}</span>
                 </div>
                 {% endif %}
                 {% if lead.conversion_date %}
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">تم التحويل:</span>
+                    <span class="text-muted">{% trans "Converted" %}:</span>
                     <span class="text-success">{{ lead.conversion_date|date:"M d, Y" }}</span>
                 </div>
                 {% endif %}
@@ -125,7 +126,7 @@
         {% if lead.notes %}
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">ملاحظات</h6>
+                <h6 class="mb-0">{% trans "Notes" %}</h6>
             </div>
             <div class="erp-card-body">
                 {{ lead.notes|linebreaksbr }}
@@ -136,9 +137,9 @@
         <!-- سجل النشاطات -->
         <div class="erp-card mb-4">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">سجل النشاطات</h6>
+                <h6 class="mb-0">{% trans "Activity Log" %}</h6>
                 <a href="{% url 'erp:lead_add_activity' lead.pk %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus-lg ms-1"></i> تسجيل نشاط
+                    <i class="bi bi-plus-lg ms-1"></i> {% trans "Log Activity" %}
                 </a>
             </div>
             <div class="erp-card-body">
@@ -174,7 +175,7 @@
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-center text-muted py-4">لم يتم تسجيل أي نشاطات بعد</p>
+                <p class="text-center text-muted py-4">{% trans "No activities logged yet" %}</p>
                 {% endfor %}
             </div>
         </div>
@@ -182,19 +183,19 @@
         <!-- عروض الأسعار -->
         <div class="erp-card">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">عروض الأسعار</h6>
+                <h6 class="mb-0">{% trans "Quotes" %}</h6>
                 <a href="{% url 'erp:quote_create' %}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-plus-lg ms-1"></i> إنشاء عرض سعر
+                    <i class="bi bi-plus-lg ms-1"></i> {% trans "Create Quote" %}
                 </a>
             </div>
             <div class="table-responsive">
                 <table class="table erp-table mb-0">
                     <thead>
                         <tr>
-                            <th>رقم العرض</th>
-                            <th>التاريخ</th>
-                            <th>المبلغ</th>
-                            <th>الحالة</th>
+                            <th>{% trans "Quote Number" %}</th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "Amount" %}</th>
+                            <th>{% trans "Status" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -206,7 +207,7 @@
                             <td><span class="badge bg-secondary">{{ quote.get_status_display }}</span></td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد عروض أسعار</td></tr>
+                        <tr><td colspan="4" class="text-center py-4 text-muted">{% trans "No quotes yet" %}</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

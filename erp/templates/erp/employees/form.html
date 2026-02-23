@@ -1,7 +1,8 @@
 {% extends 'erp/form_base.html' %}
+{% load i18n %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'erp:employee_list' %}">الموظفون</a></li>
+<li class="breadcrumb-item"><a href="{% url 'erp:employee_list' %}">{% trans "Employees" %}</a></li>
 <li class="breadcrumb-item active">{{ title }}</li>
 {% endblock %}
 
@@ -10,198 +11,198 @@
 {% block cancel_url %}{% url 'erp:employee_list' %}{% endblock %}
 
 {% block form_content %}
-<!-- المعلومات الشخصية -->
+<!-- Personal Information -->
 <div class="form-section">
-    <h6 class="form-section-title">المعلومات الشخصية</h6>
+    <h6 class="form-section-title">{% trans "Personal Information" %}</h6>
     <div class="row">
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.first_name.id_for_label }}" class="form-label">الاسم الأول</label>
+            <label for="{{ form.first_name.id_for_label }}" class="form-label">{% trans "First Name" %}</label>
             {{ form.first_name }}
             {% if form.first_name.errors %}<div class="invalid-feedback d-block">{{ form.first_name.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.last_name.id_for_label }}" class="form-label">اسم العائلة</label>
+            <label for="{{ form.last_name.id_for_label }}" class="form-label">{% trans "Last Name" %}</label>
             {{ form.last_name }}
             {% if form.last_name.errors %}<div class="invalid-feedback d-block">{{ form.last_name.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.first_name_ar.id_for_label }}" class="form-label">الاسم الأول (عربي)</label>
+            <label for="{{ form.first_name_ar.id_for_label }}" class="form-label">{% trans "First Name (Arabic)" %}</label>
             {{ form.first_name_ar }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.last_name_ar.id_for_label }}" class="form-label">اسم العائلة (عربي)</label>
+            <label for="{{ form.last_name_ar.id_for_label }}" class="form-label">{% trans "Last Name (Arabic)" %}</label>
             {{ form.last_name_ar }}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.gender.id_for_label }}" class="form-label">الجنس</label>
+            <label for="{{ form.gender.id_for_label }}" class="form-label">{% trans "Gender" %}</label>
             {{ form.gender }}
             {% if form.gender.errors %}<div class="invalid-feedback d-block">{{ form.gender.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">تاريخ الميلاد</label>
+            <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">{% trans "Date of Birth" %}</label>
             {{ form.date_of_birth }}
             {% if form.date_of_birth.errors %}<div class="invalid-feedback d-block">{{ form.date_of_birth.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.nationality.id_for_label }}" class="form-label">الجنسية</label>
+            <label for="{{ form.nationality.id_for_label }}" class="form-label">{% trans "Nationality" %}</label>
             {{ form.nationality }}
             {% if form.nationality.errors %}<div class="invalid-feedback d-block">{{ form.nationality.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.email.id_for_label }}" class="form-label">البريد الإلكتروني</label>
+            <label for="{{ form.email.id_for_label }}" class="form-label">{% trans "Email" %}</label>
             {{ form.email }}
             {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors|join:", " }}</div>{% endif %}
         </div>
     </div>
 </div>
 
-<!-- حساب المستخدم -->
+<!-- User Account -->
 <div class="form-section">
-    <h6 class="form-section-title">حساب المستخدم</h6>
+    <h6 class="form-section-title">{% trans "User Account" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3 required-field">
-            <label for="{{ form.user.id_for_label }}" class="form-label">حساب المستخدم</label>
+            <label for="{{ form.user.id_for_label }}" class="form-label">{% trans "User Account" %}</label>
             {{ form.user }}
             {% if form.user.errors %}<div class="invalid-feedback d-block">{{ form.user.errors|join:", " }}</div>{% endif %}
-            <div class="form-text">ربط هذا الموظف بحساب مستخدم للوصول إلى النظام.</div>
+            <div class="form-text">{% trans "Link this employee to a user account for system access." %}</div>
         </div>
         <div class="col-md-6 mb-3 required-field">
-            <label for="{{ form.employee_id.id_for_label }}" class="form-label">رقم الموظف</label>
+            <label for="{{ form.employee_id.id_for_label }}" class="form-label">{% trans "Employee ID" %}</label>
             {{ form.employee_id }}
             {% if form.employee_id.errors %}<div class="invalid-feedback d-block">{{ form.employee_id.errors|join:", " }}</div>{% endif %}
         </div>
     </div>
 </div>
 
-<!-- تفاصيل التوظيف -->
+<!-- Employment Details -->
 <div class="form-section">
-    <h6 class="form-section-title">تفاصيل التوظيف</h6>
+    <h6 class="form-section-title">{% trans "Employment Details" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label for="{{ form.department.id_for_label }}" class="form-label">القسم</label>
+            <label for="{{ form.department.id_for_label }}" class="form-label">{% trans "Department" %}</label>
             {{ form.department }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.branch.id_for_label }}" class="form-label">الفرع</label>
+            <label for="{{ form.branch.id_for_label }}" class="form-label">{% trans "Branch" %}</label>
             {{ form.branch }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.reports_to.id_for_label }}" class="form-label">المدير</label>
+            <label for="{{ form.reports_to.id_for_label }}" class="form-label">{% trans "Reports To" %}</label>
             {{ form.reports_to }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.job_title.id_for_label }}" class="form-label">المسمى الوظيفي</label>
+            <label for="{{ form.job_title.id_for_label }}" class="form-label">{% trans "Job Title" %}</label>
             {{ form.job_title }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.employment_type.id_for_label }}" class="form-label">نوع التوظيف</label>
+            <label for="{{ form.employment_type.id_for_label }}" class="form-label">{% trans "Employment Type" %}</label>
             {{ form.employment_type }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.hire_date.id_for_label }}" class="form-label">تاريخ التوظيف</label>
+            <label for="{{ form.hire_date.id_for_label }}" class="form-label">{% trans "Hire Date" %}</label>
             {{ form.hire_date }}
         </div>
     </div>
 </div>
 
-<!-- معلومات الاتصال -->
+<!-- Contact Information -->
 <div class="form-section">
-    <h6 class="form-section-title">معلومات الاتصال</h6>
+    <h6 class="form-section-title">{% trans "Contact Information" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label for="{{ form.phone.id_for_label }}" class="form-label">الهاتف</label>
+            <label for="{{ form.phone.id_for_label }}" class="form-label">{% trans "Phone" %}</label>
             {{ form.phone }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">اسم جهة اتصال الطوارئ</label>
+            <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">{% trans "Emergency Contact Name" %}</label>
             {{ form.emergency_contact_name }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.emergency_contact_phone.id_for_label }}" class="form-label">هاتف جهة اتصال الطوارئ</label>
+            <label for="{{ form.emergency_contact_phone.id_for_label }}" class="form-label">{% trans "Emergency Contact Phone" %}</label>
             {{ form.emergency_contact_phone }}
         </div>
         <div class="col-12 mb-3">
-            <label for="{{ form.address.id_for_label }}" class="form-label">العنوان</label>
+            <label for="{{ form.address.id_for_label }}" class="form-label">{% trans "Address" %}</label>
             {{ form.address }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.city.id_for_label }}" class="form-label">المدينة</label>
+            <label for="{{ form.city.id_for_label }}" class="form-label">{% trans "City" %}</label>
             {{ form.city }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.country.id_for_label }}" class="form-label">الدولة</label>
+            <label for="{{ form.country.id_for_label }}" class="form-label">{% trans "Country" %}</label>
             {{ form.country }}
         </div>
     </div>
 </div>
 
-<!-- الوثائق الرسمية -->
+<!-- Official Documents -->
 <div class="form-section">
-    <h6 class="form-section-title">الوثائق الرسمية</h6>
+    <h6 class="form-section-title">{% trans "Official Documents" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label for="{{ form.national_id.id_for_label }}" class="form-label">رقم الهوية</label>
+            <label for="{{ form.national_id.id_for_label }}" class="form-label">{% trans "National ID" %}</label>
             {{ form.national_id }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.passport_number.id_for_label }}" class="form-label">رقم الجواز</label>
+            <label for="{{ form.passport_number.id_for_label }}" class="form-label">{% trans "Passport Number" %}</label>
             {{ form.passport_number }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.passport_expiry.id_for_label }}" class="form-label">تاريخ انتهاء الجواز</label>
+            <label for="{{ form.passport_expiry.id_for_label }}" class="form-label">{% trans "Passport Expiry" %}</label>
             {{ form.passport_expiry }}
         </div>
     </div>
 </div>
 
-<!-- التعويضات -->
+<!-- Compensation -->
 <div class="form-section">
-    <h6 class="form-section-title">التعويضات</h6>
+    <h6 class="form-section-title">{% trans "Compensation" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label for="{{ form.basic_salary.id_for_label }}" class="form-label">الراتب الأساسي</label>
+            <label for="{{ form.basic_salary.id_for_label }}" class="form-label">{% trans "Basic Salary" %}</label>
             <div class="input-group">
                 <span class="input-group-text">$</span>
                 {{ form.basic_salary }}
             </div>
         </div>
         <div class="col-md-4 mb-3 required-field">
-            <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+            <label for="{{ form.currency.id_for_label }}" class="form-label">{% trans "Currency" %}</label>
             {{ form.currency }}
             {% if form.currency.errors %}<div class="invalid-feedback d-block">{{ form.currency.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.employment_status.id_for_label }}" class="form-label">حالة التوظيف</label>
+            <label for="{{ form.employment_status.id_for_label }}" class="form-label">{% trans "Employment Status" %}</label>
             {{ form.employment_status }}
         </div>
     </div>
 </div>
 
-<!-- المعلومات البنكية -->
+<!-- Bank Information -->
 <div class="form-section">
-    <h6 class="form-section-title">المعلومات البنكية</h6>
+    <h6 class="form-section-title">{% trans "Bank Information" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label for="{{ form.bank_name.id_for_label }}" class="form-label">اسم البنك</label>
+            <label for="{{ form.bank_name.id_for_label }}" class="form-label">{% trans "Bank Name" %}</label>
             {{ form.bank_name }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.bank_account.id_for_label }}" class="form-label">رقم الحساب</label>
+            <label for="{{ form.bank_account.id_for_label }}" class="form-label">{% trans "Account Number" %}</label>
             {{ form.bank_account }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.iban.id_for_label }}" class="form-label">رقم الآيبان</label>
+            <label for="{{ form.iban.id_for_label }}" class="form-label">{% trans "IBAN" %}</label>
             {{ form.iban }}
         </div>
     </div>
 </div>
 
-<!-- الصورة الشخصية -->
+<!-- Profile Photo -->
 <div class="form-section mb-0">
-    <h6 class="form-section-title">الصورة الشخصية</h6>
+    <h6 class="form-section-title">{% trans "Profile Photo" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.photo.id_for_label }}" class="form-label">الصورة الرمزية</label>
+            <label for="{{ form.photo.id_for_label }}" class="form-label">{% trans "Avatar" %}</label>
             {% if employee and employee.photo %}
             <div class="mb-2">
                 <img src="{{ employee.photo.url }}" alt="Current photo" class="rounded-circle" style="width: 64px; height: 64px; object-fit: cover;">

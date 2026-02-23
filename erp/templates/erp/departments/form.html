@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if form.instance.pk %}تعديل القسم{% else %}قسم جديد{% endif %}{% endblock %}
-{% block page_title %}{% if form.instance.pk %}تعديل القسم{% else %}قسم جديد{% endif %}{% endblock %}
+{% block title %}{% if form.instance.pk %}{% trans "Edit Department" %}{% else %}{% trans "New Department" %}{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}{% trans "Edit Department" %}{% else %}{% trans "New Department" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +11,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-diagram-3 ms-2"></i>
-                    {% if form.instance.pk %}تعديل القسم{% else %}إنشاء قسم{% endif %}
+                    {% if form.instance.pk %}{% trans "Edit Department" %}{% else %}{% trans "Create Department" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -24,7 +25,7 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
                         {{ form.name }}
                         {% if form.name.errors %}
                         <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
@@ -32,16 +33,16 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الرمز</label>
+                        <label class="form-label">{% trans "Code" %}</label>
                         {{ form.code }}
                         {% if form.code.errors %}
                         <div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>
                         {% endif %}
-                        <div class="form-text">رمز مختصر للقسم (مثال: HR, FIN, OPS)</div>
+                        <div class="form-text">{% trans "Short code for department (e.g. HR, FIN, OPS)" %}</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">المدير</label>
+                        <label class="form-label">{% trans "Manager" %}</label>
                         {{ form.manager }}
                         {% if form.manager.errors %}
                         <div class="invalid-feedback d-block">{{ form.manager.errors.0 }}</div>
@@ -49,16 +50,16 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">القسم الرئيسي</label>
+                        <label class="form-label">{% trans "Parent Department" %}</label>
                         {{ form.parent }}
                         {% if form.parent.errors %}
                         <div class="invalid-feedback d-block">{{ form.parent.errors.0 }}</div>
                         {% endif %}
-                        <div class="form-text">اختر إذا كان هذا قسم فرعي</div>
+                        <div class="form-text">{% trans "Select if this is a sub-department" %}</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الوصف</label>
+                        <label class="form-label">{% trans "Description" %}</label>
                         {{ form.description }}
                         {% if form.description.errors %}
                         <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
@@ -68,9 +69,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg ms-1"></i>
-                            {% if form.instance.pk %}تحديث القسم{% else %}إنشاء قسم{% endif %}
+                            {% if form.instance.pk %}{% trans "Update Department" %}{% else %}{% trans "Create Department" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:department_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:department_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

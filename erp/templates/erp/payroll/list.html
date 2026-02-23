@@ -1,16 +1,17 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 {% load humanize %}
 
-{% block title %}كشوف الرواتب{% endblock %}
-{% block page_title %}كشوف الرواتب{% endblock %}
+{% block title %}{% trans "Payroll" %}{% endblock %}
+{% block page_title %}{% trans "Payroll" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة كشوف الرواتب الشهرية</p>
+        <p class="text-muted mb-0">{% trans "Manage monthly payroll" %}</p>
     </div>
     <a href="{% url 'erp:payroll_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> كشف راتب جديد
+        <i class="bi bi-plus-lg me-1"></i> {% trans "New Payroll" %}
     </a>
 </div>
 
@@ -19,7 +20,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">إجمالي الكشوف</p>
+                <p class="text-muted small mb-1">{% trans "Total Records" %}</p>
                 <h4 class="text-primary mb-0">{{ stats.total_count|default:0 }}</h4>
             </div>
         </div>
@@ -27,7 +28,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">إجمالي الرواتب الصافية</p>
+                <p class="text-muted small mb-1">{% trans "Total Net Salary" %}</p>
                 <h4 class="text-success mb-0">{{ stats.total_net|default:0|floatformat:2|intcomma }}</h4>
             </div>
         </div>
@@ -35,7 +36,7 @@
     <div class="col-md-4">
         <div class="erp-card">
             <div class="erp-card-body text-center">
-                <p class="text-muted small mb-1">إجمالي الرواتب الإجمالية</p>
+                <p class="text-muted small mb-1">{% trans "Total Gross Salary" %}</p>
                 <h4 class="text-info mb-0">{{ stats.total_gross|default:0|floatformat:2|intcomma }}</h4>
             </div>
         </div>
@@ -46,11 +47,11 @@
 <div class="erp-card mb-4">
     <div class="erp-card-body py-2">
         <div class="d-flex gap-2 flex-wrap">
-            <a href="{% url 'erp:payroll_list' %}" class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-outline-secondary{% endif %}">الكل</a>
-            <a href="?status=draft" class="btn btn-sm {% if selected_status == 'draft' %}btn-primary{% else %}btn-outline-secondary{% endif %}">مسودة</a>
-            <a href="?status=calculated" class="btn btn-sm {% if selected_status == 'calculated' %}btn-primary{% else %}btn-outline-secondary{% endif %}">محسوب</a>
-            <a href="?status=approved" class="btn btn-sm {% if selected_status == 'approved' %}btn-primary{% else %}btn-outline-secondary{% endif %}">معتمد</a>
-            <a href="?status=paid" class="btn btn-sm {% if selected_status == 'paid' %}btn-primary{% else %}btn-outline-secondary{% endif %}">مصروف</a>
+            <a href="{% url 'erp:payroll_list' %}" class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "All" %}</a>
+            <a href="?status=draft" class="btn btn-sm {% if selected_status == 'draft' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "Draft" %}</a>
+            <a href="?status=calculated" class="btn btn-sm {% if selected_status == 'calculated' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "Calculated" %}</a>
+            <a href="?status=approved" class="btn btn-sm {% if selected_status == 'approved' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "Approved" %}</a>
+            <a href="?status=paid" class="btn btn-sm {% if selected_status == 'paid' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{% trans "Paid" %}</a>
         </div>
     </div>
 </div>
@@ -58,20 +59,20 @@
 <!-- Payroll Table -->
 <div class="erp-card">
     <div class="erp-card-header">
-        <h6 class="mb-0">كشوف الرواتب</h6>
+        <h6 class="mb-0">{% trans "Payroll" %}</h6>
     </div>
     <div class="table-responsive">
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>الموظف</th>
-                    <th>الفترة</th>
-                    <th class="text-end">الراتب الأساسي</th>
-                    <th class="text-end">الإجمالي</th>
-                    <th class="text-end">الخصومات</th>
-                    <th class="text-end">الصافي</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Employee" %}</th>
+                    <th>{% trans "Period" %}</th>
+                    <th class="text-end">{% trans "Basic Salary" %}</th>
+                    <th class="text-end">{% trans "Gross" %}</th>
+                    <th class="text-end">{% trans "Deductions" %}</th>
+                    <th class="text-end">{% trans "Net" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -105,7 +106,7 @@
                         </span>
                     </td>
                     <td>
-                        <a href="{% url 'erp:payroll_detail' payroll.pk %}" class="btn btn-sm btn-outline-primary" title="عرض">
+                            <a href="{% url 'erp:payroll_detail' payroll.pk %}" class="btn btn-sm btn-outline-primary" title="{% trans 'View' %}">
                             <i class="bi bi-eye"></i>
                         </a>
                     </td>
@@ -114,7 +115,7 @@
                 <tr>
                     <td colspan="8" class="text-center py-4 text-muted">
                         <i class="bi bi-cash-coin fs-1 d-block mb-2"></i>
-                        لا توجد كشوف رواتب حتى الآن
+                        {% trans "No payroll records yet" %}
                     </td>
                 </tr>
                 {% endfor %}

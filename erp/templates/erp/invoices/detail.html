@@ -1,14 +1,15 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
-{% block title %}فاتورة {{ invoice.invoice_number }}{% endblock %}
-{% block page_title %}تفاصيل الفاتورة{% endblock %}
+{% block title %}{% trans "Invoice" %} {{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}{% trans "Invoice Details" %}{% endblock %}
 
 {% block content %}
 <!-- شريط التنقل -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">الفواتير</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">{% trans "Invoices" %}</a></li>
         <li class="breadcrumb-item active">{{ invoice.invoice_number }}</li>
     </ol>
 </nav>
@@ -25,16 +26,16 @@
                 <div class="text-start">
                     <div class="display-6 fw-bold">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</div>
                     {% if invoice.balance_due > 0 %}
-                    <small class="text-warning">الرصيد: {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</small>
+                    <small class="text-warning">{% trans "Balance Due" %}: {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</small>
                     {% else %}
-                    <small class="text-success"><i class="bi bi-check-circle ms-1"></i>مدفوعة بالكامل</small>
+                    <small class="text-success"><i class="bi bi-check-circle ms-1"></i>{% trans "Paid in Full" %}</small>
                     {% endif %}
                 </div>
             </div>
             <div class="erp-card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6 class="text-muted mb-2">فاتورة إلى</h6>
+                        <h6 class="text-muted mb-2">{% trans "Bill To" %}</h6>
                         <h5>{{ invoice.customer.name }}</h5>
                         <p class="mb-0">{{ invoice.customer.billing_address|linebreaksbr|default:"" }}</p>
                         <p class="mb-0">{{ invoice.customer.billing_city }}{% if invoice.customer.billing_city and invoice.customer.billing_country %}، {% endif %}{{ invoice.customer.billing_country }}</p>
@@ -42,18 +43,18 @@
                     </div>
                     <div class="col-md-6 text-md-start">
                         <div class="mb-2">
-                            <span class="text-muted">تاريخ الفاتورة:</span>
+                            <span class="text-muted">{% trans "Invoice Date" %}:</span>
                             <strong>{{ invoice.invoice_date|date:"Y/m/d" }}</strong>
                         </div>
                         <div class="mb-2">
-                            <span class="text-muted">تاريخ الاستحقاق:</span>
+                            <span class="text-muted">{% trans "Due Date" %}:</span>
                             <strong class="{% if invoice.status == 'overdue' %}text-danger{% endif %}">
                                 {{ invoice.due_date|date:"Y/m/d" }}
                             </strong>
                         </div>
                         {% if invoice.reference %}
                         <div class="mb-2">
-                            <span class="text-muted">المرجع:</span>
+                            <span class="text-muted">{% trans "Reference" %}:</span>
                             <strong>{{ invoice.reference }}</strong>
                         </div>
                         {% endif %}
@@ -65,17 +66,17 @@
         <!-- بنود الفاتورة -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">البنود</h6>
+                <h6 class="mb-0">{% trans "Line Items" %}</h6>
             </div>
             <div class="table-responsive">
                 <table class="table erp-table mb-0">
                     <thead>
                         <tr>
-                            <th>الوصف</th>
-                            <th class="text-center">الكمية</th>
-                            <th class="text-start">سعر الوحدة</th>
-                            <th class="text-start">الضريبة</th>
-                            <th class="text-start">الإجمالي</th>
+                            <th>{% trans "Description" %}</th>
+                            <th class="text-center">{% trans "Quantity" %}</th>
+                            <th class="text-start">{% trans "Unit Price" %}</th>
+                            <th class="text-start">{% trans "Tax" %}</th>
+                            <th class="text-start">{% trans "Total" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,13 +92,13 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">لا توجد بنود</td>
+                            <td colspan="5" class="text-center py-4 text-muted">{% trans "No line items" %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot class="table-light">
                         <tr>
-                            <td colspan="4" class="text-start"><strong>المجموع الفرعي:</strong></td>
+                            <td colspan="4" class="text-start"><strong>{% trans "Subtotal" %}:</strong></td>
                             <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal|floatformat:2 }}</td>
                         </tr>
                         {% if invoice.discount_amount > 0 %}

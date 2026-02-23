@@ -1,6 +1,7 @@
 {% extends "erp/setup/base_setup.html" %}
+{% load i18n %}
 
-{% block title %}مراجعة الإعدادات{% endblock %}
+{% block title %}{% trans "Review Settings" %}{% endblock %}
 
 {% block card_content %}
 <form method="post">
@@ -9,8 +10,8 @@
     <div class="setup-card-header" style="background: linear-gradient(135deg, #198754 0%, #157347 100%);">
         <i class="bi bi-check-circle"></i>
         <div>
-            <h2>الخطوة 7: مراجعة وتأكيد</h2>
-            <p>راجع إعداداتك قبل البدء باستخدام النظام</p>
+            <h2>{% trans "Step 7: Review and Confirm" %}</h2>
+            <p>{% trans "Review your settings before starting to use the system" %}</p>
         </div>
     </div>
     
@@ -18,7 +19,7 @@
         {% if form.errors %}
             <div class="alert alert-danger">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                يرجى الموافقة على الشروط للمتابعة
+                {% trans "Please agree to the terms to continue" %}
             </div>
         {% endif %}
         
@@ -27,17 +28,17 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="bi bi-currency-exchange text-primary me-2"></i>
-                    العملة
+                    {% trans "Currency" %}
                 </h6>
                 <a href="{% url 'erp:setup_go_back' step=1 %}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-pencil"></i>
-                    تعديل
+                    {% trans "Edit" %}
                 </a>
             </div>
             <div class="card-body">
                 <ul class="summary-list">
                     <li class="summary-item">
-                        <span class="summary-label">العملة الأساسية</span>
+                        <span class="summary-label">{% trans "Base Currency" %}</span>
                         <span class="summary-value">
                             {% if progress.currency_data.base_currency == 'OTHER' %}
                                 {{ progress.currency_data.custom_currency_code }} - {{ progress.currency_data.custom_currency_name }}
@@ -55,30 +56,30 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="bi bi-building text-primary me-2"></i>
-                    معلومات الشركة
+                    {% trans "Company Information" %}
                 </h6>
                 <a href="{% url 'erp:setup_go_back' step=2 %}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-pencil"></i>
-                    تعديل
+                    {% trans "Edit" %}
                 </a>
             </div>
             <div class="card-body">
                 <ul class="summary-list">
                     <li class="summary-item">
-                        <span class="summary-label">اسم الشركة</span>
+                        <span class="summary-label">{% trans "Company Name" %}</span>
                         <span class="summary-value">{{ progress.company_data.name }}</span>
                     </li>
                     <li class="summary-item">
-                        <span class="summary-label">البريد الإلكتروني</span>
+                        <span class="summary-label">{% trans "Email" %}</span>
                         <span class="summary-value">{{ progress.company_data.email }}</span>
                     </li>
                     <li class="summary-item">
-                        <span class="summary-label">المدينة</span>
-                        <span class="summary-value">{{ progress.company_data.city }}، {{ progress.company_data.country }}</span>
+                        <span class="summary-label">{% trans "City" %}</span>
+                        <span class="summary-value">{{ progress.company_data.city }}{% trans ", " %}{{ progress.company_data.country }}</span>
                     </li>
                     {% if progress.company_data.tax_number %}
                     <li class="summary-item">
-                        <span class="summary-label">الرقم الضريبي</span>
+                        <span class="summary-label">{% trans "Tax Number" %}</span>
                         <span class="summary-value">{{ progress.company_data.tax_number }}</span>
                     </li>
                     {% endif %}
@@ -91,22 +92,22 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="bi bi-calendar3 text-primary me-2"></i>
-                    السنة المالية
+                    {% trans "Fiscal Year" %}
                 </h6>
                 <a href="{% url 'erp:setup_go_back' step=3 %}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-pencil"></i>
-                    تعديل
+                    {% trans "Edit" %}
                 </a>
             </div>
             <div class="card-body">
                 <ul class="summary-list">
                     <li class="summary-item">
-                        <span class="summary-label">اسم السنة المالية</span>
+                        <span class="summary-label">{% trans "Fiscal Year Name" %}</span>
                         <span class="summary-value">{{ progress.fiscal_year_data.fiscal_year_name }}</span>
                     </li>
                     <li class="summary-item">
-                        <span class="summary-label">الفترة</span>
-                        <span class="summary-value">{{ progress.fiscal_year_data.start_date }} إلى {{ progress.fiscal_year_data.end_date }}</span>
+                        <span class="summary-label">{% trans "Period" %}</span>
+                        <span class="summary-value">{{ progress.fiscal_year_data.start_date }} {% trans "to" %} {{ progress.fiscal_year_data.end_date }}</span>
                     </li>
                 </ul>
             </div>
@@ -117,28 +118,28 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="bi bi-percent text-primary me-2"></i>
-                    الضرائب
+                    {% trans "Tax" %}
                 </h6>
                 <a href="{% url 'erp:setup_go_back' step=4 %}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-pencil"></i>
-                    تعديل
+                    {% trans "Edit" %}
                 </a>
             </div>
             <div class="card-body">
                 <ul class="summary-list">
                     <li class="summary-item">
-                        <span class="summary-label">نوع الضريبة</span>
+                        <span class="summary-label">{% trans "Tax Type" %}</span>
                         <span class="summary-value">
                             {% if progress.tax_data.tax_preset == 'sa_vat' %}
-                                ضريبة القيمة المضافة السعودية (15%)
+                                {% trans "Saudi VAT (15%)" %}
                             {% elif progress.tax_data.tax_preset == 'ae_vat' %}
-                                ضريبة القيمة المضافة الإماراتية (5%)
+                                {% trans "UAE VAT (5%)" %}
                             {% elif progress.tax_data.tax_preset == 'eg_vat' %}
-                                ضريبة القيمة المضافة المصرية (14%)
+                                {% trans "Egyptian VAT (14%)" %}
                             {% elif progress.tax_data.tax_preset == 'custom' %}
                                 {{ progress.tax_data.custom_tax_name }} ({{ progress.tax_data.custom_tax_rate }}%)
                             {% else %}
-                                بدون ضريبة
+                                {% trans "No Tax" %}
                             {% endif %}
                         </span>
                     </li>
@@ -151,26 +152,26 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="bi bi-credit-card text-primary me-2"></i>
-                    طرق الدفع
+                    {% trans "Payment Methods" %}
                 </h6>
                 <a href="{% url 'erp:setup_go_back' step=5 %}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-pencil"></i>
-                    تعديل
+                    {% trans "Edit" %}
                 </a>
             </div>
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-2">
                     {% if progress.payment_methods_data.enable_cash %}
-                        <span class="badge bg-success fs-6"><i class="bi bi-cash-coin me-1"></i> نقداً</span>
+                        <span class="badge bg-success fs-6"><i class="bi bi-cash-coin me-1"></i> {% trans "Cash" %}</span>
                     {% endif %}
                     {% if progress.payment_methods_data.enable_bank_transfer %}
-                        <span class="badge bg-primary fs-6"><i class="bi bi-bank me-1"></i> تحويل بنكي</span>
+                        <span class="badge bg-primary fs-6"><i class="bi bi-bank me-1"></i> {% trans "Bank Transfer" %}</span>
                     {% endif %}
                     {% if progress.payment_methods_data.enable_credit_card %}
-                        <span class="badge bg-info fs-6"><i class="bi bi-credit-card me-1"></i> بطاقة ائتمان</span>
+                        <span class="badge bg-info fs-6"><i class="bi bi-credit-card me-1"></i> {% trans "Credit Card" %}</span>
                     {% endif %}
                     {% if progress.payment_methods_data.enable_mada %}
-                        <span class="badge bg-success fs-6"><i class="bi bi-credit-card me-1"></i> مدى</span>
+                        <span class="badge bg-success fs-6"><i class="bi bi-credit-card me-1"></i> {% trans "Mada" %}</span>
                     {% endif %}
                     {% if progress.payment_methods_data.enable_stc_pay %}
                         <span class="badge bg-secondary fs-6"><i class="bi bi-phone me-1"></i> STC Pay</span>
@@ -187,36 +188,36 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="bi bi-journal-text text-primary me-2"></i>
-                    الدليل المحاسبي
+                    {% trans "Chart of Accounts" %}
                 </h6>
                 <a href="{% url 'erp:setup_go_back' step=6 %}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-pencil"></i>
-                    تعديل
+                    {% trans "Edit" %}
                 </a>
             </div>
             <div class="card-body">
                 <ul class="summary-list">
                     <li class="summary-item">
-                        <span class="summary-label">نوع الدليل</span>
+                        <span class="summary-label">{% trans "Chart Type" %}</span>
                         <span class="summary-value">
                             {% if progress.chart_data.chart_preset == 'travel_agency' %}
-                                دليل وكالات السفر
+                                {% trans "Travel Agency Chart" %}
                             {% elif progress.chart_data.chart_preset == 'services' %}
-                                دليل شركات الخدمات
+                                {% trans "Services Chart" %}
                             {% elif progress.chart_data.chart_preset == 'standard' %}
-                                الدليل المحاسبي القياسي
+                                {% trans "Standard Chart" %}
                             {% else %}
-                                دليل مبسط
+                                {% trans "Simple Chart" %}
                             {% endif %}
                         </span>
                     </li>
                     <li class="summary-item">
-                        <span class="summary-label">بيانات تجريبية</span>
+                        <span class="summary-label">{% trans "Sample Data" %}</span>
                         <span class="summary-value">
                             {% if progress.chart_data.create_sample_data %}
-                                <span class="text-success"><i class="bi bi-check-lg"></i> نعم</span>
+                                <span class="text-success"><i class="bi bi-check-lg"></i> {% trans "Yes" %}</span>
                             {% else %}
-                                <span class="text-muted">لا</span>
+                                <span class="text-muted">{% trans "No" %}</span>
                             {% endif %}
                         </span>
                     </li>
@@ -228,9 +229,9 @@
         <div class="alert alert-success">
             <h5 class="alert-heading">
                 <i class="bi bi-rocket-takeoff me-2"></i>
-                جاهز للانطلاق!
+                {% trans "Ready to Launch!" %}
             </h5>
-            <p class="mb-3">راجع الإعدادات أعلاه وتأكد من صحتها. يمكنك العودة لأي خطوة لتعديل البيانات.</p>
+            <p class="mb-3">{% trans "Review the settings above and make sure they are correct. You can go back to any step to modify the data." %}</p>
             <hr>
             <div class="form-check mb-2">
                 {{ form.confirm }}
@@ -250,11 +251,11 @@
     <div class="setup-card-footer">
         <a href="{% url 'erp:setup_go_back' step=6 %}" class="btn btn-setup-back">
             <i class="bi bi-arrow-right me-2"></i>
-            السابق
+            {% trans "Previous" %}
         </a>
         <button type="submit" class="btn btn-success btn-lg px-5">
             <i class="bi bi-check-lg me-2"></i>
-            إكمال الإعداد والبدء
+            {% trans "Complete Setup and Start" %}
         </button>
     </div>
 </form>

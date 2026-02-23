@@ -74,7 +74,12 @@ info "Collecting static files..."
 python manage.py collectstatic --noinput --clear -v 0
 ok "Static files collected"
 
-# 6. System check
+# 6. Compile translations
+info "Compiling translations..."
+python manage.py compilemessages
+ok "Translations compiled"
+
+# 7. System check
 info "Running system check..."
 python manage.py check --deploy
 ok "System check passed"

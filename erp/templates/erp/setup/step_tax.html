@@ -1,6 +1,7 @@
 {% extends "erp/setup/base_setup.html" %}
+{% load i18n %}
 
-{% block title %}إعداد الضرائب{% endblock %}
+{% block title %}{% trans "Tax Setup" %}{% endblock %}
 
 {% block card_content %}
 <form method="post">
@@ -9,8 +10,8 @@
     <div class="setup-card-header">
         <i class="bi bi-percent"></i>
         <div>
-            <h2>الخطوة 4: إعداد الضرائب</h2>
-            <p>اختر نوع الضريبة المطبقة على معاملاتك</p>
+            <h2>{% trans "Step 4: Tax Setup" %}</h2>
+            <p>{% trans "Choose the tax type applied to your transactions" %}</p>
         </div>
     </div>
     
@@ -18,7 +19,7 @@
         {% if form.errors %}
             <div class="alert alert-danger">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                يرجى تصحيح الأخطاء التالية
+                {% trans "Please correct the following errors" %}
             </div>
         {% endif %}
         
@@ -58,7 +59,7 @@
         </div>
         
         <div id="customTaxFields" style="display: none;">
-            <div class="section-divider">تفاصيل الضريبة المخصصة</div>
+            <div class="section-divider">{% trans "Custom Tax Details" %}</div>
             
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -77,17 +78,17 @@
         
         <div class="alert alert-warning mt-4">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <strong>تنبيه:</strong> تأكد من اختيار نسبة الضريبة الصحيحة وفقاً لقوانين بلدك. يمكن تعديل نسب الضرائب لاحقاً من الإعدادات.
+            <strong>{% trans "Warning:" %}</strong> {% trans "Make sure to select the correct tax rate according to your country's laws. Tax rates can be modified later from settings." %}
         </div>
     </div>
     
     <div class="setup-card-footer">
         <a href="{% url 'erp:setup_go_back' step=3 %}" class="btn btn-setup-back">
             <i class="bi bi-arrow-right me-2"></i>
-            السابق
+            {% trans "Previous" %}
         </a>
         <button type="submit" class="btn btn-setup-next">
-            التالي
+            {% trans "Next" %}
             <i class="bi bi-arrow-left ms-2"></i>
         </button>
     </div>

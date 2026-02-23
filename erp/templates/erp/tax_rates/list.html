@@ -1,31 +1,32 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}معدلات الضريبة{% endblock %}
-{% block page_title %}معدلات الضريبة{% endblock %}
+{% block title %}{% trans "Tax Rates" %}{% endblock %}
+{% block page_title %}{% trans "Tax Rates" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة معدلات الضريبة للفواتير والمعاملات</p>
+        <p class="text-muted mb-0">{% trans "Manage tax rates for invoices and transactions" %}</p>
     </div>
     <a href="{% url 'erp:tax_rate_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> معدل ضريبة جديد
+        <i class="bi bi-plus-lg me-1"></i> {% trans "New Tax Rate" %}
     </a>
 </div>
 
 <div class="erp-card">
     <div class="erp-card-header">
-        <h6 class="mb-0">معدلات الضريبة</h6>
+        <h6 class="mb-0">{% trans "Tax Rates" %}</h6>
     </div>
     <div class="table-responsive">
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>الاسم</th>
-                    <th>المعدل</th>
-                    <th>افتراضي</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Rate" %}</th>
+                    <th>{% trans "Default" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,9 +46,9 @@
                     </td>
                     <td>
                         {% if tax_rate.is_active %}
-                        <span class="badge badge-status badge-paid">نشط</span>
+                        <span class="badge badge-status badge-paid">{% trans "Active" %}</span>
                         {% else %}
-                        <span class="badge badge-status badge-draft">غير نشط</span>
+                        <span class="badge badge-status badge-draft">{% trans "Inactive" %}</span>
                         {% endif %}
                     </td>
                     <td>
@@ -65,17 +66,17 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        هل أنت متأكد من حذف معدل الضريبة "{{ tax_rate.name }}"؟
+                                        {% trans "Are you sure you want to delete tax rate" %} "{{ tax_rate.name }}"?
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                                         <form action="{% url 'erp:tax_rate_delete' tax_rate.pk %}" method="post" class="d-inline">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                            <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                                         </form>
                                     </div>
                                 </div>
@@ -87,7 +88,7 @@
                 <tr>
                     <td colspan="5" class="text-center py-4 text-muted">
                         <i class="bi bi-percent fs-1 d-block mb-2"></i>
-                        لا توجد معدلات ضريبة حتى الآن
+                        {% trans "No tax rates yet" %}
                     </td>
                 </tr>
                 {% endfor %}

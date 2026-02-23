@@ -1,14 +1,15 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
 {% block title %}{{ customer.name }}{% endblock %}
-{% block page_title %}تفاصيل العميل{% endblock %}
+{% block page_title %}{% trans "Customer Details" %}{% endblock %}
 
 {% block content %}
 <!-- المسار -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:customer_list' %}">العملاء</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:customer_list' %}">{% trans "Customers" %}</a></li>
         <li class="breadcrumb-item active">{{ customer.name }}</li>
     </ol>
 </nav>
@@ -26,37 +27,37 @@
                 <p class="text-muted mb-2">{{ customer.customer_id }}</p>
                 <span class="badge bg-{{ customer.customer_type }}">{{ customer.get_customer_type_display }}</span>
                 {% if customer.is_active %}
-                <span class="badge bg-success">نشط</span>
+                <span class="badge bg-success">{% trans "Active" %}</span>
                 {% else %}
-                <span class="badge bg-secondary">غير نشط</span>
+                <span class="badge bg-secondary">{% trans "Inactive" %}</span>
                 {% endif %}
             </div>
             <hr class="my-0">
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <label class="text-muted small">{% trans "Email" %}</label>
                     <div><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">الهاتف</label>
+                    <label class="text-muted small">{% trans "Phone" %}</label>
                     <div>{{ customer.phone|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">العنوان</label>
+                    <label class="text-muted small">{% trans "Address" %}</label>
                     <div>{{ customer.billing_address|linebreaksbr|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">المدينة / الدولة</label>
+                    <label class="text-muted small">{% trans "City / Country" %}</label>
                     <div>{{ customer.billing_city|default:"" }}{% if customer.billing_city and customer.billing_country %}، {% endif %}{{ customer.billing_country|default:"-" }}</div>
                 </div>
             </div>
             <div class="erp-card-body border-top">
                 <div class="d-grid gap-2">
                     <a href="{% url 'erp:customer_edit' customer.pk %}" class="btn btn-primary">
-                        <i class="bi bi-pencil me-1"></i> تعديل العميل
+                        <i class="bi bi-pencil me-1"></i> {% trans "Edit Customer" %}
                     </a>
                     <a href="{% url 'erp:customer_delete' customer.pk %}" class="btn btn-outline-danger">
-                        <i class="bi bi-trash me-1"></i> حذف العميل
+                        <i class="bi bi-trash me-1"></i> {% trans "Delete Customer" %}
                     </a>
                 </div>
             </div>
@@ -65,22 +66,22 @@
         <!-- الملخص المالي -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">الملخص المالي</h6>
+                <h6 class="mb-0">{% trans "Financial Summary" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">الرصيد:</span>
+                    <span class="text-muted">{% trans "Balance:" %}</span>
                     <span class="fw-medium {% if customer.current_balance > 0 %}text-warning{% else %}text-success{% endif %}">
                         {{ customer.currency.symbol|default:"$" }}{{ customer.current_balance|floatformat:2 }}
                     </span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">حد الائتمان:</span>
+                    <span class="text-muted">{% trans "Credit Limit:" %}</span>
                     <span class="fw-medium">{{ customer.currency.symbol|default:"$" }}{{ customer.credit_limit|floatformat:2 }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">مدة الدفع:</span>
-                    <span>{{ customer.payment_terms }} يوم</span>
+                    <span class="text-muted">{% trans "Payment Terms:" %}</span>
+                    <span>{{ customer.payment_terms }} {% trans "Days" %}</span>
                 </div>
             </div>
         </div>
@@ -92,22 +93,22 @@
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#invoices">
-                    الفواتير <span class="badge bg-secondary">{{ invoices|length }}</span>
+                    {% trans "Invoices" %} <span class="badge bg-secondary">{{ invoices|length }}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payments">
-                    المدفوعات <span class="badge bg-secondary">{{ payments|length }}</span>
+                    {% trans "Payments" %} <span class="badge bg-secondary">{{ payments|length }}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#quotes">
-                    عروض الأسعار <span class="badge bg-secondary">{{ quotes|length }}</span>
+                    {% trans "Quotes" %} <span class="badge bg-secondary">{{ quotes|length }}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#interactions">
-                    التفاعلات <span class="badge bg-secondary">{{ interactions|length }}</span>
+                    {% trans "Interactions" %} <span class="badge bg-secondary">{{ interactions|length }}</span>
                 </button>
             </li>
         </ul>
@@ -117,20 +118,20 @@
             <div class="tab-pane fade show active" id="invoices">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">أحدث الفواتير</h6>
+                        <h6 class="mb-0">{% trans "Recent Invoices" %}</h6>
                         <a href="{% url 'erp:invoice_create' %}?customer={{ customer.pk }}" class="btn btn-sm btn-primary">
-                            <i class="bi bi-plus-lg me-1"></i> فاتورة جديدة
+                            <i class="bi bi-plus-lg me-1"></i> {% trans "New Invoice" %}
                         </a>
                     </div>
                     <div class="table-responsive">
                         <table class="table erp-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>رقم الفاتورة</th>
-                                    <th>التاريخ</th>
-                                    <th>المبلغ</th>
-                                    <th>المتبقي</th>
-                                    <th>الحالة</th>
+                                    <th>{% trans "Invoice Number" %}</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Amount" %}</th>
+                                    <th>{% trans "Balance Due" %}</th>
+                                    <th>{% trans "Status" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -145,7 +146,7 @@
                                     <td><span class="badge badge-status badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد فواتير</td></tr>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">{% trans "No invoices found" %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -157,16 +158,16 @@
             <div class="tab-pane fade" id="payments">
                 <div class="erp-card">
                     <div class="erp-card-header">
-                        <h6 class="mb-0">أحدث المدفوعات</h6>
+                        <h6 class="mb-0">{% trans "Recent Payments" %}</h6>
                     </div>
                     <div class="table-responsive">
                         <table class="table erp-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>رقم الدفعة</th>
-                                    <th>التاريخ</th>
-                                    <th>طريقة الدفع</th>
-                                    <th>المبلغ</th>
+                                    <th>{% trans "Payment Number" %}</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Payment Method" %}</th>
+                                    <th>{% trans "Amount" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -178,7 +179,7 @@
                                     <td class="text-success">{{ customer.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }}</td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد مدفوعات</td></tr>
+                                <tr><td colspan="4" class="text-center py-4 text-muted">{% trans "No payments found" %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -190,16 +191,16 @@
             <div class="tab-pane fade" id="quotes">
                 <div class="erp-card">
                     <div class="erp-card-header">
-                        <h6 class="mb-0">أحدث عروض الأسعار</h6>
+                        <h6 class="mb-0">{% trans "Recent Quotes" %}</h6>
                     </div>
                     <div class="table-responsive">
                         <table class="table erp-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>رقم العرض</th>
-                                    <th>التاريخ</th>
-                                    <th>المبلغ</th>
-                                    <th>الحالة</th>
+                                    <th>{% trans "Quote Number" %}</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Amount" %}</th>
+                                    <th>{% trans "Status" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -211,7 +212,7 @@
                                     <td><span class="badge bg-secondary">{{ quote.get_status_display }}</span></td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد عروض أسعار</td></tr>
+                                <tr><td colspan="4" class="text-center py-4 text-muted">{% trans "No quotes found" %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -223,7 +224,7 @@
             <div class="tab-pane fade" id="interactions">
                 <div class="erp-card">
                     <div class="erp-card-header">
-                        <h6 class="mb-0">سجل التفاعلات</h6>
+                        <h6 class="mb-0">{% trans "Interactions Log" %}</h6>
                     </div>
                     <div class="erp-card-body">
                         {% for interaction in interactions %}
@@ -241,7 +242,7 @@
                             </div>
                         </div>
                         {% empty %}
-                        <p class="text-center text-muted py-4">لا توجد تفاعلات مسجلة</p>
+                        <p class="text-center text-muted py-4">{% trans "No interactions recorded" %}</p>
                         {% endfor %}
                     </div>
                 </div>

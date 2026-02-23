@@ -1,30 +1,31 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 {% load humanize %}
 
-{% block title %}المنتجات{% endblock %}
-{% block page_title %}المنتجات{% endblock %}
+{% block title %}{% trans "Products" %}{% endblock %}
+{% block page_title %}{% trans "Products" %}{% endblock %}
 
 {% block content %}
 <div class="erp-card mb-4">
     <div class="erp-card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label">بحث</label>
-                <input type="text" name="search" class="form-control" placeholder="الاسم، SKU، الباركود..." value="{{ request.GET.search }}">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans 'Name, SKU, Barcode...' %}" value="{{ request.GET.search }}">
             </div>
             <div class="col-md-2">
-                <label class="form-label">التصنيف</label>
+                <label class="form-label">{% trans "Category" %}</label>
                 <select name="category" class="form-select">
-                    <option value="">الكل</option>
+                    <option value="">{% trans "All" %}</option>
                     {% for cat in categories %}
                     <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"d" %}selected{% endif %}>{{ cat.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">النوع</label>
+                <label class="form-label">{% trans "Type" %}</label>
                 <select name="type" class="form-select">
-                    <option value="">الكل</option>
+                    <option value="">{% trans "All" %}</option>
                     {% for val, label in product_types %}
                     <option value="{{ val }}" {% if request.GET.type == val %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -33,7 +34,7 @@
             <div class="col-md-2">
                 <div class="form-check mt-4">
                     <input type="checkbox" name="low_stock" value="1" class="form-check-input" id="lowStock" {% if request.GET.low_stock %}checked{% endif %}>
-                    <label class="form-check-label" for="lowStock">مخزون منخفض</label>
+                    <label class="form-check-label" for="lowStock">{% trans "Low Stock" %}</label>
                 </div>
             </div>
             <div class="col-md-1">
@@ -41,7 +42,7 @@
             </div>
             <div class="col-md-2 text-start">
                 <a href="{% url 'erp:product_create' %}" class="btn btn-success">
-                    <i class="bi bi-plus-lg me-1"></i> إضافة منتج
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Product" %}
                 </a>
             </div>
         </form>
@@ -54,14 +55,14 @@
             <thead>
                 <tr>
                     <th>SKU</th>
-                    <th>المنتج</th>
-                    <th>التصنيف</th>
-                    <th>النوع</th>
-                    <th>سعر البيع</th>
-                    <th>التكلفة</th>
-                    <th>المخزون</th>
-                    <th>المورد</th>
-                    <th>الحالة</th>
+                    <th>{% trans "Product" %}</th>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Selling Price" %}</th>
+                    <th>{% trans "Cost" %}</th>
+                    <th>{% trans "Stock" %}</th>
+                    <th>{% trans "Supplier" %}</th>
+                    <th>{% trans "Status" %}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -86,9 +87,9 @@
                     <td>{{ product.supplier.name|default:"-" }}</td>
                     <td>
                         {% if product.is_active %}
-                        <span class="badge bg-success">نشط</span>
+                        <span class="badge bg-success">{% trans "Active" %}</span>
                         {% else %}
-                        <span class="badge bg-secondary">غير نشط</span>
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
                         {% endif %}
                     </td>
                     <td>
@@ -96,7 +97,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="10" class="text-center text-muted py-4">لا توجد منتجات</td></tr>
+                <tr><td colspan="10" class="text-center text-muted py-4">{% trans "No products found" %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

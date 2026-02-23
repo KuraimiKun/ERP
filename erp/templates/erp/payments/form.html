@@ -1,7 +1,7 @@
 {% extends 'erp/base.html' %}
-
-{% block title %}{% if form.instance.pk %}تعديل الدفعة{% else %}تسجيل دفعة{% endif %}{% endblock %}
-{% block page_title %}{% if form.instance.pk %}تعديل الدفعة{% else %}تسجيل دفعة{% endif %}{% endblock %}
+{% load i18n %}
+{% block title %}{% if form.instance.pk %}{% trans "Edit Payment" %}{% else %}{% trans "Record Payment" %}{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}{% trans "Edit Payment" %}{% else %}{% trans "Record Payment" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +10,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-credit-card ms-2"></i>
-                    {% if form.instance.pk %}تعديل الدفعة{% else %}تسجيل دفعة جديدة{% endif %}
+                    {% if form.instance.pk %}{% trans "Edit Payment" %}{% else %}{% trans "Record New Payment" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -25,7 +25,7 @@
                     
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">العميل <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Customer" %} <span class="text-danger">*</span></label>
                             {{ form.customer }}
                             {% if form.customer.errors %}
                             <div class="invalid-feedback d-block">{{ form.customer.errors.0 }}</div>
@@ -33,16 +33,16 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">الفاتورة</label>
+                            <label class="form-label">{% trans "Invoice" %}</label>
                             {{ form.invoice }}
                             {% if form.invoice.errors %}
                             <div class="invalid-feedback d-block">{{ form.invoice.errors.0 }}</div>
                             {% endif %}
-                            <div class="form-text">اختر فاتورة لربط الدفعة بها (اختياري)</div>
+                            <div class="form-text">{% trans "Select an invoice to link with this payment (optional)" %}</div>
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">نوع الدفعة <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Payment Type" %} <span class="text-danger">*</span></label>
                             {{ form.payment_type }}
                             {% if form.payment_type.errors %}
                             <div class="invalid-feedback d-block">{{ form.payment_type.errors.0 }}</div>
@@ -50,7 +50,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ الدفع <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Payment Date" %} <span class="text-danger">*</span></label>
                             {{ form.payment_date }}
                             {% if form.payment_date.errors %}
                             <div class="invalid-feedback d-block">{{ form.payment_date.errors.0 }}</div>
@@ -58,7 +58,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">المبلغ <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Amount" %} <span class="text-danger">*</span></label>
                             {{ form.amount }}
                             {% if form.amount.errors %}
                             <div class="invalid-feedback d-block">{{ form.amount.errors.0 }}</div>
@@ -66,7 +66,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">العملة <span class="text-danger">*</span></label>
+                            <label class="form-label">{% trans "Currency" %} <span class="text-danger">*</span></label>
                             {{ form.currency }}
                             {% if form.currency.errors %}
                             <div class="invalid-feedback d-block">{{ form.currency.errors.0 }}</div>
@@ -74,7 +74,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">طريقة الدفع</label>
+                            <label class="form-label">{% trans "Payment Method" %}</label>
                             {{ form.payment_method }}
                             {% if form.payment_method.errors %}
                             <div class="invalid-feedback d-block">{{ form.payment_method.errors.0 }}</div>
@@ -82,7 +82,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">المرجع</label>
+                            <label class="form-label">{% trans "Reference" %}</label>
                             {{ form.reference_number }}
                             {% if form.reference_number.errors %}
                             <div class="invalid-feedback d-block">{{ form.reference_number.errors.0 }}</div>
@@ -90,7 +90,7 @@
                         </div>
                         
                         <div class="col-12">
-                            <label class="form-label">ملاحظات</label>
+                            <label class="form-label">{% trans "Notes" %}</label>
                             {{ form.notes }}
                             {% if form.notes.errors %}
                             <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
@@ -100,7 +100,7 @@
                     
                     <div id="invoice-info" class="alert alert-info d-none mt-3">
                         <div class="d-flex justify-content-between">
-                            <span>الرصيد المستحق على الفاتورة:</span>
+                            <span>{% trans "Invoice Balance Due:" %}</span>
                             <strong id="invoice-balance"></strong>
                         </div>
                     </div>
@@ -108,9 +108,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg ms-1"></i>
-                            {% if form.instance.pk %}تحديث الدفعة{% else %}تسجيل الدفعة{% endif %}
+                            {% if form.instance.pk %}{% trans "Update Payment" %}{% else %}{% trans "Save Payment" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:payment_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:payment_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

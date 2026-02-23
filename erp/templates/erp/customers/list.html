@@ -1,7 +1,8 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
-{% block title %}العملاء{% endblock %}
-{% block page_title %}العملاء{% endblock %}
+{% block title %}{% trans "Customers" %}{% endblock %}
+{% block page_title %}{% trans "Customers" %}{% endblock %}
 
 {% block content %}
 <!-- الفلترة والإجراءات -->
@@ -9,13 +10,13 @@
     <div class="erp-card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label">بحث</label>
-                <input type="text" name="search" class="form-control" placeholder="الاسم، البريد، أو الرقم..." value="{{ request.GET.search }}">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans "Name, Email, or Number..." %}" value="{{ request.GET.search }}">
             </div>
             <div class="col-md-3">
-                <label class="form-label">النوع</label>
+                <label class="form-label">{% trans "Type" %}</label>
                 <select name="type" class="form-select">
-                    <option value="">كل الأنواع</option>
+                    <option value="">{% trans "All Types" %}</option>
                     {% for value, label in customer_types %}
                     <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -23,13 +24,13 @@
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search me-1"></i> بحث
+                    <i class="bi bi-search me-1"></i> {% trans "Search" %}
                 </button>
-                <a href="{% url 'erp:customer_list' %}" class="btn btn-outline-secondary">مسح</a>
+                <a href="{% url 'erp:customer_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
             </div>
             <div class="col-md-2 text-start">
                 <a href="{% url 'erp:customer_create' %}" class="btn btn-success">
-                    <i class="bi bi-plus-lg me-1"></i> إضافة عميل
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Customer" %}
                 </a>
             </div>
         </form>
@@ -42,14 +43,14 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>رقم العميل</th>
-                    <th>الاسم</th>
-                    <th>النوع</th>
-                    <th>البريد الإلكتروني</th>
-                    <th>الهاتف</th>
-                    <th>الرصيد</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Customer ID" %}</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Email" %}</th>
+                    <th>{% trans "Phone" %}</th>
+                    <th>{% trans "Balance" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,20 +74,20 @@
                     </td>
                     <td>
                         {% if customer.is_active %}
-                        <span class="badge bg-success">نشط</span>
+                        <span class="badge bg-success">{% trans "Active" %}</span>
                         {% else %}
-                        <span class="badge bg-secondary">غير نشط</span>
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
                         {% endif %}
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'erp:customer_detail' customer.pk %}" class="btn btn-outline-primary" title="عرض">
+                            <a href="{% url 'erp:customer_detail' customer.pk %}" class="btn btn-outline-primary" title="{% trans "View" %}">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{% url 'erp:customer_edit' customer.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                            <a href="{% url 'erp:customer_edit' customer.pk %}" class="btn btn-outline-secondary" title="{% trans "Edit" %}">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{% url 'erp:customer_delete' customer.pk %}" class="btn btn-outline-danger" title="حذف">
+                            <a href="{% url 'erp:customer_delete' customer.pk %}" class="btn btn-outline-danger" title="{% trans "Delete" %}">
                                 <i class="bi bi-trash"></i>
                             </a>
                         </div>
@@ -96,8 +97,8 @@
                 <tr>
                     <td colspan="8" class="text-center py-5">
                         <i class="bi bi-people fs-1 text-muted"></i>
-                        <p class="mt-2 mb-0">لا يوجد عملاء</p>
-                        <a href="{% url 'erp:customer_create' %}" class="btn btn-primary mt-3">أضف أول عميل</a>
+                        <p class="mt-2 mb-0">{% trans "No customers found" %}</p>
+                        <a href="{% url 'erp:customer_create' %}" class="btn btn-primary mt-3">{% trans "Add First Customer" %}</a>
                     </td>
                 </tr>
                 {% endfor %}

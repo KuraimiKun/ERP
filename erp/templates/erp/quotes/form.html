@@ -1,7 +1,8 @@
 {% extends 'erp/form_base.html' %}
+{% load i18n %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'erp:quote_list' %}">عروض الأسعار</a></li>
+<li class="breadcrumb-item"><a href="{% url 'erp:quote_list' %}">{% trans "Quotes" %}</a></li>
 <li class="breadcrumb-item active">{{ title }}</li>
 {% endblock %}
 
@@ -13,7 +14,7 @@
 <!-- Global errors -->
 {% if form.errors %}
 <div class="alert alert-danger mb-3">
-    <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> يرجى تصحيح الأخطاء التالية:</h6>
+    <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> {% trans "Please correct the following errors:" %}</h6>
     <ul class="mb-0">
         {% for field, errors in form.errors.items %}
         <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
@@ -24,34 +25,34 @@
 
 <!-- Quote Details -->
 <div class="form-section" dir="rtl">
-    <h6 class="form-section-title">تفاصيل عرض السعر</h6>
+    <h6 class="form-section-title">{% trans "Quote Details" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.customer.id_for_label }}" class="form-label">العميل</label>
+            <label for="{{ form.customer.id_for_label }}" class="form-label">{% trans "Customer" %}</label>
             {{ form.customer }}
             {% if form.customer.errors %}<div class="invalid-feedback d-block">{{ form.customer.errors|join:", " }}</div>{% endif %}
-            <div class="form-text">اختر عميلاً أو عميلاً محتملاً أدناه.</div>
+            <div class="form-text">{% trans "Select a customer or a lead below." %}</div>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="{{ form.lead.id_for_label }}" class="form-label">عميل محتمل</label>
+            <label for="{{ form.lead.id_for_label }}" class="form-label">{% trans "Lead" %}</label>
             {{ form.lead }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.status.id_for_label }}" class="form-label">الحالة</label>
+            <label for="{{ form.status.id_for_label }}" class="form-label">{% trans "Status" %}</label>
             {{ form.status }}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.quote_date.id_for_label }}" class="form-label">تاريخ العرض</label>
+            <label for="{{ form.quote_date.id_for_label }}" class="form-label">{% trans "Quote Date" %}</label>
             {{ form.quote_date }}
             {% if form.quote_date.errors %}<div class="invalid-feedback d-block">{{ form.quote_date.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.valid_until.id_for_label }}" class="form-label">صالح حتى</label>
+            <label for="{{ form.valid_until.id_for_label }}" class="form-label">{% trans "Valid Until" %}</label>
             {{ form.valid_until }}
             {% if form.valid_until.errors %}<div class="invalid-feedback d-block">{{ form.valid_until.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-3 mb-3 required-field">
-            <label for="{{ form.currency.id_for_label }}" class="form-label">العملة</label>
+            <label for="{{ form.currency.id_for_label }}" class="form-label">{% trans "Currency" %}</label>
             {{ form.currency }}
             {% if form.currency.errors %}<div class="invalid-feedback d-block">{{ form.currency.errors|join:", " }}</div>{% endif %}
         </div>
@@ -60,10 +61,10 @@
 
 <!-- Discount -->
 <div class="form-section" dir="rtl">
-    <h6 class="form-section-title">الخصم</h6>
+    <h6 class="form-section-title">{% trans "Discount" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.discount_percent.id_for_label }}" class="form-label">نسبة الخصم %</label>
+            <label for="{{ form.discount_percent.id_for_label }}" class="form-label">{% trans "Discount %" %}</label>
             {{ form.discount_percent }}
         </div>
     </div>
@@ -71,14 +72,14 @@
 
 <!-- Notes -->
 <div class="form-section" dir="rtl">
-    <h6 class="form-section-title">الملاحظات والشروط</h6>
+    <h6 class="form-section-title">{% trans "Notes and Terms" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.notes.id_for_label }}" class="form-label">ملاحظات</label>
+            <label for="{{ form.notes.id_for_label }}" class="form-label">{% trans "Notes" %}</label>
             {{ form.notes }}
         </div>
         <div class="col-md-6 mb-3">
-            <label for="{{ form.terms.id_for_label }}" class="form-label">الشروط والأحكام</label>
+            <label for="{{ form.terms.id_for_label }}" class="form-label">{% trans "Terms and Conditions" %}</label>
             {{ form.terms }}
         </div>
     </div>
@@ -89,9 +90,9 @@
 <!-- Quote Lines -->
 <div class="form-section" dir="rtl">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="form-section-title mb-0">بنود عرض السعر</h6>
+        <h6 class="form-section-title mb-0">{% trans "Quote Lines" %}</h6>
         <button type="button" id="add-line-btn" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-plus-circle ms-1"></i> إضافة بند
+            <i class="bi bi-plus-circle ms-1"></i> {% trans "Add Line" %}
         </button>
     </div>
 
@@ -100,7 +101,7 @@
     {% for line_error in formset.errors %}
     {% if line_error %}
     <div class="alert alert-danger mb-2">
-        <small>بند {{ forloop.counter }}: {% for f, errs in line_error.items %}{{ f }}: {{ errs|join:", " }} {% endfor %}</small>
+        <small>{% trans "Line" %} {{ forloop.counter }}: {% for f, errs in line_error.items %}{{ f }}: {{ errs|join:", " }} {% endfor %}</small>
     </div>
     {% endif %}
     {% endfor %}
@@ -109,14 +110,14 @@
         <table class="table table-bordered mb-0" id="lines-table">
             <thead class="table-light">
                 <tr>
-                    <th style="width:15%">المنتج</th>
-                    <th style="width:15%">الخدمة</th>
-                    <th style="width:20%">الوصف</th>
-                    <th style="width:8%" class="text-center">الكمية</th>
-                    <th style="width:10%" class="text-center">سعر الوحدة</th>
-                    <th style="width:7%" class="text-center">خصم %</th>
-                    <th style="width:13%">الضريبة</th>
-                    <th style="width:9%" class="text-center">الإجمالي</th>
+                    <th style="width:15%">{% trans "Product" %}</th>
+                    <th style="width:15%">{% trans "Service" %}</th>
+                    <th style="width:20%">{% trans "Description" %}</th>
+                    <th style="width:8%" class="text-center">{% trans "Quantity" %}</th>
+                    <th style="width:10%" class="text-center">{% trans "Unit Price" %}</th>
+                    <th style="width:7%" class="text-center">{% trans "Discount %" %}</th>
+                    <th style="width:13%">{% trans "Tax" %}</th>
+                    <th style="width:9%" class="text-center">{% trans "Total" %}</th>
                     <th style="width:3%"></th>
                 </tr>
             </thead>
@@ -133,7 +134,7 @@
                     <td class="text-center line-total fw-medium">0.00</td>
                     <td class="text-center">
                         <span class="d-none">{{ line_form.DELETE }}</span>
-                        <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-line-btn" title="حذف">
+                        <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-line-btn" title="{% trans 'Delete' %}">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
@@ -142,7 +143,7 @@
             </tbody>
             <tfoot class="table-light">
                 <tr>
-                    <td colspan="7" class="text-start fw-bold">الإجمالي</td>
+                    <td colspan="7" class="text-start fw-bold">{% trans "Total" %}</td>
                     <td class="text-center fw-bold" id="grand-total">0.00</td>
                     <td></td>
                 </tr>
@@ -176,7 +177,7 @@
         <td><input type="number" name="{{ formset.prefix }}-__prefix__-discount_percent" class="form-control form-control-sm text-center line-discount" value="0" step="0.01" min="0"></td>
         <td>
             <select name="{{ formset.prefix }}-__prefix__-tax_rate" class="form-select form-select-sm line-tax">
-                <option value="">بدون ضريبة</option>
+                <option value="">{% trans "No Tax" %}</option>
                 {% for tr in tax_rates %}
                 <option value="{{ tr.pk }}" data-rate="{{ tr.rate }}">{{ tr.name }} ({{ tr.rate }}%)</option>
                 {% endfor %}
@@ -185,7 +186,7 @@
         <td class="text-center line-total fw-medium">0.00</td>
         <td class="text-center">
             <input type="checkbox" name="{{ formset.prefix }}-__prefix__-DELETE" class="d-none">
-            <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-line-btn" title="حذف">
+            <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-line-btn" title="{% trans 'Delete' %}">
                 <i class="bi bi-trash"></i>
             </button>
         </td>

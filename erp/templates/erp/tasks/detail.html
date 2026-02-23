@@ -1,14 +1,15 @@
 {% extends "erp/base.html" %}
+{% load i18n %}
 
 {% block title %}{{ task.title }}{% endblock %}
-{% block page_title %}تفاصيل المهمة{% endblock %}
+{% block page_title %}{% trans "Task Details" %}{% endblock %}
 
 {% block content %}
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:task_list' %}">المهام</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:task_list' %}">{% trans "Tasks" %}</a></li>
         <li class="breadcrumb-item active">{{ task.title|truncatechars:30 }}</li>
     </ol>
 </nav>
@@ -22,36 +23,36 @@
                     <h4 class="mb-2">{{ task.title }}</h4>
                     <div class="d-flex gap-2">
                         {% if task.status == 'todo' %}
-                        <span class="badge bg-secondary">للتنفيذ</span>
+                        <span class="badge bg-secondary">{% trans "To Do" %}</span>
                         {% elif task.status == 'in_progress' %}
-                        <span class="badge bg-primary">قيد التنفيذ</span>
+                        <span class="badge bg-primary">{% trans "In Progress" %}</span>
                         {% elif task.status == 'review' %}
-                        <span class="badge bg-info">قيد المراجعة</span>
+                        <span class="badge bg-info">{% trans "Under Review" %}</span>
                         {% elif task.status == 'completed' %}
-                        <span class="badge bg-success">مكتملة</span>
+                        <span class="badge bg-success">{% trans "Completed" %}</span>
                         {% elif task.status == 'cancelled' %}
-                        <span class="badge bg-dark">ملغاة</span>
+                        <span class="badge bg-dark">{% trans "Cancelled" %}</span>
                         {% endif %}
                         
                         {% if task.priority == 'urgent' %}
-                        <span class="badge bg-danger">عاجلة</span>
+                        <span class="badge bg-danger">{% trans "Urgent" %}</span>
                         {% elif task.priority == 'high' %}
-                        <span class="badge bg-warning">أولوية عالية</span>
+                        <span class="badge bg-warning">{% trans "High Priority" %}</span>
                         {% elif task.priority == 'medium' %}
-                        <span class="badge bg-info">أولوية متوسطة</span>
+                        <span class="badge bg-info">{% trans "Medium Priority" %}</span>
                         {% else %}
-                        <span class="badge bg-secondary">أولوية منخفضة</span>
+                        <span class="badge bg-secondary">{% trans "Low Priority" %}</span>
                         {% endif %}
                     </div>
                 </div>
                 <a href="{% url 'erp:task_edit' task.pk %}" class="btn btn-outline-primary">
-                    <i class="bi bi-pencil ms-1"></i> تعديل
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
                 </a>
             </div>
             <div class="erp-card-body">
                 {% if task.description %}
                 <div class="mb-4">
-                    <h6 class="text-muted mb-2">الوصف</h6>
+                    <h6 class="text-muted mb-2">{% trans "Description" %}</h6>
                     <p>{{ task.description|linebreaksbr }}</p>
                 </div>
                 {% endif %}
@@ -59,7 +60,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="text-muted small d-block">مسؤول عن</label>
+                            <label class="text-muted small d-block">{% trans "Assigned To" %}</label>
                             {% if task.assigned_to %}
                             <div class="d-flex align-items-center">
                                 <img src="https://ui-avatars.com/api/?name={{ task.assigned_to.first_name }}+{{ task.assigned_to.last_name }}&background=0d6efd&color=fff" 
@@ -67,22 +68,22 @@
                                 <span>{{ task.assigned_to.first_name }} {{ task.assigned_to.last_name }}</span>
                             </div>
                             {% else %}
-                            <span class="text-muted">غير معين</span>
+                            <span class="text-muted">{% trans "Unassigned" %}</span>
                             {% endif %}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="text-muted small d-block">تاريخ الاستحقاق</label>
+                            <label class="text-muted small d-block">{% trans "Due Date" %}</label>
                             {% if task.due_date %}
                             <span class="{% now 'Y-m-d' as today %}{% if task.due_date|date:'Y-m-d' < today and task.status != 'completed' %}text-danger{% endif %}">
                                 {{ task.due_date|date:"F d, Y" }}
                                 {% if task.due_date|date:'Y-m-d' < today and task.status != 'completed' %}
-                                <span class="badge bg-danger me-1">متأخرة</span>
+                                <span class="badge bg-danger me-1">{% trans "Overdue" %}</span>
                                 {% endif %}
                             </span>
                             {% else %}
-                            <span class="text-muted">لا يوجد تاريخ استحقاق</span>
+                            <span class="text-muted">{% trans "No due date" %}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -91,13 +92,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="text-muted small d-block">تاريخ الإنشاء</label>
+                            <label class="text-muted small d-block">{% trans "Created Date" %}</label>
                             {{ task.created_at|date:"F d, Y H:i" }}
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="text-muted small d-block">آخر تحديث</label>
+                            <label class="text-muted small d-block">{% trans "Last Updated" %}</label>
                             {{ task.updated_at|date:"F d, Y H:i" }}
                         </div>
                     </div>
@@ -108,7 +109,7 @@
         <!-- Comments -->
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0">التعليقات</h6>
+                <h6 class="mb-0">{% trans "Comments" %}</h6>
             </div>
             <div class="erp-card-body">
                 {% for comment in comments %}
@@ -123,7 +124,7 @@
                                 {% if comment.author %}
                                 {{ comment.author.first_name }} {{ comment.author.last_name }}
                                 {% else %}
-                                غير معروف
+                                {% trans "Unknown" %}
                                 {% endif %}
                             </strong>
                             <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
@@ -132,17 +133,17 @@
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-center text-muted py-4">لا توجد تعليقات بعد</p>
+                <p class="text-center text-muted py-4">{% trans "No comments yet" %}</p>
                 {% endfor %}
                 
                 <!-- Add Comment Form -->
                 <form action="{% url 'erp:task_add_comment' task.pk %}" method="post" class="mt-4 pt-3 border-top">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <textarea class="form-control" rows="3" placeholder="أضف تعليقاً..." name="content" required></textarea>
+                        <textarea class="form-control" rows="3" placeholder="{% trans 'Add a comment...' %}" name="content" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-send ms-1"></i> إرسال التعليق
+                        <i class="bi bi-send ms-1"></i> {% trans "Post Comment" %}
                     </button>
                 </form>
             </div>
@@ -153,23 +154,23 @@
         <!-- Quick Actions -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">الإجراءات</h6>
+                <h6 class="mb-0">{% trans "Actions" %}</h6>
             </div>
             <div class="erp-card-body d-grid gap-2">
                 {% if task.status == 'todo' %}
                 <a href="{% url 'erp:task_edit' task.pk %}" class="btn btn-primary">
-                    <i class="bi bi-play ms-1"></i> بدء المهمة
+                    <i class="bi bi-play ms-1"></i> {% trans "Start Task" %}
                 </a>
                 {% elif task.status == 'in_progress' %}
                 <a href="{% url 'erp:task_edit' task.pk %}" class="btn btn-success">
-                    <i class="bi bi-check-lg ms-1"></i> وضع علامة مكتملة
+                    <i class="bi bi-check-lg ms-1"></i> {% trans "Mark as Completed" %}
                 </a>
                 {% endif %}
                 <a href="{% url 'erp:task_edit' task.pk %}" class="btn btn-outline-primary">
-                    <i class="bi bi-pencil ms-1"></i> تعديل المهمة
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit Task" %}
                 </a>
                 <a href="{% url 'erp:task_delete' task.pk %}" class="btn btn-outline-danger">
-                    <i class="bi bi-trash ms-1"></i> حذف المهمة
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete Task" %}
                 </a>
             </div>
         </div>
@@ -178,12 +179,12 @@
         {% if task.related_lead or task.related_customer %}
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">مرتبط بـ</h6>
+                <h6 class="mb-0">{% trans "Related To" %}</h6>
             </div>
             <div class="erp-card-body">
                 {% if task.related_lead %}
                 <div class="mb-2">
-                    <small class="text-muted">عميل محتمل</small>
+                    <small class="text-muted">{% trans "Lead" %}</small>
                     <div>
                         <a href="{% url 'erp:lead_detail' task.related_lead.pk %}">
                             {{ task.related_lead.first_name }} {{ task.related_lead.last_name }}
@@ -193,7 +194,7 @@
                 {% endif %}
                 {% if task.related_customer %}
                 <div class="mb-2">
-                    <small class="text-muted">عميل</small>
+                    <small class="text-muted">{% trans "Customer" %}</small>
                     <div>
                         <a href="{% url 'erp:customer_detail' task.related_customer.pk %}">
                             {{ task.related_customer.name }}
@@ -208,7 +209,7 @@
         <!-- Activity Log -->
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0">النشاط</h6>
+                <h6 class="mb-0">{% trans "Activity" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="d-flex mb-3">
@@ -216,7 +217,7 @@
                         <i class="bi bi-plus-circle text-success"></i>
                     </div>
                     <div>
-                        <small class="text-muted">تم إنشاء المهمة</small>
+                        <small class="text-muted">{% trans "Task created" %}</small>
                         <div class="small">{{ task.created_at|date:"M d, Y H:i" }}</div>
                     </div>
                 </div>
@@ -226,7 +227,7 @@
                         <i class="bi bi-pencil text-primary"></i>
                     </div>
                     <div>
-                        <small class="text-muted">آخر تحديث</small>
+                        <small class="text-muted">{% trans "Last Updated" %}</small>
                         <div class="small">{{ task.updated_at|date:"M d, Y H:i" }}</div>
                     </div>
                 </div>

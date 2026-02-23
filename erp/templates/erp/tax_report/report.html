@@ -1,14 +1,15 @@
 {% extends 'erp/base.html' %}
 {% load humanize %}
+{% load i18n %}
 
-{% block title %}تقرير ضريبة القيمة المضافة{% endblock %}
-{% block page_title %}تقرير ضريبة القيمة المضافة{% endblock %}
+{% block title %}{% trans "VAT Report" %}{% endblock %}
+{% block page_title %}{% trans "VAT Report" %}{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item active">تقرير الضريبة</li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item active">{% trans "Tax Report" %}</li>
     </ol>
 </nav>
 
@@ -17,7 +18,7 @@
     <div class="erp-card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-auto">
-                <label class="form-label">السنة</label>
+                <label class="form-label">{% trans "Year" %}</label>
                 <select name="year" class="form-select">
                     {% for y in years %}
                     <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
@@ -25,18 +26,18 @@
                 </select>
             </div>
             <div class="col-auto">
-                <label class="form-label">الربع</label>
+                <label class="form-label">{% trans "Quarter" %}</label>
                 <select name="quarter" class="form-select">
-                    <option value="" {% if not quarter %}selected{% endif %}>السنة كاملة</option>
-                    <option value="1" {% if quarter == '1' %}selected{% endif %}>الربع الأول (يناير – مارس)</option>
-                    <option value="2" {% if quarter == '2' %}selected{% endif %}>الربع الثاني (أبريل – يونيو)</option>
-                    <option value="3" {% if quarter == '3' %}selected{% endif %}>الربع الثالث (يوليو – سبتمبر)</option>
-                    <option value="4" {% if quarter == '4' %}selected{% endif %}>الربع الرابع (أكتوبر – ديسمبر)</option>
+                    <option value="" {% if not quarter %}selected{% endif %}>{% trans "Full Year" %}</option>
+                    <option value="1" {% if quarter == '1' %}selected{% endif %}>{% trans "Q1 (January - March)" %}</option>
+                    <option value="2" {% if quarter == '2' %}selected{% endif %}>{% trans "Q2 (April - June)" %}</option>
+                    <option value="3" {% if quarter == '3' %}selected{% endif %}>{% trans "Q3 (July - September)" %}</option>
+                    <option value="4" {% if quarter == '4' %}selected{% endif %}>{% trans "Q4 (October - December)" %}</option>
                 </select>
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-funnel ms-1"></i> عرض
+                    <i class="bi bi-funnel ms-1"></i> {% trans "View" %}
                 </button>
             </div>
         </form>
@@ -52,7 +53,7 @@
                     <i class="bi bi-arrow-down-circle"></i>
                 </div>
                 <div>
-                    <div class="stat-label">ضريبة محصّلة (مبيعات)</div>
+                    <div class="stat-label">{% trans "Collected Tax (Sales)" %}</div>
                     <div class="stat-value text-success">{{ vat_collected_total|floatformat:2|intcomma }}</div>
                 </div>
             </div>
@@ -65,7 +66,7 @@
                     <i class="bi bi-arrow-up-circle"></i>
                 </div>
                 <div>
-                    <div class="stat-label">ضريبة مدفوعة (مشتريات)</div>
+                    <div class="stat-label">{% trans "Paid Tax (Purchases)" %}</div>
                     <div class="stat-value text-danger">{{ vat_paid_total|floatformat:2|intcomma }}</div>
                 </div>
             </div>
@@ -78,7 +79,7 @@
                     <i class="bi bi-calculator"></i>
                 </div>
                 <div>
-                    <div class="stat-label">صافي الضريبة {% if net_vat >= 0 %}(مستحق){% else %}(مسترد){% endif %}</div>
+                    <div class="stat-label">{% trans "Net Tax" %} {% if net_vat >= 0 %}({% trans "Payable" %}){% else %}({% trans "Refundable" %}){% endif %}</div>
                     <div class="stat-value {% if net_vat >= 0 %}text-primary{% else %}text-warning{% endif %}">
                         {{ net_vat|floatformat:2|intcomma }}
                     </div>
@@ -93,15 +94,15 @@
     <div class="col-lg-6">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-pie-chart ms-1"></i> ضريبة المبيعات حسب المعدل</h6>
+                <h6 class="mb-0"><i class="bi bi-pie-chart ms-1"></i> {% trans "Sales Tax by Rate" %}</h6>
             </div>
             <div class="erp-card-body">
                 <table class="table erp-table">
                     <thead>
                         <tr>
-                            <th>معدل الضريبة</th>
-                            <th class="text-start">النسبة</th>
-                            <th class="text-start">المبلغ</th>
+                            <th>{% trans "Tax Rate" %}</th>
+                            <th class="text-start">{% trans "Rate" %}</th>
+                            <th class="text-start">{% trans "Amount" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,7 +115,7 @@
                         </tr>
                         {% endif %}
                         {% empty %}
-                        <tr><td colspan="3" class="text-center text-muted">لا توجد بيانات</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted">{% trans "No data" %}</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -126,15 +127,15 @@
     <div class="col-lg-6">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-pie-chart ms-1"></i> ضريبة المشتريات حسب المعدل</h6>
+                <h6 class="mb-0"><i class="bi bi-pie-chart ms-1"></i> {% trans "Purchases Tax by Rate" %}</h6>
             </div>
             <div class="erp-card-body">
                 <table class="table erp-table">
                     <thead>
                         <tr>
-                            <th>معدل الضريبة</th>
-                            <th class="text-start">النسبة</th>
-                            <th class="text-start">المبلغ</th>
+                            <th>{% trans "Tax Rate" %}</th>
+                            <th class="text-start">{% trans "Rate" %}</th>
+                            <th class="text-start">{% trans "Amount" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,7 +148,7 @@
                         </tr>
                         {% endif %}
                         {% empty %}
-                        <tr><td colspan="3" class="text-center text-muted">لا توجد بيانات</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted">{% trans "No data" %}</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -161,14 +162,14 @@
     <div class="col-lg-6">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-calendar3 ms-1"></i> ضريبة المبيعات الشهرية</h6>
+                <h6 class="mb-0"><i class="bi bi-calendar3 ms-1"></i> {% trans "Monthly Sales Tax" %}</h6>
             </div>
             <div class="erp-card-body">
                 <table class="table erp-table">
                     <thead>
                         <tr>
-                            <th>الشهر</th>
-                            <th class="text-start">المبلغ</th>
+                            <th>{% trans "Month" %}</th>
+                            <th class="text-start">{% trans "Amount" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -178,7 +179,7 @@
                             <td class="text-start text-success">{{ item.total_tax|floatformat:2|intcomma }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="2" class="text-center text-muted">لا توجد بيانات</td></tr>
+                        <tr><td colspan="2" class="text-center text-muted">{% trans "No data" %}</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -188,14 +189,14 @@
     <div class="col-lg-6">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-calendar3 ms-1"></i> ضريبة المشتريات الشهرية</h6>
+                <h6 class="mb-0"><i class="bi bi-calendar3 ms-1"></i> {% trans "Monthly Purchases Tax" %}</h6>
             </div>
             <div class="erp-card-body">
                 <table class="table erp-table">
                     <thead>
                         <tr>
-                            <th>الشهر</th>
-                            <th class="text-start">المبلغ</th>
+                            <th>{% trans "Month" %}</th>
+                            <th class="text-start">{% trans "Amount" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -205,7 +206,7 @@
                             <td class="text-start text-danger">{{ item.total_tax|floatformat:2|intcomma }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="2" class="text-center text-muted">لا توجد بيانات</td></tr>
+                        <tr><td colspan="2" class="text-center text-muted">{% trans "No data" %}</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

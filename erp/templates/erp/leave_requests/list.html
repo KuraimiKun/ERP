@@ -1,15 +1,15 @@
 {% extends 'erp/base.html' %}
-
-{% block title %}طلبات الإجازة{% endblock %}
-{% block page_title %}طلبات الإجازة{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Leave Requests" %}{% endblock %}
+{% block page_title %}{% trans "Leave Requests" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة طلبات إجازة الموظفين والموافقات</p>
+        <p class="text-muted mb-0">{% trans "Manage employee leave requests and approvals" %}</p>
     </div>
     <a href="{% url 'erp:leave_request_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> طلب إجازة جديد
+        <i class="bi bi-plus-lg me-1"></i> {% trans "New Leave Request" %}
     </a>
 </div>
 
@@ -23,7 +23,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ pending_count|default:0 }}</div>
-                    <div class="stat-label">قيد الانتظار</div>
+                    <div class="stat-label">{% trans "Pending" %}</div>
                 </div>
             </div>
         </div>
@@ -36,7 +36,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ approved_count|default:0 }}</div>
-                    <div class="stat-label">موافق عليه</div>
+                    <div class="stat-label">{% trans "Approved" %}</div>
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ rejected_count|default:0 }}</div>
-                    <div class="stat-label">مرفوض</div>
+                    <div class="stat-label">{% trans "Rejected" %}</div>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ leave_requests.count }}</div>
-                    <div class="stat-label">إجمالي الطلبات</div>
+                    <div class="stat-label">{% trans "Total Requests" %}</div>
                 </div>
             </div>
         </div>
@@ -72,13 +72,13 @@
 <!-- Leave Requests Table -->
 <div class="erp-card">
     <div class="erp-card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">جميع طلبات الإجازة</h6>
+        <h6 class="mb-0">{% trans "All Leave Requests" %}</h6>
         <div class="d-flex gap-2">
             <select class="form-select form-select-sm" style="width: auto;" onchange="window.location.search='?status='+this.value">
-                <option value="">جميع الحالات</option>
-                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
-                <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>موافق عليه</option>
-                <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>مرفوض</option>
+                <option value="">{% trans "All Statuses" %}</option>
+                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>{% trans "Pending" %}</option>
+                <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>{% trans "Approved" %}</option>
+                <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>{% trans "Rejected" %}</option>
             </select>
         </div>
     </div>
@@ -86,13 +86,13 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>الموظف</th>
-                    <th>نوع الإجازة</th>
-                    <th>تاريخ البداية</th>
-                    <th>تاريخ النهاية</th>
-                    <th>الأيام</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Employee" %}</th>
+                    <th>{% trans "Leave Type" %}</th>
+                    <th>{% trans "Start Date" %}</th>
+                    <th>{% trans "End Date" %}</th>
+                    <th>{% trans "Days" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -125,15 +125,15 @@
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'erp:leave_request_detail' leave.pk %}" class="btn btn-outline-secondary" title="عرض">
+                            <a href="{% url 'erp:leave_request_detail' leave.pk %}" class="btn btn-outline-secondary" title="{% trans 'View' %}">
                                 <i class="bi bi-eye"></i>
                             </a>
                             {% if leave.status == 'pending' %}
-                            <button type="button" class="btn btn-outline-success" title="موافقة"
+                            <button type="button" class="btn btn-outline-success" title="{% trans 'Approve' %}"
                                     data-bs-toggle="modal" data-bs-target="#approveModal{{ leave.pk }}">
                                 <i class="bi bi-check-lg"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-danger" title="رفض"
+                            <button type="button" class="btn btn-outline-danger" title="{% trans 'Reject' %}"
                                     data-bs-toggle="modal" data-bs-target="#rejectModal{{ leave.pk }}">
                                 <i class="bi bi-x-lg"></i>
                             </button>
@@ -146,22 +146,22 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">الموافقة على طلب الإجازة</h5>
+                                        <h5 class="modal-title">{% trans "Approve Leave Request" %}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <p>الموافقة على طلب إجازة <strong>{{ leave.employee.first_name }} {{ leave.employee.last_name }}</strong>؟</p>
+                                        <p>{% trans "Approve leave request for" %} <strong>{{ leave.employee.first_name }} {{ leave.employee.last_name }}</strong>?</p>
                                         <p class="text-muted small">
-                                            {{ leave.leave_type.name|default:leave.leave_type }} من 
-                                            {{ leave.start_date|date:"M d, Y" }} إلى {{ leave.end_date|date:"M d, Y" }}
+                                            {{ leave.leave_type.name|default:leave.leave_type }} {% trans "from" %} 
+                                            {{ leave.start_date|date:"M d, Y" }} {% trans "to" %} {{ leave.end_date|date:"M d, Y" }}
                                         </p>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                                         <form action="{% url 'erp:leave_request_approve' leave.pk %}" method="post" class="d-inline">
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="approve">
-                                            <button type="submit" class="btn btn-success">موافقة</button>
+                                            <button type="submit" class="btn btn-success">{% trans "Approve" %}</button>
                                         </form>
                                     </div>
                                 </div>
@@ -173,27 +173,27 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">رفض طلب الإجازة</h5>
+                                        <h5 class="modal-title">{% trans "Reject Leave Request" %}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <p>رفض طلب إجازة <strong>{{ leave.employee.first_name }} {{ leave.employee.last_name }}</strong>؟</p>
+                                        <p>{% trans "Reject leave request for" %} <strong>{{ leave.employee.first_name }} {{ leave.employee.last_name }}</strong>?</p>
                                         <p class="text-muted small mb-3">
-                                            {{ leave.leave_type.name|default:leave.leave_type }} من 
-                                            {{ leave.start_date|date:"M d, Y" }} إلى {{ leave.end_date|date:"M d, Y" }}
+                                            {{ leave.leave_type.name|default:leave.leave_type }} {% trans "from" %} 
+                                            {{ leave.start_date|date:"M d, Y" }} {% trans "to" %} {{ leave.end_date|date:"M d, Y" }}
                                         </p>
                                         <form id="rejectForm{{ leave.pk }}" action="{% url 'erp:leave_request_approve' leave.pk %}" method="post">
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="reject">
                                             <div class="mb-0">
-                                                <label class="form-label">سبب الرفض</label>
-                                                <textarea name="rejection_reason" class="form-control" rows="3" placeholder="أدخل السبب..."></textarea>
+                                                <label class="form-label">{% trans "Rejection Reason" %}</label>
+                                                <textarea name="rejection_reason" class="form-control" rows="3" placeholder="{% trans 'Enter reason...' %}"></textarea>
                                             </div>
                                         </form>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                        <button type="submit" form="rejectForm{{ leave.pk }}" class="btn btn-danger">رفض</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                                        <button type="submit" form="rejectForm{{ leave.pk }}" class="btn btn-danger">{% trans "Reject" %}</button>
                                     </div>
                                 </div>
                             </div>
@@ -205,7 +205,7 @@
                 <tr>
                     <td colspan="7" class="text-center py-4 text-muted">
                         <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
-                        لا توجد طلبات إجازة
+                        {% trans "No leave requests found" %}
                     </td>
                 </tr>
                 {% endfor %}

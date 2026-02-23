@@ -1,14 +1,14 @@
 {% extends "erp/base.html" %}
-
+{% load i18n %}
 {% block title %}{{ supplier.name }}{% endblock %}
-{% block page_title %}تفاصيل المورد{% endblock %}
+{% block page_title %}{% trans "Supplier Details" %}{% endblock %}
 
 {% block content %}
 <!-- شريط التنقل -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'erp:supplier_list' %}">الموردون</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:supplier_list' %}">{% trans "Suppliers" %}</a></li>
         <li class="breadcrumb-item active">{{ supplier.name }}</li>
     </ol>
 </nav>
@@ -27,23 +27,23 @@
                 <p class="text-muted mb-2">{{ supplier.supplier_id }}</p>
                 <span class="badge bg-info">{{ supplier.get_supplier_type_display }}</span>
                 {% if supplier.is_active %}
-                <span class="badge bg-success">نشط</span>
+                <span class="badge bg-success">{% trans "Active" %}</span>
                 {% else %}
-                <span class="badge bg-secondary">غير نشط</span>
+                <span class="badge bg-secondary">{% trans "Inactive" %}</span>
                 {% endif %}
             </div>
             <hr class="my-0">
             <div class="erp-card-body">
                 <div class="mb-3">
-                    <label class="text-muted small">البريد الإلكتروني</label>
+                    <label class="text-muted small">{% trans "Email" %}</label>
                     <div><a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a></div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">الهاتف</label>
+                    <label class="text-muted small">{% trans "Phone" %}</label>
                     <div>{{ supplier.phone|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">الموقع الإلكتروني</label>
+                    <label class="text-muted small">{% trans "Website" %}</label>
                     <div>
                         {% if supplier.website %}
                         <a href="{{ supplier.website }}" target="_blank">{{ supplier.website }}</a>
@@ -53,11 +53,11 @@
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">العنوان</label>
+                    <label class="text-muted small">{% trans "Address" %}</label>
                     <div>{{ supplier.address|linebreaksbr|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
-                    <label class="text-muted small">التقييم</label>
+                    <label class="text-muted small">{% trans "Rating" %}</label>
                     <div>
                         {% if supplier.rating %}
                         <span class="text-warning fs-5">
@@ -70,14 +70,14 @@
                             {% endfor %}
                         </span>
                         {% else %}
-                        <span class="text-muted">غير مقيّم</span>
+                        <span class="text-muted">{% trans "Not Rated" %}</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
             <div class="erp-card-body border-top">
                 <a href="{% url 'erp:supplier_edit' supplier.pk %}" class="btn btn-primary w-100">
-                    <i class="bi bi-pencil ms-1"></i> تعديل المورد
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit Supplier" %}
                 </a>
             </div>
         </div>
@@ -85,15 +85,15 @@
         <!-- تفاصيل الدفع -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">تفاصيل الدفع</h6>
+                <h6 class="mb-0">{% trans "Payment Details" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">شروط الدفع:</span>
-                    <span>{{ supplier.payment_terms }} يوم</span>
+                    <span class="text-muted">{% trans "Payment Terms:" %}</span>
+                    <span>{{ supplier.payment_terms }} {% trans "days" %}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">الرقم الضريبي:</span>
+                    <span class="text-muted">{% trans "Tax Number:" %}</span>
                     <span>{{ supplier.tax_number|default:"-" }}</span>
                 </div>
             </div>
@@ -102,8 +102,8 @@
         <!-- جهات الاتصال -->
         <div class="erp-card mb-4">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">جهات الاتصال</h6>
-                <button type="button" class="btn btn-sm btn-outline-primary" disabled title="إدارة جهات الاتصال في تعديل المورد">
+                <h6 class="mb-0">{% trans "Contacts" %}</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" disabled title="{% trans 'Manage contacts in supplier edit' %}">
                     <i class="bi bi-plus-lg"></i>
                 </button>
             </div>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-center text-muted mb-0">لا توجد جهات اتصال</p>
+                <p class="text-center text-muted mb-0">{% trans "No contacts" %}</p>
                 {% endfor %}
             </div>
         </div>
@@ -134,17 +134,17 @@
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#purchase-orders">
-                    أوامر الشراء
+                    {% trans "Purchase Orders" %}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoices">
-                    الفواتير
+                    {% trans "Invoices" %}
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">
-                    المستندات
+                    {% trans "Documents" %}
                 </button>
             </li>
         </ul>
@@ -154,19 +154,19 @@
             <div class="tab-pane fade show active" id="purchase-orders">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">أوامر الشراء</h6>
-                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
-                            <i class="bi bi-plus-lg ms-1"></i> أمر شراء جديد
+                        <h6 class="mb-0">{% trans "Purchase Orders" %}</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="{% trans 'Coming Soon' %}">
+                            <i class="bi bi-plus-lg ms-1"></i> {% trans "New Purchase Order" %}
                         </button>
                     </div>
                     <div class="table-responsive">
                         <table class="table erp-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>رقم أمر الشراء</th>
-                                    <th>التاريخ</th>
-                                    <th>المبلغ</th>
-                                    <th>الحالة</th>
+                                    <th>{% trans "PO Number" %}</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Amount" %}</th>
+                                    <th>{% trans "Status" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -178,7 +178,7 @@
                                     <td><span class="badge bg-secondary">{{ po.get_status_display }}</span></td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد أوامر شراء</td></tr>
+                                <tr><td colspan="4" class="text-center py-4 text-muted">{% trans "No purchase orders" %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -190,17 +190,17 @@
             <div class="tab-pane fade" id="invoices">
                 <div class="erp-card">
                     <div class="erp-card-header">
-                        <h6 class="mb-0">فواتير المورد</h6>
+                        <h6 class="mb-0">{% trans "Supplier Invoices" %}</h6>
                     </div>
                     <div class="table-responsive">
                         <table class="table erp-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>رقم الفاتورة</th>
-                                    <th>التاريخ</th>
-                                    <th>تاريخ الاستحقاق</th>
-                                    <th>المبلغ</th>
-                                    <th>الحالة</th>
+                                    <th>{% trans "Invoice Number" %}</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Due Date" %}</th>
+                                    <th>{% trans "Amount" %}</th>
+                                    <th>{% trans "Status" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -213,7 +213,7 @@
                                     <td><span class="badge bg-secondary">{{ inv.get_status_display }}</span></td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="5" class="text-center py-4 text-muted">لا توجد فواتير</td></tr>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">{% trans "No invoices" %}</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -225,9 +225,9 @@
             <div class="tab-pane fade" id="documents">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">المستندات</h6>
-                        <button type="button" class="btn btn-sm btn-primary" disabled title="قريباً">
-                            <i class="bi bi-plus-lg ms-1"></i> رفع
+                        <h6 class="mb-0">{% trans "Documents" %}</h6>
+                        <button type="button" class="btn btn-sm btn-primary" disabled title="{% trans 'Coming Soon' %}">
+                            <i class="bi bi-plus-lg ms-1"></i> {% trans "Upload" %}
                         </button>
                     </div>
                     <div class="erp-card-body">
@@ -247,7 +247,7 @@
                             {% endif %}
                         </div>
                         {% empty %}
-                        <p class="text-center text-muted py-4">لا توجد مستندات</p>
+                        <p class="text-center text-muted py-4">{% trans "No documents" %}</p>
                         {% endfor %}
                     </div>
                 </div>
@@ -257,7 +257,7 @@
         {% if supplier.notes %}
         <div class="erp-card mt-4">
             <div class="erp-card-header">
-                <h6 class="mb-0">ملاحظات</h6>
+                <h6 class="mb-0">{% trans "Notes" %}</h6>
             </div>
             <div class="erp-card-body">
                 {{ supplier.notes|linebreaksbr }}

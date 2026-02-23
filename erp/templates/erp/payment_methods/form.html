@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if payment_method %}تعديل طريقة الدفع{% else %}طريقة دفع جديدة{% endif %}{% endblock %}
-{% block page_title %}{% if payment_method %}تعديل طريقة الدفع{% else %}طريقة دفع جديدة{% endif %}{% endblock %}
+{% block title %}{% if payment_method %}{% trans "Edit Payment Method" %}{% else %}{% trans "New Payment Method" %}{% endif %}{% endblock %}
+{% block page_title %}{% if payment_method %}{% trans "Edit Payment Method" %}{% else %}{% trans "New Payment Method" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,7 +11,7 @@
             <div class="erp-card-header">
                 <h6 class="mb-0">
                     <i class="bi bi-cash-stack me-2"></i>
-                    {% if payment_method %}تعديل طريقة الدفع{% else %}إنشاء طريقة دفع{% endif %}
+                    {% if payment_method %}{% trans "Edit Payment Method" %}{% else %}{% trans "Create Payment Method" %}{% endif %}
                 </h6>
             </div>
             <div class="erp-card-body">
@@ -24,16 +25,16 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label class="form-label">الرمز <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Code" %} <span class="text-danger">*</span></label>
                         {{ form.code }}
                         {% if form.code.errors %}
                         <div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>
                         {% endif %}
-                        <div class="form-text">رمز مختصر (مثل CASH, CC, BANK)</div>
+                            <div class="form-text">{% trans "Short code (e.g. CASH, CC, BANK)" %}</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم (إنجليزي) <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Name (English)" %} <span class="text-danger">*</span></label>
                         {{ form.name }}
                         {% if form.name.errors %}
                         <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
@@ -41,7 +42,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الاسم (عربي)</label>
+                        <label class="form-label">{% trans "Name (Arabic)" %}</label>
                         {{ form.name_ar }}
                         {% if form.name_ar.errors %}
                         <div class="invalid-feedback d-block">{{ form.name_ar.errors.0 }}</div>
@@ -49,12 +50,12 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">الحساب المرتبط</label>
+                        <label class="form-label">{% trans "Linked Account" %}</label>
                         {{ form.account }}
                         {% if form.account.errors %}
                         <div class="invalid-feedback d-block">{{ form.account.errors.0 }}</div>
                         {% endif %}
-                        <div class="form-text">الحساب الذي سيتم تسجيل المدفوعات فيه</div>
+                            <div class="form-text">{% trans "Account where payments will be recorded" %}</div>
                     </div>
                     
                     <div class="row g-3 mb-3">
@@ -62,7 +63,7 @@
                             <div class="form-check">
                                 {{ form.is_active }}
                                 <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
-                                    نشط
+                                    {% trans "Active" %}
                                 </label>
                             </div>
                         </div>
@@ -70,7 +71,7 @@
                             <div class="form-check">
                                 {{ form.requires_reference }}
                                 <label class="form-check-label" for="{{ form.requires_reference.id_for_label }}">
-                                    يتطلب مرجع
+                                    {% trans "Requires Reference" %}
                                 </label>
                             </div>
                         </div>
@@ -79,9 +80,9 @@
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>
-                            {% if payment_method %}تحديث{% else %}إنشاء{% endif %}
+                            {% if payment_method %}{% trans "Update" %}{% else %}{% trans "Create" %}{% endif %}
                         </button>
-                        <a href="{% url 'erp:payment_method_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:payment_method_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
             </div>

@@ -1,43 +1,44 @@
 {% extends "erp/form_base.html" %}
+{% load i18n %}
 
 {% block form_content %}
 <form method="post">
     {% csrf_token %}
     <div class="form-section">
-        <h6 class="form-section-title">معلومات التصنيف</h6>
+        <h6 class="form-section-title">{% trans "Category Information" %}</h6>
         <div class="row">
             <div class="col-md-4 mb-3">
-                <label for="{{ form.code.id_for_label }}" class="form-label">الكود</label>
+                <label for="{{ form.code.id_for_label }}" class="form-label">{% trans "Code" %}</label>
                 {{ form.code }}
             </div>
             <div class="col-md-4 mb-3">
-                <label for="{{ form.name.id_for_label }}" class="form-label">الاسم (إنجليزي)</label>
+                <label for="{{ form.name.id_for_label }}" class="form-label">{% trans "Name (English)" %}</label>
                 {{ form.name }}
             </div>
             <div class="col-md-4 mb-3">
-                <label for="{{ form.name_ar.id_for_label }}" class="form-label">الاسم (عربي)</label>
+                <label for="{{ form.name_ar.id_for_label }}" class="form-label">{% trans "Name (Arabic)" %}</label>
                 {{ form.name_ar }}
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="{{ form.parent.id_for_label }}" class="form-label">التصنيف الأب</label>
+                <label for="{{ form.parent.id_for_label }}" class="form-label">{% trans "Parent Category" %}</label>
                 {{ form.parent }}
             </div>
             <div class="col-md-3 mb-3">
-                <label for="{{ form.sort_order.id_for_label }}" class="form-label">الترتيب</label>
+                <label for="{{ form.sort_order.id_for_label }}" class="form-label">{% trans "Order" %}</label>
                 {{ form.sort_order }}
             </div>
             <div class="col-md-3 mb-3">
                 <div class="form-check mt-4">
                     {{ form.is_active }}
-                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">نشط</label>
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{% trans "Active" %}</label>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12 mb-3">
-                <label for="{{ form.description.id_for_label }}" class="form-label">الوصف</label>
+                <label for="{{ form.description.id_for_label }}" class="form-label">{% trans "Description" %}</label>
                 {{ form.description }}
             </div>
         </div>
@@ -47,7 +48,7 @@
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-check-lg me-1"></i> {{ submit_text }}
         </button>
-        <a href="{% url 'erp:product_category_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+        <a href="{% url 'erp:product_category_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

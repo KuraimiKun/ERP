@@ -1,15 +1,15 @@
 {% extends 'erp/base.html' %}
-
-{% block title %}المدفوعات{% endblock %}
-{% block page_title %}المدفوعات{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Payments" %}{% endblock %}
+{% block page_title %}{% trans "Payments" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة مدفوعات العملاء والمعاملات</p>
+        <p class="text-muted mb-0">{% trans "Manage customer payments and transactions" %}</p>
     </div>
     <a href="{% url 'erp:payment_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg ms-1"></i> تسجيل دفعة
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "Record Payment" %}
     </a>
 </div>
 
@@ -23,7 +23,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ payments.count }}</div>
-                    <div class="stat-label">إجمالي المدفوعات</div>
+                    <div class="stat-label">{% trans "Total Payments" %}</div>
                 </div>
             </div>
         </div>
@@ -33,23 +33,23 @@
 <!-- Payments Table -->
 <div class="erp-card">
     <div class="erp-card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">جميع المدفوعات</h6>
+        <h6 class="mb-0">{% trans "All Payments" %}</h6>
         <div class="d-flex gap-2">
-            <input type="search" class="form-control form-control-sm" placeholder="بحث في المدفوعات..." style="width: 200px;">
+            <input type="search" class="form-control form-control-sm" placeholder="{% trans 'Search payments...' %}" style="width: 200px;">
         </div>
     </div>
     <div class="table-responsive">
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>رقم الدفعة</th>
-                    <th>التاريخ</th>
-                    <th>العميل</th>
-                    <th>الفاتورة</th>
-                    <th>طريقة الدفع</th>
-                    <th>المبلغ</th>
-                    <th>المرجع</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Payment Number" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Customer" %}</th>
+                    <th>{% trans "Invoice" %}</th>
+                    <th>{% trans "Payment Method" %}</th>
+                    <th>{% trans "Amount" %}</th>
+                    <th>{% trans "Reference" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,10 +78,10 @@
                     <td><small class="text-muted">{{ payment.reference_number|default:"-"|truncatechars:20 }}</small></td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'erp:payment_detail' payment.pk %}" class="btn btn-outline-secondary" title="عرض">
+                            <a href="{% url 'erp:payment_detail' payment.pk %}" class="btn btn-outline-secondary" title="{% trans 'View' %}">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <button type="button" class="btn btn-outline-danger" title="حذف" 
+                            <button type="button" class="btn btn-outline-danger" title="{% trans 'Delete' %}" 
                                     data-bs-toggle="modal" data-bs-target="#deleteModal{{ payment.pk }}">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -92,17 +92,17 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        هل أنت متأكد من حذف الدفعة #{{ payment.pk }}؟
+                                        {% blocktrans with pk=payment.pk %}Are you sure you want to delete payment #{{ pk }}?{% endblocktrans %}
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                                         <form action="{% url 'erp:payment_delete' payment.pk %}" method="post" class="d-inline">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                            <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                                         </form>
                                     </div>
                                 </div>
@@ -114,7 +114,7 @@
                 <tr>
                     <td colspan="8" class="text-center py-4 text-muted">
                         <i class="bi bi-credit-card fs-1 d-block mb-2"></i>
-                        لا توجد مدفوعات مسجلة بعد
+                        {% trans "No payments recorded yet" %}
                     </td>
                 </tr>
                 {% endfor %}

@@ -1,15 +1,16 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}طرق الدفع{% endblock %}
-{% block page_title %}طرق الدفع{% endblock %}
+{% block title %}{% trans "Payment Methods" %}{% endblock %}
+{% block page_title %}{% trans "Payment Methods" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إعداد طرق الدفع للمعاملات</p>
+        <p class="text-muted mb-0">{% trans "Configure payment methods for transactions" %}</p>
     </div>
     <a href="{% url 'erp:payment_method_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> طريقة دفع جديدة
+        <i class="bi bi-plus-lg me-1"></i> {% trans "New Payment Method" %}
     </a>
 </div>
 
@@ -30,30 +31,30 @@
                 
                 <div class="d-flex gap-2 mb-3">
                     {% if method.is_active %}
-                    <span class="badge badge-status badge-paid">نشط</span>
+                    <span class="badge badge-status badge-paid">{% trans "Active" %}</span>
                     {% else %}
-                    <span class="badge badge-status badge-draft">غير نشط</span>
+                    <span class="badge badge-status badge-draft">{% trans "Inactive" %}</span>
                     {% endif %}
                     
                     {% if method.requires_reference %}
-                    <span class="badge bg-info bg-opacity-75">يتطلب مرجع</span>
+                    <span class="badge bg-info bg-opacity-75">{% trans "Requires Reference" %}</span>
                     {% endif %}
                 </div>
                 
                 {% if method.account %}
                 <div class="small text-muted mb-3">
                     <i class="bi bi-journal-text me-1"></i>
-                    مرتبط بـ: {{ method.account.code }} - {{ method.account.name }}
+                    {% trans "Linked to:" %} {{ method.account.code }} - {{ method.account.name }}
                 </div>
                 {% endif %}
                 
                 <div class="d-flex gap-2">
                     <a href="{% url 'erp:payment_method_edit' method.pk %}" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-pencil me-1"></i> تعديل
+                        <i class="bi bi-pencil me-1"></i> {% trans "Edit" %}
                     </a>
                     <button type="button" class="btn btn-sm btn-outline-danger" 
                             data-bs-toggle="modal" data-bs-target="#deleteModal{{ method.pk }}">
-                        <i class="bi bi-trash me-1"></i> حذف
+                        <i class="bi bi-trash me-1"></i> {% trans "Delete" %}
                     </button>
                 </div>
             </div>
@@ -63,17 +64,17 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">تأكيد الحذف</h5>
+                        <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        هل أنت متأكد من حذف طريقة الدفع "{{ method.name }}"؟
+                        {% trans "Are you sure you want to delete payment method" %} "{{ method.name }}"?
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                         <form action="{% url 'erp:payment_method_delete' method.pk %}" method="post" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">حذف</button>
+                                <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                         </form>
                     </div>
                 </div>
@@ -85,10 +86,10 @@
         <div class="erp-card">
             <div class="erp-card-body text-center py-5">
                 <i class="bi bi-cash-stack fs-1 text-muted d-block mb-3"></i>
-                <h5 class="text-muted">لا توجد طرق دفع مهيأة</h5>
-                <p class="text-muted mb-3">أضف طرق الدفع مثل النقد، بطاقة الائتمان، التحويل البنكي، إلخ.</p>
+                <h5 class="text-muted">{% trans "No payment methods configured" %}</h5>
+                <p class="text-muted mb-3">{% trans "Add payment methods like cash, credit card, bank transfer, etc." %}</p>
                 <a href="{% url 'erp:payment_method_create' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-1"></i> إضافة طريقة دفع
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Payment Method" %}
                 </a>
             </div>
         </div>

@@ -1,6 +1,7 @@
 {% extends "erp/setup/base_setup.html" %}
+{% load i18n %}
 
-{% block title %}إعداد الحسابات{% endblock %}
+{% block title %}{% trans "Accounts Setup" %}{% endblock %}
 
 {% block card_content %}
 <form method="post">
@@ -9,8 +10,8 @@
     <div class="setup-card-header">
         <i class="bi bi-journal-text"></i>
         <div>
-            <h2>الخطوة 6: الدليل المحاسبي</h2>
-            <p>اختر نوع الدليل المحاسبي المناسب لنشاطك</p>
+            <h2>{% trans "Step 6: Chart of Accounts" %}</h2>
+            <p>{% trans "Choose the accounting chart that fits your business" %}</p>
         </div>
     </div>
     
@@ -18,7 +19,7 @@
         {% if form.errors %}
             <div class="alert alert-danger">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                يرجى تصحيح الأخطاء التالية
+                {% trans "Please correct the following errors" %}
             </div>
         {% endif %}
         
@@ -39,19 +40,19 @@
                                 {% if value == 'travel_agency' %}
                                     <i class="bi bi-airplane-engines text-primary fs-3 d-block mb-2"></i>
                                     <strong>{{ label }}</strong>
-                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي مخصص لوكالات السفر والسياحة مع حسابات للتذاكر والفنادق والرحلات.</p>
+                                    <p class="text-muted small mb-0 mt-1">{% trans "Specialized accounting chart for travel and tourism agencies with accounts for tickets, hotels, and trips." %}</p>
                                 {% elif value == 'services' %}
                                     <i class="bi bi-briefcase text-success fs-3 d-block mb-2"></i>
                                     <strong>{{ label }}</strong>
-                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي لشركات الخدمات والاستشارات.</p>
+                                    <p class="text-muted small mb-0 mt-1">{% trans "Accounting chart for service companies and consultancies." %}</p>
                                 {% elif value == 'standard' %}
                                     <i class="bi bi-grid-3x3 text-info fs-3 d-block mb-2"></i>
                                     <strong>{{ label }}</strong>
-                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي شامل يناسب معظم أنواع الأنشطة التجارية.</p>
+                                    <p class="text-muted small mb-0 mt-1">{% trans "Comprehensive accounting chart suitable for most types of business activities." %}</p>
                                 {% else %}
                                     <i class="bi bi-speedometer text-warning fs-3 d-block mb-2"></i>
                                     <strong>{{ label }}</strong>
-                                    <p class="text-muted small mb-0 mt-1">دليل محاسبي بسيط للمشاريع الصغيرة.</p>
+                                    <p class="text-muted small mb-0 mt-1">{% trans "Simple accounting chart for small projects." %}</p>
                                 {% endif %}
                             </label>
                         </div>
@@ -61,7 +62,7 @@
             </div>
         </div>
         
-        <div class="section-divider">خيارات إضافية</div>
+        <div class="section-divider">{% trans "Additional Options" %}</div>
         
         <div class="checkbox-card p-3 {% if form.create_sample_data.value %}selected{% endif %}">
             <div class="form-check">
@@ -76,17 +77,17 @@
         
         <div class="alert alert-info mt-4">
             <i class="bi bi-info-circle-fill me-2"></i>
-            <strong>ملاحظة:</strong> يمكنك دائماً إضافة أو تعديل الحسابات من شاشة دليل الحسابات بعد إكمال الإعداد.
+            <strong>{% trans "Note:" %}</strong> {% trans "You can always add or modify accounts from the chart of accounts screen after completing the setup." %}
         </div>
     </div>
     
     <div class="setup-card-footer">
         <a href="{% url 'erp:setup_go_back' step=5 %}" class="btn btn-setup-back">
             <i class="bi bi-arrow-right me-2"></i>
-            السابق
+            {% trans "Previous" %}
         </a>
         <button type="submit" class="btn btn-setup-next">
-            التالي
+            {% trans "Next" %}
             <i class="bi bi-arrow-left ms-2"></i>
         </button>
     </div>

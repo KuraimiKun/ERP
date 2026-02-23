@@ -1,7 +1,8 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if entry %}تعديل قيد{% else %}قيد يومية جديد{% endif %}{% endblock %}
-{% block page_title %}{% if entry %}تعديل قيد: {{ entry.entry_number }}{% else %}قيد يومية جديد{% endif %}{% endblock %}
+{% block title %}{% if entry %}{% trans "Edit Entry" %}{% else %}{% trans "New Journal Entry" %}{% endif %}{% endblock %}
+{% block page_title %}{% if entry %}{% trans "Edit Entry" %}: {{ entry.entry_number }}{% else %}{% trans "New Journal Entry" %}{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -39,7 +40,7 @@
         <div class="col-lg-4">
             <div class="erp-card">
                 <div class="erp-card-header">
-                    <h6 class="mb-0"><i class="bi bi-info-circle ms-2"></i>معلومات القيد</h6>
+                    <h6 class="mb-0"><i class="bi bi-info-circle ms-2"></i>{% trans "Entry Information" %}</h6>
                 </div>
                 <div class="erp-card-body">
                     {% if form.non_field_errors %}
@@ -49,7 +50,7 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label class="form-label">رقم القيد <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Entry Number" %} <span class="text-danger">*</span></label>
                         {{ form.entry_number }}
                         {% if form.entry_number.errors %}
                         <div class="invalid-feedback d-block">{{ form.entry_number.errors.0 }}</div>
@@ -57,7 +58,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">التاريخ <span class="text-danger">*</span></label>
+                        <label class="form-label">{% trans "Date" %} <span class="text-danger">*</span></label>
                         {{ form.entry_date }}
                         {% if form.entry_date.errors %}
                         <div class="invalid-feedback d-block">{{ form.entry_date.errors.0 }}</div>
@@ -65,7 +66,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">نوع القيد</label>
+                        <label class="form-label">{% trans "Entry Type" %}</label>
                         {{ form.entry_type }}
                         {% if form.entry_type.errors %}
                         <div class="invalid-feedback d-block">{{ form.entry_type.errors.0 }}</div>
@@ -73,7 +74,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">المرجع</label>
+                        <label class="form-label">{% trans "Reference" %}</label>
                         {{ form.reference }}
                         {% if form.reference.errors %}
                         <div class="invalid-feedback d-block">{{ form.reference.errors.0 }}</div>
@@ -81,7 +82,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">السنة المالية</label>
+                        <label class="form-label">{% trans "Fiscal Year" %}</label>
                         {{ form.fiscal_year }}
                         {% if form.fiscal_year.errors %}
                         <div class="invalid-feedback d-block">{{ form.fiscal_year.errors.0 }}</div>
@@ -89,7 +90,7 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">البيان</label>
+                        <label class="form-label">{% trans "Description" %}</label>
                         {{ form.description }}
                         {% if form.description.errors %}
                         <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
@@ -103,9 +104,9 @@
         <div class="col-lg-8">
             <div class="erp-card">
                 <div class="erp-card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0"><i class="bi bi-list-ul ms-2"></i>سطور القيد</h6>
+                    <h6 class="mb-0"><i class="bi bi-list-ul ms-2"></i>{% trans "Journal Lines" %}</h6>
                     <button type="button" class="btn btn-success btn-sm" id="addLineBtn">
-                        <i class="bi bi-plus-lg ms-1"></i> إضافة سطر
+                        <i class="bi bi-plus-lg ms-1"></i> {% trans "Add Line" %}
                     </button>
                 </div>
                 <div class="erp-card-body">
@@ -122,7 +123,7 @@
                         <div class="line-row {% if line_form.DELETE.value %}delete-row{% endif %}" data-line-index="{{ forloop.counter0 }}">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">الحساب <span class="text-danger">*</span></label>
+                                    <label class="form-label">{% trans "Account" %} <span class="text-danger">*</span></label>
                                     {{ line_form.account }}
                                     {{ line_form.id }}
                                     {% if line_form.account.errors %}
@@ -130,18 +131,18 @@
                                     {% endif %}
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label">البيان</label>
+                                    <label class="form-label">{% trans "Description" %}</label>
                                     {{ line_form.description }}
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="form-label">مدين</label>
+                                    <label class="form-label">{% trans "Debit" %}</label>
                                     {{ line_form.debit_amount }}
                                     {% if line_form.debit_amount.errors %}
                                     <div class="invalid-feedback d-block">{{ line_form.debit_amount.errors.0 }}</div>
                                     {% endif %}
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="form-label">دائن</label>
+                                    <label class="form-label">{% trans "Credit" %}</label>
                                     {{ line_form.credit_amount }}
                                     {% if line_form.credit_amount.errors %}
                                     <div class="invalid-feedback d-block">{{ line_form.credit_amount.errors.0 }}</div>
@@ -150,7 +151,7 @@
                                 <div class="col-md-1 d-flex align-items-end">
                                     <div class="form-check">
                                         {{ line_form.DELETE }}
-                                        <label class="form-check-label text-danger" for="{{ line_form.DELETE.id_for_label }}" title="حذف">
+                                        <label class="form-check-label text-danger" for="{{ line_form.DELETE.id_for_label }}" title="{% trans "Delete" %}">
                                             <i class="bi bi-trash"></i>
                                         </label>
                                     </div>
@@ -164,7 +165,7 @@
                     <div class="totals-row mt-4">
                         <div class="row">
                             <div class="col-md-4"></div>
-                            <div class="col-md-3 text-start">الإجمالي:</div>
+                            <div class="col-md-3 text-start">{% trans "Total" %}:</div>
                             <div class="col-md-2">
                                 <span id="totalDebit" class="text-success">0.00</span>
                             </div>
@@ -175,9 +176,9 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-4"></div>
-                            <div class="col-md-3 text-start">الفرق:</div>
+                            <div class="col-md-3 text-start">{% trans "Difference" %}:</div>
                             <div class="col-md-4">
-                                <span id="difference" class="balanced">0.00 (متوازن)</span>
+                                <span id="difference" class="balanced">0.00 ({% trans "Balanced" %})</span>
                             </div>
                         </div>
                     </div>
@@ -188,9 +189,9 @@
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-check-lg ms-1"></i>
-                    {% if entry %}حفظ التعديلات{% else %}إنشاء القيد{% endif %}
+                    {% if entry %}{% trans "Save Changes" %}{% else %}{% trans "Create Entry" %}{% endif %}
                 </button>
-                <a href="{% url 'erp:journal_entry_list' %}" class="btn btn-outline-secondary">إلغاء</a>
+                <a href="{% url 'erp:journal_entry_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
             </div>
         </div>
     </div>
@@ -201,24 +202,24 @@
     <div class="line-row" data-line-index="__prefix__">
         <div class="row g-3">
             <div class="col-md-4">
-                <label class="form-label">الحساب <span class="text-danger">*</span></label>
+                <label class="form-label">{% trans "Account" %} <span class="text-danger">*</span></label>
                 <select name="lines-__prefix__-account" class="form-select" required>
-                    <option value="">اختر الحساب...</option>
+                    <option value="">{% trans "Select Account..." %}</option>
                     {% for account in accounts %}
                     <option value="{{ account.id }}">{{ account.code }} - {{ account.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">البيان</label>
+                <label class="form-label">{% trans "Description" %}</label>
                 <input type="text" name="lines-__prefix__-description" class="form-control">
             </div>
             <div class="col-md-2">
-                <label class="form-label">مدين</label>
+                <label class="form-label">{% trans "Debit" %}</label>
                 <input type="number" name="lines-__prefix__-debit_amount" class="form-control debit-input" step="0.01" min="0" value="0">
             </div>
             <div class="col-md-2">
-                <label class="form-label">دائن</label>
+                <label class="form-label">{% trans "Credit" %}</label>
                 <input type="number" name="lines-__prefix__-credit_amount" class="form-control credit-input" step="0.01" min="0" value="0">
             </div>
             <div class="col-md-1 d-flex align-items-end">
@@ -259,10 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const diffEl = document.getElementById('difference');
         
         if (Math.abs(diff) < 0.01) {
-            diffEl.textContent = '0.00 (متوازن ✓)';
+            diffEl.textContent = '0.00 ({% trans "Balanced" %} ✓)';
             diffEl.className = 'balanced';
         } else {
-            diffEl.textContent = diff.toFixed(2) + ' (غير متوازن ✗)';
+            diffEl.textContent = diff.toFixed(2) + ' ({% trans "Unbalanced" %} ✗)';
             diffEl.className = 'unbalanced';
         }
     }

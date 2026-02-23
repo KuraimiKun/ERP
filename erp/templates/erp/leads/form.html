@@ -1,7 +1,8 @@
 {% extends 'erp/form_base.html' %}
+{% load i18n %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'erp:lead_list' %}">العملاء المحتملون</a></li>
+<li class="breadcrumb-item"><a href="{% url 'erp:lead_list' %}">{% trans "Leads" %}</a></li>
 <li class="breadcrumb-item active">{{ title }}</li>
 {% endblock %}
 
@@ -12,32 +13,32 @@
 {% block form_content %}
 <!-- معلومات الاتصال -->
 <div class="form-section">
-    <h6 class="form-section-title">معلومات الاتصال</h6>
+    <h6 class="form-section-title">{% trans "Contact Information" %}</h6>
     <div class="row">
         <div class="col-md-4 mb-3 required-field">
-            <label for="{{ form.first_name.id_for_label }}" class="form-label">الاسم الأول</label>
+            <label for="{{ form.first_name.id_for_label }}" class="form-label">{% trans "First Name" %}</label>
             {{ form.first_name }}
             {% if form.first_name.errors %}<div class="invalid-feedback d-block">{{ form.first_name.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-4 mb-3 required-field">
-            <label for="{{ form.last_name.id_for_label }}" class="form-label">اسم العائلة</label>
+            <label for="{{ form.last_name.id_for_label }}" class="form-label">{% trans "Last Name" %}</label>
             {{ form.last_name }}
             {% if form.last_name.errors %}<div class="invalid-feedback d-block">{{ form.last_name.errors|join:", " }}</div>{% endif %}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.job_title.id_for_label }}" class="form-label">المسمى الوظيفي</label>
+            <label for="{{ form.job_title.id_for_label }}" class="form-label">{% trans "Job Title" %}</label>
             {{ form.job_title }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">البريد الإلكتروني</label>
+            <label for="{{ form.email.id_for_label }}" class="form-label">{% trans "Email" %}</label>
             {{ form.email }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.phone.id_for_label }}" class="form-label">الهاتف</label>
+            <label for="{{ form.phone.id_for_label }}" class="form-label">{% trans "Phone" %}</label>
             {{ form.phone }}
         </div>
         <div class="col-md-4 mb-3">
-            <label for="{{ form.company_name.id_for_label }}" class="form-label">الشركة</label>
+            <label for="{{ form.company_name.id_for_label }}" class="form-label">{% trans "Company" %}</label>
             {{ form.company_name }}
         </div>
     </div>
@@ -45,22 +46,22 @@
 
 <!-- حالة العميل المحتمل -->
 <div class="form-section">
-    <h6 class="form-section-title">حالة العميل المحتمل</h6>
+    <h6 class="form-section-title">{% trans "Lead Status" %}</h6>
     <div class="row">
         <div class="col-md-3 mb-3">
-            <label for="{{ form.source.id_for_label }}" class="form-label">المصدر</label>
+            <label for="{{ form.source.id_for_label }}" class="form-label">{% trans "Source" %}</label>
             {{ form.source }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.status.id_for_label }}" class="form-label">الحالة</label>
+            <label for="{{ form.status.id_for_label }}" class="form-label">{% trans "Status" %}</label>
             {{ form.status }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.probability.id_for_label }}" class="form-label">الاحتمالية %</label>
+            <label for="{{ form.probability.id_for_label }}" class="form-label">{% trans "Probability %" %}</label>
             {{ form.probability }}
         </div>
         <div class="col-md-3 mb-3">
-            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">مسؤول عن</label>
+            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">{% trans "Assigned To" %}</label>
             {{ form.assigned_to }}
         </div>
     </div>
@@ -68,17 +69,17 @@
 
 <!-- تفاصيل الفرصة -->
 <div class="form-section">
-    <h6 class="form-section-title">تفاصيل الفرصة</h6>
+    <h6 class="form-section-title">{% trans "Opportunity Details" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.estimated_value.id_for_label }}" class="form-label">الإيرادات المتوقعة</label>
+            <label for="{{ form.estimated_value.id_for_label }}" class="form-label">{% trans "Expected Revenue" %}</label>
             <div class="input-group">
                 <span class="input-group-text">$</span>
                 {{ form.estimated_value }}
             </div>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="{{ form.expected_close_date.id_for_label }}" class="form-label">تاريخ الإغلاق المتوقع</label>
+            <label for="{{ form.expected_close_date.id_for_label }}" class="form-label">{% trans "Expected Close Date" %}</label>
             {{ form.expected_close_date }}
         </div>
     </div>
@@ -86,14 +87,14 @@
 
 <!-- الوصف والملاحظات -->
 <div class="form-section mb-0">
-    <h6 class="form-section-title">الوصف والملاحظات</h6>
+    <h6 class="form-section-title">{% trans "Description & Notes" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="{{ form.service_interest.id_for_label }}" class="form-label">الوصف</label>
+            <label for="{{ form.service_interest.id_for_label }}" class="form-label">{% trans "Description" %}</label>
             {{ form.service_interest }}
         </div>
         <div class="col-md-6 mb-3">
-            <label for="{{ form.notes.id_for_label }}" class="form-label">ملاحظات</label>
+            <label for="{{ form.notes.id_for_label }}" class="form-label">{% trans "Notes" %}</label>
             {{ form.notes }}
         </div>
     </div>

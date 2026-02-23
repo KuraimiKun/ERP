@@ -1,53 +1,53 @@
 {% extends 'erp/base.html' %}
-{% block title %}تحويل عرض السعر إلى فاتورة{% endblock %}
-{% block page_title %}تحويل عرض السعر إلى فاتورة{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Convert Quote to Invoice" %}{% endblock %}
+{% block page_title %}{% trans "Convert Quote to Invoice" %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="erp-card">
             <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>تحويل إلى فاتورة</h6>
+                <h6 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>{% trans "Convert to Invoice" %}</h6>
             </div>
             <div class="erp-card-body">
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle me-2"></i>
-                    سيتم إنشاء فاتورة جديدة بحالة <strong>مسودة</strong> من بيانات عرض السعر.
-                    يمكنك تعديل الفاتورة بعد الإنشاء.
+                    {% blocktrans %}A new invoice will be created with <strong>Draft</strong> status from the quote data. You can edit the invoice after creation.{% endblocktrans %}
                 </div>
                 
                 <table class="table table-sm mb-4">
                     <tr>
-                        <td class="text-muted">رقم العرض:</td>
+                        <td class="text-muted">{% trans "Quote Number" %}:</td>
                         <td class="fw-bold">{{ quote.quote_number }}</td>
                     </tr>
                     <tr>
-                        <td class="text-muted">العميل:</td>
-                        <td>{% if quote.customer %}{{ quote.customer.name }}{% elif quote.lead %}{{ quote.lead.first_name }} {{ quote.lead.last_name }} (عميل محتمل){% else %}-{% endif %}</td>
+                        <td class="text-muted">{% trans "Customer" %}:</td>
+                        <td>{% if quote.customer %}{{ quote.customer.name }}{% elif quote.lead %}{{ quote.lead.first_name }} {{ quote.lead.last_name }} ({% trans "Lead" %}){% else %}-{% endif %}</td>
                     </tr>
                     <tr>
-                        <td class="text-muted">المبلغ:</td>
+                        <td class="text-muted">{% trans "Amount" %}:</td>
                         <td class="fw-bold">${{ quote.total_amount|floatformat:2 }}</td>
                     </tr>
                     <tr>
-                        <td class="text-muted">البنود:</td>
-                        <td>{{ quote.lines.count }} بند</td>
+                        <td class="text-muted">{% trans "Lines" %}:</td>
+                        <td>{{ quote.lines.count }} {% trans "line" %}</td>
                     </tr>
                 </table>
 
                 {% if not quote.customer and quote.lead and not quote.lead.converted_customer %}
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    العرض مرتبط بعميل محتمل لم يتم تحويله بعد. يرجى <a href="{% url 'erp:lead_convert_to_customer' quote.lead.pk %}">تحويل العميل المحتمل</a> أولاً.
+                    {% trans "The quote is linked to a lead that has not yet been converted. Please" %} <a href="{% url 'erp:lead_convert_to_customer' quote.lead.pk %}">{% trans "convert the lead" %}</a> {% trans "first." %}
                 </div>
                 {% else %}
                 <form method="post">
                     {% csrf_token %}
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-lg me-1"></i> تأكيد التحويل
+                            <i class="bi bi-check-lg me-1"></i> {% trans "Confirm Conversion" %}
                         </button>
-                        <a href="{% url 'erp:quote_detail' quote.pk %}" class="btn btn-outline-secondary">إلغاء</a>
+                        <a href="{% url 'erp:quote_detail' quote.pk %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                     </div>
                 </form>
                 {% endif %}

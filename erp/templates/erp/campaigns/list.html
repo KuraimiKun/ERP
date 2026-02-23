@@ -1,15 +1,16 @@
 {% extends 'erp/base.html' %}
+{% load i18n %}
 
-{% block title %}الحملات{% endblock %}
-{% block page_title %}الحملات{% endblock %}
+{% block title %}{% trans "Campaigns" %}{% endblock %}
+{% block page_title %}{% trans "Campaigns" %}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <p class="text-muted mb-0">إدارة الحملات التسويقية وتتبع العملاء المحتملين</p>
+        <p class="text-muted mb-0">{% trans "Manage marketing campaigns and track leads" %}</p>
     </div>
     <a href="{% url 'erp:campaign_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg ms-1"></i> حملة جديدة
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Campaign" %}
     </a>
 </div>
 
@@ -23,7 +24,7 @@
                 </div>
                 <div>
                     <div class="stat-value">{{ campaigns.count }}</div>
-                    <div class="stat-label">إجمالي الحملات</div>
+                    <div class="stat-label">{% trans "Total Campaigns" %}</div>
                 </div>
             </div>
         </div>
@@ -33,22 +34,22 @@
 <!-- Campaigns Table -->
 <div class="erp-card">
     <div class="erp-card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">جميع الحملات</h6>
+        <h6 class="mb-0">{% trans "All Campaigns" %}</h6>
         <div class="d-flex gap-2">
-            <input type="search" class="form-control form-control-sm" placeholder="البحث في الحملات..." style="width: 200px;">
+            <input type="search" class="form-control form-control-sm" placeholder="{% trans "Search campaigns..." %}" style="width: 200px;">
         </div>
     </div>
     <div class="table-responsive">
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>الاسم</th>
-                    <th>النوع</th>
-                    <th>تاريخ البداية</th>
-                    <th>تاريخ النهاية</th>
-                    <th>الحالة</th>
-                    <th>الميزانية</th>
-                    <th>الإجراءات</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Start Date" %}</th>
+                    <th>{% trans "End Date" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Budget" %}</th>
+                    <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -75,13 +76,13 @@
                     <td>{{ campaign.budget|default:"0.00" }}</td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'erp:campaign_detail' campaign.pk %}" class="btn btn-outline-secondary" title="عرض">
+                            <a href="{% url 'erp:campaign_detail' campaign.pk %}" class="btn btn-outline-secondary" title="{% trans "View" %}">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{% url 'erp:campaign_edit' campaign.pk %}" class="btn btn-outline-secondary" title="تعديل">
+                            <a href="{% url 'erp:campaign_edit' campaign.pk %}" class="btn btn-outline-secondary" title="{% trans "Edit" %}">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <button type="button" class="btn btn-outline-danger" title="حذف" 
+                            <button type="button" class="btn btn-outline-danger" title="{% trans "Delete" %}" 
                                     data-bs-toggle="modal" data-bs-target="#deleteModal{{ campaign.pk }}">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -92,17 +93,17 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">تأكيد الحذف</h5>
+                                        <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        هل أنت متأكد من حذف الحملة "{{ campaign.name }}"؟
+                                        {% trans "Are you sure you want to delete campaign" %} "{{ campaign.name }}"?
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                                         <form action="{% url 'erp:campaign_delete' campaign.pk %}" method="post" class="d-inline">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">حذف</button>
+                                            <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
                                         </form>
                                     </div>
                                 </div>
@@ -114,7 +115,7 @@
                 <tr>
                     <td colspan="7" class="text-center py-4 text-muted">
                         <i class="bi bi-megaphone fs-1 d-block mb-2"></i>
-                        لا توجد حملات حتى الآن
+                        {% trans "No campaigns found yet" %}
                     </td>
                 </tr>
                 {% endfor %}
