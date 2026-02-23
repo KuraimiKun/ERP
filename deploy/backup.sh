@@ -10,7 +10,12 @@
 
 set -euo pipefail
 
+# Fix Windows CRLF line endings
+fix_crlf() { sed -i 's/\r$//' "$1" 2>/dev/null || true; }
+fix_crlf "${BASH_SOURCE[0]}"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fix_crlf "${SCRIPT_DIR}/.env.production"
 source "${SCRIPT_DIR}/.env.production"
 
 BACKUP_DIR="/opt/backups/erp"

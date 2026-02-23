@@ -10,6 +10,10 @@
 
 set -euo pipefail
 
+# Fix Windows CRLF line endings
+fix_crlf() { sed -i 's/\r$//' "$1" 2>/dev/null || true; }
+fix_crlf "${BASH_SOURCE[0]}"
+
 RED='\033[0;31m'; GREEN='\033[0;32m'; BLUE='\033[0;34m'; NC='\033[0m'
 info() { echo -e "${BLUE}[INFO]${NC}  $*"; }
 ok()   { echo -e "${GREEN}[OK]${NC}    $*"; }
@@ -18,6 +22,7 @@ err()  { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 [[ $EUID -ne 0 ]] && err "Run as root (sudo)."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fix_crlf "${SCRIPT_DIR}/.env.production"
 source "${SCRIPT_DIR}/.env.production"
 
 APP_DIR="${APP_DIR:-/opt/erpdjango}"

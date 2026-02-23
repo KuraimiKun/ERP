@@ -25,6 +25,10 @@
 
 set -euo pipefail
 
+# ─── Fix Windows CRLF line endings ─────────────────────────────────────────
+fix_crlf() { sed -i 's/\r$//' "$1" 2>/dev/null || true; }
+fix_crlf "${BASH_SOURCE[0]}"
+
 # ─── Color helpers ──────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
 info()  { echo -e "${BLUE}[INFO]${NC}  $*"; }
@@ -44,6 +48,8 @@ ENV_FILE="${SCRIPT_DIR}/.env.production"
 if [[ ! -f "$ENV_FILE" ]]; then
     err "Missing ${ENV_FILE}. Copy deploy/.env.production.example and fill in your values."
 fi
+# Strip CRLF from env file before sourcing
+fix_crlf "$ENV_FILE"
 source "$ENV_FILE"
 
 # Defaults
@@ -87,12 +93,17 @@ apt-get install -yqq \
     curl \
     git \
     software-properties-common \
+    pkg-config \
+    cmake \
     libpq-dev \
     libffi-dev \
     libssl-dev \
     libjpeg-dev \
     zlib1g-dev \
     libfreetype6-dev \
+    libcairo2-dev \
+    libgirepository1.0-dev \
+    libpango1.0-dev \
     ufw \
     logrotate \
     acl
@@ -287,10 +298,17 @@ ok "Docker network ready"
 # 8. File Ownership & Permissions
 ###############################################################################
 info "Setting ownership and permissions..."
+# Add www-data to app group so Nginx can read static/media and access socket
+usermod -aG "${APP_USER}" www-data
+
 chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
 chmod -R 750 "${APP_DIR}"
-chmod 660 "${APP_DIR}/.env"
-# Gunicorn socket dir writeable
+
+# Securing .env (only owner can read)
+chmod 600 "${APP_DIR}/.env"
+
+# Gunicorn socket dir — owned by erp:www-data so Nginx can connect
+chown "${APP_USER}:www-data" "${APP_DIR}/run"
 chmod 770 "${APP_DIR}/run"
 # Media dir writeable
 chmod 775 "${APP_DIR}/media"
@@ -308,7 +326,8 @@ After=network.target postgresql.service docker.service
 
 [Service]
 User=${APP_USER}
-Group=${APP_USER}
+Group=www-data
+UMask=0007
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
 ExecStart=${APP_DIR}/venv/bin/gunicorn erpproject.wsgi:application \\
