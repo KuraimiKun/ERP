@@ -63,17 +63,19 @@
                     <td>{{ payment.payment_date|date:"Y/m/d" }}</td>
                     <td>{{ payment.customer.name|default:"-" }}</td>
                     <td>
-                        {% if payment.invoice %}
-                        <a href="{% url 'erp:invoice_detail' payment.invoice.pk %}">
-                            {{ payment.invoice.invoice_number }}
+                        {% with alloc=payment.allocations.first %}
+                        {% if alloc and alloc.invoice %}
+                        <a href="{% url 'erp:invoice_detail' alloc.invoice.pk %}">
+                            {{ alloc.invoice.invoice_number }}
                         </a>
                         {% else %}
                         -
                         {% endif %}
+                        {% endwith %}
                     </td>
                     <td>{{ payment.payment_method.name|default:"-" }}</td>
                     <td class="fw-medium text-success">{{ payment.amount }}</td>
-                    <td><small class="text-muted">{{ payment.reference|default:"-"|truncatechars:20 }}</small></td>
+                    <td><small class="text-muted">{{ payment.reference_number|default:"-"|truncatechars:20 }}</small></td>
                     <td>
                         <div class="btn-group btn-group-sm">
                             <a href="{% url 'erp:payment_detail' payment.pk %}" class="btn btn-outline-secondary" title="عرض">

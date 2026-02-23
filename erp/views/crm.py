@@ -6,7 +6,7 @@ Leads, Campaigns, Tasks.
 
 from django.db.models import Q
 
-from erp.models import Lead, Campaign, Task
+from erp.models import Lead, Campaign, Task, Employee
 from erp.forms import (
     LeadForm, LeadActivityForm,
     CampaignForm,
@@ -54,11 +54,13 @@ def lead_list(request):
 def lead_detail(request, pk):
     company = get_user_company(request.user)
     lead = get_object_or_404(Lead, pk=pk, company=company)
+    from datetime import date
 
     return render(request, 'erp/leads/detail.html', {
         'lead': lead,
         'activities': lead.activities.order_by('-activity_date'),
         'quotes': lead.quotes.order_by('-quote_date'),
+        'today': date.today(),
     })
 
 
@@ -135,7 +137,11 @@ def lead_add_activity(request, pk):
         if form.is_valid():
             activity = form.save(commit=False)
             activity.lead = lead
-            activity.performed_by = request.user
+            # performed_by is FK to Employee, not User
+            try:
+                activity.performed_by = request.user.employee_profile
+            except Employee.DoesNotExist:
+                activity.performed_by = None
             activity.save()
             messages.success(request, 'Activity added successfully.')
             return redirect('erp:lead_detail', pk=lead.pk)

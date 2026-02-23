@@ -49,8 +49,10 @@
                 <tr>
                     <td><span class="fw-medium">{{ account.code }}</span></td>
                     <td>
-                        {{ account.name }}
-                        {% if account.name_ar %}<br><small class="text-muted">{{ account.name_ar }}</small>{% endif %}
+                        <a href="{% url 'erp:account_detail' account.pk %}" class="text-decoration-none">
+                            {{ account.name }}
+                            {% if account.name_ar %}<br><small class="text-muted">{{ account.name_ar }}</small>{% endif %}
+                        </a>
                     </td>
                     <td>
                         <span class="badge 

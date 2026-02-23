@@ -143,7 +143,7 @@ class AccountForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
         model = Account
         fields = [
             'code', 'name', 'name_ar', 'account_type', 'parent',
-            'description', 'is_active'
+            'opening_balance', 'description', 'is_active'
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 2}),

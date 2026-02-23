@@ -65,8 +65,8 @@
                     <td><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></td>
                     <td>{{ customer.phone|default:"-" }}</td>
                     <td>
-                        {% if customer.balance > 0 %}
-                        <span class="text-warning">{{ customer.currency.symbol|default:"$" }}{{ customer.balance|floatformat:2 }}</span>
+                        {% if customer.current_balance > 0 %}
+                        <span class="text-warning">{{ customer.currency.symbol|default:"$" }}{{ customer.current_balance|floatformat:2 }}</span>
                         {% else %}
                         <span class="text-success">{{ customer.currency.symbol|default:"$" }}0.00</span>
                         {% endif %}

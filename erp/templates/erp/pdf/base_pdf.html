@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4; margin: 1.5cm; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #333; direction: rtl; }
+    .header { border-bottom: 2px solid #0d6efd; padding-bottom: 10px; margin-bottom: 15px; }
+    .header table { width: 100%; }
+    .company-name { font-size: 20px; font-weight: bold; color: #0d6efd; }
+    .company-details { font-size: 9px; color: #666; }
+    .doc-title { font-size: 18px; font-weight: bold; text-align: center; margin: 15px 0; color: #1e293b; }
+    .info-table { width: 100%; margin-bottom: 15px; }
+    .info-table td { padding: 4px 8px; vertical-align: top; }
+    .info-label { color: #666; font-size: 9px; text-transform: uppercase; }
+    .info-value { font-weight: bold; font-size: 11px; }
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .items-table th { background: #f1f5f9; padding: 8px; border: 1px solid #e2e8f0; font-size: 10px; text-align: right; }
+    .items-table td { padding: 6px 8px; border: 1px solid #e2e8f0; font-size: 10px; }
+    .items-table .text-left { text-align: left; }
+    .totals-table { width: 40%; margin-right: auto; border-collapse: collapse; }
+    .totals-table td { padding: 4px 8px; font-size: 11px; }
+    .totals-table .total-row { font-weight: bold; font-size: 13px; border-top: 2px solid #333; }
+    .notes { margin-top: 20px; padding: 10px; background: #f8fafc; border-radius: 4px; font-size: 10px; }
+    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 8px; color: #999; border-top: 1px solid #e2e8f0; padding-top: 5px; }
+    .badge { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+    .badge-draft { background: #f1f5f9; color: #475569; }
+    .badge-sent { background: #dbeafe; color: #1e40af; }
+    .badge-paid { background: #dcfce7; color: #166534; }
+    .badge-partial { background: #fef3c7; color: #92400e; }
+    .badge-overdue { background: #fee2e2; color: #991b1b; }
+    .badge-credit { background: #fce7f3; color: #9d174d; }
+    .badge-debit { background: #ede9fe; color: #6d28d9; }
+</style>
+</head>
+<body>
+{% block content %}{% endblock %}
+
+<div class="footer">
+    {{ company.name }} | {{ company.phone }} | {{ company.email }}
+    {% if company.tax_number %} | الرقم الضريبي: {{ company.tax_number }}{% endif %}
+</div>
+</body>
+</html>

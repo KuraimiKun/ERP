@@ -9,8 +9,8 @@ from datetime import date
 from django.db.models import Q
 from django.utils import timezone
 
-from erp.models import Employee, Department, Attendance, LeaveRequest
-from erp.forms import EmployeeForm, LeaveRequestForm, AttendanceForm, DepartmentForm
+from erp.models import Employee, Department, Attendance, LeaveRequest, Payroll
+from erp.forms import EmployeeForm, LeaveRequestForm, AttendanceForm, DepartmentForm, PayrollForm
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
     get_user_company, staff_member_required,
@@ -344,3 +344,127 @@ def leave_request_approve(request, pk):
         return redirect('erp:leave_request_detail', pk=pk)
 
     return redirect('erp:leave_request_detail', pk=pk)
+
+
+# ── Payroll ─────────────────────────────────────────────────────────────────
+
+@staff_member_required
+def payroll_list(request):
+    company = get_user_company(request.user)
+    payrolls = Payroll.objects.filter(
+        employee__company=company,
+    ).select_related('employee', 'currency').order_by('-period_start')
+
+    status = request.GET.get('status')
+    if status:
+        payrolls = payrolls.filter(status=status)
+
+    search = request.GET.get('search')
+    if search:
+        from django.db.models import Q
+        payrolls = payrolls.filter(
+            Q(employee__first_name__icontains=search) |
+            Q(employee__last_name__icontains=search) |
+            Q(employee__employee_id__icontains=search)
+        )
+
+    from django.db.models import Sum, Count
+    stats = payrolls.aggregate(
+        total_count=Count('id'),
+        total_net=Sum('net_salary'),
+        total_gross=Sum('gross_salary'),
+    )
+
+    return render(request, 'erp/payroll/list.html', {
+        'payrolls': payrolls[:100],
+        'stats': stats,
+        'selected_status': status or '',
+        'statuses': Payroll.Status.choices,
+    })
+
+
+@staff_member_required
+def payroll_create(request):
+    company = get_user_company(request.user)
+
+    if request.method == 'POST':
+        form = PayrollForm(request.POST, company=company)
+        if form.is_valid():
+            payroll = form.save(commit=False)
+            payroll.calculate_totals()
+            payroll.save()
+            messages.success(request, f'تم إنشاء كشف الراتب بنجاح.')
+            return redirect('erp:payroll_detail', pk=payroll.pk)
+    else:
+        form = PayrollForm(company=company)
+        employee_id = request.GET.get('employee')
+        if employee_id:
+            form = PayrollForm(company=company, initial={'employee': employee_id})
+
+    return render(request, 'erp/payroll/form.html', {
+        'form': form,
+        'title': 'إنشاء كشف راتب',
+        'submit_text': 'حفظ',
+    })
+
+
+@staff_member_required
+def payroll_detail(request, pk):
+    company = get_user_company(request.user)
+    payroll = get_object_or_404(Payroll, pk=pk, employee__company=company)
+
+    return render(request, 'erp/payroll/detail.html', {
+        'payroll': payroll,
+    })
+
+
+@staff_member_required
+def payroll_approve(request, pk):
+    company = get_user_company(request.user)
+    payroll = get_object_or_404(Payroll, pk=pk, employee__company=company)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'calculate':
+            payroll.calculate_totals()
+            payroll.status = Payroll.Status.CALCULATED
+            payroll.save()
+            messages.success(request, 'تم احتساب الراتب بنجاح.')
+        elif action == 'approve':
+            if payroll.status not in ('draft', 'calculated'):
+                messages.error(request, 'لا يمكن اعتماد كشف الراتب بحالته الحالية.')
+                return redirect('erp:payroll_detail', pk=pk)
+            payroll.calculate_totals()
+            payroll.status = Payroll.Status.APPROVED
+            payroll.save()
+            messages.success(request, 'تم اعتماد كشف الراتب.')
+        elif action == 'pay':
+            if payroll.status != 'approved':
+                messages.error(request, 'يجب اعتماد كشف الراتب أولاً.')
+                return redirect('erp:payroll_detail', pk=pk)
+            payroll.status = Payroll.Status.PAID
+            payroll.payment_date = timezone.now().date()
+            payroll.save()
+            messages.success(request, 'تم صرف الراتب.')
+
+    return redirect('erp:payroll_detail', pk=pk)
+
+
+@staff_member_required
+def payroll_delete(request, pk):
+    company = get_user_company(request.user)
+    payroll = get_object_or_404(Payroll, pk=pk, employee__company=company)
+
+    if request.method == 'POST':
+        if payroll.status in ('paid',):
+            messages.error(request, 'لا يمكن حذف كشف راتب مصروف.')
+            return redirect('erp:payroll_detail', pk=pk)
+        payroll.delete()
+        messages.success(request, 'تم حذف كشف الراتب.')
+        return redirect('erp:payroll_list')
+
+    return render(request, 'erp/confirm_delete.html', {
+        'object': payroll,
+        'object_type': 'كشف راتب',
+        'cancel_url': reverse('erp:payroll_detail', args=[pk]),
+    })

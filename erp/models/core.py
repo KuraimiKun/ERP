@@ -209,6 +209,7 @@ class Sequence(TimeStampedModel):
         SUPPLIER = 'supplier', 'Supplier'
         SUPPLIER_INVOICE = 'supplier_invoice', 'Supplier Invoice'
         SUPPLIER_PAYMENT = 'supplier_payment', 'Supplier Payment'
+        LEAD = 'lead', 'Lead'
 
     company = models.ForeignKey(
         Company,

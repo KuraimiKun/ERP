@@ -28,6 +28,7 @@ _SEQUENCE_TYPE_MAP = {
     'supplier': Sequence.SequenceType.SUPPLIER,
     'supplier_invoice': Sequence.SequenceType.SUPPLIER_INVOICE,
     'supplier_payment': Sequence.SequenceType.SUPPLIER_PAYMENT,
+    'lead': Sequence.SequenceType.LEAD,
 }
 
 # Default prefixes when auto-creating a missing sequence
@@ -43,6 +44,7 @@ _DEFAULT_PREFIXES = {
     'supplier': 'SUP-',
     'supplier_invoice': 'SINV-',
     'supplier_payment': 'SPAY-',
+    'lead': 'LD-',
 }
 
 

@@ -96,19 +96,19 @@
                 {% if leave_request.approved_by %}
                 <div class="mb-3">
                     <label class="text-muted small">تمت المراجعة بواسطة</label>
-                    <div>{{ leave_request.approved_by.get_full_name|default:leave_request.approved_by }}</div>
+                    <div>{{ leave_request.approved_by.full_name|default:leave_request.approved_by }}</div>
                 </div>
                 {% endif %}
-                {% if leave_request.approved_at %}
+                {% if leave_request.approval_date %}
                 <div class="mb-3">
                     <label class="text-muted small">تاريخ المراجعة</label>
-                    <div>{{ leave_request.approved_at|date:"M d, Y H:i" }}</div>
+                    <div>{{ leave_request.approval_date|date:"M d, Y H:i" }}</div>
                 </div>
                 {% endif %}
-                {% if leave_request.rejection_reason %}
+                {% if leave_request.approval_notes %}
                 <div class="mb-3">
                     <label class="text-muted small">سبب الرفض</label>
-                    <div class="text-danger">{{ leave_request.rejection_reason }}</div>
+                    <div class="text-danger">{{ leave_request.approval_notes }}</div>
                 </div>
                 {% endif %}
             </div>

@@ -1,0 +1,163 @@
+{% extends 'erp/base.html' %}
+{% load humanize %}
+
+{% block title %}قائمة الأرباح والخسائر{% endblock %}
+{% block page_title %}قائمة الأرباح والخسائر{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:financial_reports' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> العودة إلى التقارير المالية
+        </a>
+    </div>
+</div>
+
+<!-- Date Filter -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body py-3">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted">من تاريخ</label>
+                <input type="date" name="start" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted">إلى تاريخ</label>
+                <input type="date" name="end" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i> تصفية
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي الإيرادات</p>
+                <h4 class="text-success mb-0">{{ total_income|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي المصروفات</p>
+                <h4 class="text-danger mb-0">{{ total_expenses|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">صافي الربح</p>
+                <h4 class="mb-0 {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {{ net_profit|floatformat:2|intcomma }}
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Income -->
+    <div class="col-lg-6">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-graph-up-arrow text-success me-2"></i>الإيرادات</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>الرمز</th>
+                            <th>الحساب</th>
+                            <th class="text-end">المبلغ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acct in income_accounts %}
+                        <tr>
+                            <td><code>{{ acct.code }}</code></td>
+                            <td>
+                                <a href="{% url 'erp:account_detail' acct.id %}" class="text-decoration-none">{{ acct.name }}</a>
+                            </td>
+                            <td class="text-end text-success">{{ acct.balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">لا توجد إيرادات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if income_accounts %}
+                    <tfoot class="table-light">
+                        <tr class="fw-bold">
+                            <td colspan="2">إجمالي الإيرادات</td>
+                            <td class="text-end text-success">{{ total_income|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses -->
+    <div class="col-lg-6">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-graph-down-arrow text-danger me-2"></i>المصروفات</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>الرمز</th>
+                            <th>الحساب</th>
+                            <th class="text-end">المبلغ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acct in expense_accounts %}
+                        <tr>
+                            <td><code>{{ acct.code }}</code></td>
+                            <td>
+                                <a href="{% url 'erp:account_detail' acct.id %}" class="text-decoration-none">{{ acct.name }}</a>
+                            </td>
+                            <td class="text-end text-danger">{{ acct.balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">لا توجد مصروفات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if expense_accounts %}
+                    <tfoot class="table-light">
+                        <tr class="fw-bold">
+                            <td colspan="2">إجمالي المصروفات</td>
+                            <td class="text-end text-danger">{{ total_expenses|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Net Profit Bar -->
+<div class="erp-card mt-4">
+    <div class="erp-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">صافي الربح / (الخسارة)</h5>
+            <h3 class="mb-0 {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                {{ net_profit|floatformat:2|intcomma }}
+            </h3>
+        </div>
+        <small class="text-muted">الفترة: {{ start_date|date:"Y/m/d" }} — {{ end_date|date:"Y/m/d" }}</small>
+    </div>
+</div>
+{% endblock %}

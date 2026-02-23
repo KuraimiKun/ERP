@@ -43,11 +43,11 @@
                 </div>
                 <div class="mb-3">
                     <label class="text-muted small">العنوان</label>
-                    <div>{{ customer.address|linebreaksbr|default:"-" }}</div>
+                    <div>{{ customer.billing_address|linebreaksbr|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
                     <label class="text-muted small">المدينة / الدولة</label>
-                    <div>{{ customer.city|default:"" }}{% if customer.city and customer.country %}، {% endif %}{{ customer.country|default:"-" }}</div>
+                    <div>{{ customer.billing_city|default:"" }}{% if customer.billing_city and customer.billing_country %}، {% endif %}{{ customer.billing_country|default:"-" }}</div>
                 </div>
             </div>
             <div class="erp-card-body border-top">
@@ -70,8 +70,8 @@
             <div class="erp-card-body">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">الرصيد:</span>
-                    <span class="fw-medium {% if customer.balance > 0 %}text-warning{% else %}text-success{% endif %}">
-                        {{ customer.currency.symbol|default:"$" }}{{ customer.balance|floatformat:2 }}
+                    <span class="fw-medium {% if customer.current_balance > 0 %}text-warning{% else %}text-success{% endif %}">
+                        {{ customer.currency.symbol|default:"$" }}{{ customer.current_balance|floatformat:2 }}
                     </span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
@@ -237,7 +237,7 @@
                                     <small class="text-muted">{{ interaction.interaction_date|date:"Y/m/d" }}</small>
                                 </div>
                                 <p class="mb-1">{{ interaction.subject }}</p>
-                                <small class="text-muted">{{ interaction.notes|truncatechars:100 }}</small>
+                                <small class="text-muted">{{ interaction.description|truncatechars:100 }}</small>
                             </div>
                         </div>
                         {% empty %}

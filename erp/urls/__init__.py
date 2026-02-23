@@ -93,8 +93,16 @@ _finance_patterns = [
     path('fiscal-years/add/', views.fiscal_year_create, name='fiscal_year_create'),
     path('fiscal-years/<int:pk>/edit/', views.fiscal_year_edit, name='fiscal_year_edit'),
     path('fiscal-years/<int:pk>/delete/', views.fiscal_year_delete, name='fiscal_year_delete'),
+    # Account Detail
+    path('accounts/<int:pk>/', views.account_detail, name='account_detail'),
     # Financial Reports
     path('finance/reports/', views.financial_reports, name='financial_reports'),
+    path('finance/trial-balance/', views.trial_balance, name='trial_balance'),
+    path('finance/profit-and-loss/', views.profit_and_loss, name='profit_and_loss'),
+    path('finance/balance-sheet/', views.balance_sheet, name='balance_sheet'),
+    path('finance/cash-flow/', views.cash_flow, name='cash_flow'),
+    path('finance/aging-receivables/', views.aging_receivables, name='aging_receivables'),
+    path('finance/aging-payables/', views.aging_payables, name='aging_payables'),
 ]
 
 # ── HR ──────────────────────────────────────────────────────────────────────
@@ -119,6 +127,12 @@ _hr_patterns = [
     path('leave-requests/add/', views.leave_request_create, name='leave_request_create'),
     path('leave-requests/<int:pk>/', views.leave_request_detail, name='leave_request_detail'),
     path('leave-requests/<int:pk>/approve/', views.leave_request_approve, name='leave_request_approve'),
+    # Payroll
+    path('payroll/', views.payroll_list, name='payroll_list'),
+    path('payroll/add/', views.payroll_create, name='payroll_create'),
+    path('payroll/<int:pk>/', views.payroll_detail, name='payroll_detail'),
+    path('payroll/<int:pk>/approve/', views.payroll_approve, name='payroll_approve'),
+    path('payroll/<int:pk>/delete/', views.payroll_delete, name='payroll_delete'),
 ]
 
 # ── CRM ─────────────────────────────────────────────────────────────────────
@@ -215,6 +229,44 @@ _ajax_patterns = [
     path('ajax/item-price/', views.ajax_item_price, name='ajax_item_price'),
 ]
 
+# ── PDF ─────────────────────────────────────────────────────────────────────
+_pdf_patterns = [
+    path('invoices/<int:pk>/pdf/', views.invoice_pdf, name='invoice_pdf'),
+    path('quotes/<int:pk>/pdf/', views.quote_pdf, name='quote_pdf'),
+    path('purchase-orders/<int:pk>/pdf/', views.purchase_order_pdf, name='purchase_order_pdf'),
+    path('payroll/<int:pk>/pdf/', views.payslip_pdf, name='payslip_pdf'),
+]
+
+# ── Conversions ─────────────────────────────────────────────────────────────
+_conversion_patterns = [
+    path('quotes/<int:pk>/convert/', views.quote_convert_to_invoice, name='quote_convert_to_invoice'),
+    path('leads/<int:pk>/convert/', views.lead_convert_to_customer, name='lead_convert_to_customer'),
+]
+
+# ── Credit / Debit Notes ───────────────────────────────────────────────────
+_credit_debit_patterns = [
+    path('invoices/<int:pk>/credit-note/', views.credit_note_create, name='credit_note_create'),
+    path('invoices/<int:pk>/debit-note/', views.debit_note_create, name='debit_note_create'),
+]
+
+# ── Tax Report ──────────────────────────────────────────────────────────────
+_tax_report_patterns = [
+    path('finance/tax-report/', views.tax_report, name='tax_report'),
+]
+
+# ── Notifications ───────────────────────────────────────────────────────────
+_notification_patterns = [
+    path('notifications/', views.notification_list, name='notification_list'),
+    path('notifications/dropdown/', views.notification_dropdown, name='notification_dropdown'),
+    path('notifications/<int:pk>/read/', views.notification_mark_read, name='notification_mark_read'),
+    path('notifications/mark-all-read/', views.notification_mark_all_read, name='notification_mark_all_read'),
+]
+
+# ── Audit Log ───────────────────────────────────────────────────────────────
+_audit_log_patterns = [
+    path('audit-log/', views.audit_log_list, name='audit_log_list'),
+]
+
 # ── Combined ────────────────────────────────────────────────────────────────
 urlpatterns = (
     _setup_patterns
@@ -227,5 +279,11 @@ urlpatterns = (
     + _journal_patterns
     + _product_patterns
     + _ajax_patterns
+    + _pdf_patterns
+    + _conversion_patterns
+    + _credit_debit_patterns
+    + _tax_report_patterns
+    + _notification_patterns
+    + _audit_log_patterns
     + _api_patterns
 )

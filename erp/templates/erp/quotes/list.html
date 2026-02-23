@@ -93,8 +93,8 @@
                             <span class="badge bg-danger">مرفوض</span>
                             {% elif quote.status == 'expired' %}
                             <span class="badge bg-warning text-dark">منتهي الصلاحية</span>
-                            {% elif quote.status == 'converted' %}
-                            <span class="badge bg-primary">محوّل</span>
+                            {% elif quote.status == 'cancelled' %}
+                            <span class="badge bg-dark">ملغي</span>
                             {% endif %}
                         </td>
                         <td class="text-start">

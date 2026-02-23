@@ -1,0 +1,80 @@
+{% extends "erp/pdf/base_pdf.html" %}
+{% block content %}
+<div class="header">
+    <table><tr>
+        <td style="width:60%">
+            <div class="company-name">{{ company.name }}</div>
+            {% if company.name_ar %}<div style="font-size:14px;color:#475569">{{ company.name_ar }}</div>{% endif %}
+            <div class="company-details">
+                {{ company.address }}<br>
+                {{ company.city }}{% if company.country %}, {{ company.country }}{% endif %}<br>
+                {{ company.phone }} | {{ company.email }}
+            </div>
+        </td>
+        <td style="width:40%;text-align:left">
+            <div style="font-size:16px;font-weight:bold;color:#0d6efd">أمر شراء</div>
+            <div style="font-size:14px;font-weight:bold">{{ order.po_number }}</div>
+            <div class="company-details">
+                التاريخ: {{ order.po_date|date:"Y/m/d" }}<br>
+                {% if order.expected_date %}التسليم المتوقع: {{ order.expected_date|date:"Y/m/d" }}{% endif %}
+            </div>
+        </td>
+    </tr></table>
+</div>
+
+<table class="info-table"><tr>
+    <td style="width:50%">
+        <div class="info-label">المورد</div>
+        <div class="info-value">{{ order.supplier.name }}</div>
+        <div class="company-details">
+            {{ order.supplier.address|default:"" }}<br>
+            {{ order.supplier.email|default:"" }}
+            {% if order.supplier.phone %} | {{ order.supplier.phone }}{% endif %}
+        </div>
+    </td>
+    <td style="width:50%;text-align:left">
+        <div class="info-label">الحالة</div>
+        <span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
+        {% if order.reference %}<br><div class="info-label" style="margin-top:5px">المرجع</div><div class="info-value">{{ order.reference }}</div>{% endif %}
+    </td>
+</tr></table>
+
+<table class="items-table">
+    <thead><tr>
+        <th style="width:5%">#</th>
+        <th style="width:45%">الوصف</th>
+        <th style="width:10%">الكمية</th>
+        <th style="width:15%" class="text-left">سعر الوحدة</th>
+        <th style="width:10%" class="text-left">الضريبة</th>
+        <th style="width:15%" class="text-left">الإجمالي</th>
+    </tr></thead>
+    <tbody>
+    {% for line in lines %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ line.description }}</td>
+        <td>{{ line.quantity|floatformat:2 }}</td>
+        <td class="text-left">{{ order.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
+        <td class="text-left">{{ order.currency.symbol|default:"$" }}{{ line.tax_amount|floatformat:2 }}</td>
+        <td class="text-left">{{ order.currency.symbol|default:"$" }}{{ line.line_total|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<table class="totals-table">
+    <tr><td>المجموع الفرعي:</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.subtotal|floatformat:2 }}</td></tr>
+    {% if order.discount_amount > 0 %}
+    <tr><td>الخصم:</td><td class="text-left" style="color:#dc3545">-{{ order.currency.symbol|default:"$" }}{{ order.discount_amount|floatformat:2 }}</td></tr>
+    {% endif %}
+    <tr><td>الضريبة:</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.tax_amount|floatformat:2 }}</td></tr>
+    <tr class="total-row"><td>الإجمالي:</td><td class="text-left">{{ order.currency.symbol|default:"$" }}{{ order.total_amount|floatformat:2 }}</td></tr>
+</table>
+
+{% if order.notes %}
+<div class="notes"><strong>ملاحظات:</strong><br>{{ order.notes|linebreaksbr }}</div>
+{% endif %}
+{% if order.terms %}
+<div class="notes"><strong>الشروط:</strong><br>{{ order.terms|linebreaksbr }}</div>
+{% endif %}
+{% endblock %}

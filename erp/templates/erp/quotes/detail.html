@@ -75,7 +75,7 @@
                             <tbody>
                                 {% for line in lines %}
                                 <tr>
-                                    <td>{{ line.service.name|default:"-" }}</td>
+                                    <td>{{ line.service_pricing.name|default:"-" }}</td>
                                     <td>{{ line.description }}</td>
                                     <td class="text-center">{{ line.quantity }}</td>
                                     <td class="text-start">${{ line.unit_price|floatformat:2 }}</td>
@@ -116,10 +116,10 @@
                     <p class="mb-0">{{ quote.notes }}</p>
                     {% endif %}
                     
-                    {% if quote.terms_and_conditions %}
+                    {% if quote.terms %}
                     <hr>
                     <h6 class="text-muted">الشروط والأحكام</h6>
-                    <p class="mb-0">{{ quote.terms_and_conditions }}</p>
+                    <p class="mb-0">{{ quote.terms }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -140,8 +140,8 @@
                     <span class="badge bg-danger fs-6 px-3 py-2">مرفوض</span>
                     {% elif quote.status == 'expired' %}
                     <span class="badge bg-warning text-dark fs-6 px-3 py-2">منتهي الصلاحية</span>
-                    {% elif quote.status == 'converted' %}
-                    <span class="badge bg-primary fs-6 px-3 py-2">محوّل إلى فاتورة</span>
+                    {% elif quote.status == 'cancelled' %}
+                    <span class="badge bg-dark fs-6 px-3 py-2">ملغي</span>
                     {% endif %}
                     
                     <div class="mt-3">
@@ -157,14 +157,14 @@
                     <h6 class="mb-0">الإجراءات</h6>
                 </div>
                 <div class="card-body d-grid gap-2">
-                    {% if quote.status == 'accepted' and not quote.converted_invoice %}
-                    <button type="button" class="btn btn-success">
+                    {% if quote.status == 'accepted' and not quote.converted_to_invoice %}
+                    <a href="{% url 'erp:quote_convert_to_invoice' quote.pk %}" class="btn btn-success">
                         <i class="bi bi-receipt ms-1"></i> تحويل إلى فاتورة
-                    </button>
+                    </a>
                     {% endif %}
-                    <button type="button" class="btn btn-outline-secondary">
-                        <i class="bi bi-printer ms-1"></i> طباعة العرض
-                    </button>
+                    <a href="{% url 'erp:quote_pdf' quote.pk %}" class="btn btn-outline-secondary" target="_blank">
+                        <i class="bi bi-printer ms-1"></i> طباعة PDF
+                    </a>
                     <button type="button" class="btn btn-outline-secondary">
                         <i class="bi bi-envelope ms-1"></i> إرسال للعميل
                     </button>

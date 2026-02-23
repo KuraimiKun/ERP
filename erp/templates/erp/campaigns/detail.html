@@ -87,7 +87,7 @@
                         <tr>
                             <td>
                                 <a href="{% url 'erp:lead_detail' campaign_lead.lead.pk %}">
-                                    {{ campaign_lead.lead.name|default:campaign_lead.lead }}
+                                    {{ campaign_lead.lead.full_name|default:campaign_lead.lead }}
                                 </a>
                             </td>
                             <td>{{ campaign_lead.lead.source|default:"-" }}</td>
@@ -119,7 +119,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="text-muted small">العائد المتوقع</label>
-                    <div>{{ campaign.expected_roi|default:"-" }}</div>
+                    <div>{{ campaign.expected_revenue|default:"-" }}</div>
                 </div>
                 <div class="mb-3">
                     <label class="text-muted small">التكلفة الفعلية</label>

@@ -27,9 +27,11 @@ def quote_list(request):
     if status:
         quotes = quotes.filter(status=status)
 
+    from datetime import date
     return render(request, 'erp/quotes/list.html', {
         'quotes': quotes.order_by('-quote_date')[:100],
         'statuses': Quote.Status.choices,
+        'today': date.today(),
     })
 
 

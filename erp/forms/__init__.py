@@ -12,7 +12,7 @@ from .mixins import CompanyFilterMixin, BootstrapFormMixin
 from .core import CompanyForm, DepartmentForm, BranchForm, CurrencyForm, FiscalYearForm
 
 # ── HR ──────────────────────────────────────────────────────────
-from .hr import EmployeeForm, LeaveRequestForm, AttendanceForm
+from .hr import EmployeeForm, LeaveRequestForm, AttendanceForm, PayrollForm
 
 # ── Finance ─────────────────────────────────────────────────────
 from .finance import (
@@ -83,7 +83,7 @@ __all__ = [
     # Core
     'CompanyForm', 'DepartmentForm', 'BranchForm', 'CurrencyForm', 'FiscalYearForm',
     # HR
-    'EmployeeForm', 'LeaveRequestForm', 'AttendanceForm',
+    'EmployeeForm', 'LeaveRequestForm', 'AttendanceForm', 'PayrollForm',
     # Finance
     'CustomerForm', 'InvoiceForm', 'InvoiceLineForm', 'InvoiceLineFormSet',
     'PaymentForm', 'ExpenseForm', 'AccountForm', 'TaxRateForm',

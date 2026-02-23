@@ -4,10 +4,24 @@ ERP Services - Audit Service
 Provides automatic audit logging for model changes.
 """
 
+import threading
+
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from ..models import AuditLog
+
+# Module-level thread-local storage for audit context
+_audit_thread_locals = threading.local()
+
+
+def get_audit_context():
+    """Get the current request context stored by AuditMiddleware."""
+    return {
+        'user': getattr(_audit_thread_locals, 'user', None),
+        'ip_address': getattr(_audit_thread_locals, 'ip_address', None),
+        'user_agent': getattr(_audit_thread_locals, 'user_agent', ''),
+    }
 import json
 
 
@@ -222,12 +236,10 @@ class AuditMiddleware:
         self.get_response = get_response
     
     def __call__(self, request):
-        # Store request info in thread-local storage
-        import threading
-        _thread_locals = threading.local()
-        _thread_locals.user = getattr(request, 'user', None)
-        _thread_locals.ip_address = self.get_client_ip(request)
-        _thread_locals.user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]
+        # Store request info in module-level thread-local storage
+        _audit_thread_locals.user = getattr(request, 'user', None)
+        _audit_thread_locals.ip_address = self.get_client_ip(request)
+        _audit_thread_locals.user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]
         
         response = self.get_response(request)
         

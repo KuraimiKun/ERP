@@ -1,0 +1,244 @@
+{% extends 'erp/base.html' %}
+{% load humanize %}
+
+{% block title %}كشف راتب — {{ payroll.employee.first_name }} {{ payroll.employee.last_name }}{% endblock %}
+{% block page_title %}تفاصيل كشف الراتب{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:payroll_list' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> العودة إلى كشوف الرواتب
+        </a>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'erp:payslip_pdf' payroll.pk %}" class="btn btn-outline-secondary" target="_blank">
+            <i class="bi bi-printer me-1"></i> طباعة PDF
+        </a>
+        {% if payroll.status == 'draft' or payroll.status == 'calculated' %}
+        <form method="post" action="{% url 'erp:payroll_approve' payroll.pk %}">
+            {% csrf_token %}
+            {% if payroll.status == 'draft' %}
+            <button type="submit" name="action" value="calculate" class="btn btn-info">
+                <i class="bi bi-calculator me-1"></i> احتساب
+            </button>
+            {% endif %}
+        </form>
+        <form method="post" action="{% url 'erp:payroll_approve' payroll.pk %}">
+            {% csrf_token %}
+            <button type="submit" name="action" value="approve" class="btn btn-success">
+                <i class="bi bi-check-lg me-1"></i> اعتماد
+            </button>
+        </form>
+        {% endif %}
+        {% if payroll.status == 'approved' %}
+        <form method="post" action="{% url 'erp:payroll_approve' payroll.pk %}">
+            {% csrf_token %}
+            <button type="submit" name="action" value="pay" class="btn btn-primary">
+                <i class="bi bi-cash me-1"></i> صرف الراتب
+            </button>
+        </form>
+        {% endif %}
+        {% if payroll.status != 'paid' %}
+        <a href="{% url 'erp:payroll_delete' payroll.pk %}" class="btn btn-outline-danger">
+            <i class="bi bi-trash me-1"></i> حذف
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Status Bar -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <img src="https://ui-avatars.com/api/?name={{ payroll.employee.first_name }}+{{ payroll.employee.last_name }}&background=0d6efd&color=fff&size=48" 
+                     alt="" class="rounded-circle me-3" width="48" height="48">
+                <div>
+                    <h5 class="mb-0">{{ payroll.employee.first_name }} {{ payroll.employee.last_name }}</h5>
+                    <small class="text-muted">
+                        {{ payroll.employee.employee_id|default:"-" }} 
+                        {% if payroll.employee.department %}| {{ payroll.employee.department.name }}{% endif %}
+                    </small>
+                </div>
+            </div>
+            <span class="badge fs-6
+                {% if payroll.status == 'draft' %}badge-status badge-draft
+                {% elif payroll.status == 'calculated' %}badge-status badge-partial
+                {% elif payroll.status == 'approved' %}badge-status badge-paid
+                {% elif payroll.status == 'paid' %}bg-success{% endif %}">
+                {{ payroll.get_status_display }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Period & Currency -->
+    <div class="col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>الفترة</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">بداية الفترة</label>
+                    <div class="fw-medium">{{ payroll.period_start|date:"Y/m/d" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">نهاية الفترة</label>
+                    <div class="fw-medium">{{ payroll.period_end|date:"Y/m/d" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">العملة</label>
+                    <div class="fw-medium">{{ payroll.currency.code }} — {{ payroll.currency.name }}</div>
+                </div>
+                {% if payroll.payment_date %}
+                <div>
+                    <label class="text-muted small">تاريخ الصرف</label>
+                    <div class="fw-medium text-success">{{ payroll.payment_date|date:"Y/m/d" }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings -->
+    <div class="col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-cash-stack text-success me-2"></i>الاستحقاقات</h6>
+            </div>
+            <div class="erp-card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <td>الراتب الأساسي</td>
+                            <td class="text-end fw-medium">{{ payroll.basic_salary|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% if payroll.housing_allowance %}
+                        <tr>
+                            <td>بدل السكن</td>
+                            <td class="text-end">{{ payroll.housing_allowance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.transport_allowance %}
+                        <tr>
+                            <td>بدل النقل</td>
+                            <td class="text-end">{{ payroll.transport_allowance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.other_allowances %}
+                        <tr>
+                            <td>بدلات أخرى</td>
+                            <td class="text-end">{{ payroll.other_allowances|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.overtime_amount %}
+                        <tr>
+                            <td>العمل الإضافي</td>
+                            <td class="text-end">{{ payroll.overtime_amount|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.bonus %}
+                        <tr>
+                            <td>المكافآت</td>
+                            <td class="text-end">{{ payroll.bonus|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr class="fw-bold text-success">
+                            <td>إجمالي الاستحقاقات</td>
+                            <td class="text-end">{{ payroll.gross_salary|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deductions -->
+    <div class="col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-dash-circle text-danger me-2"></i>الخصومات</h6>
+            </div>
+            <div class="erp-card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        {% if payroll.absence_deduction %}
+                        <tr>
+                            <td>خصم الغياب</td>
+                            <td class="text-end">{{ payroll.absence_deduction|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.late_deduction %}
+                        <tr>
+                            <td>خصم التأخير</td>
+                            <td class="text-end">{{ payroll.late_deduction|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.loan_deduction %}
+                        <tr>
+                            <td>خصم القرض</td>
+                            <td class="text-end">{{ payroll.loan_deduction|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.social_insurance %}
+                        <tr>
+                            <td>التأمينات الاجتماعية</td>
+                            <td class="text-end">{{ payroll.social_insurance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.tax_deduction %}
+                        <tr>
+                            <td>ضريبة الدخل</td>
+                            <td class="text-end">{{ payroll.tax_deduction|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payroll.other_deductions %}
+                        <tr>
+                            <td>خصومات أخرى</td>
+                            <td class="text-end">{{ payroll.other_deductions|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if not payroll.total_deductions %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-3">لا توجد خصومات</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr class="fw-bold text-danger">
+                            <td>إجمالي الخصومات</td>
+                            <td class="text-end">{{ payroll.total_deductions|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Net Salary -->
+<div class="erp-card mt-4">
+    <div class="erp-card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">صافي الراتب</h5>
+            <h3 class="mb-0 text-success">{{ payroll.net_salary|floatformat:2|intcomma }} {{ payroll.currency.code }}</h3>
+        </div>
+    </div>
+</div>
+
+{% if payroll.notes %}
+<div class="erp-card mt-4">
+    <div class="erp-card-header">
+        <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>ملاحظات</h6>
+    </div>
+    <div class="erp-card-body">
+        <p class="mb-0">{{ payroll.notes }}</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

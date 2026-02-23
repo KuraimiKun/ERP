@@ -1,0 +1,125 @@
+{% extends 'erp/base.html' %}
+{% load humanize %}
+
+{% block title %}كشوف الرواتب{% endblock %}
+{% block page_title %}كشوف الرواتب{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">إدارة كشوف الرواتب الشهرية</p>
+    </div>
+    <a href="{% url 'erp:payroll_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> كشف راتب جديد
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي الكشوف</p>
+                <h4 class="text-primary mb-0">{{ stats.total_count|default:0 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي الرواتب الصافية</p>
+                <h4 class="text-success mb-0">{{ stats.total_net|default:0|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي الرواتب الإجمالية</p>
+                <h4 class="text-info mb-0">{{ stats.total_gross|default:0|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Filter -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body py-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'erp:payroll_list' %}" class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-outline-secondary{% endif %}">الكل</a>
+            <a href="?status=draft" class="btn btn-sm {% if selected_status == 'draft' %}btn-primary{% else %}btn-outline-secondary{% endif %}">مسودة</a>
+            <a href="?status=calculated" class="btn btn-sm {% if selected_status == 'calculated' %}btn-primary{% else %}btn-outline-secondary{% endif %}">محسوب</a>
+            <a href="?status=approved" class="btn btn-sm {% if selected_status == 'approved' %}btn-primary{% else %}btn-outline-secondary{% endif %}">معتمد</a>
+            <a href="?status=paid" class="btn btn-sm {% if selected_status == 'paid' %}btn-primary{% else %}btn-outline-secondary{% endif %}">مصروف</a>
+        </div>
+    </div>
+</div>
+
+<!-- Payroll Table -->
+<div class="erp-card">
+    <div class="erp-card-header">
+        <h6 class="mb-0">كشوف الرواتب</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>الموظف</th>
+                    <th>الفترة</th>
+                    <th class="text-end">الراتب الأساسي</th>
+                    <th class="text-end">الإجمالي</th>
+                    <th class="text-end">الخصومات</th>
+                    <th class="text-end">الصافي</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payroll in payrolls %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="https://ui-avatars.com/api/?name={{ payroll.employee.first_name }}+{{ payroll.employee.last_name }}&background=0d6efd&color=fff&size=32" 
+                                 alt="" class="rounded-circle me-2" width="32" height="32">
+                            <div>
+                                <div class="fw-medium">{{ payroll.employee.first_name }} {{ payroll.employee.last_name }}</div>
+                                <small class="text-muted">{{ payroll.employee.employee_id|default:"-" }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <small>{{ payroll.period_start|date:"Y/m/d" }}</small>
+                        <br><small class="text-muted">{{ payroll.period_end|date:"Y/m/d" }}</small>
+                    </td>
+                    <td class="text-end">{{ payroll.basic_salary|floatformat:2|intcomma }}</td>
+                    <td class="text-end text-primary">{{ payroll.gross_salary|floatformat:2|intcomma }}</td>
+                    <td class="text-end text-danger">{{ payroll.total_deductions|floatformat:2|intcomma }}</td>
+                    <td class="text-end fw-bold text-success">{{ payroll.net_salary|floatformat:2|intcomma }}</td>
+                    <td>
+                        <span class="badge badge-status 
+                            {% if payroll.status == 'draft' %}badge-draft
+                            {% elif payroll.status == 'calculated' %}badge-partial
+                            {% elif payroll.status == 'approved' %}badge-paid
+                            {% elif payroll.status == 'paid' %}bg-success{% endif %}">
+                            {{ payroll.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'erp:payroll_detail' payroll.pk %}" class="btn btn-sm btn-outline-primary" title="عرض">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        <i class="bi bi-cash-coin fs-1 d-block mb-2"></i>
+                        لا توجد كشوف رواتب حتى الآن
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}إنشاء {{ note_type_ar }} — {{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}إنشاء {{ note_type_ar }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:invoice_list' %}">الفواتير</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></li>
+        <li class="breadcrumb-item active">{{ note_type_ar }}</li>
+    </ol>
+</nav>
+
+<div class="erp-card mb-4">
+    <div class="erp-card-header">
+        <h5 class="mb-1">إنشاء {{ note_type_ar }} للفاتورة {{ invoice.invoice_number }}</h5>
+        <small class="text-muted">
+            العميل: {{ invoice.customer.name }} — 
+            المبلغ الأصلي: {{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}
+        </small>
+    </div>
+    <div class="erp-card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">سبب {{ note_type_ar }}</label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="أدخل سبب إصدار {{ note_type_ar }}"></textarea>
+            </div>
+
+            <h6 class="mb-3">بنود الفاتورة الأصلية</h6>
+            <p class="text-muted small">حدد البنود التي تريد إدراجها و يمكنك تعديل الكمية. اتركها فارغة لإدراج جميع البنود.</p>
+
+            <div class="table-responsive">
+                <table class="table erp-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px">
+                                <input type="checkbox" class="form-check-input" id="selectAll" checked>
+                            </th>
+                            <th>الوصف</th>
+                            <th class="text-center">الكمية الأصلية</th>
+                            <th class="text-center" style="width: 140px">الكمية الجديدة</th>
+                            <th class="text-start">سعر الوحدة</th>
+                            <th class="text-start">الضريبة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input line-checkbox" name="lines" value="{{ line.pk }}" checked>
+                            </td>
+                            <td>{{ line.description }}</td>
+                            <td class="text-center">{{ line.quantity|floatformat:2 }}</td>
+                            <td class="text-center">
+                                <input type="number" name="qty_{{ line.pk }}" class="form-control form-control-sm text-center"
+                                       value="{{ line.quantity|floatformat:2 }}" min="0.01" max="{{ line.quantity|floatformat:2 }}" step="0.01">
+                            </td>
+                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
+                            <td class="text-start">
+                                {% if line.tax_rate %}{{ line.tax_rate.rate }}%{% else %}-{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-{% if note_type == 'credit' %}success{% else %}warning{% endif %}">
+                    <i class="bi bi-check-lg ms-1"></i> إنشاء {{ note_type_ar }}
+                </button>
+                <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="btn btn-outline-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('selectAll').addEventListener('change', function() {
+        document.querySelectorAll('.line-checkbox').forEach(cb => cb.checked = this.checked);
+    });
+</script>
+{% endblock %}

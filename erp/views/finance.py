@@ -441,7 +441,11 @@ def account_delete(request, pk):
             messages.success(request, 'Account deleted successfully.')
         return redirect('erp:account_list')
 
-    return redirect('erp:account_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': account,
+        'object_type': 'حساب',
+        'cancel_url': reverse('erp:account_list'),
+    })
 
 
 # ── Tax Rates ───────────────────────────────────────────────────────────────
@@ -509,7 +513,11 @@ def tax_rate_delete(request, pk):
         messages.success(request, 'Tax rate deleted successfully.')
         return redirect('erp:tax_rate_list')
 
-    return redirect('erp:tax_rate_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': tax_rate,
+        'object_type': 'نسبة ضريبة',
+        'cancel_url': reverse('erp:tax_rate_list'),
+    })
 
 
 # ── Payment Methods ─────────────────────────────────────────────────────────
@@ -577,7 +585,11 @@ def payment_method_delete(request, pk):
         messages.success(request, 'Payment method deleted successfully.')
         return redirect('erp:payment_method_list')
 
-    return redirect('erp:payment_method_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': payment_method,
+        'object_type': 'طريقة دفع',
+        'cancel_url': reverse('erp:payment_method_list'),
+    })
 
 
 # ── Expense Categories ──────────────────────────────────────────────────────
@@ -645,7 +657,11 @@ def expense_category_delete(request, pk):
         messages.success(request, 'Expense category deleted successfully.')
         return redirect('erp:expense_category_list')
 
-    return redirect('erp:expense_category_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': expense_category,
+        'object_type': 'فئة مصروف',
+        'cancel_url': reverse('erp:expense_category_list'),
+    })
 
 
 # ── Currencies ──────────────────────────────────────────────────────────────
@@ -710,7 +726,11 @@ def currency_delete(request, pk):
         messages.success(request, 'Currency deleted successfully.')
         return redirect('erp:currency_list')
 
-    return redirect('erp:currency_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': currency,
+        'object_type': 'عملة',
+        'cancel_url': reverse('erp:currency_list'),
+    })
 
 
 # ── Fiscal Years ────────────────────────────────────────────────────────────
@@ -778,7 +798,11 @@ def fiscal_year_delete(request, pk):
         messages.success(request, 'Fiscal year deleted successfully.')
         return redirect('erp:fiscal_year_list')
 
-    return redirect('erp:fiscal_year_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': fiscal_year,
+        'object_type': 'سنة مالية',
+        'cancel_url': reverse('erp:fiscal_year_list'),
+    })
 
 
 # ── Financial Reports ───────────────────────────────────────────────────────

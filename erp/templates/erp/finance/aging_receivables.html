@@ -1,0 +1,172 @@
+{% extends 'erp/base.html' %}
+{% load humanize %}
+
+{% block title %}تقادم الذمم المدينة{% endblock %}
+{% block page_title %}تقادم الذمم المدينة{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:financial_reports' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> العودة إلى التقارير المالية
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي المستحقات</p>
+                <h4 class="text-warning mb-0">{{ grand_total|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">عدد الفواتير</p>
+                <h4 class="text-primary mb-0">{{ invoice_count }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">عدد العملاء</p>
+                <h4 class="text-info mb-0">{{ customer_summary|length }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aging Buckets -->
+<div class="erp-card mb-4">
+    <div class="erp-card-header">
+        <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>تحليل التقادم</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>الفترة</th>
+                    <th class="text-center">عدد الفواتير</th>
+                    <th class="text-end">المبلغ</th>
+                    <th>النسبة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, bucket in buckets.items %}
+                <tr>
+                    <td>
+                        <span class="badge 
+                            {% if key == 'current' %}bg-success
+                            {% elif key == '1_30' %}bg-info
+                            {% elif key == '31_60' %}bg-warning
+                            {% elif key == '61_90' %}bg-orange text-dark
+                            {% elif key == '91_120' %}bg-danger
+                            {% else %}bg-dark{% endif %}">
+                            {{ bucket.label }}
+                        </span>
+                    </td>
+                    <td class="text-center">{{ bucket.items|length }}</td>
+                    <td class="text-end fw-medium">{{ bucket.total|floatformat:2|intcomma }}</td>
+                    <td>
+                        {% if grand_total > 0 %}
+                        <div class="progress" style="height: 20px; min-width: 100px;">
+                            {% widthratio bucket.total grand_total 100 as pct %}
+                            <div class="progress-bar 
+                                {% if key == 'current' %}bg-success
+                                {% elif key == '1_30' %}bg-info
+                                {% elif key == '31_60' %}bg-warning
+                                {% elif key == '61_90' %}bg-warning
+                                {% elif key == '91_120' %}bg-danger
+                                {% else %}bg-dark{% endif %}" 
+                                style="width: {% widthratio bucket.total grand_total 100 %}%">
+                                {% widthratio bucket.total grand_total 100 %}%
+                            </div>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+                <tr class="fw-bold">
+                    <td>الإجمالي</td>
+                    <td class="text-center">{{ invoice_count }}</td>
+                    <td class="text-end">{{ grand_total|floatformat:2|intcomma }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Customer Summary -->
+{% if customer_summary %}
+<div class="erp-card mb-4">
+    <div class="erp-card-header">
+        <h6 class="mb-0"><i class="bi bi-people me-2"></i>ملخص حسب العميل</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>العميل</th>
+                    <th class="text-center">عدد الفواتير</th>
+                    <th class="text-end">المبلغ المستحق</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, data in customer_summary.items %}
+                <tr>
+                    <td class="fw-medium">{{ name }}</td>
+                    <td class="text-center">{{ data.count }}</td>
+                    <td class="text-end text-warning fw-bold">{{ data.total|floatformat:2|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Detail per Bucket -->
+{% for key, bucket in buckets.items %}
+{% if bucket.items %}
+<div class="erp-card mb-3">
+    <div class="erp-card-header">
+        <h6 class="mb-0">{{ bucket.label }} — {{ bucket.items|length }} فاتورة ({{ bucket.total|floatformat:2|intcomma }})</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>العميل</th>
+                    <th>تاريخ الاستحقاق</th>
+                    <th class="text-end">المبلغ الإجمالي</th>
+                    <th class="text-end">الرصيد المتبقي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in bucket.items %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:invoice_detail' inv.pk %}">{{ inv.invoice_number }}</a>
+                    </td>
+                    <td>{{ inv.customer.name }}</td>
+                    <td>{{ inv.due_date|date:"Y/m/d" }}</td>
+                    <td class="text-end">{{ inv.total_amount|floatformat:2|intcomma }}</td>
+                    <td class="text-end fw-bold text-warning">{{ inv.balance_due|floatformat:2|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'erp/base.html' %}
+{% load humanize %}
+
+{% block title %}ميزان المراجعة{% endblock %}
+{% block page_title %}ميزان المراجعة{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:financial_reports' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> العودة إلى التقارير المالية
+        </a>
+    </div>
+</div>
+
+<!-- Date Filter -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body py-3">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted">من تاريخ</label>
+                <input type="date" name="start" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted">إلى تاريخ</label>
+                <input type="date" name="end" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i> تصفية
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Balance Status -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي المدين</p>
+                <h4 class="text-primary mb-0">{{ total_debit|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي الدائن</p>
+                <h4 class="text-info mb-0">{{ total_credit|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">الحالة</p>
+                {% if is_balanced %}
+                <h4 class="text-success mb-0"><i class="bi bi-check-circle me-1"></i>متوازن</h4>
+                {% else %}
+                <h4 class="text-danger mb-0"><i class="bi bi-exclamation-triangle me-1"></i>غير متوازن</h4>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trial Balance Table -->
+<div class="erp-card">
+    <div class="erp-card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-table me-2"></i>ميزان المراجعة</h6>
+        <small class="text-muted">{{ start_date|date:"Y/m/d" }} — {{ end_date|date:"Y/m/d" }}</small>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>الرمز</th>
+                    <th>اسم الحساب</th>
+                    <th>النوع</th>
+                    <th class="text-end">مدين</th>
+                    <th class="text-end">دائن</th>
+                    <th class="text-end">الرصيد</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for acct in accounts %}
+                <tr>
+                    <td><code>{{ acct.code }}</code></td>
+                    <td>
+                        <a href="{% url 'erp:account_detail' acct.id %}" class="text-decoration-none">
+                            {{ acct.name }}
+                            {% if acct.name_ar %}<br><small class="text-muted">{{ acct.name_ar }}</small>{% endif %}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="badge 
+                            {% if acct.account_type == 'asset' %}bg-success
+                            {% elif acct.account_type == 'liability' %}bg-danger
+                            {% elif acct.account_type == 'equity' %}bg-info
+                            {% elif acct.account_type == 'income' %}bg-primary
+                            {% else %}bg-warning{% endif %} bg-opacity-75">
+                            {{ acct.account_type }}
+                        </span>
+                    </td>
+                    <td class="text-end">{{ acct.debit|floatformat:2|intcomma }}</td>
+                    <td class="text-end">{{ acct.credit|floatformat:2|intcomma }}</td>
+                    <td class="text-end fw-bold {% if acct.balance < 0 %}text-danger{% endif %}">
+                        {{ acct.balance|floatformat:2|intcomma }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="bi bi-journal-text fs-1 d-block mb-2"></i>
+                        لا توجد قيود مرحّلة في هذه الفترة
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if accounts %}
+            <tfoot class="table-light">
+                <tr class="fw-bold">
+                    <td colspan="3">الإجمالي</td>
+                    <td class="text-end">{{ total_debit|floatformat:2|intcomma }}</td>
+                    <td class="text-end">{{ total_credit|floatformat:2|intcomma }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+{% endblock %}

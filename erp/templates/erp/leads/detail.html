@@ -77,8 +77,8 @@
                 <a href="{% url 'erp:lead_edit' lead.pk %}" class="btn btn-primary">
                     <i class="bi bi-pencil ms-1"></i> تعديل العميل المحتمل
                 </a>
-                {% if lead.status not in 'won,lost' %}
-                <a href="{% url 'erp:customer_create' %}" class="btn btn-success">
+                {% if lead.status not in 'won,lost' and not lead.converted_customer %}
+                <a href="{% url 'erp:lead_convert_to_customer' lead.pk %}" class="btn btn-success">
                     <i class="bi bi-person-check ms-1"></i> تحويل إلى عميل
                 </a>
                 {% endif %}
@@ -98,10 +98,10 @@
                     <span class="text-muted">تاريخ الإنشاء:</span>
                     <span>{{ lead.created_at|date:"M d, Y" }}</span>
                 </div>
-                {% if lead.last_contacted %}
+                {% if lead.last_contact_date %}
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">آخر تواصل:</span>
-                    <span>{{ lead.last_contacted|date:"M d, Y" }}</span>
+                    <span>{{ lead.last_contact_date|date:"M d, Y" }}</span>
                 </div>
                 {% endif %}
                 {% if lead.next_follow_up %}
@@ -110,10 +110,10 @@
                     <span class="{% if lead.next_follow_up < today %}text-danger{% endif %}">{{ lead.next_follow_up|date:"M d, Y" }}</span>
                 </div>
                 {% endif %}
-                {% if lead.converted_at %}
+                {% if lead.conversion_date %}
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">تم التحويل:</span>
-                    <span class="text-success">{{ lead.converted_at|date:"M d, Y" }}</span>
+                    <span class="text-success">{{ lead.conversion_date|date:"M d, Y" }}</span>
                 </div>
                 {% endif %}
             </div>
@@ -163,7 +163,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <strong>{{ activity.get_activity_type_display }}</strong>
-                                <span class="badge bg-light text-dark ms-2">{{ activity.outcome|default:"" }}</span>
+                                <span class="badge bg-light text-dark ms-2">{{ activity.description|default:"" }}</span>
                             </div>
                             <small class="text-muted">{{ activity.activity_date|date:"M d, Y H:i" }}</small>
                         </div>

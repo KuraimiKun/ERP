@@ -18,7 +18,7 @@
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value text-primary">{{ company.currency.symbol|default:"$" }}{{ monthly_revenue|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-value text-primary">{{ company.base_currency.symbol|default:"$" }}{{ monthly_revenue|floatformat:0|default:"0"|intcomma }}</div>
                     <div class="stat-label">إيرادات الشهر</div>
                 </div>
                 <div class="stat-icon bg-primary bg-opacity-10 text-primary">
@@ -32,7 +32,7 @@
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value text-warning">{{ company.currency.symbol|default:"$" }}{{ outstanding_receivables|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-value text-warning">{{ company.base_currency.symbol|default:"$" }}{{ outstanding_receivables|floatformat:0|default:"0"|intcomma }}</div>
                     <div class="stat-label">مستحقات العملاء</div>
                 </div>
                 <div class="stat-icon bg-warning bg-opacity-10 text-warning">
@@ -98,7 +98,7 @@
                 <div>
                     <div class="stat-label">عروض الأسعار المعلقة</div>
                     <div class="stat-value fs-4">{{ pending_quotes }}</div>
-                    <small class="text-muted">القيمة: {{ company.currency.symbol|default:"$" }}{{ quotes_value|floatformat:0|default:"0"|intcomma }}</small>
+                    <small class="text-muted">القيمة: {{ company.base_currency.symbol|default:"$" }}{{ quotes_value|floatformat:0|default:"0"|intcomma }}</small>
                 </div>
                 <i class="bi bi-file-earmark-text text-primary fs-2"></i>
             </div>
@@ -208,7 +208,7 @@
                                     </a>
                                 </td>
                                 <td>{{ invoice.customer.name|truncatechars:20 }}</td>
-                                <td>{{ company.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                                <td>{{ company.base_currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
                                 <td>
                                     {% if invoice.status == 'paid' %}
                                     <span class="badge badge-status badge-paid">مدفوعة</span>
@@ -258,7 +258,7 @@
                             <tr>
                                 <td>
                                     <a href="{% url 'erp:lead_detail' lead.pk %}" class="text-decoration-none">
-                                        {{ lead.name }}
+                                        {{ lead.full_name }}
                                     </a>
                                 </td>
                                 <td>{{ lead.get_source_display }}</td>
@@ -275,7 +275,7 @@
                                     <span class="badge bg-secondary">{{ lead.get_status_display }}</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ company.currency.symbol|default:"$" }}{{ lead.estimated_value|floatformat:0|default:"0" }}</td>
+                                <td>{{ company.base_currency.symbol|default:"$" }}{{ lead.estimated_value|floatformat:0|default:"0" }}</td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -334,7 +334,7 @@
                                 {{ task.title }}
                             </a>
                             <br>
-                            <small class="text-muted">{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</small>
+                            <small class="text-muted">{{ task.assigned_to.full_name }}</small>
                         </div>
                         <div class="text-end">
                             {% if task.priority == 'high' %}
@@ -373,7 +373,7 @@
                         </div>
                         <div class="flex-grow-1 me-3">
                             <p class="mb-0 fw-bold">دفعة جديدة</p>
-                            <small class="text-muted">{{ company.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }} - {{ payment.payment_date|date:"Y/m/d" }}</small>
+                            <small class="text-muted">{{ company.base_currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }} - {{ payment.payment_date|date:"Y/m/d" }}</small>
                         </div>
                     </div>
                     {% empty %}

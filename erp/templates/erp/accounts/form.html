@@ -73,6 +73,21 @@
                             </div>
                         </div>
                         
+                        <div class="col-md-6">
+                            <label class="form-label">الرصيد الافتتاحي</label>
+                            {{ form.opening_balance }}
+                            {% if form.opening_balance.errors %}
+                            <div class="invalid-feedback d-block">{{ form.opening_balance.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            {% if account %}
+                            <label class="form-label">الرصيد الحالي</label>
+                            <input type="text" class="form-control" value="{{ account.current_balance }}" disabled>
+                            {% endif %}
+                        </div>
+                        
                         <div class="col-12">
                             <label class="form-label">الوصف</label>
                             {{ form.description }}

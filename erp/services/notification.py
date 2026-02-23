@@ -197,6 +197,8 @@ class NotificationService:
 # Convenience functions for common notification types
 def notify_task_assigned(task, assigned_by):
     """Notify user of task assignment."""
+    if not task.assigned_to or not task.assigned_to.user:
+        return None
     return NotificationService.create_notification(
         recipient=task.assigned_to.user,
         title=f'New Task Assigned: {task.title}',
@@ -213,7 +215,7 @@ def notify_leave_request(leave_request):
         return NotificationService.create_notification(
             recipient=leave_request.employee.reports_to.user,
             title=f'Leave Request: {leave_request.employee.full_name}',
-            message=f'{leave_request.employee.full_name} has requested {leave_request.days} days of {leave_request.leave_type.name}',
+            message=f'{leave_request.employee.full_name} has requested {leave_request.days_requested} days of {leave_request.leave_type.name}',
             notification_type=Notification.NotificationType.APPROVAL,
             related_object=leave_request,
             action_url=f'/erp/leave-requests/{leave_request.id}/'
@@ -222,6 +224,8 @@ def notify_leave_request(leave_request):
 
 def notify_expense_approval(expense):
     """Notify user of expense approval/rejection."""
+    if not expense.employee or not expense.employee.user:
+        return None
     return NotificationService.create_notification(
         recipient=expense.employee.user,
         title=f'Expense {expense.status.title()}: {expense.expense_number}',

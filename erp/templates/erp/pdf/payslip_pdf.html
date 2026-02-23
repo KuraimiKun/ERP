@@ -1,0 +1,79 @@
+{% extends "erp/pdf/base_pdf.html" %}
+{% load humanize %}
+{% block content %}
+<div class="header">
+    <table><tr>
+        <td style="width:60%">
+            <div class="company-name">{{ company.name }}</div>
+            {% if company.name_ar %}<div style="font-size:14px;color:#475569">{{ company.name_ar }}</div>{% endif %}
+            <div class="company-details">{{ company.address }}<br>{{ company.phone }} | {{ company.email }}</div>
+        </td>
+        <td style="width:40%;text-align:left">
+            <div style="font-size:16px;font-weight:bold;color:#0d6efd">كشف راتب</div>
+            <div class="company-details">
+                الفترة: {{ payroll.period_start|date:"Y/m/d" }} — {{ payroll.period_end|date:"Y/m/d" }}
+            </div>
+        </td>
+    </tr></table>
+</div>
+
+<table class="info-table"><tr>
+    <td style="width:50%">
+        <div class="info-label">الموظف</div>
+        <div class="info-value">{{ payroll.employee.first_name }} {{ payroll.employee.last_name }}</div>
+        <div class="company-details">
+            {% if payroll.employee.employee_id %}الرقم الوظيفي: {{ payroll.employee.employee_id }}<br>{% endif %}
+            {% if payroll.employee.department %}القسم: {{ payroll.employee.department.name }}<br>{% endif %}
+            {% if payroll.employee.job_title %}المسمى الوظيفي: {{ payroll.employee.job_title }}{% endif %}
+        </div>
+    </td>
+    <td style="width:50%;text-align:left">
+        <div class="info-label">الحالة</div>
+        <span class="badge badge-{{ payroll.status }}">{{ payroll.get_status_display }}</span>
+        {% if payroll.payment_date %}<br><div class="info-label" style="margin-top:5px">تاريخ الصرف</div><div class="info-value">{{ payroll.payment_date|date:"Y/m/d" }}</div>{% endif %}
+    </td>
+</tr></table>
+
+<table style="width:100%;margin-bottom:15px;">
+<tr>
+<td style="width:48%;vertical-align:top">
+<table class="items-table">
+    <thead><tr><th colspan="2" style="background:#dcfce7;color:#166534">المستحقات</th></tr></thead>
+    <tbody>
+    <tr><td>الراتب الأساسي</td><td class="text-left">{{ payroll.basic_salary|floatformat:2 }}</td></tr>
+    {% if payroll.housing_allowance %}<tr><td>بدل السكن</td><td class="text-left">{{ payroll.housing_allowance|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.transport_allowance %}<tr><td>بدل النقل</td><td class="text-left">{{ payroll.transport_allowance|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.other_allowances %}<tr><td>بدلات أخرى</td><td class="text-left">{{ payroll.other_allowances|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.overtime_amount %}<tr><td>العمل الإضافي</td><td class="text-left">{{ payroll.overtime_amount|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.bonus %}<tr><td>المكافآت</td><td class="text-left">{{ payroll.bonus|floatformat:2 }}</td></tr>{% endif %}
+    <tr style="font-weight:bold;background:#f0fdf4"><td>إجمالي المستحقات</td><td class="text-left">{{ payroll.gross_salary|floatformat:2 }}</td></tr>
+    </tbody>
+</table>
+</td>
+<td style="width:4%"></td>
+<td style="width:48%;vertical-align:top">
+<table class="items-table">
+    <thead><tr><th colspan="2" style="background:#fee2e2;color:#991b1b">الاستقطاعات</th></tr></thead>
+    <tbody>
+    {% if payroll.absence_deduction %}<tr><td>خصم الغياب</td><td class="text-left">{{ payroll.absence_deduction|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.late_deduction %}<tr><td>خصم التأخير</td><td class="text-left">{{ payroll.late_deduction|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.loan_deduction %}<tr><td>خصم القرض</td><td class="text-left">{{ payroll.loan_deduction|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.social_insurance %}<tr><td>التأمينات الاجتماعية</td><td class="text-left">{{ payroll.social_insurance|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.tax_deduction %}<tr><td>ضريبة الدخل</td><td class="text-left">{{ payroll.tax_deduction|floatformat:2 }}</td></tr>{% endif %}
+    {% if payroll.other_deductions %}<tr><td>استقطاعات أخرى</td><td class="text-left">{{ payroll.other_deductions|floatformat:2 }}</td></tr>{% endif %}
+    <tr style="font-weight:bold;background:#fef2f2"><td>إجمالي الاستقطاعات</td><td class="text-left">{{ payroll.total_deductions|floatformat:2 }}</td></tr>
+    </tbody>
+</table>
+</td>
+</tr>
+</table>
+
+<table style="width:50%;margin:0 auto;border:2px solid #0d6efd;border-radius:6px;text-align:center">
+<tr><td style="padding:10px;font-size:12px;color:#666">صافي الراتب</td></tr>
+<tr><td style="padding:5px 10px 15px;font-size:22px;font-weight:bold;color:#0d6efd">{{ payroll.currency.symbol|default:"$" }}{{ payroll.net_salary|floatformat:2 }}</td></tr>
+</table>
+
+{% if payroll.notes %}
+<div class="notes"><strong>ملاحظات:</strong><br>{{ payroll.notes|linebreaksbr }}</div>
+{% endif %}
+{% endblock %}

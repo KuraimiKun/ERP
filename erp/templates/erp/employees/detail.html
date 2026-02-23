@@ -140,18 +140,14 @@
                                     <td>{{ att.date|date:"M d, Y" }}</td>
                                     <td>{{ att.check_in|time:"H:i"|default:"-" }}</td>
                                     <td>{{ att.check_out|time:"H:i"|default:"-" }}</td>
-                                    <td>{{ att.total_hours|floatformat:1|default:"-" }} hrs</td>
+                                    <td>{{ att.hours_worked|floatformat:1|default:"-" }} hrs</td>
                                     <td>
-                                        {% if att.status == 'present' %}
+                                        {% if att.is_present and not att.is_late %}
                                         <span class="badge bg-success">حاضر</span>
-                                        {% elif att.status == 'absent' %}
-                                        <span class="badge bg-danger">غائب</span>
-                                        {% elif att.status == 'late' %}
+                                        {% elif att.is_present and att.is_late %}
                                         <span class="badge bg-warning">متأخر</span>
-                                        {% elif att.status == 'half_day' %}
-                                        <span class="badge bg-info">نصف يوم</span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">{{ att.get_status_display }}</span>
+                                        {% elif not att.is_present %}
+                                        <span class="badge bg-danger">غائب</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -190,7 +186,7 @@
                                     <td>{{ leave.leave_type.name }}</td>
                                     <td>{{ leave.start_date|date:"M d, Y" }}</td>
                                     <td>{{ leave.end_date|date:"M d, Y" }}</td>
-                                    <td>{{ leave.total_days }}</td>
+                                    <td>{{ leave.days_requested }}</td>
                                     <td>
                                         {% if leave.status == 'pending' %}
                                         <span class="badge bg-warning">قيد الانتظار</span>

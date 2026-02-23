@@ -1,0 +1,164 @@
+{% extends 'erp/base.html' %}
+
+{% block title %}سجل التدقيق{% endblock %}
+{% block page_title %}سجل التدقيق{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item active">سجل التدقيق</li>
+    </ol>
+</nav>
+
+<!-- Filters -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">المستخدم</label>
+                <select name="user" class="form-select form-select-sm">
+                    <option value="">الكل</option>
+                    {% for u in users %}
+                    <option value="{{ u.pk }}" {% if current_user_id == u.pk|stringformat:"d" %}selected{% endif %}>{{ u.get_full_name|default:u.email }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">الإجراء</label>
+                <select name="action" class="form-select form-select-sm">
+                    <option value="">الكل</option>
+                    {% for val, label in action_choices %}
+                    <option value="{{ val }}" {% if current_action == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ current_date_from }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ current_date_to }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">بحث</label>
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="بحث في الوصف..." value="{{ current_search }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-funnel ms-1"></i> تصفية
+                </button>
+                <a href="{% url 'erp:audit_log_list' %}" class="btn btn-sm btn-outline-secondary">مسح</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Log Table -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table">
+            <thead>
+                <tr>
+                    <th>التاريخ والوقت</th>
+                    <th>المستخدم</th>
+                    <th>الإجراء</th>
+                    <th>الكائن</th>
+                    <th>التفاصيل</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td class="text-nowrap small">{{ log.created_at|date:"Y/m/d H:i:s" }}</td>
+                    <td>{{ log.user.get_full_name|default:log.user.email|default:"—" }}</td>
+                    <td>
+                        {% if log.action == 'create' %}
+                        <span class="badge bg-success">إنشاء</span>
+                        {% elif log.action == 'update' %}
+                        <span class="badge bg-primary">تعديل</span>
+                        {% elif log.action == 'delete' %}
+                        <span class="badge bg-danger">حذف</span>
+                        {% elif log.action == 'approve' %}
+                        <span class="badge bg-info">اعتماد</span>
+                        {% elif log.action == 'reject' %}
+                        <span class="badge bg-warning">رفض</span>
+                        {% elif log.action == 'login' %}
+                        <span class="badge bg-secondary">دخول</span>
+                        {% elif log.action == 'logout' %}
+                        <span class="badge bg-secondary">خروج</span>
+                        {% elif log.action == 'export' %}
+                        <span class="badge bg-dark">تصدير</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark">{{ log.get_action_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="small">{{ log.object_repr|default:"—" }}</span>
+                        {% if log.content_type %}
+                        <br><small class="text-muted">{{ log.content_type }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.changes %}
+                        <button class="btn btn-sm btn-link p-0" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#changes-{{ log.pk }}">
+                            <i class="bi bi-eye"></i> عرض التغييرات
+                        </button>
+                        <div class="collapse mt-1" id="changes-{{ log.pk }}">
+                            <div class="bg-light rounded p-2 small" style="max-width:400px; overflow-x:auto;">
+                                {% for field, vals in log.changes.items %}
+                                <div class="mb-1">
+                                    <strong>{{ field }}:</strong>
+                                    {% if vals.old is not None %}
+                                    <span class="text-danger text-decoration-line-through">{{ vals.old }}</span> →
+                                    {% endif %}
+                                    <span class="text-success">{{ vals.new }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% elif log.notes %}
+                        <small class="text-muted">{{ log.notes|truncatewords:10 }}</small>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ log.ip_address|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                        لا توجد سجلات
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&user={{ current_user_id }}&action={{ current_action }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}&q={{ current_search }}">السابق</a></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.paginator.num_pages <= 10 or num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}&user={{ current_user_id }}&action={{ current_action }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}&q={{ current_search }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&user={{ current_user_id }}&action={{ current_action }}&date_from={{ current_date_from }}&date_to={{ current_date_to }}&q={{ current_search }}">التالي</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

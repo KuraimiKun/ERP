@@ -1,0 +1,80 @@
+{% extends "erp/pdf/base_pdf.html" %}
+{% block content %}
+<div class="header">
+    <table><tr>
+        <td style="width:60%">
+            <div class="company-name">{{ company.name }}</div>
+            {% if company.name_ar %}<div style="font-size:14px;color:#475569">{{ company.name_ar }}</div>{% endif %}
+            <div class="company-details">
+                {{ company.address }}<br>
+                {{ company.city }}{% if company.country %}, {{ company.country }}{% endif %}<br>
+                {{ company.phone }} | {{ company.email }}
+            </div>
+        </td>
+        <td style="width:40%;text-align:left">
+            <div style="font-size:16px;font-weight:bold;color:#0d6efd">عرض سعر</div>
+            <div style="font-size:14px;font-weight:bold">{{ quote.quote_number }}</div>
+            <div class="company-details">
+                التاريخ: {{ quote.quote_date|date:"Y/m/d" }}<br>
+                صالح حتى: {{ quote.valid_until|date:"Y/m/d" }}
+            </div>
+        </td>
+    </tr></table>
+</div>
+
+<table class="info-table"><tr>
+    <td style="width:50%">
+        <div class="info-label">عرض سعر إلى</div>
+        {% if quote.customer %}
+        <div class="info-value">{{ quote.customer.name }}</div>
+        <div class="company-details">{{ quote.customer.billing_address|default:"" }}<br>{{ quote.customer.email|default:"" }}</div>
+        {% elif quote.lead %}
+        <div class="info-value">{{ quote.lead.first_name }} {{ quote.lead.last_name }}</div>
+        <div class="company-details">{{ quote.lead.company_name|default:"" }}<br>{{ quote.lead.email|default:"" }}</div>
+        {% endif %}
+    </td>
+    <td style="width:50%;text-align:left">
+        {% if quote.reference %}<div class="info-label">المرجع</div><div class="info-value">{{ quote.reference }}</div>{% endif %}
+        {% if quote.prepared_by %}<div class="info-label">أعد بواسطة</div><div class="info-value">{{ quote.prepared_by.first_name }} {{ quote.prepared_by.last_name }}</div>{% endif %}
+    </td>
+</tr></table>
+
+<table class="items-table">
+    <thead><tr>
+        <th style="width:5%">#</th>
+        <th style="width:40%">الوصف</th>
+        <th style="width:10%">الكمية</th>
+        <th style="width:15%" class="text-left">سعر الوحدة</th>
+        <th style="width:15%" class="text-left">الضريبة</th>
+        <th style="width:15%" class="text-left">الإجمالي</th>
+    </tr></thead>
+    <tbody>
+    {% for line in lines %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ line.description }}</td>
+        <td>{{ line.quantity|floatformat:2 }}</td>
+        <td class="text-left">${{ line.unit_price|floatformat:2 }}</td>
+        <td class="text-left">${{ line.tax_amount|floatformat:2 }}</td>
+        <td class="text-left">${{ line.line_total|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<table class="totals-table">
+    <tr><td>المجموع الفرعي:</td><td class="text-left">${{ quote.subtotal|floatformat:2 }}</td></tr>
+    {% if quote.discount_amount > 0 %}
+    <tr><td>الخصم:</td><td class="text-left" style="color:#dc3545">-${{ quote.discount_amount|floatformat:2 }}</td></tr>
+    {% endif %}
+    <tr><td>الضريبة:</td><td class="text-left">${{ quote.tax_amount|floatformat:2 }}</td></tr>
+    <tr class="total-row"><td>الإجمالي:</td><td class="text-left">${{ quote.total_amount|floatformat:2 }}</td></tr>
+</table>
+
+{% if quote.notes %}
+<div class="notes"><strong>ملاحظات:</strong><br>{{ quote.notes|linebreaksbr }}</div>
+{% endif %}
+{% if quote.terms %}
+<div class="notes"><strong>الشروط والأحكام:</strong><br>{{ quote.terms|linebreaksbr }}</div>
+{% endif %}
+{% endblock %}

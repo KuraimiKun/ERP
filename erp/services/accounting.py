@@ -41,6 +41,14 @@ from tenants.routers import get_current_db_alias
 from erp.models import JournalEntry, JournalEntryLine, Account, FiscalYear
 
 
+def _update_account_balances(journal_entry, db_alias):
+    """Update current_balance on all accounts affected by a posted journal entry."""
+    for line in journal_entry.lines.using(db_alias).select_related('account').all():
+        account = line.account
+        account.update_balance(line.debit_amount, line.credit_amount)
+        account.save(using=db_alias, update_fields=['current_balance'])
+
+
 def _get_or_create_account(company, code, name, name_ar, account_type, db_alias):
     """Get an account by code, or create it as a system account."""
     try:
@@ -157,6 +165,9 @@ def create_invoice_journal_entry(invoice, user):
         journal_entry.calculate_totals()
         journal_entry.save(update_fields=['total_debit', 'total_credit'])
 
+        # Update account balances
+        _update_account_balances(journal_entry, db_alias)
+
     return journal_entry
 
 
@@ -227,6 +238,9 @@ def create_payment_journal_entry(payment, user):
 
         journal_entry.calculate_totals()
         journal_entry.save(update_fields=['total_debit', 'total_credit'])
+
+        # Update account balances
+        _update_account_balances(journal_entry, db_alias)
 
     return journal_entry
 
@@ -321,6 +335,9 @@ def create_expense_journal_entry(expense, user):
         journal_entry.calculate_totals()
         journal_entry.save(update_fields=['total_debit', 'total_credit'])
 
+        # Update account balances
+        _update_account_balances(journal_entry, db_alias)
+
     return journal_entry
 
 
@@ -407,6 +424,9 @@ def create_supplier_invoice_journal_entry(supplier_invoice, user):
         journal_entry.calculate_totals()
         journal_entry.save(update_fields=['total_debit', 'total_credit'])
 
+        # Update account balances
+        _update_account_balances(journal_entry, db_alias)
+
     return journal_entry
 
 
@@ -477,6 +497,9 @@ def create_supplier_payment_journal_entry(supplier_payment, user):
         journal_entry.calculate_totals()
         journal_entry.save(update_fields=['total_debit', 'total_credit'])
 
+        # Update account balances
+        _update_account_balances(journal_entry, db_alias)
+
     return journal_entry
 
 
@@ -542,5 +565,8 @@ def create_purchase_order_journal_entry(purchase_order, user):
 
         journal_entry.calculate_totals()
         journal_entry.save(update_fields=['total_debit', 'total_credit'])
+
+        # Update account balances
+        _update_account_balances(journal_entry, db_alias)
 
     return journal_entry

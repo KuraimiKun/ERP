@@ -321,13 +321,41 @@
                 <i class="bi bi-journal-bookmark"></i>
                 القيود اليومية
             </a>
-            <a href="{% url 'erp:account_list' %}" class="erp-nav-link {% if 'account' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'erp:account_list' %}" class="erp-nav-link {% if 'account_list' in request.resolver_match.url_name or 'account_create' in request.resolver_match.url_name or 'account_edit' in request.resolver_match.url_name or 'account_delete' in request.resolver_match.url_name or 'account_detail' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-journal-text"></i>
                 دليل الحسابات
             </a>
-            <a href="{% url 'erp:financial_reports' %}" class="erp-nav-link {% if 'financial_reports' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'erp:financial_reports' %}" class="erp-nav-link {% if 'financial_reports' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-graph-up"></i>
                 التقارير المالية
+            </a>
+            <a href="{% url 'erp:trial_balance' %}" class="erp-nav-link {% if 'trial_balance' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-balance-scale"></i>
+                ميزان المراجعة
+            </a>
+            <a href="{% url 'erp:profit_and_loss' %}" class="erp-nav-link {% if 'profit_and_loss' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-bar-chart-line"></i>
+                الأرباح والخسائر
+            </a>
+            <a href="{% url 'erp:balance_sheet' %}" class="erp-nav-link {% if 'balance_sheet' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                الميزانية العمومية
+            </a>
+            <a href="{% url 'erp:cash_flow' %}" class="erp-nav-link {% if 'cash_flow' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-currency-exchange"></i>
+                التدفقات النقدية
+            </a>
+            <a href="{% url 'erp:aging_receivables' %}" class="erp-nav-link {% if 'aging_receivables' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clock-history"></i>
+                تقادم الذمم المدينة
+            </a>
+            <a href="{% url 'erp:aging_payables' %}" class="erp-nav-link {% if 'aging_payables' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-hourglass-split"></i>
+                تقادم الذمم الدائنة
+            </a>
+            <a href="{% url 'erp:tax_report' %}" class="erp-nav-link {% if 'tax_report' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-file-earmark-ruled"></i>
+                تقرير الضريبة
             </a>
             
             <div class="erp-nav-section mt-3">المشتريات</div>
@@ -389,6 +417,10 @@
                 <i class="bi bi-calendar-x"></i>
                 طلبات الإجازة
             </a>
+            <a href="{% url 'erp:payroll_list' %}" class="erp-nav-link {% if 'payroll' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-cash-coin"></i>
+                الرواتب
+            </a>
             
             <div class="erp-nav-section mt-3">الإعدادات</div>
             <a href="{% url 'erp:tax_rate_list' %}" class="erp-nav-link {% if 'tax_rate' in request.resolver_match.url_name %}active{% endif %}">
@@ -413,6 +445,14 @@
             </a>
             
             <div class="erp-nav-section mt-3">الإدارة</div>
+            <a href="{% url 'erp:notification_list' %}" class="erp-nav-link {% if 'notification' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-bell"></i>
+                الإشعارات
+            </a>
+            <a href="{% url 'erp:audit_log_list' %}" class="erp-nav-link {% if 'audit_log' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clock-history"></i>
+                سجل التدقيق
+            </a>
             <a href="{% url 'admin:index' %}" class="erp-nav-link">
                 <i class="bi bi-gear"></i>
                 لوحة الإدارة
@@ -450,6 +490,26 @@
                         <li><a class="dropdown-item" href="{% url 'erp:product_create' %}"><i class="bi bi-box-seam ms-2"></i>منتج جديد</a></li>
                         <li><a class="dropdown-item" href="{% url 'erp:service_create' %}"><i class="bi bi-gear-wide-connected ms-2"></i>خدمة جديدة</a></li>
                     </ul>
+                </div>
+
+                <!-- Notification Bell -->
+                <div class="dropdown">
+                    <button class="btn btn-link p-0 position-relative" data-bs-toggle="dropdown" id="notifBell">
+                        <i class="bi bi-bell fs-5 text-secondary"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notifCount" style="font-size:.65rem"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-start shadow" style="width:360px; max-height:420px; overflow-y:auto;" id="notifDropdown">
+                        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                            <h6 class="mb-0">الإشعارات</h6>
+                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn">تعليم الكل كمقروء</button>
+                        </div>
+                        <div id="notifList" class="py-1">
+                            <div class="text-center text-muted py-3"><small>جاري التحميل...</small></div>
+                        </div>
+                        <div class="border-top text-center py-2">
+                            <a href="{% url 'erp:notification_list' %}" class="text-decoration-none small">عرض كل الإشعارات</a>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="dropdown">
@@ -501,6 +561,54 @@
                 !sidebar.contains(e.target) && !toggle.contains(e.target)) {
                 sidebar.classList.remove('show');
             }
+        });
+
+        // Notification bell – load dropdown
+        function loadNotifications() {
+            fetch('{% url "erp:notification_dropdown" %}')
+                .then(r => r.json())
+                .then(data => {
+                    const badge = document.getElementById('notifCount');
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+                    const list = document.getElementById('notifList');
+                    if (!data.items.length) {
+                        list.innerHTML = '<div class="text-center text-muted py-3"><i class="bi bi-bell-slash d-block fs-4 mb-1"></i><small>لا توجد إشعارات</small></div>';
+                        return;
+                    }
+                    list.innerHTML = data.items.map(n => {
+                        const icon = n.type === 'success' ? 'check-circle-fill text-success'
+                            : n.type === 'warning' ? 'exclamation-triangle-fill text-warning'
+                            : n.type === 'error' ? 'x-circle-fill text-danger'
+                            : 'info-circle-fill text-primary';
+                        const bg = n.is_read ? '' : 'bg-light';
+                        const fw = n.is_read ? '' : 'fw-bold';
+                        const url = n.action_url || '#';
+                        return `<a href="${url}" class="dropdown-item d-flex gap-2 align-items-start py-2 ${bg} border-bottom">
+                            <i class="bi bi-${icon} mt-1"></i>
+                            <div class="text-wrap" style="min-width:0">
+                                <div class="${fw} small">${n.title}</div>
+                                <div class="text-muted" style="font-size:.75rem">${n.message}</div>
+                                <div class="text-muted" style="font-size:.7rem">${n.created_at}</div>
+                            </div>
+                        </a>`;
+                    }).join('');
+                }).catch(() => {});
+        }
+        document.getElementById('notifBell')?.addEventListener('click', loadNotifications);
+        // Initial load
+        loadNotifications();
+
+        // Mark all as read
+        document.getElementById('markAllReadBtn')?.addEventListener('click', function() {
+            fetch('{% url "erp:notification_mark_all_read" %}', {
+                method:'POST',
+                headers:{'X-CSRFToken':'{{ csrf_token }}','X-Requested-With':'XMLHttpRequest'}
+            }).then(() => loadNotifications());
         });
     </script>
     

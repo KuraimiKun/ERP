@@ -1,0 +1,196 @@
+{% extends 'erp/base.html' %}
+{% load humanize %}
+
+{% block title %}الميزانية العمومية{% endblock %}
+{% block page_title %}الميزانية العمومية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:financial_reports' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> العودة إلى التقارير المالية
+        </a>
+    </div>
+    <span class="badge bg-primary fs-6">كما في {{ as_of_date|date:"Y/m/d" }}</span>
+</div>
+
+<!-- Balance Check -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي الأصول</p>
+                <h4 class="text-primary mb-0">{{ total_assets|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">إجمالي الالتزامات</p>
+                <h4 class="text-danger mb-0">{{ total_liabilities|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">حقوق الملكية</p>
+                <h4 class="text-info mb-0">{{ total_equity|floatformat:2|intcomma }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <p class="text-muted small mb-1">التوازن</p>
+                {% if balance_check == 0 %}
+                <h4 class="text-success mb-0"><i class="bi bi-check-circle me-1"></i>متوازن</h4>
+                {% else %}
+                <h4 class="text-danger mb-0"><i class="bi bi-exclamation-triangle me-1"></i>فرق: {{ balance_check|floatformat:2|intcomma }}</h4>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Assets -->
+    <div class="col-lg-6">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-building text-primary me-2"></i>الأصول</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>الرمز</th>
+                            <th>الحساب</th>
+                            <th class="text-end">الرصيد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acct in asset_accounts %}
+                        <tr>
+                            <td><code>{{ acct.code }}</code></td>
+                            <td>
+                                <a href="{% url 'erp:account_detail' acct.id %}" class="text-decoration-none">{{ acct.name }}</a>
+                            </td>
+                            <td class="text-end">{{ acct.balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">لا توجد أصول</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if asset_accounts %}
+                    <tfoot class="table-light">
+                        <tr class="fw-bold">
+                            <td colspan="2">إجمالي الأصول</td>
+                            <td class="text-end">{{ total_assets|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liabilities & Equity -->
+    <div class="col-lg-6">
+        <!-- Liabilities -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-credit-card text-danger me-2"></i>الالتزامات</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>الرمز</th>
+                            <th>الحساب</th>
+                            <th class="text-end">الرصيد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acct in liability_accounts %}
+                        <tr>
+                            <td><code>{{ acct.code }}</code></td>
+                            <td>
+                                <a href="{% url 'erp:account_detail' acct.id %}" class="text-decoration-none">{{ acct.name }}</a>
+                            </td>
+                            <td class="text-end">{{ acct.balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">لا توجد التزامات</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if liability_accounts %}
+                    <tfoot class="table-light">
+                        <tr class="fw-bold">
+                            <td colspan="2">إجمالي الالتزامات</td>
+                            <td class="text-end">{{ total_liabilities|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Equity -->
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-bank text-info me-2"></i>حقوق الملكية</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>الرمز</th>
+                            <th>الحساب</th>
+                            <th class="text-end">الرصيد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acct in equity_accounts %}
+                        <tr>
+                            <td><code>{{ acct.code }}</code></td>
+                            <td>
+                                <a href="{% url 'erp:account_detail' acct.id %}" class="text-decoration-none">{{ acct.name }}</a>
+                            </td>
+                            <td class="text-end">{{ acct.balance|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="table-light">
+                            <td></td>
+                            <td><em>الأرباح المحتجزة</em></td>
+                            <td class="text-end {% if retained_earnings >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ retained_earnings|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr class="fw-bold">
+                            <td colspan="2">إجمالي حقوق الملكية</td>
+                            <td class="text-end">{{ total_equity|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Equation -->
+<div class="erp-card mt-4">
+    <div class="erp-card-body text-center">
+        <h5 class="mb-0">
+            <span class="text-primary">الأصول ({{ total_assets|floatformat:2|intcomma }})</span>
+            <span class="mx-2">=</span>
+            <span class="text-danger">الالتزامات ({{ total_liabilities|floatformat:2|intcomma }})</span>
+            <span class="mx-2">+</span>
+            <span class="text-info">حقوق الملكية ({{ total_equity|floatformat:2|intcomma }})</span>
+        </h5>
+    </div>
+</div>
+{% endblock %}

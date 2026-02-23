@@ -56,12 +56,12 @@
                 <tr>
                     <td>
                         <a href="{% url 'erp:purchase_order_detail' order.pk %}" class="fw-medium text-decoration-none">
-                            {{ order.order_number|default:order.pk }}
+                            {{ order.po_number|default:order.pk }}
                         </a>
                     </td>
                     <td>{{ order.supplier.name|default:"-" }}</td>
-                    <td>{{ order.order_date|date:"Y/m/d" }}</td>
-                    <td>{{ order.expected_delivery_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>{{ order.po_date|date:"Y/m/d" }}</td>
+                    <td>{{ order.expected_date|date:"Y/m/d"|default:"-" }}</td>
                     <td>
                         <span class="badge badge-status 
                             {% if order.status == 'draft' %}badge-draft

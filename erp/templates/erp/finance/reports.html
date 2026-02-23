@@ -138,7 +138,7 @@
                                         {{ account.get_account_type_display }}
                                     </span>
                                 </td>
-                                <td class="text-end">${{ account.balance|floatformat:2|intcomma }}</td>
+                                <td class="text-end">${{ account.current_balance|floatformat:2|intcomma }}</td>
                             </tr>
                             {% empty %}
                             <tr>

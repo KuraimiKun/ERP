@@ -36,6 +36,7 @@ from .hr import (
     department_list, department_create, department_edit, department_delete,
     attendance_list, attendance_create, attendance_edit,
     leave_request_list, leave_request_create, leave_request_detail, leave_request_approve,
+    payroll_list, payroll_create, payroll_detail, payroll_approve, payroll_delete,
 )
 
 # ── CRM ─────────────────────────────────────────────────────────────────────
@@ -78,3 +79,36 @@ from .journal import (
 
 # ── AJAX ────────────────────────────────────────────────────────────────────
 from .ajax import ajax_item_price
+
+# ── Reports ─────────────────────────────────────────────────────────────────
+from .reports import (
+    trial_balance, profit_and_loss, balance_sheet, cash_flow,
+    aging_receivables, aging_payables, account_detail,
+)
+
+# ── PDF ─────────────────────────────────────────────────────────────────────
+from .pdf import (
+    invoice_pdf, quote_pdf, purchase_order_pdf, payslip_pdf,
+)
+
+# ── Conversions ─────────────────────────────────────────────────────────────
+from .conversions import (
+    quote_convert_to_invoice, lead_convert_to_customer,
+)
+
+# ── Credit/Debit Notes ─────────────────────────────────────────────────────
+from .credit_debit import (
+    credit_note_create, debit_note_create,
+)
+
+# ── Tax Report ──────────────────────────────────────────────────────────────
+from .tax_report import tax_report
+
+# ── Notifications ───────────────────────────────────────────────────────────
+from .notifications import (
+    notification_list, notification_dropdown,
+    notification_mark_read, notification_mark_all_read,
+)
+
+# ── Audit Log ───────────────────────────────────────────────────────────────
+from .audit_log import audit_log_list

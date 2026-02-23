@@ -54,6 +54,10 @@ class Account(ERPBaseModel):
     is_system = models.BooleanField(default=False, help_text='System accounts cannot be deleted')
     
     # Balance tracking
+    opening_balance = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0,
+        help_text='الرصيد الافتتاحي للحساب'
+    )
     current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     class Meta:
@@ -64,6 +68,37 @@ class Account(ERPBaseModel):
 
     def __str__(self):
         return f"{self.code} - {self.name}"
+
+    @property
+    def is_debit_normal(self):
+        """Returns True if this account has a debit-normal balance."""
+        return self.account_type in ('asset', 'expense')
+
+    def update_balance(self, debit_amount, credit_amount):
+        """Update current_balance by the given debit/credit amounts.
+        Respects normal balance direction: debit-normal for assets/expenses,
+        credit-normal for liabilities/equity/income."""
+        if self.is_debit_normal:
+            self.current_balance += debit_amount - credit_amount
+        else:
+            self.current_balance += credit_amount - debit_amount
+
+    def recalculate_balance(self, db_alias=None):
+        """Recompute current_balance from opening_balance + all posted journal lines."""
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        qs = self.journal_lines.filter(journal_entry__status='posted')
+        if db_alias:
+            qs = qs.using(db_alias)
+        totals = qs.aggregate(
+            total_debit=Coalesce(Sum('debit_amount'), Decimal('0')),
+            total_credit=Coalesce(Sum('credit_amount'), Decimal('0')),
+        )
+        if self.is_debit_normal:
+            self.current_balance = self.opening_balance + totals['total_debit'] - totals['total_credit']
+        else:
+            self.current_balance = self.opening_balance + totals['total_credit'] - totals['total_debit']
+        return self.current_balance
 
 
 class TaxRate(TimeStampedModel):
@@ -691,23 +726,22 @@ class JournalEntry(ERPBaseModel):
     def post(self, user):
         """Post the journal entry and update account balances."""
         from django.utils import timezone
+        from django.db import transaction
         if self.status != self.Status.DRAFT:
             raise ValueError('يمكن ترحيل المسودات فقط')
         if not self.is_balanced:
             raise ValueError('القيد غير متوازن - المدين لا يساوي الدائن')
         
-        # Update account balances
-        for line in self.lines.all():
-            if line.debit_amount > 0:
-                line.account.current_balance += line.debit_amount
-            if line.credit_amount > 0:
-                line.account.current_balance -= line.credit_amount
-            line.account.save()
-        
-        self.status = self.Status.POSTED
-        self.posted_by = user
-        self.posted_at = timezone.now()
-        self.save()
+        with transaction.atomic():
+            # Update account balances (respects normal balance direction)
+            for line in self.lines.select_related('account').all():
+                line.account.update_balance(line.debit_amount, line.credit_amount)
+                line.account.save(update_fields=['current_balance'])
+            
+            self.status = self.Status.POSTED
+            self.posted_by = user
+            self.posted_at = timezone.now()
+            self.save()
 
 
 class JournalEntryLine(TimeStampedModel):
