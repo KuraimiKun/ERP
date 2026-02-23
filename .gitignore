@@ -115,3 +115,6 @@ staticfiles/
 media/
 logs/
 *.sqlite3
+
+# Deployment secrets (never commit real credentials)
+deploy/.env.production
