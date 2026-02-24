@@ -33,4 +33,7 @@ xhtml2pdf>=0.2.11
 # Development tools
 django-debug-toolbar>=4.2.0
 
+# Test data generation
+factory-boy>=3.3.0
+
 

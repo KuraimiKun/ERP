@@ -1,13 +1,18 @@
 """
 ERP Forms - HR
 
-Forms for Employee, LeaveRequest, Attendance.
+Forms for Employee, LeaveRequest, Attendance, Payroll with
+editable Earnings/Deductions line items.
 """
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.forms import inlineformset_factory
 
-from erp.models import Employee, LeaveRequest, Attendance, Payroll
+from erp.models import (
+    Employee, LeaveRequest, Attendance,
+    Payroll, PayrollEarning, PayrollDeduction,
+)
 from .mixins import BootstrapFormMixin, CompanyFilterMixin
 
 User = get_user_model()
@@ -86,17 +91,12 @@ class AttendanceForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
 
 
 class PayrollForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
-    """Form for Payroll model."""
+    """Form for Payroll header (employee, period, currency, notes)."""
 
     class Meta:
         model = Payroll
         fields = [
-            'employee', 'period_start', 'period_end', 'currency',
-            'basic_salary', 'housing_allowance', 'transport_allowance',
-            'other_allowances', 'overtime_amount', 'bonus',
-            'absence_deduction', 'late_deduction', 'loan_deduction',
-            'social_insurance', 'tax_deduction', 'other_deductions',
-            'notes',
+            'employee', 'period_start', 'period_end', 'currency', 'notes',
         ]
         widgets = {
             'period_start': forms.DateInput(attrs={'type': 'date'}),
@@ -110,15 +110,67 @@ class PayrollForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
             self.fields['employee'].queryset = Employee.objects.filter(
                 company=self.company, employment_status='active',
             ).order_by('first_name')
-        # Pre-fill basic salary from employee
+        # Pre-fill currency from employee
         if not self.instance.pk:
             employee_id = self.data.get('employee') or self.initial.get('employee')
             if employee_id:
                 try:
                     emp = Employee.objects.get(pk=employee_id)
-                    if not self.data.get('basic_salary'):
-                        self.initial['basic_salary'] = emp.basic_salary
                     if not self.data.get('currency'):
                         self.initial['currency'] = emp.currency_id
                 except Employee.DoesNotExist:
                     pass
+
+
+# ── Earning line form ───────────────────────────────────────────
+
+class PayrollEarningForm(BootstrapFormMixin, forms.ModelForm):
+    """Form for a single earnings line item."""
+
+    class Meta:
+        model = PayrollEarning
+        fields = ['earning_type', 'description', 'amount']
+        widgets = {
+            'description': forms.TextInput(attrs={'placeholder': 'Description (optional)'}),
+            'amount': forms.NumberInput(attrs={
+                'step': '0.01', 'min': '0', 'class': 'text-end earning-amount',
+            }),
+        }
+
+
+PayrollEarningFormSet = inlineformset_factory(
+    Payroll,
+    PayrollEarning,
+    form=PayrollEarningForm,
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+)
+
+
+# ── Deduction line form ────────────────────────────────────────
+
+class PayrollDeductionForm(BootstrapFormMixin, forms.ModelForm):
+    """Form for a single deductions line item."""
+
+    class Meta:
+        model = PayrollDeduction
+        fields = ['deduction_type', 'description', 'amount']
+        widgets = {
+            'description': forms.TextInput(attrs={'placeholder': 'Description (optional)'}),
+            'amount': forms.NumberInput(attrs={
+                'step': '0.01', 'min': '0', 'class': 'text-end deduction-amount',
+            }),
+        }
+
+
+PayrollDeductionFormSet = inlineformset_factory(
+    Payroll,
+    PayrollDeduction,
+    form=PayrollDeductionForm,
+    extra=0,
+    can_delete=True,
+    min_num=0,
+    validate_min=False,
+)

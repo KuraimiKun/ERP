@@ -1,16 +1,24 @@
 """
-ERP Views – HR
+ERP Views -- HR
 
-Employees, Departments, Attendance, Leave Requests.
+Employees, Departments, Attendance, Leave Requests, Payroll.
 """
 
 from datetime import date
+from decimal import Decimal
 
-from django.db.models import Q
+from django.db import transaction
+from django.db.models import Q, Sum, Count
 from django.utils import timezone
 
-from erp.models import Employee, Department, Attendance, LeaveRequest, Payroll
-from erp.forms import EmployeeForm, LeaveRequestForm, AttendanceForm, DepartmentForm, PayrollForm
+from erp.models import (
+    Employee, Department, Attendance, LeaveRequest,
+    Payroll, PayrollEarning, PayrollDeduction,
+)
+from erp.forms import (
+    EmployeeForm, LeaveRequestForm, AttendanceForm, DepartmentForm,
+    PayrollForm, PayrollEarningFormSet, PayrollDeductionFormSet,
+)
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
     get_user_company, staff_member_required,
@@ -353,7 +361,7 @@ def payroll_list(request):
     company = get_user_company(request.user)
     payrolls = Payroll.objects.filter(
         employee__company=company,
-    ).select_related('employee', 'currency').order_by('-period_start')
+    ).select_related('employee', 'currency', 'journal_entry').order_by('-period_start')
 
     status = request.GET.get('status')
     if status:
@@ -361,14 +369,12 @@ def payroll_list(request):
 
     search = request.GET.get('search')
     if search:
-        from django.db.models import Q
         payrolls = payrolls.filter(
             Q(employee__first_name__icontains=search) |
             Q(employee__last_name__icontains=search) |
             Q(employee__employee_id__icontains=search)
         )
 
-    from django.db.models import Sum, Count
     stats = payrolls.aggregate(
         total_count=Count('id'),
         total_net=Sum('net_salary'),
@@ -385,36 +391,144 @@ def payroll_list(request):
 
 @staff_member_required
 def payroll_create(request):
+    """Create payroll with inline earnings and deductions."""
     company = get_user_company(request.user)
 
     if request.method == 'POST':
         form = PayrollForm(request.POST, company=company)
-        if form.is_valid():
-            payroll = form.save(commit=False)
-            payroll.calculate_totals()
-            payroll.save()
-            messages.success(request, f'تم إنشاء كشف الراتب بنجاح.')
+        earning_formset = PayrollEarningFormSet(request.POST, prefix='earnings')
+        deduction_formset = PayrollDeductionFormSet(request.POST, prefix='deductions')
+
+        if form.is_valid() and earning_formset.is_valid() and deduction_formset.is_valid():
+            with transaction.atomic():
+                payroll = form.save(commit=False)
+                # Set basic_salary from employee for the default earning line
+                payroll.save()
+
+                earning_formset.instance = payroll
+                earning_formset.save()
+
+                deduction_formset.instance = payroll
+                deduction_formset.save()
+
+                payroll.calculate_totals()
+                payroll.save()
+
+            messages.success(request, 'Payroll created successfully.')
             return redirect('erp:payroll_detail', pk=payroll.pk)
     else:
-        form = PayrollForm(company=company)
+        initial_data = {}
         employee_id = request.GET.get('employee')
         if employee_id:
-            form = PayrollForm(company=company, initial={'employee': employee_id})
+            initial_data['employee'] = employee_id
+
+        form = PayrollForm(company=company, initial=initial_data)
+
+        # Pre-populate basic salary earning line from employee
+        earning_initial = []
+        if employee_id:
+            try:
+                emp = Employee.objects.get(pk=employee_id, company=company)
+                earning_initial.append({
+                    'earning_type': 'basic_salary',
+                    'description': '',
+                    'amount': emp.basic_salary,
+                })
+            except Employee.DoesNotExist:
+                pass
+
+        if not earning_initial:
+            earning_initial.append({
+                'earning_type': 'basic_salary',
+                'description': '',
+                'amount': Decimal('0'),
+            })
+
+        EarningFS = PayrollEarningFormSet
+        earning_formset = EarningFS(
+            prefix='earnings',
+            initial=earning_initial,
+            queryset=PayrollEarning.objects.none(),
+        )
+        deduction_formset = PayrollDeductionFormSet(
+            prefix='deductions',
+            queryset=PayrollDeduction.objects.none(),
+        )
 
     return render(request, 'erp/payroll/form.html', {
         'form': form,
-        'title': 'إنشاء كشف راتب',
-        'submit_text': 'حفظ',
+        'earning_formset': earning_formset,
+        'deduction_formset': deduction_formset,
+        'title': 'Create Payroll',
+        'submit_text': 'Save Payroll',
+        'earning_types': PayrollEarning.EarningType.choices,
+        'deduction_types': PayrollDeduction.DeductionType.choices,
+    })
+
+
+@staff_member_required
+def payroll_edit(request, pk):
+    """Edit payroll with inline earnings and deductions."""
+    company = get_user_company(request.user)
+    payroll = get_object_or_404(Payroll, pk=pk, employee__company=company)
+
+    if payroll.status in ('approved', 'paid'):
+        messages.error(request, 'Cannot edit an approved or paid payroll.')
+        return redirect('erp:payroll_detail', pk=pk)
+
+    if request.method == 'POST':
+        form = PayrollForm(request.POST, instance=payroll, company=company)
+        earning_formset = PayrollEarningFormSet(
+            request.POST, instance=payroll, prefix='earnings',
+        )
+        deduction_formset = PayrollDeductionFormSet(
+            request.POST, instance=payroll, prefix='deductions',
+        )
+
+        if form.is_valid() and earning_formset.is_valid() and deduction_formset.is_valid():
+            with transaction.atomic():
+                payroll = form.save()
+                earning_formset.save()
+                deduction_formset.save()
+                payroll.calculate_totals()
+                payroll.save()
+
+            messages.success(request, 'Payroll updated successfully.')
+            return redirect('erp:payroll_detail', pk=payroll.pk)
+    else:
+        form = PayrollForm(instance=payroll, company=company)
+        earning_formset = PayrollEarningFormSet(
+            instance=payroll, prefix='earnings',
+        )
+        deduction_formset = PayrollDeductionFormSet(
+            instance=payroll, prefix='deductions',
+        )
+
+    return render(request, 'erp/payroll/form.html', {
+        'form': form,
+        'payroll': payroll,
+        'earning_formset': earning_formset,
+        'deduction_formset': deduction_formset,
+        'title': f'Edit Payroll: {payroll.employee.full_name}',
+        'submit_text': 'Save Changes',
+        'earning_types': PayrollEarning.EarningType.choices,
+        'deduction_types': PayrollDeduction.DeductionType.choices,
     })
 
 
 @staff_member_required
 def payroll_detail(request, pk):
     company = get_user_company(request.user)
-    payroll = get_object_or_404(Payroll, pk=pk, employee__company=company)
+    payroll = get_object_or_404(
+        Payroll, pk=pk, employee__company=company,
+    )
+    earnings = payroll.earning_lines.all()
+    deductions = payroll.deduction_lines.all()
 
     return render(request, 'erp/payroll/detail.html', {
         'payroll': payroll,
+        'earnings': earnings,
+        'deductions': deductions,
     })
 
 
@@ -425,27 +539,48 @@ def payroll_approve(request, pk):
 
     if request.method == 'POST':
         action = request.POST.get('action')
+
         if action == 'calculate':
             payroll.calculate_totals()
             payroll.status = Payroll.Status.CALCULATED
             payroll.save()
-            messages.success(request, 'تم احتساب الراتب بنجاح.')
+            messages.success(request, 'Payroll calculated successfully.')
+
         elif action == 'approve':
             if payroll.status not in ('draft', 'calculated'):
-                messages.error(request, 'لا يمكن اعتماد كشف الراتب بحالته الحالية.')
+                messages.error(request, 'Cannot approve payroll in its current state.')
                 return redirect('erp:payroll_detail', pk=pk)
             payroll.calculate_totals()
             payroll.status = Payroll.Status.APPROVED
             payroll.save()
-            messages.success(request, 'تم اعتماد كشف الراتب.')
+            messages.success(request, 'Payroll approved.')
+
         elif action == 'pay':
             if payroll.status != 'approved':
-                messages.error(request, 'يجب اعتماد كشف الراتب أولاً.')
+                messages.error(request, 'Payroll must be approved first.')
                 return redirect('erp:payroll_detail', pk=pk)
+
             payroll.status = Payroll.Status.PAID
             payroll.payment_date = timezone.now().date()
             payroll.save()
-            messages.success(request, 'تم صرف الراتب.')
+
+            # Create journal entry for the payroll
+            try:
+                je = payroll.create_journal_entry(user=request.user)
+                messages.success(
+                    request,
+                    f'Salary disbursed. Journal entry {je.entry_number} created and posted.'
+                )
+            except ValueError as e:
+                messages.warning(
+                    request,
+                    f'Salary disbursed but journal entry could not be created: {e}'
+                )
+            except Exception as e:
+                messages.warning(
+                    request,
+                    f'Salary disbursed but journal entry failed: {e}'
+                )
 
     return redirect('erp:payroll_detail', pk=pk)
 
@@ -456,15 +591,36 @@ def payroll_delete(request, pk):
     payroll = get_object_or_404(Payroll, pk=pk, employee__company=company)
 
     if request.method == 'POST':
-        if payroll.status in ('paid',):
-            messages.error(request, 'لا يمكن حذف كشف راتب مصروف.')
+        if payroll.status == 'paid':
+            messages.error(request, 'Cannot delete a paid payroll.')
             return redirect('erp:payroll_detail', pk=pk)
         payroll.delete()
-        messages.success(request, 'تم حذف كشف الراتب.')
+        messages.success(request, 'Payroll deleted.')
         return redirect('erp:payroll_list')
 
     return render(request, 'erp/confirm_delete.html', {
         'object': payroll,
-        'object_type': 'كشف راتب',
+        'object_type': 'Payroll',
         'cancel_url': reverse('erp:payroll_detail', args=[pk]),
     })
+
+
+@staff_member_required
+def payroll_get_employee_salary(request):
+    """AJAX endpoint: return employee basic_salary and currency_id."""
+    import json
+    from django.http import JsonResponse
+
+    company = get_user_company(request.user)
+    employee_id = request.GET.get('employee_id')
+    if not employee_id:
+        return JsonResponse({'error': 'No employee_id'}, status=400)
+
+    try:
+        emp = Employee.objects.get(pk=employee_id, company=company)
+        return JsonResponse({
+            'basic_salary': str(emp.basic_salary),
+            'currency_id': emp.currency_id,
+        })
+    except Employee.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)

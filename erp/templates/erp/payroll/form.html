@@ -14,11 +14,20 @@
     </div>
 </div>
 
-<form method="post" novalidate>
+<form method="post" novalidate id="payroll-form">
     {% csrf_token %}
 
+    {# ── Non-field errors ── #}
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="row g-4">
-        <!-- Employee & Period -->
+        {# ── Employee & Period ── #}
         <div class="col-lg-6">
             <div class="erp-card">
                 <div class="erp-card-header">
@@ -51,99 +60,335 @@
             </div>
         </div>
 
-        <!-- Earnings -->
-        <div class="col-lg-6">
-            <div class="erp-card">
-                <div class="erp-card-header">
-                    <h6 class="mb-0"><i class="bi bi-cash-stack text-success me-2"></i>{% trans "Earnings" %}</h6>
-                </div>
-                <div class="erp-card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="{{ form.basic_salary.id_for_label }}" class="form-label">{% trans "Basic Salary" %}</label>
-                            {{ form.basic_salary }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.housing_allowance.id_for_label }}" class="form-label">{% trans "Housing Allowance" %}</label>
-                            {{ form.housing_allowance }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.transport_allowance.id_for_label }}" class="form-label">{% trans "Transport Allowance" %}</label>
-                            {{ form.transport_allowance }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.other_allowances.id_for_label }}" class="form-label">{% trans "Other Allowances" %}</label>
-                            {{ form.other_allowances }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.overtime_amount.id_for_label }}" class="form-label">{% trans "Overtime" %}</label>
-                            {{ form.overtime_amount }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.bonus.id_for_label }}" class="form-label">{% trans "Bonus" %}</label>
-                            {{ form.bonus }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Deductions -->
-        <div class="col-lg-6">
-            <div class="erp-card">
-                <div class="erp-card-header">
-                    <h6 class="mb-0"><i class="bi bi-dash-circle text-danger me-2"></i>{% trans "Deductions" %}</h6>
-                </div>
-                <div class="erp-card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="{{ form.absence_deduction.id_for_label }}" class="form-label">{% trans "Absence Deduction" %}</label>
-                            {{ form.absence_deduction }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.late_deduction.id_for_label }}" class="form-label">{% trans "Late Deduction" %}</label>
-                            {{ form.late_deduction }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.loan_deduction.id_for_label }}" class="form-label">{% trans "Loan Deduction" %}</label>
-                            {{ form.loan_deduction }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.social_insurance.id_for_label }}" class="form-label">{% trans "Social Insurance" %}</label>
-                            {{ form.social_insurance }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.tax_deduction.id_for_label }}" class="form-label">{% trans "Income Tax" %}</label>
-                            {{ form.tax_deduction }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="{{ form.other_deductions.id_for_label }}" class="form-label">{% trans "Other Deductions" %}</label>
-                            {{ form.other_deductions }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notes -->
+        {# ── Summary (live calculated) ── #}
         <div class="col-lg-6">
             <div class="erp-card h-100">
                 <div class="erp-card-header">
-                    <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>{% trans "Notes" %}</h6>
+                    <h6 class="mb-0"><i class="bi bi-calculator me-2"></i>{% trans "Summary" %}</h6>
                 </div>
                 <div class="erp-card-body">
-                    <label for="{{ form.notes.id_for_label }}" class="form-label">{% trans "Notes" %}</label>
-                    {{ form.notes }}
+                    <div class="row text-center g-3">
+                        <div class="col-4">
+                            <div class="p-3 rounded bg-light">
+                                <small class="text-muted d-block mb-1">{% trans "Total Earnings" %}</small>
+                                <h4 class="mb-0 text-success" id="total-earnings">0.00</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 rounded bg-light">
+                                <small class="text-muted d-block mb-1">{% trans "Total Deductions" %}</small>
+                                <h4 class="mb-0 text-danger" id="total-deductions">0.00</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 rounded" style="background: #e8f5e9;">
+                                <small class="text-muted d-block mb-1">{% trans "Net Salary" %}</small>
+                                <h4 class="mb-0 text-primary fw-bold" id="net-salary">0.00</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">{% trans "Notes" %}</label>
+                        {{ form.notes }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ── Earnings ── #}
+        <div class="col-12">
+            <div class="erp-card">
+                <div class="erp-card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-cash-stack text-success me-2"></i>{% trans "Earnings" %}</h6>
+                    <button type="button" class="btn btn-sm btn-success" id="add-earning">
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "Add Earning" %}
+                    </button>
+                </div>
+                <div class="erp-card-body p-0">
+                    {{ earning_formset.management_form }}
+                    <table class="table mb-0" id="earnings-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%;">{% trans "Type" %}</th>
+                                <th style="width: 35%;">{% trans "Description" %}</th>
+                                <th style="width: 25%;" class="text-end">{% trans "Amount" %}</th>
+                                <th style="width: 10%;" class="text-center">{% trans "Remove" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="earnings-body">
+                            {% for eform in earning_formset %}
+                            <tr class="earning-row {% if eform.DELETE.value %}d-none{% endif %}">
+                                <td>
+                                    {{ eform.id }}
+                                    {{ eform.earning_type }}
+                                    {% if eform.earning_type.errors %}<div class="text-danger small">{{ eform.earning_type.errors.0 }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    {{ eform.description }}
+                                    {% if eform.description.errors %}<div class="text-danger small">{{ eform.description.errors.0 }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    {{ eform.amount }}
+                                    {% if eform.amount.errors %}<div class="text-danger small">{{ eform.amount.errors.0 }}</div>{% endif %}
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div class="d-none">{{ eform.DELETE }}</div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="{% trans 'Remove' %}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="2" class="fw-bold text-end">{% trans "Total Earnings" %}</td>
+                                <td class="text-end fw-bold text-success" id="earnings-total">0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# ── Deductions ── #}
+        <div class="col-12">
+            <div class="erp-card">
+                <div class="erp-card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-dash-circle text-danger me-2"></i>{% trans "Deductions" %}</h6>
+                    <button type="button" class="btn btn-sm btn-danger" id="add-deduction">
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "Add Deduction" %}
+                    </button>
+                </div>
+                <div class="erp-card-body p-0">
+                    {{ deduction_formset.management_form }}
+                    <table class="table mb-0" id="deductions-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%;">{% trans "Type" %}</th>
+                                <th style="width: 35%;">{% trans "Description" %}</th>
+                                <th style="width: 25%;" class="text-end">{% trans "Amount" %}</th>
+                                <th style="width: 10%;" class="text-center">{% trans "Remove" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deductions-body">
+                            {% for dform in deduction_formset %}
+                            <tr class="deduction-row {% if dform.DELETE.value %}d-none{% endif %}">
+                                <td>
+                                    {{ dform.id }}
+                                    {{ dform.deduction_type }}
+                                    {% if dform.deduction_type.errors %}<div class="text-danger small">{{ dform.deduction_type.errors.0 }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    {{ dform.description }}
+                                    {% if dform.description.errors %}<div class="text-danger small">{{ dform.description.errors.0 }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    {{ dform.amount }}
+                                    {% if dform.amount.errors %}<div class="text-danger small">{{ dform.amount.errors.0 }}</div>{% endif %}
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div class="d-none">{{ dform.DELETE }}</div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="{% trans 'Remove' %}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="2" class="fw-bold text-end">{% trans "Total Deductions" %}</td>
+                                <td class="text-end fw-bold text-danger" id="deductions-total">0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
+    {# ── Submit ── #}
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="btn btn-primary btn-lg">
             <i class="bi bi-check-lg me-1"></i> {{ submit_text }}
         </button>
-        <a href="{% url 'erp:payroll_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'erp:payroll_list' %}" class="btn btn-outline-secondary btn-lg">{% trans "Cancel" %}</a>
     </div>
 </form>
+
+{# ── Empty row templates (hidden, cloned by JS) ── #}
+<template id="earning-row-template">
+    <tr class="earning-row">
+        <td>
+            <select name="earnings-__prefix__-earning_type" class="form-select" id="id_earnings-__prefix__-earning_type">
+                {% for value, label in earning_types %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <input type="text" name="earnings-__prefix__-description" class="form-control" placeholder="{% trans 'Description (optional)' %}" id="id_earnings-__prefix__-description">
+        </td>
+        <td>
+            <input type="number" name="earnings-__prefix__-amount" step="0.01" min="0" class="form-control text-end earning-amount" value="0" id="id_earnings-__prefix__-amount">
+        </td>
+        <td class="text-center align-middle">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="{% trans 'Remove' %}">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<template id="deduction-row-template">
+    <tr class="deduction-row">
+        <td>
+            <select name="deductions-__prefix__-deduction_type" class="form-select" id="id_deductions-__prefix__-deduction_type">
+                {% for value, label in deduction_types %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <input type="text" name="deductions-__prefix__-description" class="form-control" placeholder="{% trans 'Description (optional)' %}" id="id_deductions-__prefix__-description">
+        </td>
+        <td>
+            <input type="number" name="deductions-__prefix__-amount" step="0.01" min="0" class="form-control text-end deduction-amount" value="0" id="id_deductions-__prefix__-amount">
+        </td>
+        <td class="text-center align-middle">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="{% trans 'Remove' %}">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ── Formset helpers ──────────────────────────────────────────────
+    function getManagementField(prefix, field) {
+        return document.getElementById('id_' + prefix + '-' + field);
+    }
+
+    function addRow(prefix, templateId, tbodyId) {
+        const totalField = getManagementField(prefix, 'TOTAL_FORMS');
+        const idx = parseInt(totalField.value);
+        const template = document.getElementById(templateId);
+        const clone = template.content.cloneNode(true);
+        const tr = clone.querySelector('tr');
+
+        // Replace __prefix__ with actual index
+        tr.innerHTML = tr.innerHTML.replace(/__prefix__/g, idx);
+        document.getElementById(tbodyId).appendChild(tr);
+        totalField.value = idx + 1;
+
+        // Bind events on new row
+        bindRowEvents(tr);
+        recalculate();
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        // If the row has a hidden id field with value (existing DB record), mark DELETE
+        const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+        if (deleteCheckbox) {
+            deleteCheckbox.checked = true;
+            row.classList.add('d-none');
+        } else {
+            row.remove();
+        }
+        recalculate();
+    }
+
+    function bindRowEvents(row) {
+        const removeBtn = row.querySelector('.remove-row');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() { removeRow(this); });
+        }
+        const amountInputs = row.querySelectorAll('input[type="number"]');
+        amountInputs.forEach(function(inp) {
+            inp.addEventListener('input', recalculate);
+        });
+    }
+
+    // ── Recalculate totals ───────────────────────────────────────────
+    function recalculate() {
+        let totalEarnings = 0;
+        let totalDeductions = 0;
+
+        document.querySelectorAll('#earnings-body tr.earning-row:not(.d-none)').forEach(function(row) {
+            const inp = row.querySelector('input[name$="-amount"]');
+            if (inp) totalEarnings += parseFloat(inp.value) || 0;
+        });
+
+        document.querySelectorAll('#deductions-body tr.deduction-row:not(.d-none)').forEach(function(row) {
+            const inp = row.querySelector('input[name$="-amount"]');
+            if (inp) totalDeductions += parseFloat(inp.value) || 0;
+        });
+
+        const net = totalEarnings - totalDeductions;
+
+        document.getElementById('earnings-total').textContent = totalEarnings.toFixed(2);
+        document.getElementById('deductions-total').textContent = totalDeductions.toFixed(2);
+        document.getElementById('total-earnings').textContent = totalEarnings.toFixed(2);
+        document.getElementById('total-deductions').textContent = totalDeductions.toFixed(2);
+        document.getElementById('net-salary').textContent = net.toFixed(2);
+
+        // Color net salary
+        const netEl = document.getElementById('net-salary');
+        netEl.className = 'mb-0 fw-bold ' + (net >= 0 ? 'text-primary' : 'text-danger');
+    }
+
+    // ── Add buttons ──────────────────────────────────────────────────
+    document.getElementById('add-earning').addEventListener('click', function() {
+        addRow('earnings', 'earning-row-template', 'earnings-body');
+    });
+
+    document.getElementById('add-deduction').addEventListener('click', function() {
+        addRow('deductions', 'deduction-row-template', 'deductions-body');
+    });
+
+    // ── Bind existing rows ───────────────────────────────────────────
+    document.querySelectorAll('#earnings-body tr, #deductions-body tr').forEach(bindRowEvents);
+
+    // ── Employee change → fetch salary ───────────────────────────────
+    const employeeSelect = document.getElementById('{{ form.employee.id_for_label }}');
+    if (employeeSelect) {
+        employeeSelect.addEventListener('change', function() {
+            const empId = this.value;
+            if (!empId) return;
+
+            fetch('{% url "erp:payroll_get_employee_salary" %}?employee_id=' + empId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.basic_salary) {
+                        // Find the first basic_salary earning row or first row
+                        const rows = document.querySelectorAll('#earnings-body tr.earning-row:not(.d-none)');
+                        if (rows.length > 0) {
+                            const firstRow = rows[0];
+                            const typeSelect = firstRow.querySelector('select[name$="-earning_type"]');
+                            const amountInput = firstRow.querySelector('input[name$="-amount"]');
+                            if (typeSelect) typeSelect.value = 'basic_salary';
+                            if (amountInput) amountInput.value = data.basic_salary;
+                        }
+                        recalculate();
+                    }
+                    if (data.currency_id) {
+                        const currField = document.getElementById('{{ form.currency.id_for_label }}');
+                        if (currField) currField.value = data.currency_id;
+                    }
+                });
+        });
+    }
+
+    // Initial recalculate
+    recalculate();
+});
+</script>
 {% endblock %}

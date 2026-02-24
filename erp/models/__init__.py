@@ -31,6 +31,8 @@ from .hr import (
     LeaveRequest,
     Attendance,
     Payroll,
+    PayrollEarning,
+    PayrollDeduction,
 )
 
 # Finance models

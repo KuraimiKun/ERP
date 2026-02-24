@@ -36,7 +36,8 @@ from .hr import (
     department_list, department_create, department_edit, department_delete,
     attendance_list, attendance_create, attendance_edit,
     leave_request_list, leave_request_create, leave_request_detail, leave_request_approve,
-    payroll_list, payroll_create, payroll_detail, payroll_approve, payroll_delete,
+    payroll_list, payroll_create, payroll_edit, payroll_detail, payroll_approve, payroll_delete,
+    payroll_get_employee_salary,
 )
 
 # ── CRM ─────────────────────────────────────────────────────────────────────

@@ -245,6 +245,30 @@ class Customer(ERPBaseModel):
     def __str__(self):
         return f"{self.name} ({self.customer_id})"
 
+    def recalculate_balance(self):
+        """Recompute current_balance as the sum of balance_due on all
+        non-cancelled invoices. Credit notes reduce the balance."""
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        ZERO = Decimal('0')
+
+        # Standard invoices and debit notes: positive balance
+        standard = self.invoices.filter(
+            invoice_type__in=['standard', 'debit', 'proforma']
+        ).exclude(status='cancelled').aggregate(
+            total=Coalesce(Sum('balance_due'), ZERO)
+        )['total']
+
+        # Credit notes: negative (reduce what customer owes)
+        credit = self.invoices.filter(
+            invoice_type='credit'
+        ).exclude(status='cancelled').aggregate(
+            total=Coalesce(Sum('total_amount'), ZERO)
+        )['total']
+
+        self.current_balance = standard - credit
+        self.save(update_fields=['current_balance'])
+
 
 class Invoice(ERPBaseModel):
     """Sales invoices."""
@@ -328,6 +352,11 @@ class Invoice(ERPBaseModel):
     def save(self, *args, **kwargs):
         self.balance_due = self.total_amount - self.paid_amount
         super().save(*args, **kwargs)
+        # Keep customer balance in sync
+        try:
+            self.customer.recalculate_balance()
+        except Exception:
+            pass  # Never block invoice save due to balance update error
 
 
 class InvoiceLine(TimeStampedModel):
@@ -390,16 +419,21 @@ class InvoiceLine(TimeStampedModel):
         return f"{self.invoice.invoice_number} - {self.description[:50]}"
 
     def save(self, *args, **kwargs):
+        # Ensure Decimal types
+        self.quantity = Decimal(str(self.quantity))
+        self.unit_price = Decimal(str(self.unit_price))
+        self.discount_percent = Decimal(str(self.discount_percent))
+
         # Calculate line total
         subtotal = self.quantity * self.unit_price
-        discount = subtotal * (self.discount_percent / 100)
+        discount = subtotal * (self.discount_percent / Decimal('100'))
         self.line_total = subtotal - discount
         
         # Calculate tax
         if self.tax_rate:
-            self.tax_amount = self.line_total * (self.tax_rate.rate / 100)
+            self.tax_amount = self.line_total * (Decimal(str(self.tax_rate.rate)) / Decimal('100'))
         else:
-            self.tax_amount = 0
+            self.tax_amount = Decimal('0')
         
         super().save(*args, **kwargs)
 
@@ -649,6 +683,7 @@ class JournalEntry(ERPBaseModel):
         INVOICE = 'invoice', 'فاتورة'
         PAYMENT = 'payment', 'دفعة'
         EXPENSE = 'expense', 'مصروف'
+        PAYROLL = 'payroll', 'رواتب'
         ADJUSTMENT = 'adjustment', 'تسوية'
         OPENING = 'opening', 'رصيد افتتاحي'
         CLOSING = 'closing', 'إقفال'

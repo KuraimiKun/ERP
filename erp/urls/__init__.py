@@ -131,6 +131,7 @@ _hr_patterns = [
     path('payroll/', views.payroll_list, name='payroll_list'),
     path('payroll/add/', views.payroll_create, name='payroll_create'),
     path('payroll/<int:pk>/', views.payroll_detail, name='payroll_detail'),
+    path('payroll/<int:pk>/edit/', views.payroll_edit, name='payroll_edit'),
     path('payroll/<int:pk>/approve/', views.payroll_approve, name='payroll_approve'),
     path('payroll/<int:pk>/delete/', views.payroll_delete, name='payroll_delete'),
 ]
@@ -227,6 +228,7 @@ _api_patterns = [
 # ── AJAX helpers ────────────────────────────────────────────────────────────
 _ajax_patterns = [
     path('ajax/item-price/', views.ajax_item_price, name='ajax_item_price'),
+    path('ajax/payroll-employee-salary/', views.payroll_get_employee_salary, name='payroll_get_employee_salary'),
 ]
 
 # ── PDF ─────────────────────────────────────────────────────────────────────

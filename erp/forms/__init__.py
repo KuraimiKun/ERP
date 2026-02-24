@@ -12,7 +12,11 @@ from .mixins import CompanyFilterMixin, BootstrapFormMixin
 from .core import CompanyForm, DepartmentForm, BranchForm, CurrencyForm, FiscalYearForm
 
 # ── HR ──────────────────────────────────────────────────────────
-from .hr import EmployeeForm, LeaveRequestForm, AttendanceForm, PayrollForm
+from .hr import (
+    EmployeeForm, LeaveRequestForm, AttendanceForm,
+    PayrollForm, PayrollEarningForm, PayrollEarningFormSet,
+    PayrollDeductionForm, PayrollDeductionFormSet,
+)
 
 # ── Finance ─────────────────────────────────────────────────────
 from .finance import (
