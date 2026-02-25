@@ -1,0 +1,79 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Pending Employee Approvals" %}{% endblock %}
+{% block page_title %}{% trans "Pending Employee Approvals" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1">{% trans "Pending Employee Approvals" %}</h4>
+        <p class="text-muted mb-0">{% trans "Review and approve employee registrations." %}</p>
+    </div>
+    <a href="{% url 'erp:invite_link_list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-link-45deg ms-1"></i> {% trans "Invite Links" %}
+    </a>
+</div>
+
+{% if pending_employees %}
+<div class="row g-3">
+    {% for emp in pending_employees %}
+    <div class="col-md-6 col-lg-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="https://ui-avatars.com/api/?name={{ emp.first_name }}+{{ emp.last_name }}&background=f59e0b&color=fff"
+                         class="rounded-circle ms-3" width="48" height="48" alt="">
+                    <div>
+                        <h6 class="mb-0">{{ emp.full_name }}</h6>
+                        {% if emp.first_name_ar %}
+                            <small class="text-muted" dir="rtl">{{ emp.first_name_ar }} {{ emp.last_name_ar }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <table class="table table-sm table-borderless mb-3">
+                    <tr>
+                        <td class="text-muted small" style="width:35%">{% trans "Email" %}</td>
+                        <td class="small">{{ emp.email }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">{% trans "Phone" %}</td>
+                        <td class="small">{{ emp.phone|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">{% trans "Job Title" %}</td>
+                        <td class="small">{{ emp.job_title|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">{% trans "Gender" %}</td>
+                        <td class="small">{{ emp.get_gender_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">{% trans "National ID" %}</td>
+                        <td class="small">{{ emp.national_id|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">{% trans "Registered" %}</td>
+                        <td class="small">{{ emp.created_at|date:"d M Y H:i" }}</td>
+                    </tr>
+                </table>
+
+                <div class="d-flex gap-2">
+                    <a href="{% url 'erp:approve_employee' pk=emp.pk %}" class="btn btn-sm btn-success flex-fill">
+                        <i class="bi bi-check-lg ms-1"></i> {% trans "Review" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="erp-card text-center py-5">
+    <i class="bi bi-person-check text-success" style="font-size:3rem;"></i>
+    <h5 class="mt-3">{% trans "No Pending Approvals" %}</h5>
+    <p class="text-muted">{% trans "All employee registrations have been reviewed." %}</p>
+</div>
+{% endif %}
+{% endblock %}

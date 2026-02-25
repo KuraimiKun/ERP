@@ -12,6 +12,7 @@ from django.forms import inlineformset_factory
 from erp.models import (
     Employee, LeaveRequest, Attendance,
     Payroll, PayrollEarning, PayrollDeduction,
+    AttendanceDevice,
 )
 from .mixins import BootstrapFormMixin, CompanyFilterMixin
 
@@ -174,3 +175,22 @@ PayrollDeductionFormSet = inlineformset_factory(
     min_num=0,
     validate_min=False,
 )
+
+
+# ── Attendance Device form ─────────────────────────────────────
+
+class AttendanceDeviceForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
+    """Form for registering / editing an attendance kiosk device."""
+
+    class Meta:
+        model = AttendanceDevice
+        fields = [
+            'name', 'location',
+            'work_start_time', 'work_end_time',
+            'late_threshold_minutes', 'qr_refresh_seconds',
+            'is_active',
+        ]
+        widgets = {
+            'work_start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'work_end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }

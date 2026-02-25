@@ -16,7 +16,11 @@ from .hr import (
     EmployeeForm, LeaveRequestForm, AttendanceForm,
     PayrollForm, PayrollEarningForm, PayrollEarningFormSet,
     PayrollDeductionForm, PayrollDeductionFormSet,
+    AttendanceDeviceForm,
 )
+
+# ── Employee Registration (public) ──────────────────────────────
+from .employee_registration import EmployeeRegistrationForm
 
 # ── Finance ─────────────────────────────────────────────────────
 from .finance import (

@@ -208,6 +208,36 @@ urlpatterns = [
     # AJAX helpers
     path('ajax/item-price/', views.ajax_item_price, name='ajax_item_price'),
     
+    # =========================================================================
+    # EMPLOYEE PORTAL (self-service for role='user')
+    # =========================================================================
+    path('portal/', views.employee_portal, name='employee_portal'),
+    path('portal/attendance/', views.employee_portal_attendance, name='employee_portal_attendance'),
+    path('portal/profile/', views.employee_portal_profile, name='employee_portal_profile'),
+    path('attendance/scan/', views.attendance_scan_result, name='attendance_scan_result'),
+    
+    # =========================================================================
+    # ATTENDANCE DEVICES & KIOSK (owner/admin)
+    # =========================================================================
+    path('devices/', views.device_list, name='device_list'),
+    path('devices/add/', views.device_create, name='device_create'),
+    path('devices/<int:pk>/', views.device_detail, name='device_detail'),
+    path('devices/<int:pk>/edit/', views.device_edit, name='device_edit'),
+    path('devices/<int:pk>/delete/', views.device_delete, name='device_delete'),
+    
+    # Kiosk (public – no login required, secured by device UUID)
+    path('attendance/kiosk/<uuid:device_id>/', views.attendance_kiosk, name='attendance_kiosk'),
+    path('api/attendance/qr/<uuid:device_id>/', views.attendance_qr_data, name='attendance_qr_data'),
+    
+    # =========================================================================
+    # EMPLOYEE INVITE LINKS & APPROVALS (owner/admin)
+    # =========================================================================
+    path('invite-links/', views.invite_link_list, name='invite_link_list'),
+    path('invite-links/create/', views.invite_link_create, name='invite_link_create'),
+    path('invite-links/<int:pk>/toggle/', views.invite_link_toggle, name='invite_link_toggle'),
+    path('employees/pending/', views.pending_employees, name='pending_employees'),
+    path('employees/pending/<int:pk>/approve/', views.approve_employee, name='approve_employee'),
+    
     # API endpoints
     path('api/', include('erp.api.urls')),
 ]

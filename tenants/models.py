@@ -480,3 +480,75 @@ class ServerLog(models.Model):
     
     def __str__(self):
         return f"[{self.level.upper()}] {self.get_action_display()} - {self.created_at}"
+
+
+def _generate_invite_token():
+    """Generate a URL-safe random token for employee invite links."""
+    return secrets.token_urlsafe(32)
+
+
+class EmployeeInviteLink(models.Model):
+    """
+    Public invitation link that lets employees self-register into a
+    specific tenant database.
+
+    Stored in the **default** database because it references
+    ``TenantDatabase`` and ``TenantUser``.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    token = models.CharField(
+        max_length=64,
+        unique=True,
+        default=_generate_invite_token,
+        db_index=True,
+    )
+    database = models.ForeignKey(
+        TenantDatabase,
+        on_delete=models.CASCADE,
+        related_name='employee_invite_links',
+    )
+    created_by = models.ForeignKey(
+        TenantUser,
+        on_delete=models.CASCADE,
+        related_name='employee_invite_links',
+    )
+
+    # Cached for display on the public registration page
+    company_name = models.CharField(max_length=255, blank=True)
+    company_name_ar = models.CharField(max_length=255, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    max_registrations = models.PositiveIntegerField(
+        default=0,
+        help_text='Maximum number of registrations allowed (0 = unlimited)',
+    )
+    registration_count = models.PositiveIntegerField(default=0)
+
+    expires_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text='Leave blank for no expiry',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Employee Invite Link'
+        verbose_name_plural = 'Employee Invite Links'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.company_name} invite ({self.token[:8]}…)"
+
+    @property
+    def is_valid(self):
+        """Check if link is still usable."""
+        if not self.is_active:
+            return False
+        if self.expires_at and timezone.now() > self.expires_at:
+            return False
+        if self.max_registrations and self.registration_count >= self.max_registrations:
+            return False
+        return True
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('tenants:employee_register', args=[self.token])

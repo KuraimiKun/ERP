@@ -1,0 +1,192 @@
+{% extends 'tenants/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Employee Registration" %} - {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card auth-card" style="max-width: 700px;">
+        <div class="brand-header">
+            <h2 class="mb-0">
+                <i class="bi bi-person-badge me-2"></i>{{ company_name }}
+            </h2>
+            {% if company_name_ar %}
+            <p class="mb-0 mt-1" dir="rtl">{{ company_name_ar }}</p>
+            {% endif %}
+            <p class="mb-0 mt-2">{% trans "Employee Registration" %}</p>
+        </div>
+        <div class="card-body p-4">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-1"></i>
+                {% trans "Fill in your details to register. Your employer will review and approve your account." %}
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- Login Credentials -->
+                <h6 class="text-muted border-bottom pb-2 mb-3">
+                    <i class="bi bi-key me-1"></i> {% trans "Login Credentials" %}
+                </h6>
+
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">{% trans "Email" %} *</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password1" class="form-label">{% trans "Password" %} *</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                        <div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password2" class="form-label">{% trans "Confirm Password" %} *</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+                    <i class="bi bi-person me-1"></i> {% trans "Personal Information" %}
+                </h6>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">{% trans "First Name" %} *</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                        <div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">{% trans "Last Name" %} *</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                        <div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name_ar" class="form-label">{% trans "First Name (Arabic)" %}</label>
+                        {{ form.first_name_ar }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name_ar" class="form-label">{% trans "Last Name (Arabic)" %}</label>
+                        {{ form.last_name_ar }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="id_gender" class="form-label">{% trans "Gender" %} *</label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                        <div class="invalid-feedback d-block">{{ form.gender.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_date_of_birth" class="form-label">{% trans "Date of Birth" %} *</label>
+                        {{ form.date_of_birth }}
+                        {% if form.date_of_birth.errors %}
+                        <div class="invalid-feedback d-block">{{ form.date_of_birth.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_nationality" class="form-label">{% trans "Nationality" %} *</label>
+                        {{ form.nationality }}
+                        {% if form.nationality.errors %}
+                        <div class="invalid-feedback d-block">{{ form.nationality.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+                    <i class="bi bi-telephone me-1"></i> {% trans "Contact Information" %}
+                </h6>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_phone" class="form-label">{% trans "Phone" %} *</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                        <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_national_id" class="form-label">{% trans "National ID" %}</label>
+                        {{ form.national_id }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_emergency_contact_name" class="form-label">{% trans "Emergency Contact Name" %}</label>
+                        {{ form.emergency_contact_name }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_emergency_contact_phone" class="form-label">{% trans "Emergency Contact Phone" %}</label>
+                        {{ form.emergency_contact_phone }}
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+                    <i class="bi bi-geo-alt me-1"></i> {% trans "Address" %}
+                </h6>
+
+                <div class="mb-3">
+                    <label for="id_address" class="form-label">{% trans "Address" %}</label>
+                    {{ form.address }}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_city" class="form-label">{% trans "City" %}</label>
+                        {{ form.city }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_country" class="form-label">{% trans "Country" %}</label>
+                        {{ form.country }}
+                    </div>
+                </div>
+
+                <!-- Job -->
+                <div class="mb-3">
+                    <label for="id_job_title" class="form-label">{% trans "Job Title" %}</label>
+                    {{ form.job_title }}
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mt-3">
+                    {% for error in form.non_field_errors %}
+                    <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>{% trans "Submit Registration" %}
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="{% url 'tenants:login' %}">{% trans "Already have an account? Login" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -231,6 +231,36 @@ _ajax_patterns = [
     path('ajax/payroll-employee-salary/', views.payroll_get_employee_salary, name='payroll_get_employee_salary'),
 ]
 
+# ── Employee Portal (self-service for role='user') ──────────────────────────
+_employee_portal_patterns = [
+    path('portal/', views.employee_portal, name='employee_portal'),
+    path('portal/attendance/', views.employee_portal_attendance, name='employee_portal_attendance'),
+    path('portal/profile/', views.employee_portal_profile, name='employee_portal_profile'),
+    path('attendance/scan/', views.attendance_scan_result, name='attendance_scan_result'),
+]
+
+# ── Attendance Devices & Kiosk (owner/admin) ────────────────────────────────
+_device_patterns = [
+    path('devices/', views.device_list, name='device_list'),
+    path('devices/add/', views.device_create, name='device_create'),
+    path('devices/<int:pk>/', views.device_detail, name='device_detail'),
+    path('devices/<int:pk>/edit/', views.device_edit, name='device_edit'),
+    path('devices/<int:pk>/delete/', views.device_delete, name='device_delete'),
+    path('devices/<int:pk>/approve/', views.device_approve, name='device_approve'),
+    path('devices/<int:pk>/revoke/', views.device_revoke, name='device_revoke'),
+    path('attendance/kiosk/<uuid:device_id>/', views.attendance_kiosk, name='attendance_kiosk'),
+    path('api/attendance/qr/<uuid:device_id>/', views.attendance_qr_data, name='attendance_qr_data'),
+]
+
+# ── Employee Invite Links & Approvals (owner/admin) ────────────────────────
+_invite_approval_patterns = [
+    path('invite-links/', views.invite_link_list, name='invite_link_list'),
+    path('invite-links/create/', views.invite_link_create, name='invite_link_create'),
+    path('invite-links/<uuid:pk>/toggle/', views.invite_link_toggle, name='invite_link_toggle'),
+    path('employees/pending/', views.pending_employees, name='pending_employees'),
+    path('employees/pending/<int:pk>/approve/', views.approve_employee, name='approve_employee'),
+]
+
 # ── PDF ─────────────────────────────────────────────────────────────────────
 _pdf_patterns = [
     path('invoices/<int:pk>/pdf/', views.invoice_pdf, name='invoice_pdf'),
@@ -287,5 +317,8 @@ urlpatterns = (
     + _tax_report_patterns
     + _notification_patterns
     + _audit_log_patterns
+    + _employee_portal_patterns
+    + _device_patterns
+    + _invite_approval_patterns
     + _api_patterns
 )

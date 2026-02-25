@@ -418,9 +418,13 @@
                 <i class="bi bi-diagram-3"></i>
                 {% trans "Departments" %}
             </a>
-            <a href="{% url 'erp:attendance_list' %}" class="erp-nav-link {% if 'attendance' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'erp:attendance_list' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'attendance_list' or request.resolver_match.url_name == 'attendance_create' or request.resolver_match.url_name == 'attendance_edit' %}active{% endif %}">
                 <i class="bi bi-clock-history"></i>
                 {% trans "Attendance" %}
+            </a>
+            <a href="{% url 'erp:device_list' %}" class="erp-nav-link {% if 'device' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-qr-code"></i>
+                {% trans "Attendance Devices" %}
             </a>
             <a href="{% url 'erp:leave_request_list' %}" class="erp-nav-link {% if 'leave_request' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-calendar-x"></i>
@@ -429,6 +433,14 @@
             <a href="{% url 'erp:payroll_list' %}" class="erp-nav-link {% if 'payroll' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-cash-coin"></i>
                 {% trans "Payroll" %}
+            </a>
+            <a href="{% url 'erp:invite_link_list' %}" class="erp-nav-link {% if 'invite_link' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-link-45deg"></i>
+                {% trans "Invite Links" %}
+            </a>
+            <a href="{% url 'erp:pending_employees' %}" class="erp-nav-link {% if 'pending_employees' == request.resolver_match.url_name or 'approve_employee' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-check"></i>
+                {% trans "Pending Approvals" %}
             </a>
             
             <div class="erp-nav-section mt-3">{% trans "Settings" %}</div>

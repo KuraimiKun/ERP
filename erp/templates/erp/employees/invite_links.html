@@ -1,0 +1,121 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Employee Invite Links" %}{% endblock %}
+{% block page_title %}{% trans "Employee Invite Links" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1">{% trans "Employee Invite Links" %}</h4>
+        <p class="text-muted mb-0">{% trans "Generate unique registration links for new employees." %}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'erp:pending_employees' %}" class="btn btn-outline-warning">
+            <i class="bi bi-hourglass-split ms-1"></i> {% trans "Pending Approvals" %}
+        </a>
+        <a href="{% url 'erp:invite_link_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg ms-1"></i> {% trans "Generate Link" %}
+        </a>
+    </div>
+</div>
+
+<div class="erp-card">
+    <div class="erp-card-body p-0">
+        <div class="table-responsive">
+            <table class="table erp-table mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Link" %}</th>
+                        <th>{% trans "Registrations" %}</th>
+                        <th>{% trans "Max Allowed" %}</th>
+                        <th>{% trans "Expires" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Created" %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for link in links %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="text" class="form-control form-control-sm font-monospace"
+                                       value="{{ request.scheme }}://{{ request.get_host }}{% url 'tenants:employee_register' token=link.token %}"
+                                       id="link-{{ link.pk }}" readonly style="max-width:280px;">
+                                <button class="btn btn-sm btn-outline-primary" onclick="copyLink('link-{{ link.pk }}')" title="{% trans 'Copy' %}">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ link.registration_count }}</span>
+                        </td>
+                        <td>
+                            {% if link.max_registrations > 0 %}
+                                {{ link.max_registrations }}
+                            {% else %}
+                                <span class="text-muted">{% trans "Unlimited" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if link.expires_at %}
+                                {{ link.expires_at|date:"d M Y" }}
+                                {% if link.expires_at < now %}
+                                    <span class="badge bg-danger">{% trans "Expired" %}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">{% trans "Never" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if link.is_active %}
+                                <span class="badge bg-success">{% trans "Active" %}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ link.created_at|date:"d M Y" }}</td>
+                        <td>
+                            <form method="post" action="{% url 'erp:invite_link_toggle' pk=link.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm {% if link.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                                        title="{% if link.is_active %}{% trans 'Deactivate' %}{% else %}{% trans 'Activate' %}{% endif %}">
+                                    <i class="bi {% if link.is_active %}bi-pause-circle{% else %}bi-play-circle{% endif %}"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-link-45deg fs-1 d-block mb-2"></i>
+                            {% trans "No invite links created yet." %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function copyLink(inputId) {
+    const input = document.getElementById(inputId);
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        const btn = event.currentTarget;
+        const origHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i>';
+        btn.classList.replace('btn-outline-primary', 'btn-success');
+        setTimeout(() => {
+            btn.innerHTML = origHTML;
+            btn.classList.replace('btn-success', 'btn-outline-primary');
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

@@ -33,6 +33,7 @@ from .hr import (
     Payroll,
     PayrollEarning,
     PayrollDeduction,
+    AttendanceDevice,
 )
 
 # Finance models
@@ -134,6 +135,7 @@ __all__ = [
     'LeaveRequest',
     'Attendance',
     'Payroll',
+    'AttendanceDevice',
     
     # Finance
     'Account',

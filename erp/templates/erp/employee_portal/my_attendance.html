@@ -1,0 +1,151 @@
+{% extends 'erp/employee_portal/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "My Attendance" %} - {% trans "Employee Portal" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">{% trans "My Attendance" %}</h4>
+</div>
+
+<!-- Date Filter -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Start Date" %}</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">{% trans "End Date" %}</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel ms-1"></i> {% trans "Filter" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-success">{{ stats.present|default:"0" }}</div>
+                    <div class="stat-label">{% trans "Present" %}</div>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-warning">{{ stats.late|default:"0" }}</div>
+                    <div class="stat-label">{% trans "Late" %}</div>
+                </div>
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-danger">{{ stats.absent|default:"0" }}</div>
+                    <div class="stat-label">{% trans "Absent" %}</div>
+                </div>
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Table -->
+<div class="erp-card">
+    <div class="erp-card-body p-0">
+        <div class="table-responsive">
+            <table class="table erp-table mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Date" %}</th>
+                        <th>{% trans "Check In" %}</th>
+                        <th>{% trans "Check Out" %}</th>
+                        <th>{% trans "Hours Worked" %}</th>
+                        <th>{% trans "Overtime" %}</th>
+                        <th>{% trans "Status" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                    <tr>
+                        <td>
+                            <strong>{{ att.date|date:"d M Y" }}</strong>
+                            <br><small class="text-muted">{{ att.date|date:"l" }}</small>
+                        </td>
+                        <td>
+                            {% if att.check_in %}
+                                <span class="text-success fw-bold">{{ att.check_in|time:"H:i" }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if att.check_out %}
+                                <span class="text-danger fw-bold">{{ att.check_out|time:"H:i" }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if att.hours_worked %}
+                                {{ att.hours_worked }} {% trans "hrs" %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if att.overtime_hours %}
+                                <span class="text-info">+{{ att.overtime_hours }} {% trans "hrs" %}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if att.is_late %}
+                                <span class="badge bg-warning text-dark">
+                                    {% trans "Late" %}
+                                    {% if att.late_minutes %} ({{ att.late_minutes }}{% trans "min" %}){% endif %}
+                                </span>
+                            {% elif att.is_present %}
+                                <span class="badge bg-success">{% trans "Present" %}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{% trans "Absent" %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+                            {% trans "No attendance records found for this period." %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

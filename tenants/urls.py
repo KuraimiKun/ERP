@@ -23,4 +23,7 @@ urlpatterns = [
     
     # Profile
     path('profile/', views.profile_view, name='profile'),
+    
+    # Employee Self-Registration (public)
+    path('register/<str:token>/', views.employee_register_view, name='employee_register'),
 ]

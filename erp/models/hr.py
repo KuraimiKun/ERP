@@ -2,6 +2,9 @@
 Human Resources (HR) models for the ERP system.
 """
 
+import uuid
+import secrets
+
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -119,6 +122,27 @@ class Employee(ERPBaseModel):
     # Leave Balance
     annual_leave_balance = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     sick_leave_balance = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    # Self-registration & approval
+    class ApprovalStatus(models.TextChoices):
+        APPROVED = 'approved', 'Approved'
+        PENDING = 'pending', 'Pending Approval'
+        REJECTED = 'rejected', 'Rejected'
+
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.choices,
+        default=ApprovalStatus.APPROVED,
+        help_text='Employees created by owner are auto-approved; self-registered start as pending.',
+    )
+    registered_via = models.CharField(
+        max_length=64, blank=True,
+        help_text='Invite token used during self-registration.',
+    )
+    registration_password_hash = models.CharField(
+        max_length=255, blank=True,
+        help_text='Temporary password hash stored until owner approves.',
+    )
 
     class Meta:
         verbose_name = 'Employee'
@@ -620,3 +644,161 @@ class PayrollDeduction(TimeStampedModel):
     @property
     def display_name(self):
         return self.description or self.get_deduction_type_display()
+
+
+def _generate_device_secret():
+    return secrets.token_hex(32)
+
+
+def _generate_device_token():
+    return secrets.token_urlsafe(48)
+
+
+class AttendanceDevice(ERPBaseModel):
+    """
+    Authenticated device (TV screen / kiosk) for QR-based attendance.
+
+    Each device gets a unique ``device_id`` and ``device_secret``.
+    The kiosk display page uses ``device_id`` in its URL, and the
+    ``device_secret`` is used to sign QR payloads so they can't be
+    forged or replayed.
+
+    Physical-device binding
+    ~~~~~~~~~~~~~~~~~~~~~~~
+    When a physical device (TV / tablet) first visits the kiosk URL it
+    receives a unique ``device_token`` stored as an HTTP-only cookie.
+    Until the owner **approves** the device from the management page the
+    kiosk shows a "pending approval" screen.  After approval only the
+    browser that holds the matching cookie can display the QR codes.
+    """
+    device_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    company = models.ForeignKey(
+        'erp.Company',
+        on_delete=models.CASCADE,
+        related_name='attendance_devices',
+    )
+    name = models.CharField(max_length=100, help_text='e.g. "Main Office TV"')
+    location = models.CharField(max_length=255, blank=True, help_text='Physical location')
+    device_secret = models.CharField(
+        max_length=64,
+        default=_generate_device_secret,
+        help_text='HMAC secret for signing QR codes (auto-generated).',
+    )
+
+    # ── Physical-device binding ──────────────────────────────────────────
+    device_token = models.CharField(
+        max_length=128,
+        blank=True,
+        default='',
+        db_index=True,
+        help_text='Cookie token assigned to the physical device.',
+    )
+    is_device_approved = models.BooleanField(
+        default=False,
+        help_text='Whether the physical device has been approved by the owner.',
+    )
+    device_user_agent = models.TextField(
+        blank=True,
+        default='',
+        help_text='User-Agent string of the physical device.',
+    )
+    device_ip = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text='IP address of the physical device.',
+    )
+    approval_requested_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When the device first connected and requested approval.',
+    )
+
+    # ── Attendance configuration ─────────────────────────────────────────
+    work_start_time = models.TimeField(default='08:00', help_text='Expected work start time')
+    work_end_time = models.TimeField(default='17:00', help_text='Expected work end time')
+    late_threshold_minutes = models.PositiveIntegerField(
+        default=15,
+        help_text='Minutes after start time before marking as late',
+    )
+    qr_refresh_seconds = models.PositiveIntegerField(
+        default=30,
+        help_text='How often the QR code refreshes on the kiosk (seconds)',
+    )
+
+    is_active = models.BooleanField(default=True)
+    last_heartbeat = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Attendance Device'
+        verbose_name_plural = 'Attendance Devices'
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.location})"
+
+    def generate_qr_payload(self):
+        """
+        Generate a signed QR payload valid for ``qr_refresh_seconds``.
+
+        Returns a dict with:
+        - ``data``: The string to encode in the QR image.
+        - ``expires``: Unix timestamp when it expires.
+        """
+        import hmac
+        import hashlib
+        import time
+
+        ts = int(time.time())
+        msg = f"{self.device_id}:{ts}"
+        sig = hmac.new(
+            self.device_secret.encode(),
+            msg.encode(),
+            hashlib.sha256,
+        ).hexdigest()[:16]
+        return {
+            'data': f"{self.device_id}:{ts}:{sig}",
+            'expires': ts + self.qr_refresh_seconds,
+        }
+
+    @staticmethod
+    def verify_qr_payload(raw_data, max_age=120):
+        """
+        Verify a scanned QR payload.
+
+        Returns the ``AttendanceDevice`` if valid, or raises ``ValueError``.
+        """
+        import hmac as _hmac
+        import hashlib
+        import time
+
+        parts = raw_data.split(':')
+        if len(parts) != 3:
+            raise ValueError('Invalid QR format')
+
+        device_id_str, ts_str, sig = parts
+        try:
+            ts = int(ts_str)
+        except (ValueError, TypeError):
+            raise ValueError('Invalid timestamp')
+
+        if abs(time.time() - ts) > max_age:
+            raise ValueError('QR code expired')
+
+        try:
+            device = AttendanceDevice.objects.get(
+                device_id=device_id_str, is_active=True,
+            )
+        except AttendanceDevice.DoesNotExist:
+            raise ValueError('Device not found or inactive')
+
+        msg = f"{device_id_str}:{ts_str}"
+        expected = _hmac.new(
+            device.device_secret.encode(),
+            msg.encode(),
+            hashlib.sha256,
+        ).hexdigest()[:16]
+
+        if not _hmac.compare_digest(sig, expected):
+            raise ValueError('Invalid QR signature')
+
+        return device

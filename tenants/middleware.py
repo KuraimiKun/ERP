@@ -23,9 +23,16 @@ PUBLIC_URLS = [
     '/accounts/signup/',
     '/accounts/pending/',
     '/accounts/rejected/',
+    '/accounts/register/',
     '/',
     '/static/',
     '/media/',
+]
+
+# URL fragments for kiosk pages – authenticated via device cookie, not user session
+KIOSK_URL_FRAGMENTS = [
+    '/attendance/kiosk/',
+    '/api/attendance/qr/',
 ]
 
 
@@ -44,6 +51,14 @@ class TenantMiddleware:
         # Check if this is a public URL
         path = request.path
         is_public = any(path.startswith(url) for url in PUBLIC_URLS)
+
+        # Kiosk pages are public (cookie-authenticated, not user-session)
+        is_kiosk = any(fragment in path for fragment in KIOSK_URL_FRAGMENTS)
+        if is_kiosk:
+            # The kiosk view itself will set up the tenant DB context
+            response = self.get_response(request)
+            clear_current_db_alias()
+            return response
         
         # Handle authenticated users
         if request.user.is_authenticated:

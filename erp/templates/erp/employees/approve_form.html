@@ -1,0 +1,143 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Review Employee" %}: {{ employee.full_name }}{% endblock %}
+{% block page_title %}{% trans "Review Employee Registration" %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-check text-warning ms-2"></i>
+                    {{ employee.full_name }}
+                    {% if employee.first_name_ar %}
+                        <small class="text-muted" dir="rtl">({{ employee.first_name_ar }} {{ employee.last_name_ar }})</small>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="erp-card-body">
+                <div class="row g-4">
+                    <!-- Personal Info -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">{% trans "Personal Information" %}</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width:40%">{% trans "Email" %}</td>
+                                <td><strong>{{ employee.email }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Phone" %}</td>
+                                <td>{{ employee.phone|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Gender" %}</td>
+                                <td>{{ employee.get_gender_display }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Date of Birth" %}</td>
+                                <td>{{ employee.date_of_birth|date:"d M Y"|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Nationality" %}</td>
+                                <td>{{ employee.nationality|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "National ID" %}</td>
+                                <td>{{ employee.national_id|default:"-" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Contact & Address -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">{% trans "Contact & Address" %}</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width:40%">{% trans "Address" %}</td>
+                                <td>{{ employee.address|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "City" %}</td>
+                                <td>{{ employee.city|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Country" %}</td>
+                                <td>{{ employee.country|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Emergency Name" %}</td>
+                                <td>{{ employee.emergency_contact_name|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Emergency Phone" %}</td>
+                                <td>{{ employee.emergency_contact_phone|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">{% trans "Job Title" %}</td>
+                                <td>{{ employee.job_title|default:"-" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                {% if employee.registered_via %}
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-link-45deg ms-1"></i>
+                        {% trans "Registered via invite link" %}: <code>{{ employee.registered_via }}</code>
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Action Forms -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="erp-card border-success">
+                    <div class="erp-card-body text-center">
+                        <i class="bi bi-check-circle text-success" style="font-size:2rem;"></i>
+                        <h5 class="mt-2">{% trans "Approve Employee" %}</h5>
+                        <p class="text-muted small">{% trans "Employee will receive a unique ID and can access the portal." %}</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="btn btn-success w-100 mt-2">
+                                <i class="bi bi-check-lg ms-1"></i> {% trans "Approve" %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="erp-card border-danger">
+                    <div class="erp-card-body text-center">
+                        <i class="bi bi-x-circle text-danger" style="font-size:2rem;"></i>
+                        <h5 class="mt-2">{% trans "Reject Employee" %}</h5>
+                        <p class="text-muted small">{% trans "Employee will be notified that their registration was rejected." %}</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <div class="mb-2">
+                                <textarea name="reason" class="form-control" rows="2"
+                                          placeholder="{% trans 'Reason for rejection (optional)' %}"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="bi bi-x-lg ms-1"></i> {% trans "Reject" %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a href="{% url 'erp:pending_employees' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-right ms-1"></i> {% trans "Back to Pending List" %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

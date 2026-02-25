@@ -39,7 +39,20 @@ from .hr import (
     payroll_list, payroll_create, payroll_edit, payroll_detail, payroll_approve, payroll_delete,
     payroll_get_employee_salary,
 )
+# ── Employee Portal ─────────────────────────────────────────────
+from .employee_portal import (
+    employee_portal, employee_portal_attendance,
+    employee_portal_profile, attendance_scan_result,
+)
 
+# ── Attendance Devices & Invites ────────────────────────────────
+from .attendance_device import (
+    device_list, device_create, device_detail, device_edit, device_delete,
+    device_approve, device_revoke,
+    attendance_kiosk, attendance_qr_data,
+    invite_link_list, invite_link_create, invite_link_toggle,
+    pending_employees, approve_employee,
+)
 # ── CRM ─────────────────────────────────────────────────────────────────────
 from .crm import (
     lead_list, lead_detail, lead_create, lead_edit, lead_delete, lead_add_activity,

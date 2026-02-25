@@ -1,0 +1,137 @@
+{% extends 'erp/employee_portal/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "My Profile" %} - {% trans "Employee Portal" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">{% trans "My Profile" %}</h4>
+    <span class="badge bg-{{ employee.approval_status|default:'approved' }} fs-6">
+        {% if employee.status == 'active' %}
+            <i class="bi bi-check-circle ms-1"></i> {% trans "Active" %}
+        {% else %}
+            {{ employee.get_status_display }}
+        {% endif %}
+    </span>
+</div>
+
+<div class="row g-4">
+    <!-- Personal Information -->
+    <div class="col-lg-6">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-person text-primary ms-2"></i> {% trans "Personal Information" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ employee.first_name }}+{{ employee.last_name }}&size=96&background=0d6efd&color=fff"
+                         class="rounded-circle mb-2" width="96" height="96" alt="">
+                    <h5 class="mb-0">{{ employee.full_name }}</h5>
+                    {% if employee.first_name_ar %}
+                        <p class="text-muted" dir="rtl">{{ employee.first_name_ar }} {{ employee.last_name_ar }}</p>
+                    {% endif %}
+                </div>
+
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted" style="width:40%"><i class="bi bi-hash ms-1"></i> {% trans "Employee ID" %}</td>
+                        <td><strong>{{ employee.employee_id }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-gender-ambiguous ms-1"></i> {% trans "Gender" %}</td>
+                        <td>{{ employee.get_gender_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-calendar-date ms-1"></i> {% trans "Date of Birth" %}</td>
+                        <td>{{ employee.date_of_birth|date:"d M Y"|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-flag ms-1"></i> {% trans "Nationality" %}</td>
+                        <td>{{ employee.nationality|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-card-text ms-1"></i> {% trans "National ID" %}</td>
+                        <td>{{ employee.national_id|default:"-" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="col-lg-6">
+        <div class="erp-card h-100">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-telephone text-success ms-2"></i> {% trans "Contact Information" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted" style="width:40%"><i class="bi bi-envelope ms-1"></i> {% trans "Email" %}</td>
+                        <td>{{ employee.email }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-phone ms-1"></i> {% trans "Phone" %}</td>
+                        <td>{{ employee.phone|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-geo-alt ms-1"></i> {% trans "Address" %}</td>
+                        <td>{{ employee.address|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-building ms-1"></i> {% trans "City" %}</td>
+                        <td>{{ employee.city|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-globe ms-1"></i> {% trans "Country" %}</td>
+                        <td>{{ employee.country|default:"-" }}</td>
+                    </tr>
+                </table>
+
+                <hr>
+
+                <h6 class="text-muted small mb-3">{% trans "Emergency Contact" %}</h6>
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted" style="width:40%"><i class="bi bi-person-lines-fill ms-1"></i> {% trans "Name" %}</td>
+                        <td>{{ employee.emergency_contact_name|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted"><i class="bi bi-telephone-fill ms-1"></i> {% trans "Phone" %}</td>
+                        <td>{{ employee.emergency_contact_phone|default:"-" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employment Details -->
+    <div class="col-12">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-briefcase text-info ms-2"></i> {% trans "Employment Details" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="text-muted small">{% trans "Job Title" %}</div>
+                        <div class="fw-bold">{{ employee.job_title|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-muted small">{% trans "Department" %}</div>
+                        <div class="fw-bold">{{ employee.department.name|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-muted small">{% trans "Hire Date" %}</div>
+                        <div class="fw-bold">{{ employee.hire_date|date:"d M Y"|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-muted small">{% trans "Contract Type" %}</div>
+                        <div class="fw-bold">{{ employee.get_contract_type_display|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
