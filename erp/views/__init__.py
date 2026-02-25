@@ -43,6 +43,9 @@ from .hr import (
 from .employee_portal import (
     employee_portal, employee_portal_attendance,
     employee_portal_profile, attendance_scan_result,
+    portal_qr_scanner, portal_leave_list, portal_leave_create, portal_leave_cancel,
+    portal_payslip_list, portal_payslip_detail,
+    portal_profile_edit, portal_change_password,
 )
 
 # ── Attendance Devices & Invites ────────────────────────────────

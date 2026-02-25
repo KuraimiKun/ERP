@@ -236,6 +236,14 @@ _employee_portal_patterns = [
     path('portal/', views.employee_portal, name='employee_portal'),
     path('portal/attendance/', views.employee_portal_attendance, name='employee_portal_attendance'),
     path('portal/profile/', views.employee_portal_profile, name='employee_portal_profile'),
+    path('portal/profile/edit/', views.portal_profile_edit, name='employee_portal_profile_edit'),
+    path('portal/password/', views.portal_change_password, name='employee_portal_change_password'),
+    path('portal/qr-scanner/', views.portal_qr_scanner, name='employee_portal_qr_scanner'),
+    path('portal/leaves/', views.portal_leave_list, name='employee_portal_leave_list'),
+    path('portal/leaves/new/', views.portal_leave_create, name='employee_portal_leave_create'),
+    path('portal/leaves/<int:pk>/cancel/', views.portal_leave_cancel, name='employee_portal_leave_cancel'),
+    path('portal/payslips/', views.portal_payslip_list, name='employee_portal_payslip_list'),
+    path('portal/payslips/<int:pk>/', views.portal_payslip_detail, name='employee_portal_payslip_detail'),
     path('attendance/scan/', views.attendance_scan_result, name='attendance_scan_result'),
 ]
 

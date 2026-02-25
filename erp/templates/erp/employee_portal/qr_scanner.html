@@ -1,0 +1,181 @@
+{% extends 'erp/employee_portal/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "QR Scanner" %} - {% trans "Employee Portal" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    #scanner-container {
+        position: relative;
+        max-width: 500px;
+        margin: 0 auto;
+        border-radius: .75rem;
+        overflow: hidden;
+        background: #000;
+    }
+    #scanner-container video {
+        width: 100%;
+        display: block;
+    }
+    #scanner-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+    }
+    #scanner-overlay .scan-frame {
+        width: 220px;
+        height: 220px;
+        border: 3px solid rgba(13,110,253,.7);
+        border-radius: 1rem;
+        box-shadow: 0 0 0 9999px rgba(0,0,0,.35);
+    }
+    .scan-status {
+        font-size: 1.1rem;
+    }
+    #scanner-canvas { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4><i class="bi bi-qr-code-scan text-primary me-2"></i>{% trans "QR Attendance Scanner" %}</h4>
+    <p class="text-muted">{% trans "Point your camera at the QR code displayed on the attendance device." %}</p>
+</div>
+
+<div class="erp-card">
+    <div class="erp-card-body text-center">
+        <!-- Status messages -->
+        <div id="scanner-status" class="mb-3">
+            <div id="status-loading" class="scan-status text-muted">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                {% trans "Starting camera..." %}
+            </div>
+            <div id="status-scanning" class="scan-status text-primary d-none">
+                <i class="bi bi-camera-video me-1"></i> {% trans "Scanning... hold steady" %}
+            </div>
+            <div id="status-success" class="scan-status text-success d-none">
+                <i class="bi bi-check-circle-fill me-1"></i> {% trans "QR Code detected! Processing..." %}
+            </div>
+            <div id="status-error" class="scan-status text-danger d-none">
+                <i class="bi bi-exclamation-triangle me-1"></i> <span id="error-text"></span>
+            </div>
+        </div>
+
+        <!-- Camera view -->
+        <div id="scanner-container" class="mb-3">
+            <video id="scanner-video" playsinline autoplay muted></video>
+            <canvas id="scanner-canvas"></canvas>
+            <div id="scanner-overlay">
+                <div class="scan-frame"></div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button id="btn-start" class="btn btn-primary d-none" onclick="startScanner()">
+                <i class="bi bi-camera me-1"></i> {% trans "Start Scanner" %}
+            </button>
+            <button id="btn-stop" class="btn btn-outline-secondary d-none" onclick="stopScanner()">
+                <i class="bi bi-stop-circle me-1"></i> {% trans "Stop" %}
+            </button>
+        </div>
+
+        <div class="mt-3">
+            <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                {% trans "Make sure you allow camera access when prompted. HTTPS is required for camera access." %}
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jsQR library for QR decoding -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script>
+(function() {
+    const video = document.getElementById('scanner-video');
+    const canvas = document.getElementById('scanner-canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const btnStart = document.getElementById('btn-start');
+    const btnStop = document.getElementById('btn-stop');
+    let stream = null;
+    let animFrame = null;
+    let processing = false;
+
+    function showStatus(id) {
+        document.querySelectorAll('#scanner-status > div').forEach(el => el.classList.add('d-none'));
+        document.getElementById(id).classList.remove('d-none');
+    }
+
+    function showError(msg) {
+        document.getElementById('error-text').textContent = msg;
+        showStatus('status-error');
+        btnStart.classList.remove('d-none');
+        btnStop.classList.add('d-none');
+    }
+
+    window.startScanner = async function() {
+        showStatus('status-loading');
+        btnStart.classList.add('d-none');
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+            });
+            video.srcObject = stream;
+            video.setAttribute('playsinline', true);
+            await video.play();
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            showStatus('status-scanning');
+            btnStop.classList.remove('d-none');
+            scanFrame();
+        } catch (err) {
+            console.error(err);
+            showError("{% trans 'Camera access denied or not available. Please check permissions.' %}");
+        }
+    };
+
+    window.stopScanner = function() {
+        if (animFrame) cancelAnimationFrame(animFrame);
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        video.srcObject = null;
+        btnStart.classList.remove('d-none');
+        btnStop.classList.add('d-none');
+        showStatus('status-loading');
+        document.getElementById('status-loading').innerHTML =
+            '<i class="bi bi-camera-video-off me-1"></i> {% trans "Scanner stopped." %}';
+    };
+
+    function scanFrame() {
+        if (!stream) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA && !processing) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+            if (code && code.data) {
+                processing = true;
+                showStatus('status-success');
+                stopScanner();
+                // Navigate to scan result
+                const scanUrl = "{% url 'erp:attendance_scan_result' %}" + "?qr=" + encodeURIComponent(code.data);
+                window.location.href = scanUrl;
+                return;
+            }
+        }
+        animFrame = requestAnimationFrame(scanFrame);
+    }
+
+    // Auto-start on page load
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        startScanner();
+    } else {
+        showError("{% trans 'Your browser does not support camera access. Please use a modern browser with HTTPS.' %}");
+    }
+})();
+</script>
+{% endblock %}
