@@ -1,0 +1,66 @@
+name: Django CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: erp_main
+          POSTGRES_USER: erp_user
+          POSTGRES_PASSWORD: erp_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U erp_user -d erp_main"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      SECRET_KEY: ci-secret-key
+      DOMAIN: localhost
+      ENABLE_SSL: "false"
+
+      DB_NAME: erp_main
+      DB_USER: erp_user
+      DB_PASSWORD: erp_password
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+      DEFAULT_FROM_EMAIL: noreply@erp.example.com
+
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        run: |
+          python manage.py migrate --noinput
+
+      - name: Run tests
+        run: |
+          python manage.py test -v 2
