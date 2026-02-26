@@ -307,6 +307,90 @@ _audit_log_patterns = [
     path('audit-log/', views.audit_log_list, name='audit_log_list'),
 ]
 
+# ── Inventory & Warehouse ──────────────────────────────────────────────────
+_inventory_patterns = [
+    # Warehouses
+    path('warehouses/', views.warehouse_list, name='warehouse_list'),
+    path('warehouses/add/', views.warehouse_create, name='warehouse_create'),
+    path('warehouses/<int:pk>/', views.warehouse_detail, name='warehouse_detail'),
+    path('warehouses/<int:pk>/edit/', views.warehouse_edit, name='warehouse_edit'),
+    path('warehouses/<int:pk>/delete/', views.warehouse_delete, name='warehouse_delete'),
+    # Warehouse Zones
+    path('warehouses/<int:warehouse_pk>/zones/add/', views.zone_create, name='zone_create'),
+    path('zones/<int:pk>/', views.zone_detail, name='zone_detail'),
+    path('zones/<int:pk>/edit/', views.zone_edit, name='zone_edit'),
+    path('zones/<int:pk>/delete/', views.zone_delete, name='zone_delete'),
+    # Units of Measure
+    path('uom/', views.uom_list, name='uom_list'),
+    path('uom/add/', views.uom_create, name='uom_create'),
+    path('uom/<int:pk>/edit/', views.uom_edit, name='uom_edit'),
+    path('uom/<int:pk>/delete/', views.uom_delete, name='uom_delete'),
+    # Lots / Batches
+    path('lots/', views.lot_list, name='lot_list'),
+    path('lots/add/', views.lot_create, name='lot_create'),
+    path('lots/<int:pk>/edit/', views.lot_edit, name='lot_edit'),
+    path('lots/<int:pk>/delete/', views.lot_delete, name='lot_delete'),
+    # Serial Numbers
+    path('serials/', views.serial_list, name='serial_list'),
+    path('serials/add/', views.serial_create, name='serial_create'),
+    path('serials/<int:pk>/edit/', views.serial_edit, name='serial_edit'),
+    # Goods Receipt Notes
+    path('grn/', views.grn_list, name='grn_list'),
+    path('grn/add/', views.grn_create, name='grn_create'),
+    path('grn/<int:pk>/', views.grn_detail, name='grn_detail'),
+    path('grn/<int:pk>/edit/', views.grn_edit, name='grn_edit'),
+    path('grn/<int:pk>/confirm/', views.grn_confirm, name='grn_confirm'),
+    path('grn/<int:pk>/delete/', views.grn_delete, name='grn_delete'),
+    # Stock Transfers
+    path('transfers/', views.transfer_list, name='transfer_list'),
+    path('transfers/add/', views.transfer_create, name='transfer_create'),
+    path('transfers/<int:pk>/', views.transfer_detail, name='transfer_detail'),
+    path('transfers/<int:pk>/edit/', views.transfer_edit, name='transfer_edit'),
+    path('transfers/<int:pk>/ship/', views.transfer_ship, name='transfer_ship'),
+    path('transfers/<int:pk>/receive/', views.transfer_receive, name='transfer_receive'),
+    path('transfers/<int:pk>/delete/', views.transfer_delete, name='transfer_delete'),
+    # Stock Adjustments
+    path('adjustments/', views.adjustment_list, name='adjustment_list'),
+    path('adjustments/add/', views.adjustment_create, name='adjustment_create'),
+    path('adjustments/<int:pk>/', views.adjustment_detail, name='adjustment_detail'),
+    path('adjustments/<int:pk>/edit/', views.adjustment_edit, name='adjustment_edit'),
+    path('adjustments/<int:pk>/approve/', views.adjustment_approve, name='adjustment_approve'),
+    path('adjustments/<int:pk>/delete/', views.adjustment_delete, name='adjustment_delete'),
+    # Cycle Counts
+    path('cycle-counts/', views.cycle_count_list, name='cycle_count_list'),
+    path('cycle-counts/add/', views.cycle_count_create, name='cycle_count_create'),
+    path('cycle-counts/<int:pk>/', views.cycle_count_detail, name='cycle_count_detail'),
+    path('cycle-counts/<int:pk>/edit/', views.cycle_count_edit, name='cycle_count_edit'),
+    path('cycle-counts/<int:pk>/complete/', views.cycle_count_complete, name='cycle_count_complete'),
+    path('cycle-counts/<int:pk>/delete/', views.cycle_count_delete, name='cycle_count_delete'),
+    # Pick Lists
+    path('pick-lists/', views.pick_list_list, name='pick_list_list'),
+    path('pick-lists/add/', views.pick_list_create, name='pick_list_create'),
+    path('pick-lists/<int:pk>/', views.pick_list_detail, name='pick_list_detail'),
+    path('pick-lists/<int:pk>/edit/', views.pick_list_edit, name='pick_list_edit'),
+    path('pick-lists/<int:pk>/complete/', views.pick_list_complete, name='pick_list_complete'),
+    path('pick-lists/<int:pk>/delete/', views.pick_list_delete, name='pick_list_delete'),
+    # Shipments
+    path('shipments/', views.shipment_list, name='shipment_list'),
+    path('shipments/add/', views.shipment_create, name='shipment_create'),
+    path('shipments/<int:pk>/', views.shipment_detail, name='shipment_detail'),
+    path('shipments/<int:pk>/edit/', views.shipment_edit, name='shipment_edit'),
+    path('shipments/<int:pk>/ship/', views.shipment_ship, name='shipment_ship'),
+    path('shipments/<int:pk>/delete/', views.shipment_delete, name='shipment_delete'),
+    # Reorder Rules
+    path('reorder-rules/', views.reorder_rule_list, name='reorder_rule_list'),
+    path('reorder-rules/add/', views.reorder_rule_create, name='reorder_rule_create'),
+    path('reorder-rules/<int:pk>/edit/', views.reorder_rule_edit, name='reorder_rule_edit'),
+    path('reorder-rules/<int:pk>/delete/', views.reorder_rule_delete, name='reorder_rule_delete'),
+    path('reorder-suggestions/', views.reorder_suggestions, name='reorder_suggestions'),
+    # Stock Movements (read-only ledger)
+    path('stock-movements/', views.stock_movement_list, name='stock_movement_list'),
+    # Stock Levels Dashboard
+    path('stock-levels/', views.stock_levels, name='stock_levels'),
+    # Valuation Config
+    path('valuation-config/', views.valuation_config, name='valuation_config'),
+]
+
 # ── Combined ────────────────────────────────────────────────────────────────
 urlpatterns = (
     _setup_patterns
@@ -325,6 +409,7 @@ urlpatterns = (
     + _tax_report_patterns
     + _notification_patterns
     + _audit_log_patterns
+    + _inventory_patterns
     + _employee_portal_patterns
     + _device_patterns
     + _invite_approval_patterns

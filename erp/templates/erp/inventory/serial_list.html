@@ -1,0 +1,88 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Serial Numbers" %}{% endblock %}
+{% block page_title %}{% trans "Serial Numbers" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">{% trans "Track individual serial numbers" %}</p>
+    </div>
+    <a href="{% url 'erp:serial_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Serial Number" %}
+    </a>
+</div>
+
+<!-- Search & Filter -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans 'Serial number, product...' %}" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Status" %}</label>
+                <select name="status" class="form-select">
+                    <option value="">{% trans "All Statuses" %}</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search ms-1"></i> {% trans "Search" %}
+                </button>
+                <a href="{% url 'erp:serial_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Serial Number" %}</th>
+                    <th>{% trans "Product" %}</th>
+                    <th>{% trans "Lot" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Warehouse" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for serial in serials %}
+                <tr>
+                    <td class="fw-medium">{{ serial.serial_number }}</td>
+                    <td>{{ serial.product }}</td>
+                    <td>{{ serial.lot.lot_number|default:"-" }}</td>
+                    <td><span class="badge badge-status badge-{{ serial.status }}">{{ serial.get_status_display }}</span></td>
+                    <td>{{ serial.warehouse|default:"-" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:serial_edit' serial.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:serial_delete' serial.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-hash fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No serial numbers found" %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

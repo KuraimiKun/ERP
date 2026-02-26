@@ -129,3 +129,26 @@ from .notifications import (
 
 # ── Audit Log ───────────────────────────────────────────────────────────────
 from .audit_log import audit_log_list
+
+# ── Inventory & Warehouse ───────────────────────────────────────────────────
+from .inventory import (
+    warehouse_list, warehouse_detail, warehouse_create, warehouse_edit, warehouse_delete,
+    zone_detail, zone_create, zone_edit, zone_delete,
+    uom_list, uom_create, uom_edit, uom_delete,
+    lot_list, lot_create, lot_edit, lot_delete,
+    serial_list, serial_create, serial_edit,
+    grn_list, grn_detail, grn_create, grn_edit, grn_confirm, grn_delete,
+    transfer_list, transfer_detail, transfer_create, transfer_edit,
+    transfer_ship, transfer_receive, transfer_delete,
+    adjustment_list, adjustment_detail, adjustment_create, adjustment_edit,
+    adjustment_approve, adjustment_delete,
+    cycle_count_list, cycle_count_detail, cycle_count_create, cycle_count_edit,
+    cycle_count_complete, cycle_count_delete,
+    pick_list_list, pick_list_detail, pick_list_create, pick_list_edit,
+    pick_list_complete, pick_list_delete,
+    shipment_list, shipment_detail, shipment_create, shipment_edit,
+    shipment_ship, shipment_delete,
+    reorder_rule_list, reorder_rule_create, reorder_rule_edit, reorder_rule_delete,
+    reorder_suggestions,
+    stock_movement_list, stock_levels, valuation_config,
+)

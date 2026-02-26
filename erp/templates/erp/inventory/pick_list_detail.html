@@ -1,0 +1,118 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ object.pick_number }}{% endblock %}
+{% block page_title %}{{ object.pick_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'erp:pick_list_list' %}">{% trans "Pick Lists" %}</a></li>
+            <li class="breadcrumb-item active">{{ object.pick_number }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="erp-card mb-4">
+                <div class="erp-card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{% trans "Pick List Info" %}</h6>
+                    <span class="badge badge-status badge-{{ object.status }}">{{ object.get_status_display }}</span>
+                </div>
+                <div class="erp-card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-5">{% trans "Pick #" %}</dt>
+                        <dd class="col-7">{{ object.pick_number }}</dd>
+
+                        <dt class="col-5">{% trans "Date" %}</dt>
+                        <dd class="col-7">{{ object.pick_date|date:"Y-m-d" }}</dd>
+
+                        <dt class="col-5">{% trans "Warehouse" %}</dt>
+                        <dd class="col-7">{{ object.warehouse.name }}</dd>
+
+                        <dt class="col-5">{% trans "Invoice" %}</dt>
+                        <dd class="col-7">
+                            {% if object.invoice %}
+                            <a href="{% url 'erp:invoice_detail' object.invoice.pk %}">{{ object.invoice.invoice_number }}</a>
+                            {% else %}-{% endif %}
+                        </dd>
+
+                        <dt class="col-5">{% trans "Assigned To" %}</dt>
+                        <dd class="col-7">{{ object.assigned_to|default:"-" }}</dd>
+
+                        <dt class="col-5">{% trans "Created" %}</dt>
+                        <dd class="col-7">{{ object.created_at|date:"Y-m-d H:i" }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="erp-card">
+                <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
+                <div class="erp-card-body d-grid gap-2">
+                    {% if object.status == 'draft' or object.status == 'in_progress' %}
+                    <a href="{% url 'erp:pick_list_edit' object.pk %}" class="btn btn-outline-warning">
+                        <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
+                    </a>
+                    {% endif %}
+                    {% if object.status == 'in_progress' %}
+                    <form method="post" action="{% url 'erp:pick_list_complete' object.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-success w-100" onclick="return confirm('{% trans "Mark this pick list as picked?" %}')">
+                            <i class="bi bi-check2-all ms-1"></i> {% trans "Complete Picking" %}
+                        </button>
+                    </form>
+                    {% endif %}
+                    <a href="{% url 'erp:pick_list_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-right ms-1"></i> {% trans "Back to List" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lines -->
+        <div class="col-lg-8">
+            <div class="erp-card">
+                <div class="erp-card-header">
+                    <h6 class="mb-0"><i class="bi bi-list-ul ms-2"></i> {% trans "Pick Lines" %}</h6>
+                </div>
+                <div class="erp-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="erp-table table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>{% trans "Product" %}</th>
+                                    <th>{% trans "From Bin" %}</th>
+                                    <th>{% trans "Lot" %}</th>
+                                    <th class="text-start">{% trans "Requested" %}</th>
+                                    <th class="text-start">{% trans "Picked" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in object.lines.all %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ line.product.name }}</td>
+                                    <td>{{ line.from_bin.code|default:"-" }}</td>
+                                    <td>{{ line.lot.lot_number|default:"-" }}</td>
+                                    <td class="text-start">{{ line.quantity_requested }}</td>
+                                    <td class="text-start">{{ line.quantity_picked }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">{% trans "No lines recorded." %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

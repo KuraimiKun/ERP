@@ -1,0 +1,117 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Adjustment" %} - {{ adjustment.adjustment_number }}{% endblock %}
+{% block page_title %}{% trans "Stock Adjustment Details" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:adjustment_list' %}">{% trans "Stock Adjustments" %}</a></li>
+        <li class="breadcrumb-item active">{{ adjustment.adjustment_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-plus-slash-minus ms-2"></i> {{ adjustment.adjustment_number }}</h6>
+                    <span class="badge badge-status badge-{{ adjustment.status }}">{{ adjustment.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Type" %}</label>
+                    <div class="fw-medium">{{ adjustment.get_adjustment_type_display }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Warehouse" %}</label>
+                    <div><a href="{% url 'erp:warehouse_detail' adjustment.warehouse.pk %}">{{ adjustment.warehouse }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Date" %}</label>
+                    <div>{{ adjustment.adjustment_date|date:"Y/m/d" }}</div>
+                </div>
+                {% if adjustment.reason %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Reason" %}</label>
+                    <div>{{ adjustment.reason|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+                {% if adjustment.approved_by %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Approved By" %}</label>
+                    <div>{{ adjustment.approved_by }} – {{ adjustment.approved_at|date:"Y/m/d H:i" }}</div>
+                </div>
+                {% endif %}
+                {% if adjustment.notes %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Notes" %}</label>
+                    <div>{{ adjustment.notes|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="erp-card-body border-top d-grid gap-2">
+                {% if adjustment.status == 'draft' %}
+                <a href="{% url 'erp:adjustment_edit' adjustment.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
+                </a>
+                <form method="post" action="{% url 'erp:adjustment_approve' adjustment.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('{% trans "Approve this adjustment?" %}')">
+                        <i class="bi bi-check-circle ms-1"></i> {% trans "Approve" %}
+                    </button>
+                </form>
+                <a href="{% url 'erp:adjustment_delete' adjustment.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">{% trans "Adjustment Lines" %}</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Product" %}</th>
+                            <th class="text-start">{% trans "Quantity" %}</th>
+                            <th class="text-start">{% trans "Unit Cost" %}</th>
+                            <th>{% trans "Bin" %}</th>
+                            <th>{% trans "Lot" %}</th>
+                            <th>{% trans "Notes" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>
+                                <strong>{{ line.product }}</strong>
+                                {% if line.product.sku %}<br><small class="text-muted">{{ line.product.sku }}</small>{% endif %}
+                            </td>
+                            <td class="text-start">{{ line.quantity|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.unit_cost|floatformat:2 }}</td>
+                            <td>{{ line.bin|default:"-" }}</td>
+                            <td>{{ line.lot.lot_number|default:"-" }}</td>
+                            <td>{{ line.notes|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted">{% trans "No lines found" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

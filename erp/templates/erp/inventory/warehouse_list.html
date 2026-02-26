@@ -1,0 +1,98 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Warehouses" %}{% endblock %}
+{% block page_title %}{% trans "Warehouses" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">{% trans "Manage warehouses and storage locations" %}</p>
+    </div>
+    <a href="{% url 'erp:warehouse_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Warehouse" %}
+    </a>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary ms-3">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ warehouses|length }}</div>
+                    <div class="stat-label">{% trans "Total Warehouses" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Warehouses Table -->
+<div class="erp-card">
+    <div class="erp-card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">{% trans "All Warehouses" %}</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Code" %}</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "City" %}</th>
+                    <th>{% trans "Manager" %}</th>
+                    <th class="text-center">{% trans "Zones" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for warehouse in warehouses %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:warehouse_detail' warehouse.pk %}" class="fw-medium text-decoration-none">
+                            {{ warehouse.code }}
+                        </a>
+                    </td>
+                    <td>{{ warehouse.name }}</td>
+                    <td>{{ warehouse.city|default:"-" }}</td>
+                    <td>{{ warehouse.manager|default:"-" }}</td>
+                    <td class="text-center">{{ warehouse.zones.count }}</td>
+                    <td>
+                        {% if warehouse.is_active %}
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:warehouse_detail' warehouse.pk %}" class="btn btn-outline-primary" title="{% trans 'View' %}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'erp:warehouse_edit' warehouse.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:warehouse_delete' warehouse.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <i class="bi bi-building fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No warehouses found" %}</p>
+                        <a href="{% url 'erp:warehouse_create' %}" class="btn btn-primary mt-3">{% trans "Add First Warehouse" %}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

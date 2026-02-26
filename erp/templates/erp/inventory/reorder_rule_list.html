@@ -1,0 +1,150 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Reorder Rules" %}{% endblock %}
+{% block page_title %}{% trans "Reorder Rules" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+            <li class="breadcrumb-item active">{% trans "Reorder Rules" %}</li>
+        </ol>
+    </nav>
+
+    <!-- Toolbar -->
+    <div class="d-flex flex-wrap gap-2 mb-3 justify-content-between align-items-center">
+        <form method="get" class="d-flex gap-2 flex-grow-1">
+            <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% trans 'Search product...' %}" style="max-width:300px;">
+            <select name="active" class="form-select" style="max-width:180px;">
+                <option value="">{% trans "All" %}</option>
+                <option value="1" {% if request.GET.active == '1' %}selected{% endif %}>{% trans "Active" %}</option>
+                <option value="0" {% if request.GET.active == '0' %}selected{% endif %}>{% trans "Inactive" %}</option>
+            </select>
+            <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+        </form>
+        <div class="d-flex gap-2">
+            <a href="{% url 'erp:reorder_suggestions' %}" class="btn btn-outline-info">
+                <i class="bi bi-lightbulb ms-1"></i> {% trans "Reorder Suggestions" %}
+            </a>
+            <a href="{% url 'erp:reorder_rule_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg ms-1"></i> {% trans "New Rule" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="erp-card">
+        <div class="erp-card-body p-0">
+            <div class="table-responsive">
+                <table class="erp-table table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Product" %}</th>
+                            <th>{% trans "Warehouse" %}</th>
+                            <th class="text-start">{% trans "Reorder Point" %}</th>
+                            <th class="text-start">{% trans "Safety Stock" %}</th>
+                            <th class="text-start">{% trans "Min Order Qty" %}</th>
+                            <th class="text-start">{% trans "Max Order Qty" %}</th>
+                            <th class="text-start">{% trans "Lead Time (days)" %}</th>
+                            <th>{% trans "Supplier" %}</th>
+                            <th>{% trans "Active" %}</th>
+                            <th class="text-center">{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in object_list %}
+                        <tr>
+                            <td>{{ rule.product.name }}</td>
+                            <td>{{ rule.warehouse.name }}</td>
+                            <td class="text-start">{{ rule.reorder_point }}</td>
+                            <td class="text-start">{{ rule.safety_stock }}</td>
+                            <td class="text-start">{{ rule.min_order_qty }}</td>
+                            <td class="text-start">{{ rule.max_order_qty }}</td>
+                            <td class="text-start">{{ rule.lead_time_days }}</td>
+                            <td>{{ rule.preferred_supplier|default:"-" }}</td>
+                            <td>
+                                {% if rule.is_active %}
+                                <span class="badge bg-success">{% trans "Yes" %}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{% trans "No" %}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'erp:reorder_rule_edit' rule.pk %}" class="btn btn-outline-warning" title="{% trans 'Edit' %}"><i class="bi bi-pencil"></i></a>
+                                    <button type="button" class="btn btn-outline-danger" title="{% trans 'Delete' %}"
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                            data-delete-url="{% url 'erp:reorder_rule_delete' rule.pk %}"
+                                            data-delete-name="{{ rule.product.name }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">{% trans "No reorder rules found." %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if page_obj and page_obj.has_other_pages %}
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if num == page_obj.number %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Are you sure you want to delete the reorder rule for" %} <strong id="delete-name"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form id="delete-form" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.addEventListener('show.bs.modal', function(e) {
+            const btn = e.relatedTarget;
+            document.getElementById('delete-form').action = btn.dataset.deleteUrl;
+            document.getElementById('delete-name').textContent = btn.dataset.deleteName;
+        });
+    }
+});
+</script>
+{% endblock %}

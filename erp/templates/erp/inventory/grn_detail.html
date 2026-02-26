@@ -1,0 +1,120 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "GRN" %} - {{ grn.grn_number }}{% endblock %}
+{% block page_title %}{% trans "Goods Receipt Note" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:grn_list' %}">{% trans "Goods Receipts" %}</a></li>
+        <li class="breadcrumb-item active">{{ grn.grn_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-inbox ms-2"></i> {{ grn.grn_number }}</h6>
+                    <span class="badge badge-status badge-{{ grn.status }}">{{ grn.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Supplier" %}</label>
+                    <div class="fw-medium">{{ grn.supplier }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Purchase Order" %}</label>
+                    <div><a href="{% url 'erp:purchase_order_detail' grn.purchase_order.pk %}">{{ grn.purchase_order.po_number }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Warehouse" %}</label>
+                    <div><a href="{% url 'erp:warehouse_detail' grn.warehouse.pk %}">{{ grn.warehouse }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Receipt Date" %}</label>
+                    <div>{{ grn.receipt_date|date:"Y/m/d" }}</div>
+                </div>
+                {% if grn.notes %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Notes" %}</label>
+                    <div>{{ grn.notes|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="erp-card-body border-top d-grid gap-2">
+                {% if grn.status == 'draft' %}
+                <a href="{% url 'erp:grn_edit' grn.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
+                </a>
+                <form method="post" action="{% url 'erp:grn_confirm' grn.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('{% trans "Confirm this GRN?" %}')">
+                        <i class="bi bi-check-circle ms-1"></i> {% trans "Confirm Receipt" %}
+                    </button>
+                </form>
+                <a href="{% url 'erp:grn_delete' grn.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- GRN Lines -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">{% trans "Receipt Lines" %}</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Product" %}</th>
+                            <th class="text-start">{% trans "Ordered" %}</th>
+                            <th class="text-start">{% trans "Received" %}</th>
+                            <th class="text-start">{% trans "Accepted" %}</th>
+                            <th class="text-start">{% trans "Rejected" %}</th>
+                            <th class="text-start">{% trans "Unit Cost" %}</th>
+                            <th>{% trans "Bin" %}</th>
+                            <th>{% trans "Lot" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>
+                                <strong>{{ line.product }}</strong>
+                                {% if line.product.sku %}<br><small class="text-muted">{{ line.product.sku }}</small>{% endif %}
+                            </td>
+                            <td class="text-start">{{ line.quantity_ordered|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.quantity_received|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.quantity_accepted|floatformat:2 }}</td>
+                            <td class="text-start">
+                                {% if line.quantity_rejected > 0 %}
+                                <span class="text-danger">{{ line.quantity_rejected|floatformat:2 }}</span>
+                                {% else %}
+                                {{ line.quantity_rejected|floatformat:2 }}
+                                {% endif %}
+                            </td>
+                            <td class="text-start">{{ line.unit_cost|floatformat:2 }}</td>
+                            <td>{{ line.bin|default:"-" }}</td>
+                            <td>{{ line.lot.lot_number|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-3 text-muted">{% trans "No lines found" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

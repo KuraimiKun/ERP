@@ -1,0 +1,124 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Transfer" %} - {{ transfer.transfer_number }}{% endblock %}
+{% block page_title %}{% trans "Stock Transfer Details" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:transfer_list' %}">{% trans "Stock Transfers" %}</a></li>
+        <li class="breadcrumb-item active">{{ transfer.transfer_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-arrow-left-right ms-2"></i> {{ transfer.transfer_number }}</h6>
+                    <span class="badge badge-status badge-{{ transfer.status }}">{{ transfer.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "From Warehouse" %}</label>
+                    <div class="fw-medium"><a href="{% url 'erp:warehouse_detail' transfer.from_warehouse.pk %}">{{ transfer.from_warehouse }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "To Warehouse" %}</label>
+                    <div class="fw-medium"><a href="{% url 'erp:warehouse_detail' transfer.to_warehouse.pk %}">{{ transfer.to_warehouse }}</a></div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Transfer Date" %}</label>
+                    <div>{{ transfer.transfer_date|date:"Y/m/d" }}</div>
+                </div>
+                {% if transfer.shipped_date %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Shipped Date" %}</label>
+                    <div>{{ transfer.shipped_date|date:"Y/m/d" }}</div>
+                </div>
+                {% endif %}
+                {% if transfer.received_date %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Received Date" %}</label>
+                    <div>{{ transfer.received_date|date:"Y/m/d" }}</div>
+                </div>
+                {% endif %}
+                {% if transfer.notes %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Notes" %}</label>
+                    <div>{{ transfer.notes|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="erp-card-body border-top d-grid gap-2">
+                {% if transfer.status == 'draft' %}
+                <a href="{% url 'erp:transfer_edit' transfer.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit" %}
+                </a>
+                <form method="post" action="{% url 'erp:transfer_ship' transfer.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-info w-100" onclick="return confirm('{% trans "Ship this transfer?" %}')">
+                        <i class="bi bi-truck ms-1"></i> {% trans "Ship" %}
+                    </button>
+                </form>
+                <a href="{% url 'erp:transfer_delete' transfer.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete" %}
+                </a>
+                {% elif transfer.status == 'in_transit' %}
+                <form method="post" action="{% url 'erp:transfer_receive' transfer.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('{% trans "Mark as received?" %}')">
+                        <i class="bi bi-check-circle ms-1"></i> {% trans "Receive" %}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">{% trans "Transfer Lines" %}</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Product" %}</th>
+                            <th class="text-start">{% trans "Quantity" %}</th>
+                            <th>{% trans "From Bin" %}</th>
+                            <th>{% trans "To Bin" %}</th>
+                            <th>{% trans "Lot" %}</th>
+                            <th class="text-start">{% trans "Unit Cost" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>
+                                <strong>{{ line.product }}</strong>
+                                {% if line.product.sku %}<br><small class="text-muted">{{ line.product.sku }}</small>{% endif %}
+                            </td>
+                            <td class="text-start">{{ line.quantity|floatformat:2 }}</td>
+                            <td>{{ line.from_bin|default:"-" }}</td>
+                            <td>{{ line.to_bin|default:"-" }}</td>
+                            <td>{{ line.lot.lot_number|default:"-" }}</td>
+                            <td class="text-start">{{ line.unit_cost|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted">{% trans "No lines found" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

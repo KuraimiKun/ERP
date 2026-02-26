@@ -1,0 +1,70 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Stock Adjustments" %}{% endblock %}
+{% block page_title %}{% trans "Stock Adjustments" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">{% trans "Record inventory adjustments, gains and losses" %}</p>
+    </div>
+    <a href="{% url 'erp:adjustment_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Adjustment" %}
+    </a>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Adjustment Number" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Warehouse" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adj in adjustments %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:adjustment_detail' adj.pk %}" class="fw-medium text-decoration-none">
+                            {{ adj.adjustment_number }}
+                        </a>
+                    </td>
+                    <td><span class="badge bg-light text-dark">{{ adj.get_adjustment_type_display }}</span></td>
+                    <td>{{ adj.warehouse }}</td>
+                    <td>{{ adj.adjustment_date|date:"Y/m/d" }}</td>
+                    <td><span class="badge badge-status badge-{{ adj.status }}">{{ adj.get_status_display }}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:adjustment_detail' adj.pk %}" class="btn btn-outline-primary" title="{% trans 'View' %}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if adj.status == 'draft' %}
+                            <a href="{% url 'erp:adjustment_edit' adj.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:adjustment_delete' adj.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-plus-slash-minus fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No adjustments found" %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

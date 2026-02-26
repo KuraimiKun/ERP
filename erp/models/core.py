@@ -210,6 +210,13 @@ class Sequence(TimeStampedModel):
         SUPPLIER_INVOICE = 'supplier_invoice', 'Supplier Invoice'
         SUPPLIER_PAYMENT = 'supplier_payment', 'Supplier Payment'
         LEAD = 'lead', 'Lead'
+        # Inventory & Warehouse
+        GOODS_RECEIPT = 'goods_receipt', 'Goods Receipt Note'
+        STOCK_TRANSFER = 'stock_transfer', 'Stock Transfer'
+        STOCK_ADJUSTMENT = 'stock_adjustment', 'Stock Adjustment'
+        CYCLE_COUNT = 'cycle_count', 'Cycle Count'
+        PICK_LIST = 'pick_list', 'Pick List'
+        SHIPMENT = 'shipment', 'Shipment Note'
 
     company = models.ForeignKey(
         Company,

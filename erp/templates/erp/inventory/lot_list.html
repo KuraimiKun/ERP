@@ -1,0 +1,87 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Lots / Batches" %}{% endblock %}
+{% block page_title %}{% trans "Lots / Batches" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">{% trans "Manage product lots and batches for traceability" %}</p>
+    </div>
+    <a href="{% url 'erp:lot_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Lot" %}
+    </a>
+</div>
+
+<!-- Search -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans 'Lot number, product...' %}" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search ms-1"></i> {% trans "Search" %}
+                </button>
+                <a href="{% url 'erp:lot_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Lot Number" %}</th>
+                    <th>{% trans "Product" %}</th>
+                    <th>{% trans "Manufacture Date" %}</th>
+                    <th>{% trans "Expiry Date" %}</th>
+                    <th>{% trans "Expired" %}</th>
+                    <th>{% trans "Supplier" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lot in lots %}
+                <tr>
+                    <td class="fw-medium">{{ lot.lot_number }}</td>
+                    <td>{{ lot.product }}</td>
+                    <td>{{ lot.manufacture_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>{{ lot.expiry_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>
+                        {% if lot.is_expired %}
+                        <span class="badge bg-danger">{% trans "Expired" %}</span>
+                        {% else %}
+                        <span class="badge bg-success">{% trans "Valid" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ lot.supplier|default:"-" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:lot_edit' lot.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:lot_delete' lot.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <i class="bi bi-upc-scan fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No lots found" %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

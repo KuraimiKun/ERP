@@ -687,6 +687,7 @@ class JournalEntry(ERPBaseModel):
         ADJUSTMENT = 'adjustment', 'تسوية'
         OPENING = 'opening', 'رصيد افتتاحي'
         CLOSING = 'closing', 'إقفال'
+        INVENTORY = 'inventory', 'مخزون'
 
     company = models.ForeignKey(
         'erp.Company',

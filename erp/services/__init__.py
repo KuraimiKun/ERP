@@ -42,6 +42,26 @@ from .accounting import (
     create_purchase_order_journal_entry,
 )
 
+from .inventory import (
+    record_stock_movement,
+    confirm_goods_receipt,
+    ship_stock_transfer,
+    receive_stock_transfer,
+    approve_stock_adjustment,
+    complete_cycle_count,
+    complete_pick_list,
+    ship_shipment,
+    get_reorder_suggestions,
+    get_stock_summary_by_warehouse,
+    get_stock_summary_by_product,
+)
+
+from .inventory_accounting import (
+    create_grn_journal_entry,
+    create_sales_issue_journal_entry,
+    create_adjustment_journal_entry,
+)
+
 __all__ = [
     # Sequence
     'SequenceService',
@@ -76,4 +96,22 @@ __all__ = [
     'create_supplier_invoice_journal_entry',
     'create_supplier_payment_journal_entry',
     'create_purchase_order_journal_entry',
+
+    # Inventory
+    'record_stock_movement',
+    'confirm_goods_receipt',
+    'ship_stock_transfer',
+    'receive_stock_transfer',
+    'approve_stock_adjustment',
+    'complete_cycle_count',
+    'complete_pick_list',
+    'ship_shipment',
+    'get_reorder_suggestions',
+    'get_stock_summary_by_warehouse',
+    'get_stock_summary_by_product',
+
+    # Inventory Accounting
+    'create_grn_journal_entry',
+    'create_sales_issue_journal_entry',
+    'create_adjustment_journal_entry',
 ]

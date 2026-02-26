@@ -85,6 +85,21 @@ from .journal import (
     JournalEntryLineFormSet,
 )
 
+# ── Inventory & Warehouse ──────────────────────────────────────
+from .inventory import (
+    UnitOfMeasureForm, UnitOfMeasureConversionForm,
+    WarehouseForm, WarehouseZoneForm, WarehouseZoneFormSet,
+    WarehouseBinForm, WarehouseBinFormSet,
+    LotBatchForm, SerialNumberForm,
+    GoodsReceiptNoteForm, GoodsReceiptLineForm, GoodsReceiptLineFormSet,
+    StockTransferForm, StockTransferLineForm, StockTransferLineFormSet,
+    StockAdjustmentForm, StockAdjustmentLineForm, StockAdjustmentLineFormSet,
+    CycleCountForm, CycleCountLineForm, CycleCountLineFormSet,
+    PickListForm, PickListLineForm, PickListLineFormSet,
+    ShipmentNoteForm, ShipmentLineForm, ShipmentLineFormSet,
+    ReorderRuleForm, InventoryValuationConfigForm,
+)
+
 __all__ = [
     # Mixins
     'CompanyFilterMixin', 'BootstrapFormMixin',
@@ -113,4 +128,16 @@ __all__ = [
     # Journal
     'JournalEntryForm', 'JournalEntryLineForm',
     'BaseJournalEntryLineFormSet', 'JournalEntryLineFormSet',
+    # Inventory
+    'UnitOfMeasureForm', 'UnitOfMeasureConversionForm',
+    'WarehouseForm', 'WarehouseZoneForm', 'WarehouseZoneFormSet',
+    'WarehouseBinForm', 'WarehouseBinFormSet',
+    'LotBatchForm', 'SerialNumberForm',
+    'GoodsReceiptNoteForm', 'GoodsReceiptLineForm', 'GoodsReceiptLineFormSet',
+    'StockTransferForm', 'StockTransferLineForm', 'StockTransferLineFormSet',
+    'StockAdjustmentForm', 'StockAdjustmentLineForm', 'StockAdjustmentLineFormSet',
+    'CycleCountForm', 'CycleCountLineForm', 'CycleCountLineFormSet',
+    'PickListForm', 'PickListLineForm', 'PickListLineFormSet',
+    'ShipmentNoteForm', 'ShipmentLineForm', 'ShipmentLineFormSet',
+    'ReorderRuleForm', 'InventoryValuationConfigForm',
 ]

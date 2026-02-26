@@ -1,0 +1,74 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Units of Measure" %}{% endblock %}
+{% block page_title %}{% trans "Units of Measure" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">{% trans "Manage units of measure and conversions" %}</p>
+    </div>
+    <a href="{% url 'erp:uom_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Unit" %}
+    </a>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Abbreviation" %}</th>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Base Unit" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for uom in uoms %}
+                <tr>
+                    <td class="fw-medium">{{ uom.name }}</td>
+                    <td>{{ uom.abbreviation }}</td>
+                    <td><span class="badge bg-light text-dark">{{ uom.get_category_display }}</span></td>
+                    <td>
+                        {% if uom.is_base %}
+                        <span class="badge bg-info">{% trans "Base" %}</span>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if uom.is_active %}
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:uom_edit' uom.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:uom_delete' uom.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-rulers fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No units of measure found" %}</p>
+                        <a href="{% url 'erp:uom_create' %}" class="btn btn-primary mt-3">{% trans "Add First Unit" %}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

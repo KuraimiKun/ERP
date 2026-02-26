@@ -1,0 +1,168 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Warehouse" %} - {{ warehouse.code }}{% endblock %}
+{% block page_title %}{% trans "Warehouse Details" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:warehouse_list' %}">{% trans "Warehouses" %}</a></li>
+        <li class="breadcrumb-item active">{{ warehouse.code }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Warehouse Info -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-building ms-2"></i> {% trans "Warehouse Information" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Code" %}</label>
+                    <div class="fw-medium">{{ warehouse.code }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Name" %}</label>
+                    <div>{{ warehouse.name }}</div>
+                </div>
+                {% if warehouse.name_ar %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Name (Arabic)" %}</label>
+                    <div>{{ warehouse.name_ar }}</div>
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Address" %}</label>
+                    <div>{{ warehouse.address|linebreaksbr|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "City" %}</label>
+                    <div>{{ warehouse.city|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Country" %}</label>
+                    <div>{{ warehouse.country|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Manager" %}</label>
+                    <div>{{ warehouse.manager|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Status" %}</label>
+                    <div>
+                        {% if warehouse.is_active %}
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if warehouse.notes %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Notes" %}</label>
+                    <div>{{ warehouse.notes|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="erp-card-body border-top d-grid gap-2">
+                <a href="{% url 'erp:warehouse_edit' warehouse.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit Warehouse" %}
+                </a>
+                <a href="{% url 'erp:warehouse_delete' warehouse.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete Warehouse" %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Zones Table -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-grid-3x3 ms-2"></i> {% trans "Zones" %}</h6>
+                <a href="{% url 'erp:zone_create' warehouse.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-circle ms-1"></i> {% trans "Add Zone" %}
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Code" %}</th>
+                            <th>{% trans "Name" %}</th>
+                            <th>{% trans "Type" %}</th>
+                            <th class="text-center">{% trans "Bins" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for zone in zones %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'erp:zone_detail' zone.pk %}" class="fw-medium text-decoration-none">
+                                    {{ zone.code }}
+                                </a>
+                            </td>
+                            <td>{{ zone.name }}</td>
+                            <td><span class="badge bg-light text-dark">{{ zone.get_zone_type_display }}</span></td>
+                            <td class="text-center">{{ zone.bins.count }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'erp:zone_detail' zone.pk %}" class="btn btn-outline-primary" title="{% trans 'View' %}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'erp:zone_edit' zone.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3 text-muted">{% trans "No zones defined" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Stock Summary -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-box-seam ms-2"></i> {% trans "Stock Summary" %}</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Product" %}</th>
+                            <th>{% trans "SKU" %}</th>
+                            <th class="text-start">{% trans "On Hand" %}</th>
+                            <th class="text-start">{% trans "Allocated" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stock_items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.product.sku }}</td>
+                            <td class="text-start">{{ item.on_hand|floatformat:2 }}</td>
+                            <td class="text-start">{{ item.allocated|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">{% trans "No stock in this warehouse" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

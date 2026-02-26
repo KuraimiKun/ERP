@@ -1,0 +1,122 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Inventory Valuation Configuration" %}{% endblock %}
+{% block page_title %}{% trans "Inventory Valuation Configuration" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+            <li class="breadcrumb-item active">{% trans "Valuation Configuration" %}</li>
+        </ol>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger mb-4">
+            <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> {% trans "Please correct the following errors:" %}</h6>
+            <ul class="mb-0">
+                {% for field, errors in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <!-- Valuation Method -->
+                <div class="erp-card mb-4">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0"><i class="bi bi-calculator ms-2"></i> {% trans "Valuation Method" %}</h6>
+                    </div>
+                    <div class="erp-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Valuation Method" %} <span class="text-danger">*</span></label>
+                                {{ form.valuation_method }}
+                                {% if form.valuation_method.errors %}<div class="invalid-feedback d-block">{{ form.valuation_method.errors.0 }}</div>{% endif %}
+                                <div class="form-text">{% trans "Select the inventory costing method used for valuation calculations." %}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GL Accounts -->
+                <div class="erp-card mb-4">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0"><i class="bi bi-journal-text ms-2"></i> {% trans "General Ledger Accounts" %}</h6>
+                    </div>
+                    <div class="erp-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Inventory Account" %}</label>
+                                {{ form.inventory_account }}
+                                {% if form.inventory_account.errors %}<div class="invalid-feedback d-block">{{ form.inventory_account.errors.0 }}</div>{% endif %}
+                                <div class="form-text">{% trans "Asset account for inventory on hand." %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "COGS Account" %}</label>
+                                {{ form.cogs_account }}
+                                {% if form.cogs_account.errors %}<div class="invalid-feedback d-block">{{ form.cogs_account.errors.0 }}</div>{% endif %}
+                                <div class="form-text">{% trans "Expense account for cost of goods sold." %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "GRNI Account" %}</label>
+                                {{ form.grni_account }}
+                                {% if form.grni_account.errors %}<div class="invalid-feedback d-block">{{ form.grni_account.errors.0 }}</div>{% endif %}
+                                <div class="form-text">{% trans "Goods Received Not Invoiced (accrual) account." %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Adjustment Account" %}</label>
+                                {{ form.adjustment_account }}
+                                {% if form.adjustment_account.errors %}<div class="invalid-feedback d-block">{{ form.adjustment_account.errors.0 }}</div>{% endif %}
+                                <div class="form-text">{% trans "Account for stock adjustment gains/losses." %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Write-Off Account" %}</label>
+                                {{ form.write_off_account }}
+                                {% if form.write_off_account.errors %}<div class="invalid-feedback d-block">{{ form.write_off_account.errors.0 }}</div>{% endif %}
+                                <div class="form-text">{% trans "Account for inventory write-offs." %}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="erp-card position-sticky" style="top: 1rem;">
+                    <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
+                    <div class="erp-card-body d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg ms-1"></i> {% trans "Save Configuration" %}
+                        </button>
+                        <a href="{% url 'erp:dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-right ms-1"></i> {% trans "Back to Dashboard" %}
+                        </a>
+                    </div>
+                    <div class="erp-card-body border-top">
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle ms-1"></i>
+                            {% trans "These settings affect how inventory is valued in financial reports and journal entries." %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

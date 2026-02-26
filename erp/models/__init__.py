@@ -91,6 +91,33 @@ from .services import (
     ProductSupplier,
 )
 
+# Inventory & Warehouse models
+from .inventory import (
+    UnitOfMeasure,
+    UnitOfMeasureConversion,
+    Warehouse,
+    WarehouseZone,
+    WarehouseBin,
+    LotBatch,
+    SerialNumber,
+    StockItem,
+    StockMovement,
+    GoodsReceiptNote,
+    GoodsReceiptLine,
+    StockTransfer,
+    StockTransferLine,
+    StockAdjustment,
+    StockAdjustmentLine,
+    CycleCount,
+    CycleCountLine,
+    PickList,
+    PickListLine,
+    ShipmentNote,
+    ShipmentLine,
+    ReorderRule,
+    InventoryValuationConfig,
+)
+
 # Reporting models
 from .reporting import (
     ReportTemplate,
@@ -185,6 +212,31 @@ __all__ = [
     'ProductCategory',
     'Product',
     'ProductSupplier',
+    
+    # Inventory & Warehouse
+    'UnitOfMeasure',
+    'UnitOfMeasureConversion',
+    'Warehouse',
+    'WarehouseZone',
+    'WarehouseBin',
+    'LotBatch',
+    'SerialNumber',
+    'StockItem',
+    'StockMovement',
+    'GoodsReceiptNote',
+    'GoodsReceiptLine',
+    'StockTransfer',
+    'StockTransferLine',
+    'StockAdjustment',
+    'StockAdjustmentLine',
+    'CycleCount',
+    'CycleCountLine',
+    'PickList',
+    'PickListLine',
+    'ShipmentNote',
+    'ShipmentLine',
+    'ReorderRule',
+    'InventoryValuationConfig',
     
     # Reporting
     'ReportTemplate',

@@ -403,6 +403,68 @@
                 {% trans "Service Categories" %}
             </a>
             
+            <div class="erp-nav-section mt-3">{% trans "Inventory & Warehouse" %}</div>
+            <a href="{% url 'erp:warehouse_list' %}" class="erp-nav-link {% if 'warehouse' in request.resolver_match.url_name or 'zone' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-building"></i>
+                {% trans "Warehouses" %}
+            </a>
+            <a href="{% url 'erp:stock_levels' %}" class="erp-nav-link {% if 'stock_levels' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-boxes"></i>
+                {% trans "Stock Levels" %}
+            </a>
+            <a href="{% url 'erp:stock_movement_list' %}" class="erp-nav-link {% if 'stock_movement' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-arrow-left-right"></i>
+                {% trans "Stock Movements" %}
+            </a>
+            <a href="{% url 'erp:grn_list' %}" class="erp-nav-link {% if 'grn' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-box-arrow-in-down"></i>
+                {% trans "Goods Receipts" %}
+            </a>
+            <a href="{% url 'erp:transfer_list' %}" class="erp-nav-link {% if 'transfer' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-shuffle"></i>
+                {% trans "Transfers" %}
+            </a>
+            <a href="{% url 'erp:adjustment_list' %}" class="erp-nav-link {% if 'adjustment' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-pencil-square"></i>
+                {% trans "Adjustments" %}
+            </a>
+            <a href="{% url 'erp:cycle_count_list' %}" class="erp-nav-link {% if 'cycle_count' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clipboard-check"></i>
+                {% trans "Cycle Counts" %}
+            </a>
+            <a href="{% url 'erp:pick_list_list' %}" class="erp-nav-link {% if 'pick_list' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-card-checklist"></i>
+                {% trans "Pick Lists" %}
+            </a>
+            <a href="{% url 'erp:shipment_list' %}" class="erp-nav-link {% if 'shipment' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-truck"></i>
+                {% trans "Shipments" %}
+            </a>
+            <a href="{% url 'erp:reorder_rule_list' %}" class="erp-nav-link {% if 'reorder_rule' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-arrow-repeat"></i>
+                {% trans "Reorder Rules" %}
+            </a>
+            <a href="{% url 'erp:reorder_suggestions' %}" class="erp-nav-link {% if 'reorder_suggestions' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-exclamation-triangle"></i>
+                {% trans "Reorder Alerts" %}
+            </a>
+            <a href="{% url 'erp:uom_list' %}" class="erp-nav-link {% if 'uom' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-rulers"></i>
+                {% trans "Units of Measure" %}
+            </a>
+            <a href="{% url 'erp:lot_list' %}" class="erp-nav-link {% if 'lot' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-upc-scan"></i>
+                {% trans "Lots / Batches" %}
+            </a>
+            <a href="{% url 'erp:serial_list' %}" class="erp-nav-link {% if 'serial' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-hash"></i>
+                {% trans "Serial Numbers" %}
+            </a>
+            <a href="{% url 'erp:valuation_config' %}" class="erp-nav-link {% if 'valuation_config' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-sliders"></i>
+                {% trans "Valuation Config" %}
+            </a>
+            
             <div class="erp-nav-section mt-3">{% trans "Operations" %}</div>
             <a href="{% url 'erp:task_list' %}" class="erp-nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-check2-square"></i>

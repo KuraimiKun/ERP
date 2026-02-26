@@ -31,6 +31,17 @@ from .views import (
     AuditLogViewSet, NotificationViewSet,
 )
 
+from .inventory_views import (
+    UnitOfMeasureViewSet, UnitOfMeasureConversionViewSet,
+    WarehouseViewSet, WarehouseZoneViewSet, WarehouseBinViewSet,
+    LotBatchViewSet, SerialNumberViewSet,
+    StockItemViewSet, StockMovementViewSet,
+    GoodsReceiptNoteViewSet, StockTransferViewSet,
+    StockAdjustmentViewSet, CycleCountViewSet,
+    PickListViewSet, ShipmentNoteViewSet,
+    ReorderRuleViewSet, InventoryValuationConfigViewSet,
+)
+
 # Create router
 router = SimpleRouter()
 
@@ -84,6 +95,25 @@ router.register(r'kpis', KPIViewSet, basename='kpi')
 # Audit routes
 router.register(r'audit-logs', AuditLogViewSet, basename='audit-log')
 router.register(r'notifications', NotificationViewSet, basename='notification')
+
+# Inventory & Warehouse routes
+router.register(r'uom', UnitOfMeasureViewSet, basename='uom')
+router.register(r'uom-conversions', UnitOfMeasureConversionViewSet, basename='uom-conversion')
+router.register(r'warehouses', WarehouseViewSet, basename='warehouse')
+router.register(r'warehouse-zones', WarehouseZoneViewSet, basename='warehouse-zone')
+router.register(r'warehouse-bins', WarehouseBinViewSet, basename='warehouse-bin')
+router.register(r'lots', LotBatchViewSet, basename='lot')
+router.register(r'serial-numbers', SerialNumberViewSet, basename='serial-number')
+router.register(r'stock-items', StockItemViewSet, basename='stock-item')
+router.register(r'stock-movements', StockMovementViewSet, basename='stock-movement')
+router.register(r'goods-receipts', GoodsReceiptNoteViewSet, basename='goods-receipt')
+router.register(r'stock-transfers', StockTransferViewSet, basename='stock-transfer')
+router.register(r'stock-adjustments', StockAdjustmentViewSet, basename='stock-adjustment')
+router.register(r'cycle-counts', CycleCountViewSet, basename='cycle-count')
+router.register(r'pick-lists', PickListViewSet, basename='pick-list')
+router.register(r'shipments', ShipmentNoteViewSet, basename='shipment')
+router.register(r'reorder-rules', ReorderRuleViewSet, basename='reorder-rule')
+router.register(r'valuation-config', InventoryValuationConfigViewSet, basename='valuation-config')
 
 # URL patterns
 urlpatterns = [
