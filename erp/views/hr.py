@@ -68,7 +68,30 @@ def employee_detail(request, pk):
         'documents': employee.documents.order_by('-created_at'),
         'leave_requests': employee.leave_requests.order_by('-created_at')[:10],
         'attendances': employee.attendances.order_by('-date')[:30],
+        'assigned_tasks': employee.assigned_tasks.order_by('-created_at')[:20],
     })
+
+
+@staff_member_required
+def employee_permissions_update(request, pk):
+    """Save portal permission toggles for an employee (POST only)."""
+    company = get_user_company(request.user)
+    employee = get_object_or_404(Employee, pk=pk, company=company)
+
+    if request.method != 'POST':
+        return redirect('erp:employee_detail', pk=pk)
+
+    perm_fields = [
+        'portal_can_scan_qr', 'portal_can_view_attendance',
+        'portal_can_manage_leaves', 'portal_can_view_payslips',
+        'portal_can_edit_profile', 'portal_can_view_tasks',
+    ]
+    for field in perm_fields:
+        setattr(employee, field, field in request.POST)
+    employee.save(update_fields=perm_fields)
+
+    messages.success(request, f'Portal permissions updated for "{employee.full_name}".')
+    return redirect('erp:employee_detail', pk=pk)
 
 
 @staff_member_required

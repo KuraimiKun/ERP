@@ -1,0 +1,132 @@
+{% extends "erp/employee_portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Tasks" %} - {% trans "Employee Portal" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-list-task me-2"></i>{% trans "My Tasks" %}</h4>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-value text-primary">{{ task_counts.total }}</div>
+            <div class="stat-label">{% trans "Total Tasks" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-value text-info">{{ task_counts.todo }}</div>
+            <div class="stat-label">{% trans "To Do" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-value text-warning">{{ task_counts.in_progress }}</div>
+            <div class="stat-label">{% trans "In Progress" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-value text-success">{{ task_counts.completed }}</div>
+            <div class="stat-label">{% trans "Completed" %}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'erp:employee_portal_task_list' %}"
+               class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                {% trans "All" %}
+            </a>
+            {% for value, label in statuses %}
+            <a href="{% url 'erp:employee_portal_task_list' %}?status={{ value }}"
+               class="btn btn-sm {% if status_filter == value %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Tasks Table -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Title" %}</th>
+                    <th>{% trans "Priority" %}</th>
+                    <th>{% trans "Due Date" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:employee_portal_task_detail' task.pk %}" class="fw-medium text-decoration-none">
+                            {{ task.title }}
+                        </a>
+                        {% if task.description %}
+                        <div class="text-muted small text-truncate" style="max-width: 300px;">{{ task.description|truncatewords:10 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.priority == 'urgent' %}
+                        <span class="badge bg-danger">{% trans "Urgent" %}</span>
+                        {% elif task.priority == 'high' %}
+                        <span class="badge bg-warning text-dark">{% trans "High" %}</span>
+                        {% elif task.priority == 'medium' %}
+                        <span class="badge bg-info">{% trans "Medium" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans "Low" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.due_date %}
+                        <span class="{% if task.due_date|date:'Y-m-d' < today|date:'Y-m-d' and task.status != 'completed' %}text-danger fw-bold{% endif %}">
+                            {{ task.due_date|date:"M d, Y" }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.status == 'completed' %}
+                        <span class="badge bg-success">{% trans "Completed" %}</span>
+                        {% elif task.status == 'in_progress' %}
+                        <span class="badge bg-primary">{% trans "In Progress" %}</span>
+                        {% elif task.status == 'on_hold' %}
+                        <span class="badge bg-warning text-dark">{% trans "On Hold" %}</span>
+                        {% elif task.status == 'cancelled' %}
+                        <span class="badge bg-secondary">{% trans "Cancelled" %}</span>
+                        {% else %}
+                        <span class="badge bg-info">{% trans "To Do" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'erp:employee_portal_task_detail' task.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="bi bi-check-circle fs-1 d-block mb-2"></i>
+                        {% trans "No tasks assigned to you" %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

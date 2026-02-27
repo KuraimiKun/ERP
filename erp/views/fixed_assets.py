@@ -1,0 +1,602 @@
+"""
+ERP Views – Fixed Assets Management
+
+Asset Register, Categories, Depreciation, Disposal,
+Transfers, Revaluation, and Maintenance Logs.
+"""
+
+from datetime import date, timedelta
+from decimal import Decimal
+from dateutil.relativedelta import relativedelta
+
+from django.db.models import Q, Sum, Count
+from django.utils import timezone
+
+from erp.models.fixed_assets import (
+    AssetCategory, FixedAsset, DepreciationSchedule,
+    AssetDisposal, AssetTransfer, AssetRevaluation,
+    AssetMaintenanceLog,
+)
+from erp.forms.fixed_assets import (
+    AssetCategoryForm, FixedAssetForm, DepreciationScheduleForm,
+    AssetDisposalForm, AssetTransferForm, AssetRevaluationForm,
+    AssetMaintenanceLogForm, GenerateDepreciationForm,
+)
+from ._common import (
+    render, get_object_or_404, redirect, messages, reverse,
+    get_user_company, staff_member_required,
+)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Asset Categories
+# ═══════════════════════════════════════════════════════════════════
+
+@staff_member_required
+def asset_category_list(request):
+    company = get_user_company(request.user)
+    categories = AssetCategory.objects.filter(company=company)
+
+    search = request.GET.get('search')
+    if search:
+        categories = categories.filter(
+            Q(name__icontains=search) | Q(code__icontains=search)
+        )
+
+    return render(request, 'erp/fixed_assets/categories/list.html', {
+        'categories': categories,
+    })
+
+
+@staff_member_required
+def asset_category_create(request):
+    company = get_user_company(request.user)
+    form = AssetCategoryForm(request.POST or None, company=company)
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.company = company
+        obj.save()
+        messages.success(request, 'Asset category created.')
+        return redirect('erp:asset_category_list')
+    return render(request, 'erp/fixed_assets/categories/form.html', {
+        'form': form, 'title': 'New Asset Category',
+    })
+
+
+@staff_member_required
+def asset_category_edit(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(AssetCategory, pk=pk, company=company)
+    form = AssetCategoryForm(request.POST or None, instance=obj, company=company)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Asset category updated.')
+        return redirect('erp:asset_category_list')
+    return render(request, 'erp/fixed_assets/categories/form.html', {
+        'form': form, 'title': f'Edit {obj.name}',
+    })
+
+
+@staff_member_required
+def asset_category_delete(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(AssetCategory, pk=pk, company=company)
+    if request.method == 'POST':
+        obj.delete()
+        messages.success(request, 'Asset category deleted.')
+        return redirect('erp:asset_category_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': obj, 'cancel_url': reverse('erp:asset_category_list'),
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Fixed Asset Register
+# ═══════════════════════════════════════════════════════════════════
+
+@staff_member_required
+def asset_list(request):
+    company = get_user_company(request.user)
+    assets = FixedAsset.objects.filter(company=company).select_related(
+        'category', 'department', 'custodian',
+    )
+
+    status = request.GET.get('status')
+    if status:
+        assets = assets.filter(status=status)
+
+    category = request.GET.get('category')
+    if category:
+        assets = assets.filter(category_id=category)
+
+    search = request.GET.get('search')
+    if search:
+        assets = assets.filter(
+            Q(asset_number__icontains=search) |
+            Q(name__icontains=search) |
+            Q(serial_number__icontains=search) |
+            Q(barcode__icontains=search)
+        )
+
+    categories = AssetCategory.objects.filter(company=company, is_active=True)
+
+    # Summary stats
+    totals = assets.aggregate(
+        total_cost=Sum('acquisition_cost'),
+        total_book_value=Sum('current_book_value'),
+        total_depreciation=Sum('accumulated_depreciation'),
+    )
+
+    return render(request, 'erp/fixed_assets/assets/list.html', {
+        'assets': assets,
+        'statuses': FixedAsset.Status.choices,
+        'categories': categories,
+        'totals': totals,
+    })
+
+
+@staff_member_required
+def asset_detail(request, pk):
+    company = get_user_company(request.user)
+    asset = get_object_or_404(
+        FixedAsset.objects.select_related(
+            'category', 'department', 'custodian', 'supplier',
+            'currency', 'asset_account', 'depreciation_expense_account',
+            'accumulated_depreciation_account',
+        ),
+        pk=pk, company=company,
+    )
+    schedules = asset.depreciation_schedule.all()
+    transfers = asset.transfers.all().select_related(
+        'from_department', 'to_department', 'from_custodian', 'to_custodian',
+    )
+    revaluations = asset.revaluations.all()
+    maintenance = asset.maintenance_logs.all()
+
+    disposal = getattr(asset, 'disposal', None)
+
+    # Depreciation progress
+    dep_posted = schedules.filter(status='posted').count()
+    dep_total = schedules.count()
+    dep_percent = (
+        asset.accumulated_depreciation / asset.depreciable_amount * 100
+        if asset.depreciable_amount > 0 else 0
+    )
+
+    return render(request, 'erp/fixed_assets/assets/detail.html', {
+        'asset': asset,
+        'schedules': schedules,
+        'transfers': transfers,
+        'revaluations': revaluations,
+        'maintenance': maintenance,
+        'disposal': disposal,
+        'dep_posted': dep_posted,
+        'dep_total': dep_total,
+        'dep_percent': min(dep_percent, 100),
+    })
+
+
+@staff_member_required
+def asset_create(request):
+    company = get_user_company(request.user)
+    form = FixedAssetForm(request.POST or None, company=company)
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.company = company
+        obj.current_book_value = obj.acquisition_cost
+        obj.save()
+        messages.success(request, f'Asset {obj.asset_number} created.')
+        return redirect('erp:asset_detail', pk=obj.pk)
+    return render(request, 'erp/fixed_assets/assets/form.html', {
+        'form': form, 'title': 'Register New Asset',
+    })
+
+
+@staff_member_required
+def asset_edit(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(FixedAsset, pk=pk, company=company)
+    form = FixedAssetForm(request.POST or None, instance=obj, company=company)
+    if form.is_valid():
+        form.save()
+        messages.success(request, f'Asset {obj.asset_number} updated.')
+        return redirect('erp:asset_detail', pk=obj.pk)
+    return render(request, 'erp/fixed_assets/assets/form.html', {
+        'form': form, 'title': f'Edit {obj.name}',
+    })
+
+
+@staff_member_required
+def asset_delete(request, pk):
+    company = get_user_company(request.user)
+    obj = get_object_or_404(FixedAsset, pk=pk, company=company)
+    if request.method == 'POST':
+        obj.delete()
+        messages.success(request, 'Asset deleted.')
+        return redirect('erp:asset_list')
+    return render(request, 'erp/confirm_delete.html', {
+        'object': obj, 'cancel_url': reverse('erp:asset_detail', args=[obj.pk]),
+    })
+
+
+@staff_member_required
+def asset_activate(request, pk):
+    """Activate a draft asset (creates acquisition journal entry)."""
+    company = get_user_company(request.user)
+    asset = get_object_or_404(FixedAsset, pk=pk, company=company, status='draft')
+    if request.method == 'POST':
+        je = asset.activate(request.user)
+        if je:
+            messages.success(request, f'Asset activated. Journal entry {je.entry_number} created.')
+        else:
+            messages.success(request, 'Asset activated (no GL accounts configured for journal entry).')
+        return redirect('erp:asset_detail', pk=asset.pk)
+    return redirect('erp:asset_detail', pk=asset.pk)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Depreciation Schedules
+# ═══════════════════════════════════════════════════════════════════
+
+@staff_member_required
+def depreciation_list(request):
+    """List all depreciation schedules across all assets."""
+    company = get_user_company(request.user)
+    schedules = DepreciationSchedule.objects.filter(
+        asset__company=company,
+    ).select_related('asset', 'journal_entry')
+
+    status = request.GET.get('status')
+    if status:
+        schedules = schedules.filter(status=status)
+
+    asset_id = request.GET.get('asset')
+    if asset_id:
+        schedules = schedules.filter(asset_id=asset_id)
+
+    return render(request, 'erp/fixed_assets/depreciation/list.html', {
+        'schedules': schedules,
+        'statuses': DepreciationSchedule.Status.choices,
+    })
+
+
+@staff_member_required
+def depreciation_generate(request, pk):
+    """Generate depreciation schedule rows for an asset."""
+    company = get_user_company(request.user)
+    asset = get_object_or_404(FixedAsset, pk=pk, company=company)
+
+    form = GenerateDepreciationForm(request.POST or None)
+    if form.is_valid():
+        start = form.cleaned_data['start_date']
+        periods = form.cleaned_data['periods']
+
+        running_accum = asset.accumulated_depreciation
+        created = 0
+        for i in range(periods):
+            period_date = start + relativedelta(months=i, day=31)  # end of month
+            amount = asset.calculate_monthly_depreciation()
+
+            # Don't depreciate below salvage value
+            max_remaining = asset.acquisition_cost - asset.salvage_value - running_accum
+            if max_remaining <= 0:
+                break
+            amount = min(amount, max_remaining)
+            if amount <= 0:
+                break
+
+            running_accum += amount
+            book_value_after = asset.acquisition_cost - running_accum
+
+            _obj, was_created = DepreciationSchedule.objects.get_or_create(
+                asset=asset,
+                period_date=period_date,
+                defaults={
+                    'depreciation_amount': amount,
+                    'accumulated_total': running_accum,
+                    'book_value_after': book_value_after,
+                },
+            )
+            if was_created:
+                created += 1
+
+        messages.success(request, f'{created} depreciation period(s) generated.')
+        return redirect('erp:asset_detail', pk=asset.pk)
+
+    return render(request, 'erp/fixed_assets/depreciation/generate.html', {
+        'form': form, 'asset': asset,
+    })
+
+
+@staff_member_required
+def depreciation_post(request, pk):
+    """Post a single scheduled depreciation entry."""
+    company = get_user_company(request.user)
+    schedule = get_object_or_404(
+        DepreciationSchedule, pk=pk, asset__company=company, status='scheduled',
+    )
+    if request.method == 'POST':
+        try:
+            je = schedule.post(request.user)
+            messages.success(
+                request,
+                f'Depreciation posted. Journal entry {je.entry_number} created.',
+            )
+        except ValueError as e:
+            messages.error(request, str(e))
+        return redirect('erp:asset_detail', pk=schedule.asset.pk)
+    return redirect('erp:asset_detail', pk=schedule.asset.pk)
+
+
+@staff_member_required
+def depreciation_post_batch(request):
+    """Post all scheduled depreciation up to a given date."""
+    company = get_user_company(request.user)
+    if request.method == 'POST':
+        cutoff = request.POST.get('cutoff_date')
+        if cutoff:
+            scheduled = DepreciationSchedule.objects.filter(
+                asset__company=company,
+                status='scheduled',
+                period_date__lte=cutoff,
+            ).select_related('asset').order_by('period_date')
+
+            posted = 0
+            errors = 0
+            for s in scheduled:
+                try:
+                    s.post(request.user)
+                    posted += 1
+                except (ValueError, Exception):
+                    errors += 1
+
+            messages.success(request, f'{posted} depreciation entries posted, {errors} errors.')
+    return redirect('erp:depreciation_list')
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Asset Disposal
+# ═══════════════════════════════════════════════════════════════════
+
+@staff_member_required
+def disposal_list(request):
+    company = get_user_company(request.user)
+    disposals = AssetDisposal.objects.filter(
+        asset__company=company,
+    ).select_related('asset', 'journal_entry')
+    return render(request, 'erp/fixed_assets/disposals/list.html', {
+        'disposals': disposals,
+    })
+
+
+@staff_member_required
+def disposal_create(request, pk):
+    """Create a disposal for a specific asset."""
+    company = get_user_company(request.user)
+    asset = get_object_or_404(FixedAsset, pk=pk, company=company)
+
+    if hasattr(asset, 'disposal'):
+        messages.warning(request, 'This asset already has a disposal record.')
+        return redirect('erp:asset_detail', pk=asset.pk)
+
+    form = AssetDisposalForm(request.POST or None)
+    if form.is_valid():
+        disposal = form.save(commit=False)
+        disposal.asset = asset
+        disposal.save()
+        messages.success(request, f'Disposal record created for {asset.asset_number}.')
+        return redirect('erp:disposal_detail', pk=disposal.pk)
+
+    return render(request, 'erp/fixed_assets/disposals/form.html', {
+        'form': form, 'asset': asset, 'title': f'Dispose Asset: {asset.name}',
+    })
+
+
+@staff_member_required
+def disposal_detail(request, pk):
+    company = get_user_company(request.user)
+    disposal = get_object_or_404(
+        AssetDisposal.objects.select_related('asset', 'journal_entry'),
+        pk=pk, asset__company=company,
+    )
+    return render(request, 'erp/fixed_assets/disposals/detail.html', {
+        'disposal': disposal,
+    })
+
+
+@staff_member_required
+def disposal_process(request, pk):
+    """Process a disposal (calculate gain/loss, create journal entry)."""
+    company = get_user_company(request.user)
+    disposal = get_object_or_404(
+        AssetDisposal, pk=pk, asset__company=company,
+    )
+    if disposal.journal_entry:
+        messages.warning(request, 'This disposal has already been processed.')
+        return redirect('erp:disposal_detail', pk=disposal.pk)
+
+    if request.method == 'POST':
+        je = disposal.process(request.user)
+        if je:
+            messages.success(request, f'Disposal processed. Journal entry {je.entry_number} created.')
+        else:
+            messages.success(request, 'Disposal processed.')
+        return redirect('erp:disposal_detail', pk=disposal.pk)
+    return redirect('erp:disposal_detail', pk=disposal.pk)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Asset Transfers
+# ═══════════════════════════════════════════════════════════════════
+
+@staff_member_required
+def transfer_fa_list(request):
+    company = get_user_company(request.user)
+    transfers = AssetTransfer.objects.filter(
+        asset__company=company,
+    ).select_related(
+        'asset', 'from_department', 'to_department',
+        'from_custodian', 'to_custodian',
+    )
+    return render(request, 'erp/fixed_assets/transfers/list.html', {
+        'transfers': transfers,
+    })
+
+
+@staff_member_required
+def transfer_fa_create(request, pk):
+    """Create a transfer for a specific asset."""
+    company = get_user_company(request.user)
+    asset = get_object_or_404(FixedAsset, pk=pk, company=company)
+    form = AssetTransferForm(request.POST or None, company=company)
+    if form.is_valid():
+        transfer = form.save(commit=False)
+        transfer.asset = asset
+        # Pre-fill "from" fields
+        transfer.from_department = asset.department
+        transfer.from_location = asset.location
+        transfer.from_custodian = asset.custodian
+        transfer.save()
+        transfer.apply()
+        messages.success(request, f'Asset {asset.asset_number} transferred successfully.')
+        return redirect('erp:asset_detail', pk=asset.pk)
+    return render(request, 'erp/fixed_assets/transfers/form.html', {
+        'form': form, 'asset': asset, 'title': f'Transfer Asset: {asset.name}',
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Asset Revaluation
+# ═══════════════════════════════════════════════════════════════════
+
+@staff_member_required
+def revaluation_list(request):
+    company = get_user_company(request.user)
+    revaluations = AssetRevaluation.objects.filter(
+        asset__company=company,
+    ).select_related('asset', 'journal_entry')
+    return render(request, 'erp/fixed_assets/revaluations/list.html', {
+        'revaluations': revaluations,
+    })
+
+
+@staff_member_required
+def revaluation_create(request, pk):
+    """Create a revaluation for a specific asset."""
+    company = get_user_company(request.user)
+    asset = get_object_or_404(FixedAsset, pk=pk, company=company)
+    form = AssetRevaluationForm(request.POST or None)
+    if form.is_valid():
+        reval = form.save(commit=False)
+        reval.asset = asset
+        reval.old_value = asset.current_book_value
+        reval.save()
+        messages.success(request, f'Revaluation record created for {asset.asset_number}.')
+        return redirect('erp:revaluation_detail', pk=reval.pk)
+    return render(request, 'erp/fixed_assets/revaluations/form.html', {
+        'form': form, 'asset': asset, 'title': f'Revalue Asset: {asset.name}',
+    })
+
+
+@staff_member_required
+def revaluation_detail(request, pk):
+    company = get_user_company(request.user)
+    reval = get_object_or_404(
+        AssetRevaluation.objects.select_related('asset', 'journal_entry'),
+        pk=pk, asset__company=company,
+    )
+    return render(request, 'erp/fixed_assets/revaluations/detail.html', {
+        'revaluation': reval,
+    })
+
+
+@staff_member_required
+def revaluation_process(request, pk):
+    """Process a revaluation (create journal entry, update book value)."""
+    company = get_user_company(request.user)
+    reval = get_object_or_404(
+        AssetRevaluation, pk=pk, asset__company=company,
+    )
+    if reval.journal_entry:
+        messages.warning(request, 'This revaluation has already been processed.')
+        return redirect('erp:revaluation_detail', pk=reval.pk)
+
+    if request.method == 'POST':
+        je = reval.process(request.user)
+        if je:
+            messages.success(request, f'Revaluation processed. Journal entry {je.entry_number} created.')
+        else:
+            messages.success(request, 'No change in value.')
+        return redirect('erp:revaluation_detail', pk=reval.pk)
+    return redirect('erp:revaluation_detail', pk=reval.pk)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Asset Maintenance Logs
+# ═══════════════════════════════════════════════════════════════════
+
+@staff_member_required
+def maintenance_list(request):
+    company = get_user_company(request.user)
+    logs = AssetMaintenanceLog.objects.filter(
+        asset__company=company,
+    ).select_related('asset', 'performed_by')
+
+    status = request.GET.get('status')
+    if status:
+        logs = logs.filter(status=status)
+
+    mtype = request.GET.get('type')
+    if mtype:
+        logs = logs.filter(maintenance_type=mtype)
+
+    return render(request, 'erp/fixed_assets/maintenance/list.html', {
+        'logs': logs,
+        'statuses': AssetMaintenanceLog.Status.choices,
+        'types': AssetMaintenanceLog.MaintenanceType.choices,
+    })
+
+
+@staff_member_required
+def maintenance_create(request, pk):
+    """Create maintenance log for a specific asset."""
+    company = get_user_company(request.user)
+    asset = get_object_or_404(FixedAsset, pk=pk, company=company)
+    form = AssetMaintenanceLogForm(request.POST or None, company=company)
+    if form.is_valid():
+        log = form.save(commit=False)
+        log.asset = asset
+        log.save()
+        messages.success(request, 'Maintenance log created.')
+        return redirect('erp:asset_detail', pk=asset.pk)
+    return render(request, 'erp/fixed_assets/maintenance/form.html', {
+        'form': form, 'asset': asset, 'title': f'Log Maintenance: {asset.name}',
+    })
+
+
+@staff_member_required
+def maintenance_edit(request, pk):
+    company = get_user_company(request.user)
+    log = get_object_or_404(AssetMaintenanceLog, pk=pk, asset__company=company)
+    form = AssetMaintenanceLogForm(request.POST or None, instance=log, company=company)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Maintenance log updated.')
+        return redirect('erp:asset_detail', pk=log.asset.pk)
+    return render(request, 'erp/fixed_assets/maintenance/form.html', {
+        'form': form, 'asset': log.asset, 'title': f'Edit Maintenance: {log.asset.name}',
+    })
+
+
+@staff_member_required
+def maintenance_delete(request, pk):
+    company = get_user_company(request.user)
+    log = get_object_or_404(AssetMaintenanceLog, pk=pk, asset__company=company)
+    asset_pk = log.asset.pk
+    if request.method == 'POST':
+        log.delete()
+        messages.success(request, 'Maintenance log deleted.')
+        return redirect('erp:asset_detail', pk=asset_pk)
+    return render(request, 'erp/confirm_delete.html', {
+        'object': log, 'cancel_url': reverse('erp:asset_detail', args=[asset_pk]),
+    })

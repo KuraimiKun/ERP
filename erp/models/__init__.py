@@ -118,6 +118,17 @@ from .inventory import (
     InventoryValuationConfig,
 )
 
+# Fixed Assets models
+from .fixed_assets import (
+    AssetCategory,
+    FixedAsset,
+    DepreciationSchedule,
+    AssetDisposal,
+    AssetTransfer,
+    AssetRevaluation,
+    AssetMaintenanceLog,
+)
+
 # Reporting models
 from .reporting import (
     ReportTemplate,
@@ -237,6 +248,15 @@ __all__ = [
     'ShipmentLine',
     'ReorderRule',
     'InventoryValuationConfig',
+    
+    # Fixed Assets
+    'AssetCategory',
+    'FixedAsset',
+    'DepreciationSchedule',
+    'AssetDisposal',
+    'AssetTransfer',
+    'AssetRevaluation',
+    'AssetMaintenanceLog',
     
     # Reporting
     'ReportTemplate',

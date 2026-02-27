@@ -1,0 +1,66 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Disposal" %} – {{ disposal.asset.asset_number }}{% endblock %}
+{% block page_title %}{% trans "Disposal Details" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:disposal_list' %}">{% trans "Disposals" %}</a></li>
+        <li class="breadcrumb-item active">{{ disposal.asset.asset_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h5 class="mb-1">{% trans "Disposal of" %} {{ disposal.asset.asset_number }} – {{ disposal.asset.name }}</h5>
+                <span class="badge bg-danger">{{ disposal.get_disposal_type_display }}</span>
+            </div>
+            <div class="erp-card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td class="text-muted">{% trans "Disposal Date" %}</td><td class="fw-medium">{{ disposal.disposal_date|date:"Y/m/d" }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Sale Amount" %}</td><td>${{ disposal.sale_amount|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Book Value at Disposal" %}</td><td>${{ disposal.book_value_at_disposal|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Gain / Loss" %}</td>
+                                <td class="fw-bold {% if disposal.gain_loss > 0 %}text-success{% elif disposal.gain_loss < 0 %}text-danger{% endif %}">
+                                    {% if disposal.gain_loss > 0 %}+{% endif %}${{ disposal.gain_loss|floatformat:2 }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td class="text-muted">{% trans "Buyer" %}</td><td>{{ disposal.buyer_name|default:"-" }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Reason" %}</td><td>{{ disposal.reason|default:"-" }}</td></tr>
+                            {% if disposal.journal_entry %}
+                            <tr><td class="text-muted">{% trans "Journal Entry" %}</td>
+                                <td><a href="{% url 'erp:journal_entry_detail' disposal.journal_entry.pk %}">{{ disposal.journal_entry.entry_number }}</a></td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="erp-card">
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
+            <div class="erp-card-body d-grid gap-2">
+                <a href="{% url 'erp:asset_detail' disposal.asset.pk %}" class="btn btn-outline-primary"><i class="bi bi-building-gear ms-1"></i> {% trans "View Asset" %}</a>
+                {% if not disposal.journal_entry %}
+                <form method="post" action="{% url 'erp:disposal_process' disposal.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning w-100"><i class="bi bi-journal-check ms-1"></i> {% trans "Process Disposal (Create Journal)" %}</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

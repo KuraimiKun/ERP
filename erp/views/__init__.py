@@ -33,6 +33,7 @@ from .finance import (
 # ── HR ──────────────────────────────────────────────────────────────────────
 from .hr import (
     employee_list, employee_detail, employee_create, employee_edit, employee_delete,
+    employee_permissions_update,
     department_list, department_create, department_edit, department_delete,
     attendance_list, attendance_create, attendance_edit,
     leave_request_list, leave_request_create, leave_request_detail, leave_request_approve,
@@ -46,6 +47,7 @@ from .employee_portal import (
     portal_qr_scanner, portal_leave_list, portal_leave_create, portal_leave_cancel,
     portal_payslip_list, portal_payslip_detail,
     portal_profile_edit, portal_change_password,
+    portal_task_list, portal_task_detail,
 )
 
 # ── Attendance Devices & Invites ────────────────────────────────
@@ -129,6 +131,17 @@ from .notifications import (
 
 # ── Audit Log ───────────────────────────────────────────────────────────────
 from .audit_log import audit_log_list
+
+# ── Fixed Assets ────────────────────────────────────────────────────────────
+from .fixed_assets import (
+    asset_category_list, asset_category_create, asset_category_edit, asset_category_delete,
+    asset_list, asset_detail, asset_create, asset_edit, asset_delete, asset_activate,
+    depreciation_list, depreciation_generate, depreciation_post, depreciation_post_batch,
+    disposal_list, disposal_create, disposal_detail, disposal_process,
+    transfer_fa_list, transfer_fa_create,
+    revaluation_list, revaluation_create, revaluation_detail, revaluation_process,
+    maintenance_list, maintenance_create, maintenance_edit, maintenance_delete,
+)
 
 # ── Inventory & Warehouse ───────────────────────────────────────────────────
 from .inventory import (

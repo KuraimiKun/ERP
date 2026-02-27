@@ -27,12 +27,12 @@ from ._common import (
 
 def _parse_date_range(request, company):
     """Extract date range from GET params or default to current fiscal year."""
-    today = timezone.now().date()
+    from datetime import date as dt_date
+    today = dt_date.today()
     start = request.GET.get('start')
     end = request.GET.get('end')
 
     if start and end:
-        from datetime import date as dt_date
         try:
             start = dt_date.fromisoformat(start)
             end = dt_date.fromisoformat(end)
@@ -44,7 +44,7 @@ def _parse_date_range(request, company):
         fy = FiscalYear.objects.filter(company=company, is_current=True).first()
         if fy:
             start = fy.start_date
-            end = fy.end_date if fy.end_date <= today else today
+            end = fy.end_date
         else:
             start = today.replace(month=1, day=1)
             end = today

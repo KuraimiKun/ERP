@@ -1,0 +1,45 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Asset Transfers" %}{% endblock %}
+{% block page_title %}{% trans "Asset Transfers" %}{% endblock %}
+
+{% block content %}
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Asset" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "From Department" %}</th>
+                    <th>{% trans "To Department" %}</th>
+                    <th>{% trans "From Location" %}</th>
+                    <th>{% trans "To Location" %}</th>
+                    <th>{% trans "Reason" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transfers %}
+                <tr>
+                    <td><a href="{% url 'erp:asset_detail' t.asset.pk %}">{{ t.asset.asset_number }}</a></td>
+                    <td>{{ t.transfer_date|date:"Y/m/d" }}</td>
+                    <td>{{ t.from_department.name|default:"-" }}</td>
+                    <td>{{ t.to_department.name|default:"-" }}</td>
+                    <td>{{ t.from_location|default:"-" }}</td>
+                    <td>{{ t.to_location|default:"-" }}</td>
+                    <td>{{ t.reason|truncatechars:50|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <i class="bi bi-arrow-left-right fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No asset transfers recorded" %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

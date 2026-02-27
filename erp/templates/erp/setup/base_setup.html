@@ -1,18 +1,26 @@
 {% load static %}
 {% load i18n %}
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-bs-theme="light">
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% trans "System Setup" %}{% endblock %} - {% trans "Enterprise Management System" %}</title>
     
-    <!-- Bootstrap 5 RTL CSS -->
+    <!-- Bootstrap 5 CSS (RTL or LTR) -->
+    {% if LANGUAGE_CODE == 'ar' %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    {% else %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% endif %}
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts - Arabic -->
+    <!-- Google Fonts -->
+    {% if LANGUAGE_CODE == 'ar' %}
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    {% else %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    {% endif %}
     
     <style>
         :root {
@@ -23,10 +31,9 @@
         }
         
         body {
-            font-family: 'Tajawal', sans-serif;
+            font-family: {% if LANGUAGE_CODE == 'ar' %}'Tajawal'{% else %}'Inter'{% endif %}, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            direction: rtl;
         }
         
         .setup-container {
@@ -210,11 +217,11 @@
         }
         
         .section-divider::before {
-            margin-left: 1rem;
+            margin-inline-start: 1rem;
         }
         
         .section-divider::after {
-            margin-right: 1rem;
+            margin-inline-end: 1rem;
         }
         
         /* Buttons */
@@ -342,11 +349,79 @@
                 width: 100%;
             }
         }
+
+        /* Language Switcher */
+        .lang-switcher {
+            position: absolute;
+            top: 1rem;
+            {% if LANGUAGE_CODE == 'ar' %}left{% else %}right{% endif %}: 1.5rem;
+        }
+
+        .lang-switcher .btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-weight: 600;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+            border-radius: 0.5rem;
+        }
+
+        .lang-switcher .btn:hover,
+        .lang-switcher .btn:focus {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .lang-switcher .dropdown-menu {
+            min-width: 140px;
+            font-size: 0.9rem;
+        }
+
+        .lang-switcher .dropdown-item.active {
+            background-color: var(--primary-color);
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="setup-container">
+    <div class="setup-container" style="position: relative;">
+        <!-- Language Switcher -->
+        <div class="lang-switcher">
+            <div class="dropdown">
+                <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-translate"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}العربية{% elif LANGUAGE_CODE == 'id' %}Indonesia{% else %}English{% endif %}
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <form action="{% url 'set_language' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="language" value="en">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="dropdown-item {% if LANGUAGE_CODE == 'en' %}active{% endif %}">English</button>
+                        </form>
+                    </li>
+                    <li>
+                        <form action="{% url 'set_language' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="language" value="ar">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="dropdown-item {% if LANGUAGE_CODE == 'ar' %}active{% endif %}">العربية</button>
+                        </form>
+                    </li>
+                    <li>
+                        <form action="{% url 'set_language' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="language" value="id">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="dropdown-item {% if LANGUAGE_CODE == 'id' %}active{% endif %}">Bahasa Indonesia</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
         <!-- Header -->
         <div class="setup-header">
             <h1><i class="bi bi-gear-wide-connected"></i> {% trans "System Setup" %}</h1>

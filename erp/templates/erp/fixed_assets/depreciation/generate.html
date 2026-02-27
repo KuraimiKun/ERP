@@ -1,0 +1,69 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Generate Depreciation" %} – {{ asset.asset_number }}{% endblock %}
+{% block page_title %}{% trans "Generate Depreciation Schedule" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:asset_list' %}">{% trans "Fixed Assets" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:asset_detail' asset.pk %}">{{ asset.asset_number }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Generate Depreciation" %}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h5 class="mb-0">{% trans "Generate Depreciation Schedule" %}</h5>
+            </div>
+            <div class="erp-card-body">
+                <!-- Asset Summary -->
+                <div class="alert alert-info">
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted d-block">{% trans "Asset" %}</small>
+                            <strong>{{ asset.asset_number }} – {{ asset.name }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">{% trans "Depreciable Amount" %}</small>
+                            <strong>${{ asset.depreciable_amount|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block">{% trans "Method" %}</small>
+                            <strong>{{ asset.get_depreciation_method_display }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">{% trans "Useful Life" %}</small>
+                            <strong>{{ asset.useful_life_months }} {% trans "months" %}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.start_date.label }} *</label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}<div class="text-danger small">{{ form.start_date.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.periods.label }} *</label>
+                        {{ form.periods }}
+                        <small class="text-muted">{{ form.periods.help_text }}</small>
+                        {% if form.periods.errors %}<div class="text-danger small">{{ form.periods.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success"><i class="bi bi-calculator ms-1"></i> {% trans "Generate" %}</button>
+                        <a href="{% url 'erp:asset_detail' asset.pk %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Asset Disposals" %}{% endblock %}
+{% block page_title %}{% trans "Asset Disposals" %}{% endblock %}
+
+{% block content %}
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Asset" %}</th>
+                    <th>{% trans "Disposal Date" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Sale Amount" %}</th>
+                    <th>{% trans "Book Value" %}</th>
+                    <th>{% trans "Gain/Loss" %}</th>
+                    <th>{% trans "Journal" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in disposals %}
+                <tr>
+                    <td><a href="{% url 'erp:asset_detail' d.asset.pk %}">{{ d.asset.asset_number }} – {{ d.asset.name|truncatechars:20 }}</a></td>
+                    <td>{{ d.disposal_date|date:"Y/m/d" }}</td>
+                    <td>{{ d.get_disposal_type_display }}</td>
+                    <td>${{ d.sale_amount|floatformat:2 }}</td>
+                    <td>${{ d.book_value_at_disposal|floatformat:2 }}</td>
+                    <td class="{% if d.gain_loss > 0 %}text-success{% elif d.gain_loss < 0 %}text-danger{% endif %}">
+                        {% if d.gain_loss > 0 %}+{% endif %}${{ d.gain_loss|floatformat:2 }}
+                    </td>
+                    <td>
+                        {% if d.journal_entry %}
+                        <a href="{% url 'erp:journal_entry_detail' d.journal_entry.pk %}">{{ d.journal_entry.entry_number }}</a>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">{% trans "Pending" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'erp:disposal_detail' d.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="bi bi-x-circle fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No asset disposals recorded" %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

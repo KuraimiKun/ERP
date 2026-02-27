@@ -1,0 +1,179 @@
+{% extends "erp/employee_portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ task.title }} - {% trans "Employee Portal" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'erp:employee_portal_task_list' %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left me-1"></i> {% trans "Back to Tasks" %}
+        </a>
+        <h4 class="mt-2 mb-0">{{ task.title }}</h4>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Task Details -->
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">{% trans "Task Details" %}</h6>
+                <div>
+                    {% if task.priority == 'urgent' %}
+                    <span class="badge bg-danger">{% trans "Urgent" %}</span>
+                    {% elif task.priority == 'high' %}
+                    <span class="badge bg-warning text-dark">{% trans "High" %}</span>
+                    {% elif task.priority == 'medium' %}
+                    <span class="badge bg-info">{% trans "Medium" %}</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{% trans "Low" %}</span>
+                    {% endif %}
+
+                    {% if task.status == 'completed' %}
+                    <span class="badge bg-success">{% trans "Completed" %}</span>
+                    {% elif task.status == 'in_progress' %}
+                    <span class="badge bg-primary">{% trans "In Progress" %}</span>
+                    {% elif task.status == 'on_hold' %}
+                    <span class="badge bg-warning text-dark">{% trans "On Hold" %}</span>
+                    {% elif task.status == 'cancelled' %}
+                    <span class="badge bg-secondary">{% trans "Cancelled" %}</span>
+                    {% else %}
+                    <span class="badge bg-info">{% trans "To Do" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="erp-card-body">
+                {% if task.description %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">{% trans "Description" %}</h6>
+                    <p class="mb-0" style="white-space: pre-wrap;">{{ task.description }}</p>
+                </div>
+                {% endif %}
+
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="text-muted small">{% trans "Due Date" %}</div>
+                        <div class="fw-medium">
+                            {% if task.due_date %}
+                            {{ task.due_date|date:"M d, Y H:i" }}
+                            {% else %}
+                            <span class="text-muted">{% trans "No due date" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">{% trans "Created" %}</div>
+                        <div class="fw-medium">{{ task.created_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    {% if task.completed_date %}
+                    <div class="col-sm-6">
+                        <div class="text-muted small">{% trans "Completed Date" %}</div>
+                        <div class="fw-medium">{{ task.completed_date|date:"M d, Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    {% if task.related_customer %}
+                    <div class="col-sm-6">
+                        <div class="text-muted small">{% trans "Related Customer" %}</div>
+                        <div class="fw-medium">{{ task.related_customer }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-chat-dots me-2"></i>{% trans "Comments" %} ({{ comments|length }})</h6>
+            </div>
+            <div class="erp-card-body">
+                {% for comment in comments %}
+                <div class="d-flex mb-3 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
+                    <img src="https://ui-avatars.com/api/?name={{ comment.author.first_name }}+{{ comment.author.last_name }}&background=0d6efd&color=fff&size=36"
+                         class="rounded-circle me-3 mt-1" width="36" height="36" alt="">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-medium">{{ comment.author.get_full_name|default:comment.author.username }}</span>
+                            <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ comment.content }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted py-3">{% trans "No comments yet" %}</p>
+                {% endfor %}
+
+                <!-- Add Comment Form -->
+                <hr>
+                <form method="post" action="{% url 'erp:employee_portal_task_detail' task.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="content" class="form-label fw-medium">{% trans "Add a comment" %}</label>
+                        <textarea name="content" id="content" class="form-control" rows="3"
+                                  placeholder="{% trans 'Write your comment here...' %}" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-send me-1"></i> {% trans "Post Comment" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>{% trans "Update Status" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="d-grid gap-2">
+                    {% for value, label in statuses %}
+                    {% if value != task.status %}
+                    <a href="{% url 'erp:employee_portal_task_detail' task.pk %}?set_status={{ value }}"
+                       class="btn btn-sm {% if value == 'completed' %}btn-success{% elif value == 'in_progress' %}btn-primary{% elif value == 'on_hold' %}btn-warning{% elif value == 'cancelled' %}btn-secondary{% else %}btn-info{% endif %}">
+                        {% if value == 'todo' %}<i class="bi bi-circle me-1"></i>
+                        {% elif value == 'in_progress' %}<i class="bi bi-play-circle me-1"></i>
+                        {% elif value == 'on_hold' %}<i class="bi bi-pause-circle me-1"></i>
+                        {% elif value == 'completed' %}<i class="bi bi-check-circle me-1"></i>
+                        {% elif value == 'cancelled' %}<i class="bi bi-x-circle me-1"></i>
+                        {% endif %}
+                        {{ label }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Info -->
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>{% trans "Info" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted">{% trans "Priority" %}</td>
+                        <td class="fw-medium">{{ task.get_priority_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">{% trans "Status" %}</td>
+                        <td class="fw-medium">{{ task.get_status_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">{% trans "Due" %}</td>
+                        <td class="fw-medium">{{ task.due_date|date:"M d, Y"|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">{% trans "Created" %}</td>
+                        <td class="fw-medium">{{ task.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

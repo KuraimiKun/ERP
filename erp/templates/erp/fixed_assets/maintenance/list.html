@@ -1,0 +1,83 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Maintenance Logs" %}{% endblock %}
+{% block page_title %}{% trans "Asset Maintenance Logs" %}{% endblock %}
+
+{% block content %}
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Status" %}</label>
+                <select name="status" class="form-select">
+                    <option value="">{% trans "All" %}</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Type" %}</label>
+                <select name="type" class="form-select">
+                    <option value="">{% trans "All" %}</option>
+                    {% for value, label in types %}
+                    <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search ms-1"></i> {% trans "Filter" %}</button>
+                <a href="{% url 'erp:maintenance_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Asset" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Description" %}</th>
+                    <th>{% trans "Scheduled" %}</th>
+                    <th>{% trans "Completed" %}</th>
+                    <th>{% trans "Cost" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in logs %}
+                <tr>
+                    <td><a href="{% url 'erp:asset_detail' m.asset.pk %}">{{ m.asset.asset_number }}</a></td>
+                    <td>{{ m.get_maintenance_type_display }}</td>
+                    <td>{{ m.description|truncatechars:40 }}</td>
+                    <td>{{ m.scheduled_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>{{ m.completion_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>${{ m.cost|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge {% if m.status == 'completed' %}bg-success{% elif m.status == 'in_progress' %}bg-info{% elif m.status == 'scheduled' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ m.get_status_display }}</span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:maintenance_edit' m.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'erp:maintenance_delete' m.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="bi bi-wrench fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No maintenance logs found" %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

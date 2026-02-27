@@ -1,0 +1,110 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:asset_category_list' %}">{% trans "Asset Categories" %}</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+
+<div class="erp-card">
+    <div class="erp-card-header">
+        <h5 class="mb-0">{{ title }}</h5>
+    </div>
+    <div class="erp-card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.name_ar.label }}</label>
+                    {{ form.name_ar }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.code.label }}</label>
+                    {{ form.code }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+
+            <h6 class="text-muted text-uppercase mt-4 mb-3">{% trans "Default Depreciation Settings" %}</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.depreciation_method.label }}</label>
+                    {{ form.depreciation_method }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.useful_life_months.label }}</label>
+                    {{ form.useful_life_months }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.salvage_value_percent.label }}</label>
+                    {{ form.salvage_value_percent }}
+                </div>
+            </div>
+
+            <h6 class="text-muted text-uppercase mt-4 mb-3">{% trans "GL Accounts" %}</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.asset_account.label }}</label>
+                    {{ form.asset_account }}
+                    <small class="text-muted">{{ form.asset_account.help_text }}</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.depreciation_expense_account.label }}</label>
+                    {{ form.depreciation_expense_account }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.accumulated_depreciation_account.label }}</label>
+                    {{ form.accumulated_depreciation_account }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.disposal_gain_account.label }}</label>
+                    {{ form.disposal_gain_account }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.disposal_loss_account.label }}</label>
+                    {{ form.disposal_loss_account }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.acquisition_source_account.label }}</label>
+                    {{ form.acquisition_source_account }}
+                    <small class="text-muted">{{ form.acquisition_source_account.help_text }}</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.disposal_proceeds_account.label }}</label>
+                    {{ form.disposal_proceeds_account }}
+                    <small class="text-muted">{{ form.disposal_proceeds_account.help_text }}</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.revaluation_surplus_account.label }}</label>
+                    {{ form.revaluation_surplus_account }}
+                    <small class="text-muted">{{ form.revaluation_surplus_account.help_text }}</small>
+                </div>
+            </div>
+
+            <div class="mb-3 form-check">
+                {{ form.is_active }}
+                <label class="form-check-label">{{ form.is_active.label }}</label>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg ms-1"></i> {% trans "Save" %}</button>
+                <a href="{% url 'erp:asset_category_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

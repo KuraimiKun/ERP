@@ -465,6 +465,36 @@
                 {% trans "Valuation Config" %}
             </a>
             
+            <div class="erp-nav-section mt-3">{% trans "Fixed Assets" %}</div>
+            <a href="{% url 'erp:asset_list' %}" class="erp-nav-link {% if 'asset_list' == request.resolver_match.url_name or 'asset_detail' == request.resolver_match.url_name or 'asset_create' == request.resolver_match.url_name or 'asset_edit' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-building-gear"></i>
+                {% trans "Asset Register" %}
+            </a>
+            <a href="{% url 'erp:asset_category_list' %}" class="erp-nav-link {% if 'asset_category' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-folder2-open"></i>
+                {% trans "Asset Categories" %}
+            </a>
+            <a href="{% url 'erp:depreciation_list' %}" class="erp-nav-link {% if 'depreciation' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-graph-down-arrow"></i>
+                {% trans "Depreciation" %}
+            </a>
+            <a href="{% url 'erp:disposal_list' %}" class="erp-nav-link {% if 'disposal' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-x-circle"></i>
+                {% trans "Disposals" %}
+            </a>
+            <a href="{% url 'erp:transfer_fa_list' %}" class="erp-nav-link {% if 'transfer_fa' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-arrow-left-right"></i>
+                {% trans "Asset Transfers" %}
+            </a>
+            <a href="{% url 'erp:revaluation_list' %}" class="erp-nav-link {% if 'revaluation' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-arrow-up-down"></i>
+                {% trans "Revaluations" %}
+            </a>
+            <a href="{% url 'erp:maintenance_list' %}" class="erp-nav-link {% if 'maintenance' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-wrench"></i>
+                {% trans "Maintenance Logs" %}
+            </a>
+            
             <div class="erp-nav-section mt-3">{% trans "Operations" %}</div>
             <a href="{% url 'erp:task_list' %}" class="erp-nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-check2-square"></i>

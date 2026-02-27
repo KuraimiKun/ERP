@@ -1,0 +1,65 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Revaluation" %} – {{ revaluation.asset.asset_number }}{% endblock %}
+{% block page_title %}{% trans "Revaluation Details" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:revaluation_list' %}">{% trans "Revaluations" %}</a></li>
+        <li class="breadcrumb-item active">{{ revaluation.asset.asset_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h5 class="mb-1">{% trans "Revaluation of" %} {{ revaluation.asset.asset_number }} – {{ revaluation.asset.name }}</h5>
+            </div>
+            <div class="erp-card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td class="text-muted">{% trans "Revaluation Date" %}</td><td>{{ revaluation.revaluation_date|date:"Y/m/d" }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Old Value" %}</td><td>${{ revaluation.old_value|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "New Value" %}</td><td>${{ revaluation.new_value|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Change" %}</td>
+                                <td class="fw-bold {% if revaluation.revaluation_amount > 0 %}text-success{% elif revaluation.revaluation_amount < 0 %}text-danger{% endif %}">
+                                    {% if revaluation.revaluation_amount > 0 %}+{% endif %}${{ revaluation.revaluation_amount|floatformat:2 }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td class="text-muted">{% trans "Appraiser" %}</td><td>{{ revaluation.appraiser|default:"-" }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Reason" %}</td><td>{{ revaluation.reason|default:"-" }}</td></tr>
+                            {% if revaluation.journal_entry %}
+                            <tr><td class="text-muted">{% trans "Journal Entry" %}</td>
+                                <td><a href="{% url 'erp:journal_entry_detail' revaluation.journal_entry.pk %}">{{ revaluation.journal_entry.entry_number }}</a></td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="erp-card">
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
+            <div class="erp-card-body d-grid gap-2">
+                <a href="{% url 'erp:asset_detail' revaluation.asset.pk %}" class="btn btn-outline-primary"><i class="bi bi-building-gear ms-1"></i> {% trans "View Asset" %}</a>
+                {% if not revaluation.journal_entry %}
+                <form method="post" action="{% url 'erp:revaluation_process' revaluation.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning w-100"><i class="bi bi-journal-check ms-1"></i> {% trans "Process Revaluation (Create Journal)" %}</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

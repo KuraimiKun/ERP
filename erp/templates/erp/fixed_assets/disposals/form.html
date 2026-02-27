@@ -1,0 +1,45 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:asset_list' %}">{% trans "Fixed Assets" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:asset_detail' asset.pk %}">{{ asset.asset_number }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Dispose" %}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h5 class="mb-0">{{ title }}</h5>
+            </div>
+            <div class="erp-card-body">
+                <div class="alert alert-warning">
+                    <strong>{% trans "Current Book Value:" %}</strong> ${{ asset.current_book_value|floatformat:2 }}<br>
+                    <strong>{% trans "Accumulated Depreciation:" %}</strong> ${{ asset.accumulated_depreciation|floatformat:2 }}
+                </div>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors.0 }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle ms-1"></i> {% trans "Create Disposal" %}</button>
+                        <a href="{% url 'erp:asset_detail' asset.pk %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

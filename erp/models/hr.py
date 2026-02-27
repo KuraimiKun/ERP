@@ -144,6 +144,40 @@ class Employee(ERPBaseModel):
         help_text='Temporary password hash stored until owner approves.',
     )
 
+    # ── Portal Permissions ──────────────────────────────────────────────
+    # Each boolean controls whether the employee can access that portal
+    # section.  Defaults to True so existing employees keep full access.
+    portal_can_scan_qr = models.BooleanField(
+        default=True,
+        verbose_name='Can Scan QR',
+        help_text='Allow the employee to use the QR attendance scanner.',
+    )
+    portal_can_view_attendance = models.BooleanField(
+        default=True,
+        verbose_name='Can View Attendance',
+        help_text='Allow the employee to see their attendance history.',
+    )
+    portal_can_manage_leaves = models.BooleanField(
+        default=True,
+        verbose_name='Can Manage Leaves',
+        help_text='Allow the employee to view and submit leave requests.',
+    )
+    portal_can_view_payslips = models.BooleanField(
+        default=True,
+        verbose_name='Can View Payslips',
+        help_text='Allow the employee to view their payslips.',
+    )
+    portal_can_edit_profile = models.BooleanField(
+        default=True,
+        verbose_name='Can Edit Profile',
+        help_text='Allow the employee to edit their personal profile.',
+    )
+    portal_can_view_tasks = models.BooleanField(
+        default=True,
+        verbose_name='Can View Tasks',
+        help_text='Allow the employee to see tasks assigned to them.',
+    )
+
     class Meta:
         verbose_name = 'Employee'
         verbose_name_plural = 'Employees'

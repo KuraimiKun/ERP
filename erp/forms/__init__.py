@@ -100,6 +100,18 @@ from .inventory import (
     ReorderRuleForm, InventoryValuationConfigForm,
 )
 
+# ── Fixed Assets ───────────────────────────────────────────────
+from .fixed_assets import (
+    AssetCategoryForm,
+    FixedAssetForm,
+    DepreciationScheduleForm,
+    AssetDisposalForm,
+    AssetTransferForm,
+    AssetRevaluationForm,
+    AssetMaintenanceLogForm,
+    GenerateDepreciationForm,
+)
+
 __all__ = [
     # Mixins
     'CompanyFilterMixin', 'BootstrapFormMixin',
@@ -140,4 +152,8 @@ __all__ = [
     'PickListForm', 'PickListLineForm', 'PickListLineFormSet',
     'ShipmentNoteForm', 'ShipmentLineForm', 'ShipmentLineFormSet',
     'ReorderRuleForm', 'InventoryValuationConfigForm',
+    # Fixed Assets
+    'AssetCategoryForm', 'FixedAssetForm', 'DepreciationScheduleForm',
+    'AssetDisposalForm', 'AssetTransferForm', 'AssetRevaluationForm',
+    'AssetMaintenanceLogForm', 'GenerateDepreciationForm',
 ]

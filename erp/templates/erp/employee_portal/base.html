@@ -53,18 +53,23 @@
                             <i class="bi bi-grid"></i> {% trans "Dashboard" %}
                         </a>
                     </li>
+                    {% if employee.portal_can_scan_qr %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'employee_portal_qr_scanner' %}active{% endif %}"
                            href="{% url 'erp:employee_portal_qr_scanner' %}">
                             <i class="bi bi-qr-code-scan"></i> {% trans "Scan QR" %}
                         </a>
                     </li>
+                    {% endif %}
+                    {% if employee.portal_can_view_attendance %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'employee_portal_attendance' %}active{% endif %}"
                            href="{% url 'erp:employee_portal_attendance' %}">
                             <i class="bi bi-clock-history"></i> {% trans "My Attendance" %}
                         </a>
                     </li>
+                    {% endif %}
+                    {% if employee.portal_can_manage_leaves %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'leave' in request.resolver_match.url_name %}active{% endif %}"
                            href="{% url 'erp:employee_portal_leave_list' %}">
@@ -72,12 +77,23 @@
                             {% if pending_leave_count %}<span class="badge bg-warning text-dark ms-1">{{ pending_leave_count }}</span>{% endif %}
                         </a>
                     </li>
+                    {% endif %}
+                    {% if employee.portal_can_view_payslips %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'payslip' in request.resolver_match.url_name %}active{% endif %}"
                            href="{% url 'erp:employee_portal_payslip_list' %}">
                             <i class="bi bi-cash-stack"></i> {% trans "My Payslips" %}
                         </a>
                     </li>
+                    {% endif %}
+                    {% if employee.portal_can_view_tasks %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'erp:employee_portal_task_list' %}">
+                            <i class="bi bi-list-task"></i> {% trans "My Tasks" %}
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}"
                            href="{% url 'erp:employee_portal_profile' %}">

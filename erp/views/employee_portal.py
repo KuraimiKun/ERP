@@ -19,8 +19,9 @@ from django.views.decorators.http import require_POST
 from erp.models import (
     Employee, Attendance, LeaveRequest, LeaveType,
     Payroll, PayrollEarning, PayrollDeduction, AttendanceDevice,
+    Task, TaskComment,
 )
-from erp.decorators import employee_or_owner_required
+from erp.decorators import employee_or_owner_required, portal_permission_required
 from ._common import render, redirect, messages, reverse, get_user_company
 
 
@@ -187,6 +188,7 @@ def employee_portal(request):
 # ═══════════════════════════════════════════════════════════════════════════
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_scan_qr')
 def portal_qr_scanner(request):
     """Page with camera-based QR code scanner."""
     employee = _get_employee_for_user(request)
@@ -202,6 +204,7 @@ def portal_qr_scanner(request):
 # ═══════════════════════════════════════════════════════════════════════════
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_view_attendance')
 def employee_portal_attendance(request):
     """Full attendance history for the logged-in employee."""
     employee = _get_employee_for_user(request)
@@ -237,6 +240,7 @@ def employee_portal_attendance(request):
 # ═══════════════════════════════════════════════════════════════════════════
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_scan_qr')
 def attendance_scan_result(request):
     """
     Process a scanned QR code and record attendance.
@@ -328,6 +332,7 @@ def attendance_scan_result(request):
 # ═══════════════════════════════════════════════════════════════════════════
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_manage_leaves')
 def portal_leave_list(request):
     """List all leave requests for the logged-in employee."""
     employee = _get_employee_for_user(request)
@@ -365,6 +370,7 @@ def portal_leave_list(request):
 
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_manage_leaves')
 def portal_leave_create(request):
     """Submit a new leave request."""
     employee = _get_employee_for_user(request)
@@ -392,6 +398,7 @@ def portal_leave_create(request):
 
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_manage_leaves')
 @require_POST
 def portal_leave_cancel(request, pk):
     """Cancel a pending leave request."""
@@ -420,6 +427,7 @@ def portal_leave_cancel(request, pk):
 # ═══════════════════════════════════════════════════════════════════════════
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_view_payslips')
 def portal_payslip_list(request):
     """List payslips visible to the employee (approved/paid only)."""
     employee = _get_employee_for_user(request)
@@ -437,6 +445,7 @@ def portal_payslip_list(request):
 
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_view_payslips')
 def portal_payslip_detail(request, pk):
     """View a single payslip with full earnings/deductions breakdown."""
     employee = _get_employee_for_user(request)
@@ -479,6 +488,7 @@ def employee_portal_profile(request):
 
 
 @employee_or_owner_required
+@portal_permission_required('portal_can_edit_profile')
 def portal_profile_edit(request):
     """Edit personal information (limited fields)."""
     employee = _get_employee_for_user(request)
@@ -524,3 +534,85 @@ def portal_change_password(request):
     ctx = _portal_context(employee)
     ctx['form'] = form
     return render(request, 'erp/employee_portal/change_password.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Tasks
+# ═══════════════════════════════════════════════════════════════════════════
+
+@employee_or_owner_required
+@portal_permission_required('portal_can_view_tasks')
+def portal_task_list(request):
+    """List tasks assigned to the logged-in employee."""
+    employee = _get_employee_for_user(request)
+    if not employee:
+        return _no_employee(request)
+
+    status_filter = request.GET.get('status', '')
+    tasks = Task.objects.filter(assigned_to=employee).order_by('-created_at')
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+
+    # Summary counts
+    task_counts = {
+        'total': tasks.count(),
+        'todo': tasks.filter(status='todo').count(),
+        'in_progress': tasks.filter(status='in_progress').count(),
+        'completed': tasks.filter(status='completed').count(),
+    }
+
+    ctx = _portal_context(employee)
+    ctx.update({
+        'tasks': tasks,
+        'status_filter': status_filter,
+        'task_counts': task_counts,
+        'statuses': Task.Status.choices,
+    })
+    return render(request, 'erp/employee_portal/task_list.html', ctx)
+
+
+@employee_or_owner_required
+@portal_permission_required('portal_can_view_tasks')
+def portal_task_detail(request, pk):
+    """View a single task with comments."""
+    employee = _get_employee_for_user(request)
+    if not employee:
+        return _no_employee(request)
+
+    try:
+        task = Task.objects.get(pk=pk, assigned_to=employee)
+    except Task.DoesNotExist:
+        messages.error(request, 'Task not found.')
+        return redirect('erp:employee_portal_task_list')
+
+    comments = task.comments.select_related('author').order_by('created_at')
+
+    # Handle new comment
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if content:
+            TaskComment.objects.create(
+                task=task,
+                author=request.user,
+                content=content,
+            )
+            messages.success(request, 'Comment added.')
+            return redirect('erp:employee_portal_task_detail', pk=pk)
+
+    # Handle status update via GET param (quick action)
+    new_status = request.GET.get('set_status', '')
+    if new_status in [s[0] for s in Task.Status.choices]:
+        task.status = new_status
+        if new_status == 'completed':
+            task.completed_date = timezone.now()
+        task.save(update_fields=['status', 'completed_date'])
+        messages.success(request, f'Task status updated to "{task.get_status_display()}".')
+        return redirect('erp:employee_portal_task_detail', pk=pk)
+
+    ctx = _portal_context(employee)
+    ctx.update({
+        'task': task,
+        'comments': comments,
+        'statuses': Task.Status.choices,
+    })
+    return render(request, 'erp/employee_portal/task_detail.html', ctx)

@@ -111,8 +111,18 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tasks">
+                    {% trans "Tasks" %}
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">
                     {% trans "Documents" %}
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#portal-permissions">
+                    <i class="bi bi-shield-check"></i> {% trans "Portal Permissions" %}
                 </button>
             </li>
         </ul>
@@ -209,6 +219,61 @@
                 </div>
             </div>
             
+            <!-- Tasks Tab -->
+            <div class="tab-pane fade" id="tasks">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{% trans "Assigned Tasks" %}</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Title" %}</th>
+                                    <th>{% trans "Priority" %}</th>
+                                    <th>{% trans "Due Date" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in assigned_tasks %}
+                                <tr>
+                                    <td><a href="{% url 'erp:task_detail' task.pk %}">{{ task.title }}</a></td>
+                                    <td>
+                                        {% if task.priority == 'urgent' %}
+                                        <span class="badge bg-danger">{% trans "Urgent" %}</span>
+                                        {% elif task.priority == 'high' %}
+                                        <span class="badge bg-warning text-dark">{% trans "High" %}</span>
+                                        {% elif task.priority == 'medium' %}
+                                        <span class="badge bg-info">{% trans "Medium" %}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{% trans "Low" %}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ task.due_date|date:"M d, Y"|default:"-" }}</td>
+                                    <td>
+                                        {% if task.status == 'completed' %}
+                                        <span class="badge bg-success">{% trans "Completed" %}</span>
+                                        {% elif task.status == 'in_progress' %}
+                                        <span class="badge bg-primary">{% trans "In Progress" %}</span>
+                                        {% elif task.status == 'on_hold' %}
+                                        <span class="badge bg-warning text-dark">{% trans "On Hold" %}</span>
+                                        {% elif task.status == 'cancelled' %}
+                                        <span class="badge bg-secondary">{% trans "Cancelled" %}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{% trans "To Do" %}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center py-4 text-muted">{% trans "No tasks assigned" %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- تبويب المستندات -->
             <div class="tab-pane fade" id="documents">
                 <div class="erp-card">
@@ -237,6 +302,88 @@
                         {% empty %}
                         <p class="text-center text-muted py-4">{% trans "No documents uploaded" %}</p>
                         {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portal Permissions Tab -->
+            <div class="tab-pane fade" id="portal-permissions">
+                <div class="erp-card">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0"><i class="bi bi-shield-check me-2"></i>{% trans "Portal Permissions" %}</h6>
+                        <small class="text-muted">{% trans "Control what this employee can access in the Employee Portal" %}</small>
+                    </div>
+                    <div class="erp-card-body">
+                        <form method="post" action="{% url 'erp:employee_permissions_update' employee.pk %}">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded">
+                                        <input class="form-check-input" type="checkbox" id="perm_scan_qr"
+                                               name="portal_can_scan_qr" {% if employee.portal_can_scan_qr %}checked{% endif %}>
+                                        <label class="form-check-label fw-medium" for="perm_scan_qr">
+                                            <i class="bi bi-qr-code-scan me-1"></i> {% trans "Scan QR Attendance" %}
+                                        </label>
+                                        <div class="text-muted small mt-1">{% trans "Allow employee to scan QR code for attendance check-in/out" %}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded">
+                                        <input class="form-check-input" type="checkbox" id="perm_attendance"
+                                               name="portal_can_view_attendance" {% if employee.portal_can_view_attendance %}checked{% endif %}>
+                                        <label class="form-check-label fw-medium" for="perm_attendance">
+                                            <i class="bi bi-clock-history me-1"></i> {% trans "View Attendance" %}
+                                        </label>
+                                        <div class="text-muted small mt-1">{% trans "Allow employee to view their attendance history" %}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded">
+                                        <input class="form-check-input" type="checkbox" id="perm_leaves"
+                                               name="portal_can_manage_leaves" {% if employee.portal_can_manage_leaves %}checked{% endif %}>
+                                        <label class="form-check-label fw-medium" for="perm_leaves">
+                                            <i class="bi bi-calendar-event me-1"></i> {% trans "Manage Leave Requests" %}
+                                        </label>
+                                        <div class="text-muted small mt-1">{% trans "Allow employee to view and submit leave requests" %}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded">
+                                        <input class="form-check-input" type="checkbox" id="perm_payslips"
+                                               name="portal_can_view_payslips" {% if employee.portal_can_view_payslips %}checked{% endif %}>
+                                        <label class="form-check-label fw-medium" for="perm_payslips">
+                                            <i class="bi bi-cash-stack me-1"></i> {% trans "View Payslips" %}
+                                        </label>
+                                        <div class="text-muted small mt-1">{% trans "Allow employee to view their pay slips" %}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded">
+                                        <input class="form-check-input" type="checkbox" id="perm_profile"
+                                               name="portal_can_edit_profile" {% if employee.portal_can_edit_profile %}checked{% endif %}>
+                                        <label class="form-check-label fw-medium" for="perm_profile">
+                                            <i class="bi bi-person-gear me-1"></i> {% trans "Edit Profile" %}
+                                        </label>
+                                        <div class="text-muted small mt-1">{% trans "Allow employee to edit their personal information" %}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded">
+                                        <input class="form-check-input" type="checkbox" id="perm_tasks"
+                                               name="portal_can_view_tasks" {% if employee.portal_can_view_tasks %}checked{% endif %}>
+                                        <label class="form-check-label fw-medium" for="perm_tasks">
+                                            <i class="bi bi-list-task me-1"></i> {% trans "View Tasks" %}
+                                        </label>
+                                        <div class="text-muted small mt-1">{% trans "Allow employee to view tasks assigned to them" %}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i> {% trans "Save Permissions" %}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

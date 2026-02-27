@@ -1,0 +1,380 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ asset.asset_number }} – {{ asset.name }}{% endblock %}
+{% block page_title %}{% trans "Asset Details" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:asset_list' %}">{% trans "Fixed Assets" %}</a></li>
+        <li class="breadcrumb-item active">{{ asset.asset_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-8">
+        <!-- Header Card -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">{{ asset.asset_number }} – {{ asset.name }}</h4>
+                    <span class="badge {% if asset.status == 'active' %}bg-success{% elif asset.status == 'draft' %}bg-secondary{% elif asset.status == 'disposed' %}bg-danger{% elif asset.status == 'fully_depreciated' %}bg-warning text-dark{% else %}bg-info{% endif %} fs-6">
+                        {{ asset.get_status_display }}
+                    </span>
+                    <span class="badge bg-primary ms-2">{{ asset.category.name }}</span>
+                </div>
+                <div class="text-start">
+                    <div class="display-6 fw-bold">${{ asset.current_book_value|floatformat:2 }}</div>
+                    <small class="text-muted">{% trans "Book Value" %}</small>
+                </div>
+            </div>
+            <div class="erp-card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td class="text-muted">{% trans "Acquisition Date" %}</td><td class="fw-medium">{{ asset.acquisition_date|date:"Y/m/d" }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Acquisition Cost" %}</td><td class="fw-medium">${{ asset.acquisition_cost|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Accumulated Depreciation" %}</td><td class="fw-medium text-warning">${{ asset.accumulated_depreciation|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Salvage Value" %}</td><td>${{ asset.salvage_value|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Depreciable Amount" %}</td><td>${{ asset.depreciable_amount|floatformat:2 }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td class="text-muted">{% trans "Depreciation Method" %}</td><td>{{ asset.get_depreciation_method_display }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Useful Life" %}</td><td>{{ asset.useful_life_months }} {% trans "months" %}</td></tr>
+                            <tr><td class="text-muted">{% trans "Start Date" %}</td><td>{{ asset.depreciation_start_date|date:"Y/m/d"|default:"-" }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Serial #" %}</td><td>{{ asset.serial_number|default:"-" }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Barcode" %}</td><td>{{ asset.barcode|default:"-" }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Depreciation Progress Bar -->
+                {% if asset.depreciable_amount > 0 %}
+                <div class="mt-3">
+                    <label class="form-label text-muted small">{% trans "Depreciation Progress" %} ({{ dep_percent|floatformat:1 }}%)</label>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar {% if dep_percent >= 100 %}bg-danger{% elif dep_percent >= 75 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ dep_percent|floatformat:0 }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-depreciation">{% trans "Depreciation" %} <span class="badge bg-secondary">{{ dep_total }}</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-transfers">{% trans "Transfers" %} <span class="badge bg-secondary">{{ transfers.count }}</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-revaluations">{% trans "Revaluations" %} <span class="badge bg-secondary">{{ revaluations.count }}</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-maintenance">{% trans "Maintenance" %} <span class="badge bg-secondary">{{ maintenance.count }}</span></a></li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Depreciation Tab -->
+            <div class="tab-pane fade show active" id="tab-depreciation">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{% trans "Depreciation Schedule" %}</h6>
+                        {% if asset.status == 'active' %}
+                        <a href="{% url 'erp:depreciation_generate' asset.pk %}" class="btn btn-sm btn-success"><i class="bi bi-calculator ms-1"></i> {% trans "Generate Schedule" %}</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Period" %}</th>
+                                    <th>{% trans "Amount" %}</th>
+                                    <th>{% trans "Accumulated" %}</th>
+                                    <th>{% trans "Book Value" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th>{% trans "Journal" %}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in schedules %}
+                                <tr>
+                                    <td>{{ s.period_date|date:"Y/m" }}</td>
+                                    <td>${{ s.depreciation_amount|floatformat:2 }}</td>
+                                    <td>${{ s.accumulated_total|floatformat:2 }}</td>
+                                    <td>${{ s.book_value_after|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge {% if s.status == 'posted' %}bg-success{% elif s.status == 'scheduled' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ s.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if s.journal_entry %}
+                                        <a href="{% url 'erp:journal_entry_detail' s.journal_entry.pk %}">{{ s.journal_entry.entry_number }}</a>
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if s.status == 'scheduled' %}
+                                        <form method="post" action="{% url 'erp:depreciation_post' s.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="{% trans 'Post' %}"><i class="bi bi-check-circle"></i></button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" class="text-center py-4 text-muted">{% trans "No depreciation schedule generated yet." %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transfers Tab -->
+            <div class="tab-pane fade" id="tab-transfers">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{% trans "Transfer History" %}</h6>
+                        {% if asset.status != 'disposed' %}
+                        <a href="{% url 'erp:transfer_fa_create' asset.pk %}" class="btn btn-sm btn-success"><i class="bi bi-arrow-left-right ms-1"></i> {% trans "New Transfer" %}</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "From Dept" %}</th>
+                                    <th>{% trans "To Dept" %}</th>
+                                    <th>{% trans "From Location" %}</th>
+                                    <th>{% trans "To Location" %}</th>
+                                    <th>{% trans "Reason" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in transfers %}
+                                <tr>
+                                    <td>{{ t.transfer_date|date:"Y/m/d" }}</td>
+                                    <td>{{ t.from_department.name|default:"-" }}</td>
+                                    <td>{{ t.to_department.name|default:"-" }}</td>
+                                    <td>{{ t.from_location|default:"-" }}</td>
+                                    <td>{{ t.to_location|default:"-" }}</td>
+                                    <td>{{ t.reason|truncatechars:50|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">{% trans "No transfers recorded." %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revaluations Tab -->
+            <div class="tab-pane fade" id="tab-revaluations">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{% trans "Revaluation History" %}</h6>
+                        {% if asset.status == 'active' %}
+                        <a href="{% url 'erp:revaluation_create' asset.pk %}" class="btn btn-sm btn-success"><i class="bi bi-arrow-up-down ms-1"></i> {% trans "New Revaluation" %}</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Old Value" %}</th>
+                                    <th>{% trans "New Value" %}</th>
+                                    <th>{% trans "Change" %}</th>
+                                    <th>{% trans "Appraiser" %}</th>
+                                    <th>{% trans "Journal" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in revaluations %}
+                                <tr>
+                                    <td>{{ r.revaluation_date|date:"Y/m/d" }}</td>
+                                    <td>${{ r.old_value|floatformat:2 }}</td>
+                                    <td>${{ r.new_value|floatformat:2 }}</td>
+                                    <td class="{% if r.revaluation_amount > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if r.revaluation_amount > 0 %}+{% endif %}${{ r.revaluation_amount|floatformat:2 }}
+                                    </td>
+                                    <td>{{ r.appraiser|default:"-" }}</td>
+                                    <td>
+                                        {% if r.journal_entry %}
+                                        <a href="{% url 'erp:journal_entry_detail' r.journal_entry.pk %}">{{ r.journal_entry.entry_number }}</a>
+                                        {% else %}
+                                        <a href="{% url 'erp:revaluation_detail' r.pk %}" class="btn btn-sm btn-outline-primary">{% trans "View / Process" %}</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">{% trans "No revaluations recorded." %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Tab -->
+            <div class="tab-pane fade" id="tab-maintenance">
+                <div class="erp-card">
+                    <div class="erp-card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{% trans "Maintenance Logs" %}</h6>
+                        {% if asset.status != 'disposed' %}
+                        <a href="{% url 'erp:maintenance_create' asset.pk %}" class="btn btn-sm btn-success"><i class="bi bi-wrench ms-1"></i> {% trans "Log Maintenance" %}</a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table erp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Type" %}</th>
+                                    <th>{% trans "Description" %}</th>
+                                    <th>{% trans "Scheduled" %}</th>
+                                    <th>{% trans "Completed" %}</th>
+                                    <th>{% trans "Cost" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in maintenance %}
+                                <tr>
+                                    <td>{{ m.get_maintenance_type_display }}</td>
+                                    <td>{{ m.description|truncatechars:40 }}</td>
+                                    <td>{{ m.scheduled_date|date:"Y/m/d"|default:"-" }}</td>
+                                    <td>{{ m.completion_date|date:"Y/m/d"|default:"-" }}</td>
+                                    <td>${{ m.cost|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge {% if m.status == 'completed' %}bg-success{% elif m.status == 'in_progress' %}bg-info{% elif m.status == 'scheduled' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ m.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'erp:maintenance_edit' m.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}"><i class="bi bi-pencil"></i></a>
+                                            <a href="{% url 'erp:maintenance_delete' m.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}"><i class="bi bi-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" class="text-center py-4 text-muted">{% trans "No maintenance logs recorded." %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="col-lg-4">
+        <!-- Actions Card -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
+            <div class="erp-card-body d-grid gap-2">
+                <a href="{% url 'erp:asset_edit' asset.pk %}" class="btn btn-outline-primary"><i class="bi bi-pencil ms-1"></i> {% trans "Edit Asset" %}</a>
+
+                {% if asset.status == 'draft' %}
+                <form method="post" action="{% url 'erp:asset_activate' asset.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-100"><i class="bi bi-check-circle ms-1"></i> {% trans "Activate Asset" %}</button>
+                </form>
+                {% endif %}
+
+                {% if asset.status == 'active' %}
+                <a href="{% url 'erp:depreciation_generate' asset.pk %}" class="btn btn-outline-warning"><i class="bi bi-calculator ms-1"></i> {% trans "Generate Depreciation" %}</a>
+                <a href="{% url 'erp:transfer_fa_create' asset.pk %}" class="btn btn-outline-info"><i class="bi bi-arrow-left-right ms-1"></i> {% trans "Transfer Asset" %}</a>
+                <a href="{% url 'erp:revaluation_create' asset.pk %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-up-down ms-1"></i> {% trans "Revalue Asset" %}</a>
+                {% endif %}
+
+                {% if asset.status != 'disposed' and not disposal %}
+                <a href="{% url 'erp:disposal_create' asset.pk %}" class="btn btn-outline-danger"><i class="bi bi-x-circle ms-1"></i> {% trans "Dispose Asset" %}</a>
+                {% endif %}
+
+                {% if asset.status != 'disposed' %}
+                <a href="{% url 'erp:maintenance_create' asset.pk %}" class="btn btn-outline-dark"><i class="bi bi-wrench ms-1"></i> {% trans "Log Maintenance" %}</a>
+                {% endif %}
+
+                <a href="{% url 'erp:asset_delete' asset.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash ms-1"></i> {% trans "Delete" %}</a>
+            </div>
+        </div>
+
+        <!-- Location Card -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Location & Assignment" %}</h6></div>
+            <div class="erp-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="text-muted">{% trans "Department" %}</td><td>{{ asset.department.name|default:"-" }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Location" %}</td><td>{{ asset.location|default:"-" }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Custodian" %}</td><td>
+                        {% if asset.custodian %}
+                        <a href="{% url 'erp:employee_detail' asset.custodian.pk %}">{{ asset.custodian }}</a>
+                        {% else %}-{% endif %}
+                    </td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Supplier / Purchase Card -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "Acquisition Details" %}</h6></div>
+            <div class="erp-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="text-muted">{% trans "Supplier" %}</td><td>
+                        {% if asset.supplier %}
+                        <a href="{% url 'erp:supplier_detail' asset.supplier.pk %}">{{ asset.supplier.name }}</a>
+                        {% else %}-{% endif %}
+                    </td></tr>
+                    <tr><td class="text-muted">{% trans "Purchase Order" %}</td><td>
+                        {% if asset.purchase_order %}
+                        <a href="{% url 'erp:purchase_order_detail' asset.purchase_order.pk %}">{{ asset.purchase_order.po_number }}</a>
+                        {% else %}-{% endif %}
+                    </td></tr>
+                    <tr><td class="text-muted">{% trans "Invoice Ref" %}</td><td>{{ asset.invoice_reference|default:"-" }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Currency" %}</td><td>{{ asset.currency.name }}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- GL Accounts Card -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header"><h6 class="mb-0">{% trans "GL Accounts" %}</h6></div>
+            <div class="erp-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="text-muted">{% trans "Asset" %}</td><td>{{ asset.asset_account.name|default:asset.category.asset_account.name|default:"-" }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Depr. Expense" %}</td><td>{{ asset.depreciation_expense_account.name|default:asset.category.depreciation_expense_account.name|default:"-" }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Accum. Depr." %}</td><td>{{ asset.accumulated_depreciation_account.name|default:asset.category.accumulated_depreciation_account.name|default:"-" }}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Disposal Card (if disposed) -->
+        {% if disposal %}
+        <div class="erp-card mb-4 border-danger">
+            <div class="erp-card-header bg-danger text-white"><h6 class="mb-0">{% trans "Disposal" %}</h6></div>
+            <div class="erp-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="text-muted">{% trans "Date" %}</td><td>{{ disposal.disposal_date|date:"Y/m/d" }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Type" %}</td><td>{{ disposal.get_disposal_type_display }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Sale Amount" %}</td><td>${{ disposal.sale_amount|floatformat:2 }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Book Value" %}</td><td>${{ disposal.book_value_at_disposal|floatformat:2 }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Gain/Loss" %}</td><td class="{% if disposal.gain_loss > 0 %}text-success{% elif disposal.gain_loss < 0 %}text-danger{% endif %}">${{ disposal.gain_loss|floatformat:2 }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Buyer" %}</td><td>{{ disposal.buyer_name|default:"-" }}</td></tr>
+                    {% if disposal.journal_entry %}
+                    <tr><td class="text-muted">{% trans "Journal" %}</td><td><a href="{% url 'erp:journal_entry_detail' disposal.journal_entry.pk %}">{{ disposal.journal_entry.entry_number }}</a></td></tr>
+                    {% endif %}
+                </table>
+                {% if not disposal.journal_entry %}
+                <form method="post" action="{% url 'erp:disposal_process' disposal.pk %}" class="mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning btn-sm w-100">{% trans "Process Disposal (Create Journal)" %}</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

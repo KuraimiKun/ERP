@@ -106,3 +106,55 @@ def erp_login_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return wrapper
+
+
+def portal_permission_required(permission_field):
+    """
+    Decorator for employee portal views that checks a specific
+    portal_can_* boolean field on the Employee model.
+
+    Usage:
+        @employee_or_owner_required
+        @portal_permission_required('portal_can_view_attendance')
+        def my_view(request): ...
+
+    Owners/admins/staff bypass the check.
+    Employees lacking the permission see a message and get redirected
+    to the portal dashboard.
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            user = request.user
+
+            # Staff / superusers / owners / admins always pass
+            if user.is_staff or user.is_superuser:
+                return view_func(request, *args, **kwargs)
+
+            assignment = user.database_assignments.filter(is_active=True).first()
+            if assignment and assignment.role in ('owner', 'admin'):
+                return view_func(request, *args, **kwargs)
+
+            # For role='user' employees, check the permission field
+            employee = None
+            if hasattr(user, 'employee_profile') and user.employee_profile:
+                employee = user.employee_profile
+            else:
+                from erp.models import Employee
+                try:
+                    employee = Employee.objects.get(email=user.email, approval_status='approved')
+                except Employee.DoesNotExist:
+                    pass
+
+            if employee and not getattr(employee, permission_field, True):
+                messages.warning(
+                    request,
+                    'You do not have permission to access this feature. '
+                    'Contact your administrator.'
+                )
+                return redirect('erp:employee_portal')
+
+            return view_func(request, *args, **kwargs)
+
+        return wrapper
+    return decorator

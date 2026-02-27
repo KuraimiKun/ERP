@@ -113,6 +113,7 @@ _hr_patterns = [
     path('employees/<int:pk>/', views.employee_detail, name='employee_detail'),
     path('employees/<int:pk>/edit/', views.employee_edit, name='employee_edit'),
     path('employees/<int:pk>/delete/', views.employee_delete, name='employee_delete'),
+    path('employees/<int:pk>/permissions/', views.employee_permissions_update, name='employee_permissions_update'),
     # Departments
     path('departments/', views.department_list, name='department_list'),
     path('departments/add/', views.department_create, name='department_create'),
@@ -244,6 +245,8 @@ _employee_portal_patterns = [
     path('portal/leaves/<int:pk>/cancel/', views.portal_leave_cancel, name='employee_portal_leave_cancel'),
     path('portal/payslips/', views.portal_payslip_list, name='employee_portal_payslip_list'),
     path('portal/payslips/<int:pk>/', views.portal_payslip_detail, name='employee_portal_payslip_detail'),
+    path('portal/tasks/', views.portal_task_list, name='employee_portal_task_list'),
+    path('portal/tasks/<int:pk>/', views.portal_task_detail, name='employee_portal_task_detail'),
     path('attendance/scan/', views.attendance_scan_result, name='attendance_scan_result'),
 ]
 
@@ -391,6 +394,45 @@ _inventory_patterns = [
     path('valuation-config/', views.valuation_config, name='valuation_config'),
 ]
 
+# ── Fixed Assets ────────────────────────────────────────────────────────────
+_fixed_assets_patterns = [
+    # Asset Categories
+    path('asset-categories/', views.asset_category_list, name='asset_category_list'),
+    path('asset-categories/add/', views.asset_category_create, name='asset_category_create'),
+    path('asset-categories/<int:pk>/edit/', views.asset_category_edit, name='asset_category_edit'),
+    path('asset-categories/<int:pk>/delete/', views.asset_category_delete, name='asset_category_delete'),
+    # Asset Register
+    path('assets/', views.asset_list, name='asset_list'),
+    path('assets/add/', views.asset_create, name='asset_create'),
+    path('assets/<int:pk>/', views.asset_detail, name='asset_detail'),
+    path('assets/<int:pk>/edit/', views.asset_edit, name='asset_edit'),
+    path('assets/<int:pk>/delete/', views.asset_delete, name='asset_delete'),
+    path('assets/<int:pk>/activate/', views.asset_activate, name='asset_activate'),
+    # Depreciation
+    path('depreciation/', views.depreciation_list, name='depreciation_list'),
+    path('assets/<int:pk>/depreciation/generate/', views.depreciation_generate, name='depreciation_generate'),
+    path('depreciation/<int:pk>/post/', views.depreciation_post, name='depreciation_post'),
+    path('depreciation/post-batch/', views.depreciation_post_batch, name='depreciation_post_batch'),
+    # Disposals
+    path('disposals/', views.disposal_list, name='disposal_list'),
+    path('assets/<int:pk>/dispose/', views.disposal_create, name='disposal_create'),
+    path('disposals/<int:pk>/', views.disposal_detail, name='disposal_detail'),
+    path('disposals/<int:pk>/process/', views.disposal_process, name='disposal_process'),
+    # Transfers (asset transfers — prefixed to avoid inventory clash)
+    path('asset-transfers/', views.transfer_fa_list, name='transfer_fa_list'),
+    path('assets/<int:pk>/transfer/', views.transfer_fa_create, name='transfer_fa_create'),
+    # Revaluations
+    path('revaluations/', views.revaluation_list, name='revaluation_list'),
+    path('assets/<int:pk>/revalue/', views.revaluation_create, name='revaluation_create'),
+    path('revaluations/<int:pk>/', views.revaluation_detail, name='revaluation_detail'),
+    path('revaluations/<int:pk>/process/', views.revaluation_process, name='revaluation_process'),
+    # Maintenance
+    path('asset-maintenance/', views.maintenance_list, name='maintenance_list'),
+    path('assets/<int:pk>/maintenance/add/', views.maintenance_create, name='maintenance_create'),
+    path('asset-maintenance/<int:pk>/edit/', views.maintenance_edit, name='maintenance_edit'),
+    path('asset-maintenance/<int:pk>/delete/', views.maintenance_delete, name='maintenance_delete'),
+]
+
 # ── Combined ────────────────────────────────────────────────────────────────
 urlpatterns = (
     _setup_patterns
@@ -410,6 +452,7 @@ urlpatterns = (
     + _notification_patterns
     + _audit_log_patterns
     + _inventory_patterns
+    + _fixed_assets_patterns
     + _employee_portal_patterns
     + _device_patterns
     + _invite_approval_patterns

@@ -1,0 +1,127 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Asset Register" %}{% endblock %}
+{% block page_title %}{% trans "Fixed Assets" %}{% endblock %}
+
+{% block content %}
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <div class="text-muted small">{% trans "Total Acquisition Cost" %}</div>
+                <div class="fs-4 fw-bold text-primary">${{ totals.total_cost|floatformat:2|default:"0.00" }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <div class="text-muted small">{% trans "Total Book Value" %}</div>
+                <div class="fs-4 fw-bold text-success">${{ totals.total_book_value|floatformat:2|default:"0.00" }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="erp-card">
+            <div class="erp-card-body text-center">
+                <div class="text-muted small">{% trans "Total Depreciation" %}</div>
+                <div class="fs-4 fw-bold text-warning">${{ totals.total_depreciation|floatformat:2|default:"0.00" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans "Asset #, name, serial..." %}" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Status" %}</label>
+                <select name="status" class="form-select">
+                    <option value="">{% trans "All" %}</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">{% trans "Category" %}</label>
+                <select name="category" class="form-select">
+                    <option value="">{% trans "All" %}</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"d" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search ms-1"></i> {% trans "Filter" %}</button>
+                <a href="{% url 'erp:asset_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+            </div>
+            <div class="col-md-2 text-start">
+                <a href="{% url 'erp:asset_create' %}" class="btn btn-success"><i class="bi bi-plus-lg ms-1"></i> {% trans "New Asset" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assets Table -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Asset #" %}</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Acquisition Date" %}</th>
+                    <th>{% trans "Cost" %}</th>
+                    <th>{% trans "Book Value" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Department" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:asset_detail' asset.pk %}" class="fw-medium text-decoration-none">{{ asset.asset_number }}</a>
+                    </td>
+                    <td>{{ asset.name|truncatechars:30 }}</td>
+                    <td>{{ asset.category.name }}</td>
+                    <td>{{ asset.acquisition_date|date:"Y/m/d" }}</td>
+                    <td>${{ asset.acquisition_cost|floatformat:2 }}</td>
+                    <td>${{ asset.current_book_value|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge {% if asset.status == 'active' %}bg-success{% elif asset.status == 'draft' %}bg-secondary{% elif asset.status == 'disposed' %}bg-danger{% elif asset.status == 'fully_depreciated' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                            {{ asset.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ asset.department.name|default:"-" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:asset_detail' asset.pk %}" class="btn btn-outline-primary" title="{% trans 'View' %}"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'erp:asset_edit' asset.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}"><i class="bi bi-pencil"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <i class="bi bi-building-gear fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No fixed assets found" %}</p>
+                        <a href="{% url 'erp:asset_create' %}" class="btn btn-primary mt-3">{% trans "Register First Asset" %}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -2,9 +2,15 @@
 ERP Setup Wizard Views
 
 Multi-step wizard for first-time ERP system setup.
+All user-facing strings go through Django i18n ({% trans %} in templates,
+gettext_lazy in forms).  Default *data* (account names, categories …) is
+stored in the database using the language active at setup time, with Arabic
+always written to the ``name_ar`` field for bilingual reports.
 """
 
 import datetime
+import traceback
+import logging
 from decimal import Decimal
 
 from django.shortcuts import render, redirect
@@ -12,20 +18,40 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import get_language, gettext as _
 from django.http import JsonResponse
 
 from .models import (
     Currency, Company, FiscalYear, TaxRate, PaymentMethod,
     Account, Branch, Sequence, SystemSetting, ExpenseCategory,
+    AssetCategory, InventoryValuationConfig,
 )
 from .setup_forms import (
     CurrencySetupForm, CompanySetupForm, FiscalYearSetupForm,
     TaxSetupForm, PaymentMethodsSetupForm, ChartOfAccountsSetupForm,
     SetupCompleteForm,
 )
+from .setup_defaults import (
+    get_text, get_setup_steps,
+    CURRENCY_MAP, get_chart_of_accounts,
+    TAX_PRESETS, ZERO_TAX_NAME,
+    PAYMENT_METHODS, EXPENSE_CATEGORIES,
+    ASSET_CATEGORIES, SEQUENCES,
+    HQ_BRANCH_NAME, get_default_fiscal_year_name,
+    get_default_timezone, SETUP_SUCCESS_MSG, SETUP_ERROR_MSG,
+)
 
 # Import tenant_required decorator and use it as staff_member_required
 from .decorators import tenant_required as staff_member_required
+
+
+# =============================================================================
+# Language helper
+# =============================================================================
+
+def _lang() -> str:
+    """Return the current active language code (ar / en / id)."""
+    return get_language() or 'en'
 
 
 # =============================================================================
@@ -34,15 +60,10 @@ from .decorators import tenant_required as staff_member_required
 
 def is_setup_complete():
     """Check if ERP setup has been completed."""
-    # Check if any company exists
     if not Company.objects.exists():
         return False
-    
-    # Check if base currency exists
     if not Currency.objects.filter(is_base=True).exists():
         return False
-    
-    # Check for setup complete flag in SystemSetting
     company = Company.objects.first()
     if company:
         setting = SystemSetting.objects.filter(
@@ -51,7 +72,6 @@ def is_setup_complete():
         ).first()
         if setting and setting.get_value():
             return True
-    
     return False
 
 
@@ -78,27 +98,15 @@ def save_setup_progress(request, data):
 # Setup Wizard Views
 # =============================================================================
 
-SETUP_STEPS = [
-    {'number': 1, 'name': 'العملة', 'icon': 'bi-currency-exchange'},
-    {'number': 2, 'name': 'الشركة', 'icon': 'bi-building'},
-    {'number': 3, 'name': 'السنة المالية', 'icon': 'bi-calendar3'},
-    {'number': 4, 'name': 'الضرائب', 'icon': 'bi-percent'},
-    {'number': 5, 'name': 'طرق الدفع', 'icon': 'bi-credit-card'},
-    {'number': 6, 'name': 'الحسابات', 'icon': 'bi-journal-text'},
-    {'number': 7, 'name': 'المراجعة', 'icon': 'bi-check-circle'},
-]
-
-
 @staff_member_required
 def setup_wizard(request):
     """Main setup wizard dispatcher."""
     if is_setup_complete():
         return redirect('erp:dashboard')
-    
+
     progress = get_setup_progress(request)
     current_step = progress.get('current_step', 1)
-    
-    # Redirect to the current step
+
     step_views = {
         1: 'erp:setup_step_currency',
         2: 'erp:setup_step_company',
@@ -108,15 +116,30 @@ def setup_wizard(request):
         6: 'erp:setup_step_chart',
         7: 'erp:setup_step_review',
     }
-    
+
     return redirect(step_views.get(current_step, 'erp:setup_step_currency'))
+
+
+def _render_step(request, template, form, step_number, progress, extra_ctx=None):
+    """Shared renderer for wizard steps."""
+    lang = _lang()
+    ctx = {
+        'form': form,
+        'steps': get_setup_steps(lang),
+        'current_step': step_number,
+        'progress': progress,
+        'LANGUAGE_CODE': lang,
+    }
+    if extra_ctx:
+        ctx.update(extra_ctx)
+    return render(request, template, ctx)
 
 
 @staff_member_required
 def setup_step_currency(request):
     """Step 1: Currency setup."""
     progress = get_setup_progress(request)
-    
+
     if request.method == 'POST':
         form = CurrencySetupForm(request.POST)
         if form.is_valid():
@@ -127,20 +150,15 @@ def setup_step_currency(request):
     else:
         initial = progress.get('currency_data', {})
         form = CurrencySetupForm(initial=initial)
-    
-    return render(request, 'erp/setup/step_currency.html', {
-        'form': form,
-        'steps': SETUP_STEPS,
-        'current_step': 1,
-        'progress': progress,
-    })
+
+    return _render_step(request, 'erp/setup/step_currency.html', form, 1, progress)
 
 
 @staff_member_required
 def setup_step_company(request):
     """Step 2: Company setup."""
     progress = get_setup_progress(request)
-    
+
     if request.method == 'POST':
         form = CompanySetupForm(request.POST)
         if form.is_valid():
@@ -151,29 +169,23 @@ def setup_step_company(request):
     else:
         initial = progress.get('company_data', {})
         form = CompanySetupForm(initial=initial)
-    
-    return render(request, 'erp/setup/step_company.html', {
-        'form': form,
-        'steps': SETUP_STEPS,
-        'current_step': 2,
-        'progress': progress,
-    })
+
+    return _render_step(request, 'erp/setup/step_company.html', form, 2, progress)
 
 
 @staff_member_required
 def setup_step_fiscal_year(request):
     """Step 3: Fiscal year setup."""
     progress = get_setup_progress(request)
-    
-    # Default dates
+    lang = _lang()
+
     today = timezone.now().date()
     default_start = datetime.date(today.year, 1, 1)
     default_end = datetime.date(today.year, 12, 31)
-    
+
     if request.method == 'POST':
         form = FiscalYearSetupForm(request.POST)
         if form.is_valid():
-            # Convert dates to ISO strings for JSON serialization
             data = form.cleaned_data.copy()
             if 'start_date' in data and data['start_date']:
                 data['start_date'] = data['start_date'].isoformat()
@@ -185,25 +197,20 @@ def setup_step_fiscal_year(request):
             return redirect('erp:setup_step_tax')
     else:
         initial = progress.get('fiscal_year_data', {
-            'fiscal_year_name': f'السنة المالية {today.year}',
+            'fiscal_year_name': get_default_fiscal_year_name(today.year, lang),
             'start_date': default_start.isoformat(),
             'end_date': default_end.isoformat(),
         })
         form = FiscalYearSetupForm(initial=initial)
-    
-    return render(request, 'erp/setup/step_fiscal_year.html', {
-        'form': form,
-        'steps': SETUP_STEPS,
-        'current_step': 3,
-        'progress': progress,
-    })
+
+    return _render_step(request, 'erp/setup/step_fiscal_year.html', form, 3, progress)
 
 
 @staff_member_required
 def setup_step_tax(request):
     """Step 4: Tax setup."""
     progress = get_setup_progress(request)
-    
+
     if request.method == 'POST':
         form = TaxSetupForm(request.POST)
         if form.is_valid():
@@ -214,20 +221,15 @@ def setup_step_tax(request):
     else:
         initial = progress.get('tax_data', {})
         form = TaxSetupForm(initial=initial)
-    
-    return render(request, 'erp/setup/step_tax.html', {
-        'form': form,
-        'steps': SETUP_STEPS,
-        'current_step': 4,
-        'progress': progress,
-    })
+
+    return _render_step(request, 'erp/setup/step_tax.html', form, 4, progress)
 
 
 @staff_member_required
 def setup_step_payment_methods(request):
     """Step 5: Payment methods setup."""
     progress = get_setup_progress(request)
-    
+
     if request.method == 'POST':
         form = PaymentMethodsSetupForm(request.POST)
         if form.is_valid():
@@ -238,20 +240,15 @@ def setup_step_payment_methods(request):
     else:
         initial = progress.get('payment_methods_data', {})
         form = PaymentMethodsSetupForm(initial=initial)
-    
-    return render(request, 'erp/setup/step_payment_methods.html', {
-        'form': form,
-        'steps': SETUP_STEPS,
-        'current_step': 5,
-        'progress': progress,
-    })
+
+    return _render_step(request, 'erp/setup/step_payment_methods.html', form, 5, progress)
 
 
 @staff_member_required
 def setup_step_chart(request):
     """Step 6: Chart of accounts setup."""
     progress = get_setup_progress(request)
-    
+
     if request.method == 'POST':
         form = ChartOfAccountsSetupForm(request.POST)
         if form.is_valid():
@@ -262,52 +259,46 @@ def setup_step_chart(request):
     else:
         initial = progress.get('chart_data', {})
         form = ChartOfAccountsSetupForm(initial=initial)
-    
-    return render(request, 'erp/setup/step_chart.html', {
-        'form': form,
-        'steps': SETUP_STEPS,
-        'current_step': 6,
-        'progress': progress,
-    })
+
+    return _render_step(request, 'erp/setup/step_chart.html', form, 6, progress)
 
 
 @staff_member_required
 def setup_step_review(request):
     """Step 7: Review and confirm."""
     progress = get_setup_progress(request)
-    
+    lang = _lang()
+
     if request.method == 'POST':
         form = SetupCompleteForm(request.POST)
         if form.is_valid():
-            # Execute the setup
             try:
                 execute_setup(request, progress)
-                # Clear session data
                 if 'erp_setup' in request.session:
                     del request.session['erp_setup']
-                messages.success(request, 'تم إعداد النظام بنجاح! مرحباً بك في نظام إدارة المؤسسات.')
+                messages.success(request, get_text(SETUP_SUCCESS_MSG, lang))
                 return redirect('erp:dashboard')
             except Exception as e:
-                messages.error(request, f'حدث خطأ أثناء الإعداد: {str(e)}')
+                tb = traceback.format_exc()
+                logging.getLogger('erp.setup').error("Setup error:\n%s", tb)
+                print("=== SETUP ERROR TRACEBACK ===")
+                print(tb)
+                print("=== END TRACEBACK ===")
+                messages.error(request, get_text(SETUP_ERROR_MSG, lang) + str(e))
     else:
         form = SetupCompleteForm()
-    
-    return render(request, 'erp/setup/step_review.html', {
-        'form': form,
-        'steps': SETUP_STEPS,
-        'current_step': 7,
-        'progress': progress,
-    })
+
+    return _render_step(request, 'erp/setup/step_review.html', form, 7, progress)
 
 
 @staff_member_required
 def setup_go_back(request, step):
     """Go back to a previous step."""
     progress = get_setup_progress(request)
-    if step >= 1 and step <= 7:
+    if 1 <= step <= 7:
         progress['current_step'] = step
         save_setup_progress(request, progress)
-    
+
     step_views = {
         1: 'erp:setup_step_currency',
         2: 'erp:setup_step_company',
@@ -317,13 +308,23 @@ def setup_go_back(request, step):
         6: 'erp:setup_step_chart',
         7: 'erp:setup_step_review',
     }
-    
+
     return redirect(step_views.get(step, 'erp:setup_step_currency'))
 
 
 # =============================================================================
 # Execute Setup
 # =============================================================================
+
+# Map from short type strings used in setup_defaults to Account.AccountType
+_ACCOUNT_TYPE_MAP = {
+    'ASSET': Account.AccountType.ASSET,
+    'LIABILITY': Account.AccountType.LIABILITY,
+    'EQUITY': Account.AccountType.EQUITY,
+    'INCOME': Account.AccountType.INCOME,
+    'EXPENSE': Account.AccountType.EXPENSE,
+}
+
 
 @transaction.atomic
 def execute_setup(request, progress):
@@ -337,60 +338,56 @@ def execute_setup(request, progress):
     if _db and _db != 'default':
         sync_user_to_tenant_db(request.user, _db)
 
+    lang = _lang()   # language chosen by the user at setup time
+
     currency_data = progress.get('currency_data', {})
     company_data = progress.get('company_data', {})
     fiscal_year_data = progress.get('fiscal_year_data', {})
     tax_data = progress.get('tax_data', {})
     payment_methods_data = progress.get('payment_methods_data', {})
     chart_data = progress.get('chart_data', {})
-    
+
     # -------------------------------------------------------------------------
     # Step 1: Create Currency
     # -------------------------------------------------------------------------
     currency_code = currency_data.get('base_currency', 'SAR')
-    
-    currency_map = {
-        'SAR': ('ريال سعودي', 'ر.س'),
-        'AED': ('درهم إماراتي', 'د.إ'),
-        'USD': ('دولار أمريكي', '$'),
-        'EUR': ('يورو', '€'),
-        'GBP': ('جنيه إسترليني', '£'),
-        'EGP': ('جنيه مصري', 'ج.م'),
-        'KWD': ('دينار كويتي', 'د.ك'),
-        'QAR': ('ريال قطري', 'ر.ق'),
-        'BHD': ('دينار بحريني', 'د.ب'),
-        'OMR': ('ريال عماني', 'ر.ع'),
-        'JOD': ('دينار أردني', 'د.أ'),
-    }
-    
+
     if currency_code == 'OTHER':
         code = currency_data.get('custom_currency_code', 'XXX').upper()
         name = currency_data.get('custom_currency_name', 'Custom Currency')
+        name_ar = name
         symbol = currency_data.get('custom_currency_symbol', code)
     else:
         code = currency_code
-        name, symbol = currency_map.get(code, (code, code))
-    
-    # Mark all existing currencies as non-base
+        info = CURRENCY_MAP.get(code, {})
+        if info:
+            name = get_text(info['name'], lang)
+            name_ar = get_text(info['name'], 'ar')
+            symbol = info['symbol']
+        else:
+            name = code
+            name_ar = code
+            symbol = code
+
     Currency.objects.update(is_base=False)
-    
-    currency, _ = Currency.objects.update_or_create(
+
+    currency, _created = Currency.objects.update_or_create(
         code=code,
         defaults={
             'name': name,
-            'name_ar': name,
+            'name_ar': name_ar,
             'symbol': symbol,
             'exchange_rate': Decimal('1.0'),
             'is_base': True,
             'is_active': True,
         }
     )
-    
+
     # -------------------------------------------------------------------------
     # Step 2: Create Company
     # -------------------------------------------------------------------------
     company = Company.objects.create(
-        name=company_data.get('name', 'شركتي'),
+        name=company_data.get('name', _('My Company')),
         name_ar=company_data.get('name_ar', ''),
         legal_name=company_data.get('legal_name', ''),
         email=company_data.get('email', 'info@example.com'),
@@ -399,7 +396,7 @@ def execute_setup(request, progress):
         commercial_register=company_data.get('commercial_register', ''),
         address=company_data.get('address', ''),
         city=company_data.get('city', ''),
-        country=company_data.get('country', 'المملكة العربية السعودية'),
+        country=company_data.get('country', ''),
         postal_code=company_data.get('postal_code', ''),
         base_currency=currency,
         fiscal_year_start=int(fiscal_year_data.get('fiscal_year_start', 1)),
@@ -408,12 +405,12 @@ def execute_setup(request, progress):
         iban=payment_methods_data.get('iban', ''),
         created_by=request.user,
     )
-    
+
     # Create HQ Branch
     Branch.objects.create(
         company=company,
-        name='المقر الرئيسي',
-        name_ar='المقر الرئيسي',
+        name=get_text(HQ_BRANCH_NAME, lang),
+        name_ar=get_text(HQ_BRANCH_NAME, 'ar'),
         code='HQ',
         address=company.address,
         city=company.city,
@@ -422,153 +419,170 @@ def execute_setup(request, progress):
         is_active=True,
         created_by=request.user,
     )
-    
+
     # -------------------------------------------------------------------------
     # Step 3: Create Fiscal Year
     # -------------------------------------------------------------------------
-    # Parse date strings back to date objects
     start_date_str = fiscal_year_data.get('start_date')
     end_date_str = fiscal_year_data.get('end_date')
-    
-    if isinstance(start_date_str, str):
-        start_date = datetime.date.fromisoformat(start_date_str)
-    else:
-        start_date = start_date_str or datetime.date(timezone.now().year, 1, 1)
-    
-    if isinstance(end_date_str, str):
-        end_date = datetime.date.fromisoformat(end_date_str)
-    else:
-        end_date = end_date_str or datetime.date(timezone.now().year, 12, 31)
-    
+
+    start_date = (
+        datetime.date.fromisoformat(start_date_str)
+        if isinstance(start_date_str, str)
+        else start_date_str or datetime.date(timezone.now().year, 1, 1)
+    )
+    end_date = (
+        datetime.date.fromisoformat(end_date_str)
+        if isinstance(end_date_str, str)
+        else end_date_str or datetime.date(timezone.now().year, 12, 31)
+    )
+
     FiscalYear.objects.create(
         company=company,
-        name=fiscal_year_data.get('fiscal_year_name', f'السنة المالية {timezone.now().year}'),
+        name=fiscal_year_data.get(
+            'fiscal_year_name',
+            get_default_fiscal_year_name(timezone.now().year, lang),
+        ),
         start_date=start_date,
         end_date=end_date,
         is_current=True,
         created_by=request.user,
     )
-    
+
     # -------------------------------------------------------------------------
     # Step 4: Create Tax Rates
     # -------------------------------------------------------------------------
     tax_preset = tax_data.get('tax_preset', 'sa_vat')
-    
-    tax_presets = {
-        'sa_vat': ('ضريبة القيمة المضافة', Decimal('15.00')),
-        'ae_vat': ('ضريبة القيمة المضافة', Decimal('5.00')),
-        'eg_vat': ('ضريبة القيمة المضافة', Decimal('14.00')),
-    }
-    
-    if tax_preset in tax_presets:
-        name, rate = tax_presets[tax_preset]
+
+    if tax_preset in TAX_PRESETS:
+        preset_info = TAX_PRESETS[tax_preset]
         TaxRate.objects.create(
             company=company,
-            name=name,
-            name_ar=name,
-            rate=rate,
+            name=get_text(preset_info['name'], lang),
+            name_ar=get_text(preset_info['name'], 'ar'),
+            rate=preset_info['rate'],
             is_default=True,
             is_active=True,
         )
     elif tax_preset == 'custom':
+        custom_name = tax_data.get('custom_tax_name', _('Tax'))
         TaxRate.objects.create(
             company=company,
-            name=tax_data.get('custom_tax_name', 'ضريبة'),
-            name_ar=tax_data.get('custom_tax_name', 'ضريبة'),
+            name=custom_name,
+            name_ar=custom_name,
             rate=tax_data.get('custom_tax_rate', Decimal('0')),
             is_default=True,
             is_active=True,
         )
-    
-    # Zero tax rate
-    TaxRate.objects.create(
-        company=company,
-        name='بدون ضريبة',
-        name_ar='بدون ضريبة',
-        rate=Decimal('0'),
-        is_default=False,
-        is_active=True,
-    )
-    
+
+    # Zero tax rate (always created)
+    if tax_preset != 'none':
+        TaxRate.objects.create(
+            company=company,
+            name=get_text(ZERO_TAX_NAME, lang),
+            name_ar=get_text(ZERO_TAX_NAME, 'ar'),
+            rate=Decimal('0'),
+            is_default=False,
+            is_active=True,
+        )
+
     # -------------------------------------------------------------------------
     # Step 5: Create Chart of Accounts
     # -------------------------------------------------------------------------
-    chart_preset = chart_data.get('chart_preset', 'travel_agency')
-    accounts = create_chart_of_accounts(company, chart_preset, request.user)
-    
+    chart_preset = chart_data.get('chart_preset', 'standard')
+    accounts = create_chart_of_accounts(company, chart_preset, request.user, lang)
+
     # -------------------------------------------------------------------------
     # Step 6: Create Payment Methods
     # -------------------------------------------------------------------------
     cash_account = accounts.get('1010')
-    bank_account = accounts.get('1020')
-    
-    payment_methods = []
-    if payment_methods_data.get('enable_cash', True):
-        payment_methods.append(('نقداً', 'CASH', cash_account, False))
-    if payment_methods_data.get('enable_bank_transfer', True):
-        payment_methods.append(('تحويل بنكي', 'BANK', bank_account, True))
-    if payment_methods_data.get('enable_credit_card', True):
-        payment_methods.append(('بطاقة ائتمان', 'CC', bank_account, True))
-    if payment_methods_data.get('enable_mada', True):
-        payment_methods.append(('مدى', 'MADA', bank_account, True))
-    if payment_methods_data.get('enable_stc_pay', False):
-        payment_methods.append(('STC Pay', 'STCPAY', bank_account, True))
-    if payment_methods_data.get('enable_apple_pay', False):
-        payment_methods.append(('Apple Pay', 'APPLEPAY', bank_account, True))
-    
-    for name, code, account, requires_ref in payment_methods:
-        PaymentMethod.objects.create(
-            company=company,
-            name=name,
-            name_ar=name,
-            code=code,
-            account=account,
-            requires_reference=requires_ref,
-            is_active=True,
-        )
-    
+    bank_account_obj = accounts.get('1020')
+
+    # Map form field names → PAYMENT_METHODS codes
+    _pm_field_map = {
+        'enable_cash': 'CASH',
+        'enable_bank_transfer': 'BANK',
+        'enable_credit_card': 'CC',
+        'enable_mada': 'MADA',
+        'enable_stc_pay': 'STCPAY',
+        'enable_apple_pay': 'APPLEPAY',
+    }
+
+    for field_name, pm_code in _pm_field_map.items():
+        if payment_methods_data.get(field_name, field_name in ('enable_cash', 'enable_bank_transfer', 'enable_credit_card', 'enable_mada')):
+            pm_def = next((p for p in PAYMENT_METHODS if p['code'] == pm_code), None)
+            if pm_def:
+                acct = accounts.get(pm_def['account_code'], bank_account_obj)
+                PaymentMethod.objects.create(
+                    company=company,
+                    name=get_text(pm_def['name'], lang),
+                    name_ar=get_text(pm_def['name'], 'ar'),
+                    code=pm_code,
+                    account=acct,
+                    requires_reference=pm_def['requires_ref'],
+                    is_active=True,
+                )
+
     # -------------------------------------------------------------------------
     # Step 7: Create Expense Categories
     # -------------------------------------------------------------------------
-    expense_account = accounts.get('6000')
-    
-    expense_categories = [
-        ('مصاريف عامة', 'GEN', None),
-        ('مصاريف السفر', 'TRV', 'GEN'),
-        ('مصاريف التسويق', 'MKT', 'GEN'),
-        ('مصاريف الرواتب', 'SAL', 'GEN'),
-        ('مصاريف المكتب', 'OFF', 'GEN'),
-    ]
-    
     created_categories = {}
-    for name, code, parent_code in expense_categories:
-        parent = created_categories.get(parent_code)
+    for cat_def in EXPENSE_CATEGORIES:
+        parent = created_categories.get(cat_def['parent'])
         cat = ExpenseCategory.objects.create(
             company=company,
-            name=name,
-            name_ar=name,
-            code=code,
+            name=get_text(cat_def['name'], lang),
+            name_ar=get_text(cat_def['name'], 'ar'),
+            code=cat_def['code'],
             parent=parent,
-            account=expense_account,
+            account=accounts.get(cat_def['account_code']),
             is_active=True,
         )
-        created_categories[code] = cat
-    
+        created_categories[cat_def['code']] = cat
+
     # -------------------------------------------------------------------------
-    # Step 8: Create Sequences
+    # Step 8: Create Asset Categories (professional defaults)
     # -------------------------------------------------------------------------
-    sequences = [
-        (Sequence.SequenceType.INVOICE, 'INV-'),
-        (Sequence.SequenceType.PAYMENT, 'PAY-'),
-        (Sequence.SequenceType.EXPENSE, 'EXP-'),
-        (Sequence.SequenceType.QUOTATION, 'QUO-'),
-        (Sequence.SequenceType.PURCHASE_ORDER, 'PO-'),
-        (Sequence.SequenceType.EMPLOYEE, 'EMP-'),
-        (Sequence.SequenceType.CUSTOMER, 'CUS-'),
-        (Sequence.SequenceType.SUPPLIER, 'SUP-'),
-    ]
-    
-    for seq_type, prefix in sequences:
+    for ac_def in ASSET_CATEGORIES:
+        method_value = getattr(AssetCategory.DepreciationMethod, ac_def['method'], ac_def['method'])
+        AssetCategory.objects.create(
+            company=company,
+            name=get_text(ac_def['name'], lang),
+            code=ac_def['code'],
+            depreciation_method=method_value,
+            useful_life_months=ac_def['useful_life'],
+            salvage_value_percent=ac_def['salvage_pct'],
+            asset_account=accounts.get(ac_def['asset_acct']),
+            depreciation_expense_account=accounts.get(ac_def['depr_exp_acct']),
+            accumulated_depreciation_account=accounts.get(ac_def['accum_depr_acct']),
+            disposal_gain_account=accounts.get(ac_def['disposal_gain_acct']),
+            disposal_loss_account=accounts.get(ac_def['disposal_loss_acct']),
+            acquisition_source_account=accounts.get(ac_def['acq_source_acct']),
+            disposal_proceeds_account=accounts.get(ac_def['disposal_proceeds_acct']),
+            revaluation_surplus_account=accounts.get(ac_def['reval_surplus_acct']),
+            is_active=True,
+        )
+
+    # -------------------------------------------------------------------------
+    # Step 9: Create Inventory Valuation Config
+    # -------------------------------------------------------------------------
+    InventoryValuationConfig.objects.get_or_create(
+        company=company,
+        defaults={
+            'valuation_method': InventoryValuationConfig.ValuationMethod.WEIGHTED_AVG,
+            'inventory_account': accounts.get('1200'),
+            'cogs_account': accounts.get('5100'),
+            'grni_account': accounts.get('1400'),
+            'adjustment_account': accounts.get('6200'),
+            'write_off_account': accounts.get('6300'),
+        },
+    )
+
+    # -------------------------------------------------------------------------
+    # Step 10: Create Sequences
+    # -------------------------------------------------------------------------
+    for seq_type_name, prefix in SEQUENCES:
+        seq_type = getattr(Sequence.SequenceType, seq_type_name)
         Sequence.objects.create(
             company=company,
             sequence_type=seq_type,
@@ -577,19 +591,30 @@ def execute_setup(request, progress):
             padding=5,
             reset_period='never',
         )
-    
+
     # -------------------------------------------------------------------------
-    # Step 9: Create System Settings
+    # Step 11: Create System Settings
     # -------------------------------------------------------------------------
-    settings = [
+    tz = get_default_timezone(code)
+
+    settings_list = [
         ('setup.complete', 'true', SystemSetting.SettingType.BOOLEAN, 'system'),
-        ('general.language', 'ar', SystemSetting.SettingType.STRING, 'general'),
-        ('general.timezone', 'Asia/Riyadh', SystemSetting.SettingType.STRING, 'general'),
+        ('general.language', lang, SystemSetting.SettingType.STRING, 'general'),
+        ('general.timezone', tz, SystemSetting.SettingType.STRING, 'general'),
         ('finance.base_currency', currency.code, SystemSetting.SettingType.STRING, 'finance'),
+        ('finance.default_tax_rate',
+         str(TAX_PRESETS.get(tax_preset, {}).get('rate', '0')),
+         SystemSetting.SettingType.DECIMAL, 'finance'),
+        ('finance.invoice_footer',
+         _('Thank you for your business.'),
+         SystemSetting.SettingType.TEXT, 'finance'),
         ('branding.company_name', company.name, SystemSetting.SettingType.STRING, 'branding'),
+        ('branding.company_address', company.address, SystemSetting.SettingType.TEXT, 'branding'),
+        ('email.default_sender', company.email, SystemSetting.SettingType.STRING, 'email'),
+        ('notifications.enable_email', 'true', SystemSetting.SettingType.BOOLEAN, 'notifications'),
     ]
-    
-    for key, value, setting_type, category in settings:
+
+    for key, value, setting_type, category in settings_list:
         SystemSetting.objects.create(
             company=company,
             key=key,
@@ -598,83 +623,35 @@ def execute_setup(request, progress):
             category=category,
             is_editable=key != 'setup.complete',
         )
-    
+
     return company
 
 
-def create_chart_of_accounts(company, preset, user):
-    """Create chart of accounts based on preset."""
-    
-    # Standard chart used for all presets as base
-    base_chart = [
-        # Assets
-        {'code': '1000', 'name': 'الأصول', 'type': Account.AccountType.ASSET},
-        {'code': '1010', 'name': 'الصندوق', 'type': Account.AccountType.ASSET, 'parent': '1000'},
-        {'code': '1020', 'name': 'البنك', 'type': Account.AccountType.ASSET, 'parent': '1000'},
-        {'code': '1100', 'name': 'الذمم المدينة', 'type': Account.AccountType.ASSET, 'parent': '1000'},
-        {'code': '1200', 'name': 'المخزون', 'type': Account.AccountType.ASSET, 'parent': '1000'},
-        {'code': '1300', 'name': 'الأصول الثابتة', 'type': Account.AccountType.ASSET, 'parent': '1000'},
-        
-        # Liabilities
-        {'code': '2000', 'name': 'الالتزامات', 'type': Account.AccountType.LIABILITY},
-        {'code': '2100', 'name': 'الذمم الدائنة', 'type': Account.AccountType.LIABILITY, 'parent': '2000'},
-        {'code': '2200', 'name': 'ضريبة القيمة المضافة المستحقة', 'type': Account.AccountType.LIABILITY, 'parent': '2000'},
-        {'code': '2300', 'name': 'رواتب مستحقة', 'type': Account.AccountType.LIABILITY, 'parent': '2000'},
-        
-        # Equity
-        {'code': '3000', 'name': 'حقوق الملكية', 'type': Account.AccountType.EQUITY},
-        {'code': '3100', 'name': 'رأس المال', 'type': Account.AccountType.EQUITY, 'parent': '3000'},
-        {'code': '3200', 'name': 'الأرباح المحتجزة', 'type': Account.AccountType.EQUITY, 'parent': '3000'},
-        
-        # Income
-        {'code': '4000', 'name': 'الإيرادات', 'type': Account.AccountType.INCOME},
-        {'code': '4100', 'name': 'إيرادات المبيعات', 'type': Account.AccountType.INCOME, 'parent': '4000'},
-        {'code': '4200', 'name': 'إيرادات الخدمات', 'type': Account.AccountType.INCOME, 'parent': '4000'},
-        
-        # Expenses
-        {'code': '5000', 'name': 'تكلفة المبيعات', 'type': Account.AccountType.EXPENSE},
-        {'code': '6000', 'name': 'المصاريف التشغيلية', 'type': Account.AccountType.EXPENSE},
-        {'code': '6100', 'name': 'مصاريف الرواتب', 'type': Account.AccountType.EXPENSE, 'parent': '6000'},
-        {'code': '6200', 'name': 'مصاريف الإيجار', 'type': Account.AccountType.EXPENSE, 'parent': '6000'},
-        {'code': '6300', 'name': 'مصاريف المرافق', 'type': Account.AccountType.EXPENSE, 'parent': '6000'},
-        {'code': '6400', 'name': 'مصاريف التسويق', 'type': Account.AccountType.EXPENSE, 'parent': '6000'},
-        {'code': '6500', 'name': 'مصاريف إدارية', 'type': Account.AccountType.EXPENSE, 'parent': '6000'},
-    ]
-    
-    # Travel agency specific accounts
-    travel_accounts = [
-        {'code': '4110', 'name': 'إيرادات التذاكر', 'type': Account.AccountType.INCOME, 'parent': '4100'},
-        {'code': '4120', 'name': 'إيرادات الفنادق', 'type': Account.AccountType.INCOME, 'parent': '4100'},
-        {'code': '4130', 'name': 'إيرادات الرحلات السياحية', 'type': Account.AccountType.INCOME, 'parent': '4100'},
-        {'code': '4140', 'name': 'إيرادات التأشيرات', 'type': Account.AccountType.INCOME, 'parent': '4100'},
-        {'code': '4150', 'name': 'عمولات شركات الطيران', 'type': Account.AccountType.INCOME, 'parent': '4100'},
-        {'code': '5100', 'name': 'تكلفة التذاكر', 'type': Account.AccountType.EXPENSE, 'parent': '5000'},
-        {'code': '5200', 'name': 'تكلفة الفنادق', 'type': Account.AccountType.EXPENSE, 'parent': '5000'},
-        {'code': '5300', 'name': 'تكلفة النقل', 'type': Account.AccountType.EXPENSE, 'parent': '5000'},
-    ]
-    
-    if preset == 'travel_agency':
-        base_chart.extend(travel_accounts)
-    elif preset == 'services':
-        base_chart.extend([
-            {'code': '4210', 'name': 'إيرادات الاستشارات', 'type': Account.AccountType.INCOME, 'parent': '4200'},
-            {'code': '4220', 'name': 'إيرادات الصيانة', 'type': Account.AccountType.INCOME, 'parent': '4200'},
-        ])
-    
+# =============================================================================
+# Chart of Accounts Builder
+# =============================================================================
+
+def create_chart_of_accounts(company, preset, user, lang='ar'):
+    """Create chart of accounts based on preset, using the professional
+    structure from erp_first_setup with multilingual account names."""
+
+    chart_items = get_chart_of_accounts(preset)
+
     accounts = {}
-    for item in base_chart:
+    for item in chart_items:
         parent = accounts.get(item.get('parent'))
+        acct_type = _ACCOUNT_TYPE_MAP[item['type']]
         acc = Account.objects.create(
             company=company,
             code=item['code'],
-            name=item['name'],
-            name_ar=item['name'],
-            account_type=item['type'],
+            name=get_text(item['name'], lang),
+            name_ar=get_text(item['name'], 'ar'),
+            account_type=acct_type,
             parent=parent,
             is_system=True,
             is_active=True,
             created_by=user,
         )
         accounts[item['code']] = acc
-    
+
     return accounts

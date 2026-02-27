@@ -1,0 +1,169 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:asset_list' %}">{% trans "Fixed Assets" %}</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+
+<div class="erp-card">
+    <div class="erp-card-header">
+        <h5 class="mb-0">{{ title }}</h5>
+    </div>
+    <div class="erp-card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <h6 class="text-muted text-uppercase mb-3">{% trans "Basic Information" %}</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.asset_number.label }} *</label>
+                    {{ form.asset_number }}
+                    {% if form.asset_number.errors %}<div class="text-danger small">{{ form.asset_number.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.name.label }} *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.name_ar.label }}</label>
+                    {{ form.name_ar }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.category.label }} *</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.serial_number.label }}</label>
+                    {{ form.serial_number }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.barcode.label }}</label>
+                    {{ form.barcode }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+
+            <h6 class="text-muted text-uppercase mt-4 mb-3">{% trans "Acquisition" %}</h6>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.acquisition_date.label }} *</label>
+                    {{ form.acquisition_date }}
+                    {% if form.acquisition_date.errors %}<div class="text-danger small">{{ form.acquisition_date.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.acquisition_cost.label }} *</label>
+                    {{ form.acquisition_cost }}
+                    {% if form.acquisition_cost.errors %}<div class="text-danger small">{{ form.acquisition_cost.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.currency.label }} *</label>
+                    {{ form.currency }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.supplier.label }}</label>
+                    {{ form.supplier }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.purchase_order.label }}</label>
+                    {{ form.purchase_order }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.invoice_reference.label }}</label>
+                    {{ form.invoice_reference }}
+                </div>
+            </div>
+
+            <h6 class="text-muted text-uppercase mt-4 mb-3">{% trans "Location & Assignment" %}</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.department.label }}</label>
+                    {{ form.department }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.location.label }}</label>
+                    {{ form.location }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.custodian.label }}</label>
+                    {{ form.custodian }}
+                </div>
+            </div>
+
+            <h6 class="text-muted text-uppercase mt-4 mb-3">{% trans "Depreciation" %}</h6>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.depreciation_method.label }}</label>
+                    {{ form.depreciation_method }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.useful_life_months.label }}</label>
+                    {{ form.useful_life_months }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.salvage_value.label }}</label>
+                    {{ form.salvage_value }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.depreciation_start_date.label }}</label>
+                    {{ form.depreciation_start_date }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">{{ form.total_estimated_units.label }}</label>
+                    {{ form.total_estimated_units }}
+                    <small class="text-muted">{{ form.total_estimated_units.help_text }}</small>
+                </div>
+            </div>
+
+            <h6 class="text-muted text-uppercase mt-4 mb-3">{% trans "GL Account Overrides" %}</h6>
+            <p class="text-muted small mb-3">{% trans "Leave blank to use category defaults." %}</p>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.asset_account.label }}</label>
+                    {{ form.asset_account }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.depreciation_expense_account.label }}</label>
+                    {{ form.depreciation_expense_account }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.accumulated_depreciation_account.label }}</label>
+                    {{ form.accumulated_depreciation_account }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.acquisition_source_account.label }}</label>
+                    {{ form.acquisition_source_account }}
+                    <small class="text-muted">{{ form.acquisition_source_account.help_text }}</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.notes.label }}</label>
+                {{ form.notes }}
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg ms-1"></i> {% trans "Save" %}</button>
+                <a href="{% url 'erp:asset_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
