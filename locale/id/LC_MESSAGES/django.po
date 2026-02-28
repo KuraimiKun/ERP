@@ -29,17 +29,17 @@ msgstr "Email"
 
 #: .\erp\forms\employee_registration.py:29
 msgid "your.email@example.com"
-msgstr ""
+msgstr "your.email@example.com"
 
 #: .\erp\forms\employee_registration.py:34
 #: .\tenants\templates\tenants\employee_register.html:42
 msgid "Password"
-msgstr ""
+msgstr "Kata Sandi"
 
 #: .\erp\forms\employee_registration.py:42
 #: .\tenants\templates\tenants\employee_register.html:49
 msgid "Confirm Password"
-msgstr ""
+msgstr "Konfirmasi Kata Sandi"
 
 #: .\erp\forms\employee_registration.py:51
 #: .\erp\templates\erp\employees\form.html:19
@@ -203,7 +203,7 @@ msgstr "Jabatan"
 
 #: .\erp\forms\employee_registration.py:146
 msgid "Passwords do not match."
-msgstr ""
+msgstr "Kata sandi tidak cocok."
 
 #: .\erp\setup_forms.py:52 .\erp\templates\erp\setup\step_review.html:41
 
@@ -580,7 +580,7 @@ msgstr "Bagan Akun"
 #: .\erp\templates\erp\tasks\detail.html:49
 #: .\erp\templates\erp\tasks\list.html:129
 msgid "Edit"
-msgstr "Ubah"
+msgstr "Edit"
 
 #: .\erp\templates\erp\accounts\detail.html:51
 #, fuzzy
@@ -629,7 +629,7 @@ msgstr "Neraca Percobaan"
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Date"
-msgstr "Tanggal Bergabung"
+msgstr "Dari Tanggal"
 
 #: .\erp\templates\erp\accounts\detail.html:101
 #: .\erp\templates\erp\attendance\list.html:69
@@ -642,7 +642,7 @@ msgstr "Tanggal Bergabung"
 #, fuzzy
 #| msgid "Date"
 msgid "To Date"
-msgstr "Tanggal"
+msgstr "Sampai Tanggal"
 
 #: .\erp\templates\erp\accounts\detail.html:106
 #: .\erp\templates\erp\attendance\list.html:85
@@ -800,7 +800,7 @@ msgstr "Tipe"
 #, fuzzy
 #| msgid "Description & Notes"
 msgid "Description"
-msgstr "Deskripsi & Catatan"
+msgstr "Deskripsi"
 
 #: .\erp\templates\erp\accounts\detail.html:127
 #: .\erp\templates\erp\inventory\movement_list.html:78
@@ -983,7 +983,7 @@ msgstr "Nama (Inggris)"
 #, fuzzy
 #| msgid "Last Name (Arabic)"
 msgid "Name (Arabic)"
-msgstr "Nama Belakang (Arab)"
+msgstr "Nama (Arab)"
 
 #: .\erp\templates\erp\accounts\form.html:62
 #, fuzzy
@@ -1396,7 +1396,7 @@ msgstr "Status"
 #: .\erp\templates\erp\tasks\list.html:62
 #: .\erp\templates\erp\tax_rates\list.html:29
 msgid "Actions"
-msgstr "Tindakan"
+msgstr "Aksi"
 
 #: .\erp\templates\erp\accounts\list.html:75
 #: .\erp\templates\erp\attendance\device_detail.html:17
@@ -1554,16 +1554,16 @@ msgstr "Rincian Faktur"
 
 #: .\erp\templates\erp\attendance\device_detail.html:34
 msgid "Kiosk URL"
-msgstr ""
+msgstr "URL Kiosk"
 
 #: .\erp\templates\erp\attendance\device_detail.html:37
 msgid "Open this URL on a TV or tablet to display the attendance QR code:"
-msgstr ""
+msgstr "Buka URL ini di TV atau tablet untuk menampilkan kode QR kehadiran:"
 
 #: .\erp\templates\erp\attendance\device_detail.html:41
 #: .\erp\templates\erp\employees\invite_links.html:46
 msgid "Copy"
-msgstr ""
+msgstr "Salin"
 
 #: .\erp\templates\erp\attendance\device_detail.html:44
 #: .\erp\templates\erp\fiscal_years\list.html:38
@@ -1590,7 +1590,7 @@ msgstr "Periode"
 
 #: .\erp\templates\erp\attendance\device_detail.html:66
 msgid "Work End"
-msgstr ""
+msgstr "Akhir Kerja"
 
 #: .\erp\templates\erp\attendance\device_detail.html:70
 #, fuzzy
@@ -1601,16 +1601,16 @@ msgstr "Terlambat Hari Ini"
 #: .\erp\templates\erp\attendance\device_detail.html:71
 #: .\erp\templates\erp\employee_portal\my_attendance.html:129
 msgid "min"
-msgstr ""
+msgstr "menit"
 
 #: .\erp\templates\erp\attendance\device_detail.html:74
 #: .\erp\templates\erp\attendance\device_list.html:71
 msgid "QR Refresh"
-msgstr ""
+msgstr "Perbarui QR"
 
 #: .\erp\templates\erp\attendance\device_detail.html:84
 msgid "Device Binding"
-msgstr ""
+msgstr "Pengikatan Perangkat"
 
 #: .\erp\templates\erp\attendance\device_detail.html:87
 #, fuzzy
@@ -1641,7 +1641,7 @@ msgstr "Layanan"
 
 #: .\erp\templates\erp\attendance\device_detail.html:103
 msgid "Connection Requested"
-msgstr ""
+msgstr "Koneksi Diminta"
 
 #: .\erp\templates\erp\attendance\device_detail.html:107
 #: .\erp\templates\erp\attendance\device_detail.html:159
@@ -1654,7 +1654,7 @@ msgstr "yang lalu"
 
 #: .\erp\templates\erp\attendance\device_detail.html:114
 msgid "Browser / User Agent"
-msgstr ""
+msgstr "Browser / User Agent"
 
 #: .\erp\templates\erp\attendance\device_detail.html:123
 #: .\erp\templates\erp\attendance\device_list.html:100
@@ -1672,7 +1672,7 @@ msgstr ""
 
 #: .\erp\templates\erp\attendance\device_detail.html:131
 msgid "Revoke Binding"
-msgstr ""
+msgstr "Cabut Pengikatan"
 
 #: .\erp\templates\erp\attendance\device_detail.html:138
 msgid ""
@@ -1696,7 +1696,7 @@ msgstr "Terakhir Diperbarui"
 #: .\erp\templates\erp\attendance\device_detail.html:161
 #: .\erp\templates\erp\employees\invite_links.html:68
 msgid "Never"
-msgstr ""
+msgstr "Tidak Pernah"
 
 #: .\erp\templates\erp\attendance\device_detail.html:166
 #: .\erp\templates\erp\employee_portal\task_detail.html:66
@@ -1708,7 +1708,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Create"
 msgid "Created"
-msgstr "Buat"
+msgstr "Dibuat"
 
 #: .\erp\templates\erp\attendance\device_detail.html:175
 #, fuzzy
@@ -1718,7 +1718,7 @@ msgstr "Kembali ke Permintaan Cuti"
 
 #: .\erp\templates\erp\attendance\device_detail.html:189
 msgid "Copied!"
-msgstr ""
+msgstr "Tersalin!"
 
 #: .\erp\templates\erp\attendance\device_form.html:14
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:66
@@ -1728,7 +1728,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Back to List"
-msgstr "Kembali ke Permintaan Cuti"
+msgstr "Kembali ke Daftar"
 
 #: .\erp\templates\erp\attendance\device_list.html:4
 #: .\erp\templates\erp\attendance\device_list.html:5
@@ -1741,7 +1741,7 @@ msgstr "Catatan Kehadiran"
 
 #: .\erp\templates\erp\attendance\device_list.html:11
 msgid "Manage QR code kiosk devices for employee attendance."
-msgstr ""
+msgstr "Kelola perangkat kiosk kode QR untuk kehadiran karyawan."
 
 #: .\erp\templates\erp\attendance\device_list.html:14
 #, fuzzy
@@ -1751,7 +1751,7 @@ msgstr "Layanan Baru"
 
 #: .\erp\templates\erp\attendance\device_list.html:22
 msgid "device(s) waiting for approval."
-msgstr ""
+msgstr "perangkat menunggu persetujuan."
 
 #: .\erp\templates\erp\attendance\device_list.html:23
 msgid ""
@@ -1785,11 +1785,11 @@ msgstr "Rincian Faktur"
 
 #: .\erp\templates\erp\attendance\device_list.html:84
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
 #: .\erp\templates\erp\attendance\device_list.html:88
 msgid "Browser"
-msgstr ""
+msgstr "Browser"
 
 #: .\erp\templates\erp\attendance\device_list.html:92
 #: .\erp\templates\erp\attendance\kiosk.html:151
@@ -1824,7 +1824,7 @@ msgstr "Detail Prospek"
 
 #: .\erp\templates\erp\attendance\device_list.html:145
 msgid "Revoke device binding"
-msgstr ""
+msgstr "Cabut pengikatan perangkat"
 
 #: .\erp\templates\erp\attendance\device_list.html:159
 #, fuzzy
@@ -1834,7 +1834,7 @@ msgstr "Catatan Kehadiran"
 
 #: .\erp\templates\erp\attendance\device_list.html:160
 msgid "Add a kiosk device to start QR code attendance tracking."
-msgstr ""
+msgstr "Tambahkan perangkat kiosk untuk mulai melacak kehadiran dengan kode QR."
 
 #: .\erp\templates\erp\attendance\device_list.html:162
 #, fuzzy
@@ -1969,11 +1969,11 @@ msgstr "Kehadiran"
 
 #: .\erp\templates\erp\attendance\kiosk.html:146
 msgid "Scan with your phone to check in / check out"
-msgstr ""
+msgstr "Pindai dengan ponsel Anda untuk check-in / check-out"
 
 #: .\erp\templates\erp\attendance\kiosk.html:152
 msgid "QR refreshes every"
-msgstr ""
+msgstr "QR diperbarui setiap"
 
 #: .\erp\templates\erp\attendance\kiosk.html:158
 #, fuzzy
@@ -1983,11 +1983,11 @@ msgstr "Log Interaksi"
 
 #: .\erp\templates\erp\attendance\kiosk.html:159
 msgid "Trying to reconnect..."
-msgstr ""
+msgstr "Mencoba menyambung kembali..."
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:106
 msgid "Waiting for Approval"
-msgstr ""
+msgstr "Menunggu Persetujuan"
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:108
 msgid ""
@@ -1997,20 +1997,20 @@ msgstr ""
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:110
 msgid "Once approved, the attendance QR code will appear here automatically."
-msgstr ""
+msgstr "Setelah disetujui, kode QR kehadiran akan muncul di sini secara otomatis."
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:7
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:73
 msgid "Device Not Authorised"
-msgstr ""
+msgstr "Perangkat Tidak Diotorisasi"
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:75
 msgid "This kiosk has already been bound to a different device."
-msgstr ""
+msgstr "Kiosk ini sudah terikat ke perangkat lain."
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:77
 msgid "Only the originally approved device can display the attendance QR code."
-msgstr ""
+msgstr "Hanya perangkat yang awalnya disetujui yang dapat menampilkan kode QR kehadiran."
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:82
 msgid ""
@@ -2191,7 +2191,7 @@ msgstr "Cari pesanan..."
 #: .\erp\templates\erp\suppliers\list.html:28
 #: .\erp\templates\erp\tasks\list.html:40
 msgid "Clear"
-msgstr "Hapus Filter"
+msgstr "Hapus"
 
 #: .\erp\templates\erp\audit_log\list.html:65
 #, fuzzy
@@ -2486,21 +2486,21 @@ msgstr "Inventaris"
 #: .\erp\templates\erp\inventory\zone_detail.html:11
 #: .\erp\templates\erp\inventory\zone_form.html:12
 msgid "Warehouses"
-msgstr ""
+msgstr "Gudang"
 
 #: .\erp\templates\erp\base.html:413
 #: .\erp\templates\erp\inventory\stock_levels.html:4
 #: .\erp\templates\erp\inventory\stock_levels.html:5
 #: .\erp\templates\erp\inventory\stock_levels.html:12
 msgid "Stock Levels"
-msgstr ""
+msgstr "Level Stok"
 
 #: .\erp\templates\erp\base.html:417
 #: .\erp\templates\erp\inventory\movement_list.html:4
 #: .\erp\templates\erp\inventory\movement_list.html:5
 #: .\erp\templates\erp\inventory\movement_list.html:12
 msgid "Stock Movements"
-msgstr ""
+msgstr "Pergerakan Stok"
 
 #: .\erp\templates\erp\base.html:421
 #: .\erp\templates\erp\inventory\grn_detail.html:11
@@ -2508,14 +2508,14 @@ msgstr ""
 #, fuzzy
 #| msgid "Receipt"
 msgid "Goods Receipts"
-msgstr "Kuitansi"
+msgstr "Penerimaan Barang"
 
 #: .\erp\templates\erp\base.html:425
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:71
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfers"
-msgstr "Nama Bank"
+msgstr "Transfer"
 
 #: .\erp\templates\erp\base.html:429
 #, fuzzy
@@ -2532,7 +2532,7 @@ msgstr "Lampiran"
 #, fuzzy
 #| msgid "Invoice Count"
 msgid "Cycle Counts"
-msgstr "Jumlah Faktur"
+msgstr "Penghitungan Siklus"
 
 #: .\erp\templates\erp\base.html:437
 #: .\erp\templates\erp\inventory\pick_list_detail.html:12
@@ -2543,7 +2543,7 @@ msgstr "Jumlah Faktur"
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Pick Lists"
-msgstr "Kembali ke Permintaan Cuti"
+msgstr "Daftar Pengambilan"
 
 #: .\erp\templates\erp\base.html:441
 #: .\erp\templates\erp\inventory\shipment_detail.html:12
@@ -2554,7 +2554,7 @@ msgstr "Kembali ke Permintaan Cuti"
 #, fuzzy
 #| msgid "Departments"
 msgid "Shipments"
-msgstr "Departemen"
+msgstr "Pengiriman"
 
 #: .\erp\templates\erp\base.html:445
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:12
@@ -2565,13 +2565,13 @@ msgstr "Departemen"
 #, fuzzy
 #| msgid "Reorder Level"
 msgid "Reorder Rules"
-msgstr "Level Pemesanan Ulang"
+msgstr "Aturan Pemesanan Ulang"
 
 #: .\erp\templates\erp\base.html:449
 #, fuzzy
 #| msgid "Reorder Level"
 msgid "Reorder Alerts"
-msgstr "Level Pemesanan Ulang"
+msgstr "Peringatan Pemesanan Ulang"
 
 #: .\erp\templates\erp\base.html:453
 #: .\erp\templates\erp\inventory\uom_form.html:12
@@ -2580,14 +2580,14 @@ msgstr "Level Pemesanan Ulang"
 #, fuzzy
 #| msgid "Unit of Measure"
 msgid "Units of Measure"
-msgstr "Satuan Ukur"
+msgstr "Satuan Ukuran"
 
 #: .\erp\templates\erp\base.html:457
 #: .\erp\templates\erp\inventory\lot_form.html:12
 #: .\erp\templates\erp\inventory\lot_list.html:4
 #: .\erp\templates\erp\inventory\lot_list.html:5
 msgid "Lots / Batches"
-msgstr ""
+msgstr "Lot / Batch"
 
 #: .\erp\templates\erp\base.html:461
 #: .\erp\templates\erp\inventory\serial_form.html:12
@@ -2596,11 +2596,11 @@ msgstr ""
 #, fuzzy
 #| msgid "Lead Number"
 msgid "Serial Numbers"
-msgstr "Nomor Prospek"
+msgstr "Nomor Seri"
 
 #: .\erp\templates\erp\base.html:465
 msgid "Valuation Config"
-msgstr ""
+msgstr "Konfigurasi Penilaian"
 
 #: .\erp\templates\erp\base.html:468
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:11
@@ -2614,14 +2614,14 @@ msgstr ""
 #, fuzzy
 #| msgid "Assets"
 msgid "Fixed Assets"
-msgstr "Aset"
+msgstr "Aset Tetap"
 
 #: .\erp\templates\erp\base.html:471
 #: .\erp\templates\erp\fixed_assets\assets\list.html:4
 #, fuzzy
 #| msgid "Assets"
 msgid "Asset Register"
-msgstr "Aset"
+msgstr "Daftar Aset"
 
 #: .\erp\templates\erp\base.html:475
 #: .\erp\templates\erp\fixed_assets\categories\form.html:10
@@ -2630,7 +2630,7 @@ msgstr "Aset"
 #, fuzzy
 #| msgid "Product Categories"
 msgid "Asset Categories"
-msgstr "Kategori Produk"
+msgstr "Kategori Aset"
 
 #: .\erp\templates\erp\base.html:479
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:70
@@ -2638,12 +2638,12 @@ msgstr "Kategori Produk"
 #, fuzzy
 #| msgid "Description & Notes"
 msgid "Depreciation"
-msgstr "Deskripsi & Catatan"
+msgstr "Penyusutan"
 
 #: .\erp\templates\erp\base.html:483
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:10
 msgid "Disposals"
-msgstr ""
+msgstr "Pelepasan"
 
 #: .\erp\templates\erp\base.html:487
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:4
@@ -2651,7 +2651,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Asset Transfers"
-msgstr "Nama Bank"
+msgstr "Transfer Aset"
 
 #: .\erp\templates\erp\base.html:491
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:72
@@ -2659,13 +2659,13 @@ msgstr "Nama Bank"
 #, fuzzy
 #| msgid "Operations"
 msgid "Revaluations"
-msgstr "Operasional"
+msgstr "Revaluasi"
 
 #: .\erp\templates\erp\base.html:495
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:224
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:4
 msgid "Maintenance Logs"
-msgstr ""
+msgstr "Log Pemeliharaan"
 
 #: .\erp\templates\erp\base.html:498
 msgid "Operations"
@@ -2805,7 +2805,7 @@ msgstr "Faktur Baru"
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:40
 #: .\erp\templates\erp\payroll\detail.html:154
 msgid "Journal Entry"
-msgstr "Entri Jurnal"
+msgstr "Jurnal"
 
 #: .\erp\templates\erp\base.html:616 .\erp\templates\erp\dashboard.html:164
 msgid "New Lead"
@@ -3396,7 +3396,7 @@ msgstr "Nama, Email, atau ID..."
 #: .\erp\templates\erp\inventory\movement_list.html:27
 #: .\erp\templates\erp\suppliers\list.html:18
 msgid "All Types"
-msgstr "Semua Jenis"
+msgstr "Semua Tipe"
 
 #: .\erp\templates\erp\customers\list.html:33
 #: .\erp\templates\erp\finance\reports.html:282
@@ -3818,7 +3818,7 @@ msgstr "Detail Karyawan"
 
 #: .\erp\templates\erp\employee_portal\base.html:60
 msgid "Scan QR"
-msgstr ""
+msgstr "Pindai QR"
 
 #: .\erp\templates\erp\employee_portal\base.html:68
 #: .\erp\templates\erp\employee_portal\my_attendance.html:4
@@ -3857,7 +3857,7 @@ msgstr "Keuntungan Bulanan"
 #: .\erp\templates\erp\employee_portal\change_password.html:8
 #: .\erp\templates\erp\employee_portal\change_password.html:65
 msgid "Change Password"
-msgstr ""
+msgstr "Ubah Kata Sandi"
 
 #: .\erp\templates\erp\employee_portal\change_password.html:9
 #, fuzzy
@@ -3879,11 +3879,11 @@ msgstr "Penggajian"
 
 #: .\erp\templates\erp\employee_portal\change_password.html:47
 msgid "Minimum 8 characters."
-msgstr ""
+msgstr "Minimal 8 karakter."
 
 #: .\erp\templates\erp\employee_portal\change_password.html:52
 msgid "Confirm New Password"
-msgstr ""
+msgstr "Konfirmasi Kata Sandi Baru"
 
 #: .\erp\templates\erp\employee_portal\change_password.html:62
 #: .\erp\templates\erp\employee_portal\leave_form.html:75
@@ -3912,7 +3912,7 @@ msgstr "Absen"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:58
 msgid "Working Days"
-msgstr ""
+msgstr "Hari Kerja"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:73
 #, fuzzy
@@ -3929,15 +3929,15 @@ msgstr "Menit Keterlambatan"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:107
 msgid "You haven't checked in yet today."
-msgstr ""
+msgstr "Anda belum check-in hari ini."
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:108
 msgid "Scan the QR code at your workplace to check in."
-msgstr ""
+msgstr "Pindai kode QR di tempat kerja Anda untuk check-in."
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:110
 msgid "Open QR Scanner"
-msgstr ""
+msgstr "Buka Pemindai QR"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:122
 #, fuzzy
@@ -3987,7 +3987,7 @@ msgstr "Disetujui"
 #: .\erp\templates\erp\leave_requests\list.html:26
 #: .\erp\templates\erp\leave_requests\list.html:79
 msgid "Pending"
-msgstr "Menunggu"
+msgstr "Tertunda"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:194
 #: .\erp\templates\erp\employee_portal\leave_list.html:68
@@ -4122,7 +4122,7 @@ msgstr "Jumlah Dialokasikan"
 
 #: .\erp\templates\erp\employee_portal\leave_list.html:33
 msgid "Used"
-msgstr ""
+msgstr "Digunakan"
 
 #: .\erp\templates\erp\employee_portal\leave_list.html:37
 #, fuzzy
@@ -4145,7 +4145,7 @@ msgstr "Tidak ada permintaan cuti ditemukan"
 #: .\erp\templates\erp\employee_portal\my_attendance.html:85
 #: .\erp\templates\erp\employee_portal\scan_result.html:60
 msgid "Hours Worked"
-msgstr ""
+msgstr "Jam Kerja"
 
 #: .\erp\templates\erp\employee_portal\my_attendance.html:86
 #: .\erp\templates\erp\employee_portal\scan_result.html:69
@@ -4158,7 +4158,7 @@ msgstr "Jatuh Tempo"
 #: .\erp\templates\erp\employee_portal\my_attendance.html:113
 #: .\erp\templates\erp\employee_portal\my_attendance.html:120
 msgid "hrs"
-msgstr ""
+msgstr "jam"
 
 #: .\erp\templates\erp\employee_portal\my_attendance.html:142
 #, fuzzy
@@ -4256,7 +4256,7 @@ msgstr "Penggajian"
 
 #: .\erp\templates\erp\employee_portal\payslip_list.html:9
 msgid "View your salary history and payslip details."
-msgstr ""
+msgstr "Lihat riwayat gaji dan detail slip gaji Anda."
 
 #: .\erp\templates\erp\employee_portal\payslip_list.html:30
 #: .\erp\templates\erp\payroll\list.html:71
@@ -4271,7 +4271,7 @@ msgstr "Detail Prospek"
 
 #: .\erp\templates\erp\employee_portal\payslip_list.html:60
 msgid "No payslips available yet."
-msgstr ""
+msgstr "Belum ada slip gaji yang tersedia."
 
 #: .\erp\templates\erp\employee_portal\profile.html:28
 #: .\erp\templates\erp\employees\approve_form.html:24
@@ -4344,7 +4344,7 @@ msgstr "Simpan Perubahan"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:4
 msgid "QR Scanner"
-msgstr ""
+msgstr "Pemindai QR"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:44
 #, fuzzy
@@ -4354,19 +4354,19 @@ msgstr "Catatan Kehadiran Terbaru"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:45
 msgid "Point your camera at the QR code displayed on the attendance device."
-msgstr ""
+msgstr "Arahkan kamera Anda ke kode QR yang ditampilkan di perangkat kehadiran."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:54
 msgid "Starting camera..."
-msgstr ""
+msgstr "Memulai kamera..."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:57
 msgid "Scanning... hold steady"
-msgstr ""
+msgstr "Memindai... tahan tetap"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:60
 msgid "QR Code detected! Processing..."
-msgstr ""
+msgstr "Kode QR terdeteksi! Memproses..."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:78
 #, fuzzy
@@ -4376,7 +4376,7 @@ msgstr "Tanggal Mulai"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:81
 msgid "Stop"
-msgstr ""
+msgstr "Berhenti"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:88
 msgid ""
@@ -4386,11 +4386,11 @@ msgstr ""
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:138
 msgid "Camera access denied or not available. Please check permissions."
-msgstr ""
+msgstr "Akses kamera ditolak atau tidak tersedia. Silakan periksa izin."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:151
 msgid "Scanner stopped."
-msgstr ""
+msgstr "Pemindai dihentikan."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:177
 msgid ""
@@ -4406,7 +4406,7 @@ msgstr "Catatan Kehadiran"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:5
 msgid "Scan Error"
-msgstr ""
+msgstr "Kesalahan Pemindaian"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:21
 #, fuzzy
@@ -4416,11 +4416,11 @@ msgstr "Masuk"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:22
 msgid "Your check-in has been recorded successfully."
-msgstr ""
+msgstr "Check-in Anda berhasil dicatat."
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:24
 msgid "Check-in Time"
-msgstr ""
+msgstr "Waktu Check-in"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:32
 #, fuzzy
@@ -4436,7 +4436,7 @@ msgstr "Keluar"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:44
 msgid "Your check-out has been recorded. Have a great rest of day!"
-msgstr ""
+msgstr "Check-out Anda telah dicatat. Semoga hari Anda menyenangkan!"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:69
 #, fuzzy
@@ -4446,18 +4446,18 @@ msgstr "Jam"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:87
 msgid "Scan Failed"
-msgstr ""
+msgstr "Pemindaian Gagal"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:89
 msgid "Please try scanning the QR code again or contact your administrator."
-msgstr ""
+msgstr "Silakan coba pindai kode QR lagi atau hubungi administrator Anda."
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:94
 #: .\erp\templates\erp\inventory\valuation_config.html:108
 #, fuzzy
 #| msgid "Dashboard"
 msgid "Back to Dashboard"
-msgstr "Dasbor"
+msgstr "Kembali ke Dasbor"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:10
 #, fuzzy
@@ -4501,7 +4501,7 @@ msgstr "Rendah"
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Completed"
-msgstr "Konfirmasi Hapus"
+msgstr "Selesai"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:36
 #: .\erp\templates\erp\employee_portal\task_list.html:28
@@ -4514,13 +4514,13 @@ msgstr "Konfirmasi Hapus"
 #: .\erp\templates\erp\tasks\detail.html:28
 #: .\erp\templates\erp\tasks\list.html:113
 msgid "In Progress"
-msgstr "Sedang Dikerjakan"
+msgstr "Dalam Proses"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:38
 #: .\erp\templates\erp\employee_portal\task_list.html:107
 #: .\erp\templates\erp\employees\detail.html:260
 msgid "On Hold"
-msgstr ""
+msgstr "Ditahan"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:42
 #: .\erp\templates\erp\employee_portal\task_list.html:22
@@ -4591,7 +4591,7 @@ msgstr "Tambahkan komentar..."
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:114
 msgid "Write your comment here..."
-msgstr ""
+msgstr "Tulis komentar Anda di sini..."
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:117
 #: .\erp\templates\erp\tasks\detail.html:146
@@ -4608,7 +4608,7 @@ msgstr "Status Prospek"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:154
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:159
 #: .\erp\templates\erp\employee_portal\task_list.html:64
@@ -4653,7 +4653,7 @@ msgstr "Edit Karyawan"
 
 #: .\erp\templates\erp\employees\approve_form.html:5
 msgid "Review Employee Registration"
-msgstr ""
+msgstr "Tinjau Pendaftaran Karyawan"
 
 #: .\erp\templates\erp\employees\approve_form.html:55
 #, fuzzy
@@ -4675,7 +4675,7 @@ msgstr "Telepon Kontak Darurat"
 
 #: .\erp\templates\erp\employees\approve_form.html:89
 msgid "Registered via invite link"
-msgstr ""
+msgstr "Terdaftar melalui tautan undangan"
 
 #: .\erp\templates\erp\employees\approve_form.html:102
 #, fuzzy
@@ -4685,7 +4685,7 @@ msgstr "Tambah Karyawan"
 
 #: .\erp\templates\erp\employees\approve_form.html:103
 msgid "Employee will receive a unique ID and can access the portal."
-msgstr ""
+msgstr "Karyawan akan menerima ID unik dan dapat mengakses portal."
 
 #: .\erp\templates\erp\employees\approve_form.html:118
 #, fuzzy
@@ -4695,11 +4695,11 @@ msgstr "Edit Karyawan"
 
 #: .\erp\templates\erp\employees\approve_form.html:119
 msgid "Employee will be notified that their registration was rejected."
-msgstr ""
+msgstr "Karyawan akan diberitahu bahwa pendaftarannya ditolak."
 
 #: .\erp\templates\erp\employees\approve_form.html:125
 msgid "Reason for rejection (optional)"
-msgstr ""
+msgstr "Alasan penolakan (opsional)"
 
 #: .\erp\templates\erp\employees\approve_form.html:138
 #, fuzzy
@@ -4752,7 +4752,7 @@ msgstr "Dokumen"
 #: .\erp\templates\erp\employees\detail.html:125
 #: .\erp\templates\erp\employees\detail.html:313
 msgid "Portal Permissions"
-msgstr ""
+msgstr "Izin Portal"
 
 #: .\erp\templates\erp\employees\detail.html:135
 msgid "Recent Attendance Record"
@@ -4806,7 +4806,7 @@ msgstr "Tidak ada dokumen yang diunggah"
 
 #: .\erp\templates\erp\employees\detail.html:314
 msgid "Control what this employee can access in the Employee Portal"
-msgstr ""
+msgstr "Kontrol apa yang dapat diakses karyawan ini di Portal Karyawan"
 
 #: .\erp\templates\erp\employees\detail.html:325
 #, fuzzy
@@ -4816,7 +4816,7 @@ msgstr "Kehadiran"
 
 #: .\erp\templates\erp\employees\detail.html:327
 msgid "Allow employee to scan QR code for attendance check-in/out"
-msgstr ""
+msgstr "Izinkan karyawan memindai kode QR untuk check-in/out kehadiran"
 
 #: .\erp\templates\erp\employees\detail.html:335
 #, fuzzy
@@ -4826,7 +4826,7 @@ msgstr "Edit Kehadiran"
 
 #: .\erp\templates\erp\employees\detail.html:337
 msgid "Allow employee to view their attendance history"
-msgstr ""
+msgstr "Izinkan karyawan melihat riwayat kehadiran mereka"
 
 #: .\erp\templates\erp\employees\detail.html:345
 #, fuzzy
@@ -4836,7 +4836,7 @@ msgstr "Permintaan Cuti"
 
 #: .\erp\templates\erp\employees\detail.html:347
 msgid "Allow employee to view and submit leave requests"
-msgstr ""
+msgstr "Izinkan karyawan melihat dan mengajukan permintaan cuti"
 
 #: .\erp\templates\erp\employees\detail.html:355
 #, fuzzy
@@ -4846,11 +4846,11 @@ msgstr "Slip Gaji"
 
 #: .\erp\templates\erp\employees\detail.html:357
 msgid "Allow employee to view their pay slips"
-msgstr ""
+msgstr "Izinkan karyawan melihat slip gaji mereka"
 
 #: .\erp\templates\erp\employees\detail.html:367
 msgid "Allow employee to edit their personal information"
-msgstr ""
+msgstr "Izinkan karyawan mengedit informasi pribadi mereka"
 
 #: .\erp\templates\erp\employees\detail.html:375
 #, fuzzy
@@ -4860,11 +4860,11 @@ msgstr "Tugas Baru"
 
 #: .\erp\templates\erp\employees\detail.html:377
 msgid "Allow employee to view tasks assigned to them"
-msgstr ""
+msgstr "Izinkan karyawan melihat tugas yang ditugaskan kepada mereka"
 
 #: .\erp\templates\erp\employees\detail.html:383
 msgid "Save Permissions"
-msgstr ""
+msgstr "Simpan Izin"
 
 #: .\erp\templates\erp\employees\form.html:61
 #: .\erp\templates\erp\employees\form.html:64
@@ -4918,11 +4918,11 @@ msgstr "Avatar"
 #: .\erp\templates\erp\employees\invite_link_form.html:4
 #: .\erp\templates\erp\employees\invite_link_form.html:5
 msgid "Generate Invite Link"
-msgstr ""
+msgstr "Buat Tautan Undangan"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:12
 msgid "Generate Employee Invite Link"
-msgstr ""
+msgstr "Buat Tautan Undangan Karyawan"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:20
 msgid ""
@@ -4945,24 +4945,24 @@ msgstr "Registrasi & Pajak"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:35
 msgid "Enter 0 for unlimited registrations."
-msgstr ""
+msgstr "Masukkan 0 untuk pendaftaran tak terbatas."
 
 #: .\erp\templates\erp\employees\invite_link_form.html:39
 msgid "Expires After (days)"
-msgstr ""
+msgstr "Kedaluwarsa Setelah (hari)"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:41
 msgid "Leave empty for no expiry"
-msgstr ""
+msgstr "Biarkan kosong tanpa kedaluwarsa"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:42
 msgid "Number of days before the link expires. Leave empty for no expiry."
-msgstr ""
+msgstr "Jumlah hari sebelum tautan kedaluwarsa. Biarkan kosong tanpa kedaluwarsa."
 
 #: .\erp\templates\erp\employees\invite_link_form.html:48
 #: .\erp\templates\erp\employees\invite_links.html:18
 msgid "Generate Link"
-msgstr ""
+msgstr "Buat Tautan"
 
 #: .\erp\templates\erp\employees\invite_links.html:4
 #: .\erp\templates\erp\employees\invite_links.html:5
@@ -4974,11 +4974,11 @@ msgstr "Detail Karyawan"
 
 #: .\erp\templates\erp\employees\invite_links.html:11
 msgid "Generate unique registration links for new employees."
-msgstr ""
+msgstr "Buat tautan pendaftaran unik untuk karyawan baru."
 
 #: .\erp\templates\erp\employees\invite_links.html:29
 msgid "Link"
-msgstr ""
+msgstr "Tautan"
 
 #: .\erp\templates\erp\employees\invite_links.html:30
 #, fuzzy
@@ -5000,7 +5000,7 @@ msgstr "Kadaluarsa"
 
 #: .\erp\templates\erp\employees\invite_links.html:58
 msgid "Unlimited"
-msgstr ""
+msgstr "Tak Terbatas"
 
 #: .\erp\templates\erp\employees\invite_links.html:65
 #: .\erp\templates\erp\inventory\lot_list.html:44
@@ -5009,7 +5009,7 @@ msgstr ""
 #: .\erp\templates\erp\quotes\list.html:82
 #: .\erp\templates\erp\quotes\list.html:96
 msgid "Expired"
-msgstr "Kadaluarsa"
+msgstr "Kedaluwarsa"
 
 #: .\erp\templates\erp\employees\invite_links.html:83
 #, fuzzy
@@ -5084,15 +5084,15 @@ msgstr "Tambah Karyawan Pertama"
 #: .\erp\templates\erp\employees\pending_list.html:5
 #: .\erp\templates\erp\employees\pending_list.html:10
 msgid "Pending Employee Approvals"
-msgstr ""
+msgstr "Persetujuan Karyawan Tertunda"
 
 #: .\erp\templates\erp\employees\pending_list.html:11
 msgid "Review and approve employee registrations."
-msgstr ""
+msgstr "Tinjau dan setujui pendaftaran karyawan."
 
 #: .\erp\templates\erp\employees\pending_list.html:57
 msgid "Registered"
-msgstr ""
+msgstr "Terdaftar"
 
 #: .\erp\templates\erp\employees\pending_list.html:64
 #, fuzzy
@@ -5102,11 +5102,11 @@ msgstr "Ditinjau Oleh"
 
 #: .\erp\templates\erp\employees\pending_list.html:75
 msgid "No Pending Approvals"
-msgstr ""
+msgstr "Tidak Ada Persetujuan Tertunda"
 
 #: .\erp\templates\erp\employees\pending_list.html:76
 msgid "All employee registrations have been reviewed."
-msgstr ""
+msgstr "Semua pendaftaran karyawan telah ditinjau."
 
 #: .\erp\templates\erp\expense_categories\form.html:4
 #: .\erp\templates\erp\expense_categories\form.html:5
@@ -5167,7 +5167,7 @@ msgstr "Kategorikan pengeluaran untuk pelacakan dan pelaporan yang lebih baik"
 #, fuzzy
 #| msgid "New Customer"
 msgid "New Category"
-msgstr "Pelanggan Baru"
+msgstr "Kategori Baru"
 
 #: .\erp\templates\erp\expense_categories\list.html:76
 #, fuzzy
@@ -5249,11 +5249,11 @@ msgstr "Lampiran"
 #: .\erp\templates\erp\expenses\form.html:72
 #: .\erp\templates\erp\inventory\movement_list.html:28
 msgid "Receipt"
-msgstr "Kuitansi"
+msgstr "Penerimaan"
 
 #: .\erp\templates\erp\expenses\form.html:73
 msgid "You can attach receipts from the expense details page after saving."
-msgstr ""
+msgstr "Anda dapat melampirkan kuitansi dari halaman detail pengeluaran setelah menyimpan."
 "Anda dapat melampirkan kwitansi dari halaman detail pengeluaran setelah "
 "menyimpan.Anda dapat melampirkan kuitansi dari halaman rincian pengeluaran "
 "setelah menyimpan."
@@ -5638,7 +5638,7 @@ msgstr "Tahun Fiskal"
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Asset Details"
-msgstr "Detail Prospek"
+msgstr "Detail Aset"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:31
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:93
@@ -5648,48 +5648,48 @@ msgstr "Detail Prospek"
 #, fuzzy
 #| msgid "Value"
 msgid "Book Value"
-msgstr "Nilai"
+msgstr "Nilai Buku"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:38
 #: .\erp\templates\erp\fixed_assets\assets\list.html:82
 #, fuzzy
 #| msgid "Submission Date"
 msgid "Acquisition Date"
-msgstr "Tanggal Pengiriman"
+msgstr "Tanggal Perolehan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:39
 #, fuzzy
 #| msgid "Actions"
 msgid "Acquisition Cost"
-msgstr "Tindakan"
+msgstr "Biaya Perolehan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:40
 msgid "Accumulated Depreciation"
-msgstr ""
+msgstr "Akumulasi Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:41
 msgid "Salvage Value"
-msgstr ""
+msgstr "Nilai Sisa"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:42
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:31
 #, fuzzy
 #| msgid "Original Amount"
 msgid "Depreciable Amount"
-msgstr "Jumlah Asli"
+msgstr "Jumlah Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:47
 #: .\erp\templates\erp\fixed_assets\categories\list.html:33
 #, fuzzy
 #| msgid "Payment Method"
 msgid "Depreciation Method"
-msgstr "Metode Pembayaran"
+msgstr "Metode Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:48
 #: .\erp\templates\erp\fixed_assets\categories\list.html:34
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:41
 msgid "Useful Life"
-msgstr ""
+msgstr "Umur Manfaat"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:48
 #: .\erp\templates\erp\fixed_assets\categories\list.html:46
@@ -5697,11 +5697,11 @@ msgstr ""
 #, fuzzy
 #| msgid "This Month"
 msgid "months"
-msgstr "Bulan Ini"
+msgstr "bulan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:50
 msgid "Serial #"
-msgstr ""
+msgstr "No. Seri"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:51
 #: .\erp\templates\erp\inventory\zone_detail.html:80
@@ -5715,31 +5715,31 @@ msgstr "Barcode"
 #, fuzzy
 #| msgid "In Progress"
 msgid "Depreciation Progress"
-msgstr "Sedang Dikerjakan"
+msgstr "Progres Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:73
 #: .\erp\templates\erp\fixed_assets\maintenance\form.html:12
 #, fuzzy
 #| msgid "Finance"
 msgid "Maintenance"
-msgstr "Keuangan"
+msgstr "Pemeliharaan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:81
 msgid "Depreciation Schedule"
-msgstr ""
+msgstr "Jadwal Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:83
 #, fuzzy
 #| msgid "General Ledger"
 msgid "Generate Schedule"
-msgstr "Buku Besar"
+msgstr "Buat Jadwal"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:92
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:45
 #, fuzzy
 #| msgid "Calculated"
 msgid "Accumulated"
-msgstr "Dihitung"
+msgstr "Akumulasi"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:95
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:190
@@ -5750,7 +5750,7 @@ msgstr "Dihitung"
 #, fuzzy
 #| msgid "Journal View"
 msgid "Journal"
-msgstr "Tampilan Jurnal"
+msgstr "Jurnal"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:118
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:72
@@ -5763,62 +5763,62 @@ msgstr "Diposting oleh"
 #, fuzzy
 #| msgid "No payments recorded yet"
 msgid "No depreciation schedule generated yet."
-msgstr "Belum ada pembayaran tercatat"
+msgstr "Belum ada jadwal penyusutan yang dibuat."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:136
 #, fuzzy
 #| msgid "Payments"
 msgid "Transfer History"
-msgstr "Pembayaran"
+msgstr "Riwayat Transfer"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:138
 #: .\erp\templates\erp\inventory\transfer_list.html:13
 #, fuzzy
 #| msgid "Bank Name"
 msgid "New Transfer"
-msgstr "Nama Bank"
+msgstr "Transfer Baru"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:146
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Dept"
-msgstr "Tanggal Bergabung"
+msgstr "Dari Dept"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:147
 #, fuzzy
 #| msgid "Date"
 msgid "To Dept"
-msgstr "Tanggal"
+msgstr "Ke Dept"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:148
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:17
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Location"
-msgstr "Tanggal Bergabung"
+msgstr "Dari Lokasi"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:149
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:18
 #, fuzzy
 #| msgid "No notifications"
 msgid "To Location"
-msgstr "Tidak ada notifikasi"
+msgstr "Ke Lokasi"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:164
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No transfers recorded."
-msgstr "Tidak ada interaksi yang tercatat"
+msgstr "Tidak ada transfer tercatat."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:176
 msgid "Revaluation History"
-msgstr ""
+msgstr "Riwayat Revaluasi"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:178
 #, fuzzy
 #| msgid "New Request"
 msgid "New Revaluation"
-msgstr "Permintaan Baru"
+msgstr "Revaluasi Baru"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:186
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:26
@@ -5826,7 +5826,7 @@ msgstr "Permintaan Baru"
 #, fuzzy
 #| msgid "Value"
 msgid "Old Value"
-msgstr "Nilai"
+msgstr "Nilai Lama"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:187
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:27
@@ -5834,7 +5834,7 @@ msgstr "Nilai"
 #, fuzzy
 #| msgid "Value"
 msgid "New Value"
-msgstr "Nilai"
+msgstr "Nilai Baru"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:188
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:28
@@ -5842,7 +5842,7 @@ msgstr "Nilai"
 #, fuzzy
 #| msgid "Save Changes"
 msgid "Change"
-msgstr "Simpan Perubahan"
+msgstr "Perubahan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:189
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:37
@@ -5850,27 +5850,27 @@ msgstr "Simpan Perubahan"
 #, fuzzy
 #| msgid "Approve"
 msgid "Appraiser"
-msgstr "Setujui"
+msgstr "Penilai"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:207
 msgid "View / Process"
-msgstr ""
+msgstr "Lihat / Proses"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:212
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No revaluations recorded."
-msgstr "Tidak ada interaksi yang tercatat"
+msgstr "Tidak ada revaluasi tercatat."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:226
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:297
 msgid "Log Maintenance"
-msgstr ""
+msgstr "Log Pemeliharaan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:235
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:45
 msgid "Scheduled"
-msgstr ""
+msgstr "Terjadwal"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:237
 #: .\erp\templates\erp\fixed_assets\assets\list.html:83
@@ -5886,19 +5886,19 @@ msgstr "Biaya"
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No maintenance logs recorded."
-msgstr "Tidak ada interaksi yang tercatat"
+msgstr "Tidak ada log pemeliharaan tercatat."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:277
 #, fuzzy
 #| msgid "New Account"
 msgid "Edit Asset"
-msgstr "Akun Baru"
+msgstr "Edit Aset"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:282
 #, fuzzy
 #| msgid "Active Tasks"
 msgid "Activate Asset"
-msgstr "Tugas Aktif"
+msgstr "Aktifkan Aset"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:287
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:4
@@ -5906,46 +5906,46 @@ msgstr "Tugas Aktif"
 #, fuzzy
 #| msgid "Late Deduction"
 msgid "Generate Depreciation"
-msgstr "Potongan Keterlambatan"
+msgstr "Buat Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:288
 #, fuzzy
 #| msgid "Total Assets"
 msgid "Transfer Asset"
-msgstr "Total Aset"
+msgstr "Pindahkan Aset"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:289
 #, fuzzy
 #| msgid "Total Assets"
 msgid "Revalue Asset"
-msgstr "Total Aset"
+msgstr "Revaluasi Aset"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:293
 msgid "Dispose Asset"
-msgstr ""
+msgstr "Lepaskan Aset"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:306
 #: .\erp\templates\erp\fixed_assets\assets\form.html:92
 #, fuzzy
 #| msgid "Assigned To"
 msgid "Location & Assignment"
-msgstr "Ditugaskan Kepada"
+msgstr "Lokasi & Penugasan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:310
 #, fuzzy
 #| msgid "Actions"
 msgid "Location"
-msgstr "Tindakan"
+msgstr "Lokasi"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:311
 msgid "Custodian"
-msgstr ""
+msgstr "Penjaga"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:322
 #, fuzzy
 #| msgid "Quote Details"
 msgid "Acquisition Details"
-msgstr "Detail Kutipan"
+msgstr "Detail Perolehan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:330
 #: .\erp\templates\erp\inventory\grn_detail.html:31
@@ -5962,14 +5962,14 @@ msgstr "Pesanan Pembelian"
 #, fuzzy
 #| msgid "Invoice"
 msgid "Invoice Ref"
-msgstr "Faktur"
+msgstr "Ref. Faktur"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:343
 #: .\erp\templates\erp\fixed_assets\categories\form.html:58
 #, fuzzy
 #| msgid "Amounts"
 msgid "GL Accounts"
-msgstr "Jumlah"
+msgstr "Akun GL"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:346
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:27
@@ -5987,16 +5987,16 @@ msgstr "Aset"
 #, fuzzy
 #| msgid "New Expense"
 msgid "Depr. Expense"
-msgstr "Pengeluaran Baru"
+msgstr "Beban Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:348
 msgid "Accum. Depr."
-msgstr ""
+msgstr "Akum. Peny."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:356
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:4
 msgid "Disposal"
-msgstr ""
+msgstr "Pelepasan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:361
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:27
@@ -6004,38 +6004,38 @@ msgstr ""
 #, fuzzy
 #| msgid "Total Amount"
 msgid "Sale Amount"
-msgstr "Jumlah Total"
+msgstr "Jumlah Penjualan"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:363
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:18
 msgid "Gain/Loss"
-msgstr ""
+msgstr "Keuntungan/Kerugian"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:364
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:38
 msgid "Buyer"
-msgstr ""
+msgstr "Pembeli"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:372
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:59
 msgid "Process Disposal (Create Journal)"
-msgstr ""
+msgstr "Proses Pelepasan (Buat Jurnal)"
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:60
 #, fuzzy
 #| msgid "Actions"
 msgid "Acquisition"
-msgstr "Tindakan"
+msgstr "Perolehan"
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:135
 #, fuzzy
 #| msgid "Quote Details"
 msgid "GL Account Overrides"
-msgstr "Detail Kutipan"
+msgstr "Override Akun GL"
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:136
 msgid "Leave blank to use category defaults."
-msgstr ""
+msgstr "Biarkan kosong untuk menggunakan default kategori."
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:163
 #: .\erp\templates\erp\fixed_assets\categories\form.html:104
@@ -6061,233 +6061,233 @@ msgstr "Simpan"
 #, fuzzy
 #| msgid "Total Records"
 msgid "Total Acquisition Cost"
-msgstr "Total Catatan"
+msgstr "Total Biaya Perolehan"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:21
 #, fuzzy
 #| msgid "Total Payables"
 msgid "Total Book Value"
-msgstr "Total Utang"
+msgstr "Total Nilai Buku"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:29
 #, fuzzy
 #| msgid "Total Records"
 msgid "Total Depreciation"
-msgstr "Total Catatan"
+msgstr "Total Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:42
 msgid "Asset #, name, serial..."
-msgstr ""
+msgstr "No. Aset, nama, seri..."
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:67
 #, fuzzy
 #| msgid "Assets"
 msgid "New Asset"
-msgstr "Aset"
+msgstr "Aset Baru"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:79
 #, fuzzy
 #| msgid "Assets"
 msgid "Asset #"
-msgstr "Aset"
+msgstr "No. Aset"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:118
 #, fuzzy
 #| msgid "No assets found"
 msgid "No fixed assets found"
-msgstr "Tidak ada aset ditemukan"
+msgstr "Tidak ada aset tetap ditemukan"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:119
 #, fuzzy
 #| msgid "Record Payment"
 msgid "Register First Asset"
-msgstr "Catat Pembayaran"
+msgstr "Daftarkan Aset Pertama"
 
 #: .\erp\templates\erp\fixed_assets\categories\form.html:42
 msgid "Default Depreciation Settings"
-msgstr ""
+msgstr "Pengaturan Penyusutan Default"
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:13
 #, fuzzy
 #| msgid "Name, Email, or ID..."
 msgid "Name or code..."
-msgstr "Nama, Email, atau ID..."
+msgstr "Nama atau kode..."
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:35
 #, python-format
 msgid "Salvage %%"
-msgstr ""
+msgstr "Sisa %%"
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:66
 #, fuzzy
 #| msgid "No expenses found"
 msgid "No asset categories found"
-msgstr "Tidak ada pengeluaran ditemukan"
+msgstr "Tidak ada kategori aset ditemukan"
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:67
 #, fuzzy
 #| msgid "Create Entry"
 msgid "Create First Category"
-msgstr "Buat Entri"
+msgstr "Buat Kategori Pertama"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:5
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:20
 msgid "Generate Depreciation Schedule"
-msgstr ""
+msgstr "Buat Jadwal Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:37
 #, fuzzy
 #| msgid "Payment Method"
 msgid "Method"
-msgstr "Metode Pembayaran"
+msgstr "Metode"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:61
 #, fuzzy
 #| msgid "General Ledger"
 msgid "Generate"
-msgstr "Buku Besar"
+msgstr "Buat"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:4
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:5
 msgid "Depreciation Schedules"
-msgstr ""
+msgstr "Jadwal Penyusutan"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:29
 msgid "Post All Up To Date"
-msgstr ""
+msgstr "Posting Semua Hingga Tanggal"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:46
 msgid "Book Value After"
-msgstr ""
+msgstr "Nilai Buku Setelah"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:81
 #, fuzzy
 #| msgid "No expenses found"
 msgid "No depreciation schedules found"
-msgstr "Tidak ada pengeluaran ditemukan"
+msgstr "Tidak ada jadwal penyusutan ditemukan"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:5
 #, fuzzy
 #| msgid "Customer Details"
 msgid "Disposal Details"
-msgstr "Detail Pelanggan"
+msgstr "Detail Pelepasan"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:19
 msgid "Disposal of"
-msgstr ""
+msgstr "Pelepasan dari"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:26
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:14
 #, fuzzy
 #| msgid "Date"
 msgid "Disposal Date"
-msgstr "Tanggal"
+msgstr "Tanggal Pelepasan"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:28
 msgid "Book Value at Disposal"
-msgstr ""
+msgstr "Nilai Buku saat Pelepasan"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:29
 msgid "Gain / Loss"
-msgstr ""
+msgstr "Keuntungan / Kerugian"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:55
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:54
 #, fuzzy
 #| msgid "View All"
 msgid "View Asset"
-msgstr "Lihat Semua"
+msgstr "Lihat Aset"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:12
 msgid "Dispose"
-msgstr ""
+msgstr "Lepaskan"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:24
 #: .\erp\templates\erp\fixed_assets\revaluations\form.html:24
 #, fuzzy
 #| msgid "Trial Balance"
 msgid "Current Book Value:"
-msgstr "Neraca Percobaan"
+msgstr "Nilai Buku Saat Ini:"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:25
 msgid "Accumulated Depreciation:"
-msgstr ""
+msgstr "Akumulasi Penyusutan:"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:37
 #, fuzzy
 #| msgid "Create Fiscal Year"
 msgid "Create Disposal"
-msgstr "Buat Tahun Fiskal"
+msgstr "Buat Pelepasan"
 
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:4
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:5
 msgid "Asset Disposals"
-msgstr ""
+msgstr "Pelepasan Aset"
 
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:49
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No asset disposals recorded"
-msgstr "Tidak ada interaksi yang tercatat"
+msgstr "Tidak ada pelepasan aset tercatat"
 
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:5
 #, fuzzy
 #| msgid "Attendance Records"
 msgid "Asset Maintenance Logs"
-msgstr "Catatan Kehadiran"
+msgstr "Log Pemeliharaan Aset"
 
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:75
 #, fuzzy
 #| msgid "No attendance records found"
 msgid "No maintenance logs found"
-msgstr "Tidak ada catatan kehadiran ditemukan"
+msgstr "Tidak ada log pemeliharaan ditemukan"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:4
 msgid "Revaluation"
-msgstr ""
+msgstr "Revaluasi"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:5
 #, fuzzy
 #| msgid "Campaigns"
 msgid "Revaluation Details"
-msgstr "Kampanye"
+msgstr "Detail Revaluasi"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:19
 msgid "Revaluation of"
-msgstr ""
+msgstr "Revaluasi dari"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:25
 #, fuzzy
 #| msgid "Review Date"
 msgid "Revaluation Date"
-msgstr "Tanggal Peninjauan"
+msgstr "Tanggal Revaluasi"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:58
 msgid "Process Revaluation (Create Journal)"
-msgstr ""
+msgstr "Proses Revaluasi (Buat Jurnal)"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\form.html:12
 #, fuzzy
 #| msgid "Value"
 msgid "Revalue"
-msgstr "Nilai"
+msgstr "Revaluasi"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\form.html:36
 #, fuzzy
 #| msgid "Campaigns"
 msgid "Create Revaluation"
-msgstr "Kampanye"
+msgstr "Buat Revaluasi"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\list.html:4
 #: .\erp\templates\erp\fixed_assets\revaluations\list.html:5
 msgid "Asset Revaluations"
-msgstr ""
+msgstr "Revaluasi Aset"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\list.html:49
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No revaluations recorded"
-msgstr "Tidak ada interaksi yang tercatat"
+msgstr "Tidak ada revaluasi tercatat"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:12
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:40
@@ -6295,43 +6295,43 @@ msgstr "Tidak ada interaksi yang tercatat"
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfer"
-msgstr "Nama Bank"
+msgstr "Transfer"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:24
 #, fuzzy
 #| msgid "Department"
 msgid "Current Department:"
-msgstr "Departemen"
+msgstr "Departemen Saat Ini:"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:25
 #, fuzzy
 #| msgid "Current Status"
 msgid "Current Location:"
-msgstr "Status Saat Ini"
+msgstr "Lokasi Saat Ini:"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:26
 #, fuzzy
 #| msgid "Current Status"
 msgid "Current Custodian:"
-msgstr "Status Saat Ini"
+msgstr "Penjaga Saat Ini:"
 
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:15
 #, fuzzy
 #| msgid "Department"
 msgid "From Department"
-msgstr "Departemen"
+msgstr "Dari Departemen"
 
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:16
 #, fuzzy
 #| msgid "Department"
 msgid "To Department"
-msgstr "Departemen"
+msgstr "Ke Departemen"
 
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:37
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No asset transfers recorded"
-msgstr "Tidak ada interaksi yang tercatat"
+msgstr "Tidak ada transfer aset tercatat"
 
 #: .\erp\templates\erp\form_base.html:5 .\erp\templates\erp\form_base.html:92
 msgid "ERP System"
@@ -6340,13 +6340,13 @@ msgstr "Sistem ERP"
 #: .\erp\templates\erp\inventory\adjustment_detail.html:4
 #: .\erp\templates\erp\inventory\movement_list.html:32
 msgid "Adjustment"
-msgstr ""
+msgstr "Penyesuaian"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:5
 #, fuzzy
 #| msgid "Customer Details"
 msgid "Stock Adjustment Details"
-msgstr "Detail Pelanggan"
+msgstr "Detail Penyesuaian Stok"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:11
 #: .\erp\templates\erp\inventory\adjustment_form.html:12
@@ -6355,7 +6355,7 @@ msgstr "Detail Pelanggan"
 #, fuzzy
 #| msgid "No documents"
 msgid "Stock Adjustments"
-msgstr "Tidak ada dokumen"
+msgstr "Penyesuaian Stok"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:31
 #: .\erp\templates\erp\inventory\adjustment_form.html:60
@@ -6384,7 +6384,7 @@ msgstr "Tidak ada dokumen"
 #: .\erp\templates\erp\inventory\warehouse_detail.html:4
 #: .\erp\templates\erp\inventory\zone_detail.html:43
 msgid "Warehouse"
-msgstr ""
+msgstr "Gudang"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:46
 #: .\erp\templates\erp\purchase_orders\detail.html:55
@@ -6393,14 +6393,14 @@ msgstr "Disetujui Oleh"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:64
 msgid "Approve this adjustment?"
-msgstr ""
+msgstr "Setujui penyesuaian ini?"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:79
 #: .\erp\templates\erp\inventory\adjustment_form.html:83
 #, fuzzy
 #| msgid "Quote Lines"
 msgid "Adjustment Lines"
-msgstr "Baris Kutipan"
+msgstr "Baris Penyesuaian"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:85
 #: .\erp\templates\erp\inventory\adjustment_form.html:105
@@ -6450,7 +6450,7 @@ msgstr "Produk"
 #: .\erp\templates\erp\supplier_invoices\detail.html:82
 #: .\erp\templates\erp\supplier_invoices\form.html:88
 msgid "Quantity"
-msgstr "Kuantitas"
+msgstr "Jumlah"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:87
 #: .\erp\templates\erp\inventory\adjustment_form.html:107
@@ -6463,7 +6463,7 @@ msgstr "Kuantitas"
 #, fuzzy
 #| msgid "Cost"
 msgid "Unit Cost"
-msgstr "Biaya"
+msgstr "Biaya Satuan"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:88
 #: .\erp\templates\erp\inventory\adjustment_form.html:108
@@ -6476,7 +6476,7 @@ msgstr "Biaya"
 #: .\erp\templates\erp\inventory\stock_levels.html:94
 #: .\erp\templates\erp\inventory\zone_form.html:87
 msgid "Bin"
-msgstr ""
+msgstr "Bin"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:89
 #: .\erp\templates\erp\inventory\adjustment_form.html:109
@@ -6497,7 +6497,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Low"
 msgid "Lot"
-msgstr "Rendah"
+msgstr "Lot"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:108
 #: .\erp\templates\erp\inventory\grn_detail.html:111
@@ -6510,7 +6510,7 @@ msgstr "Tidak ada baris ditemukan"
 #: .\erp\templates\erp\inventory\adjustment_form.html:4
 #: .\erp\templates\erp\inventory\adjustment_form.html:5
 msgid "New Stock Adjustment"
-msgstr ""
+msgstr "Penyesuaian Stok Baru"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:22
 #: .\erp\templates\erp\inventory\cycle_count_form.html:22
@@ -6535,14 +6535,14 @@ msgstr "Harap perbaiki kesalahan berikut:"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:40
 msgid "Adjustment Data"
-msgstr ""
+msgstr "Data Penyesuaian"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:45
 #: .\erp\templates\erp\inventory\adjustment_list.html:22
 #, fuzzy
 #| msgid "Payment Number"
 msgid "Adjustment Number"
-msgstr "Nomor Pembayaran"
+msgstr "Nomor Penyesuaian"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:85
 #: .\erp\templates\erp\inventory\cycle_count_form.html:80
@@ -6570,32 +6570,32 @@ msgstr "Baris"
 
 #: .\erp\templates\erp\inventory\adjustment_list.html:10
 msgid "Record inventory adjustments, gains and losses"
-msgstr ""
+msgstr "Catat penyesuaian persediaan, keuntungan dan kerugian"
 
 #: .\erp\templates\erp\inventory\adjustment_list.html:13
 #, fuzzy
 #| msgid "New Customer"
 msgid "New Adjustment"
-msgstr "Pelanggan Baru"
+msgstr "Penyesuaian Baru"
 
 #: .\erp\templates\erp\inventory\adjustment_list.html:62
 #, fuzzy
 #| msgid "No payments found"
 msgid "No adjustments found"
-msgstr "Tidak ada pembayaran ditemukan"
+msgstr "Tidak ada penyesuaian ditemukan"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:22
 #, fuzzy
 #| msgid "Contact Information"
 msgid "Count Info"
-msgstr "Informasi Kontak"
+msgstr "Info Penghitungan"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:27
 #: .\erp\templates\erp\inventory\cycle_count_list.html:73
 #, fuzzy
 #| msgid "Country"
 msgid "Count #"
-msgstr "Negara"
+msgstr "No. Hitung"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:36
 #: .\erp\templates\erp\inventory\cycle_count_form.html:64
@@ -6604,7 +6604,7 @@ msgstr "Negara"
 #: .\erp\templates\erp\inventory\zone_detail.html:4
 #: .\erp\templates\erp\inventory\zone_detail.html:13
 msgid "Zone"
-msgstr ""
+msgstr "Zona"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:39
 #: .\erp\templates\erp\inventory\cycle_count_form.html:68
@@ -6612,44 +6612,44 @@ msgstr ""
 #, fuzzy
 #| msgid "Country"
 msgid "Counted By"
-msgstr "Negara"
+msgstr "Dihitung Oleh"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:60
 msgid "Complete this cycle count?"
-msgstr ""
+msgstr "Selesaikan penghitungan siklus ini?"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:61
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Complete"
-msgstr "Konfirmasi Hapus"
+msgstr "Selesaikan"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:76
 #: .\erp\templates\erp\inventory\cycle_count_form.html:78
 #, fuzzy
 #| msgid "Journal Lines"
 msgid "Count Lines"
-msgstr "Baris Jurnal"
+msgstr "Baris Penghitungan"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:87
 #: .\erp\templates\erp\inventory\cycle_count_form.html:103
 #, fuzzy
 #| msgid "System Setup"
 msgid "System Qty"
-msgstr "Pengaturan Sistem"
+msgstr "Jumlah Sistem"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:88
 #: .\erp\templates\erp\inventory\cycle_count_form.html:104
 #, fuzzy
 #| msgid "Country"
 msgid "Counted Qty"
-msgstr "Negara"
+msgstr "Jumlah Dihitung"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:89
 #, fuzzy
 #| msgid "Balance"
 msgid "Variance"
-msgstr "Saldo"
+msgstr "Selisih"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:111
 #: .\erp\templates\erp\inventory\pick_list_detail.html:107
@@ -6657,7 +6657,7 @@ msgstr "Saldo"
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No lines recorded."
-msgstr "Tidak ada interaksi yang tercatat"
+msgstr "Tidak ada baris tercatat."
 
 #: .\erp\templates\erp\inventory\cycle_count_form.html:4
 #: .\erp\templates\erp\inventory\cycle_count_form.html:5
@@ -6665,24 +6665,24 @@ msgstr "Tidak ada interaksi yang tercatat"
 #, fuzzy
 #| msgid "New Account"
 msgid "New Cycle Count"
-msgstr "Akun Baru"
+msgstr "Penghitungan Siklus Baru"
 
 #: .\erp\templates\erp\inventory\cycle_count_form.html:40
 #, fuzzy
 #| msgid "Quote Details"
 msgid "Count Data"
-msgstr "Detail Kutipan"
+msgstr "Data Penghitungan"
 
 #: .\erp\templates\erp\inventory\cycle_count_form.html:45
 #, fuzzy
 #| msgid "Account Number"
 msgid "Count Number"
-msgstr "Nomor Rekening"
+msgstr "Nomor Penghitungan"
 
 #: .\erp\templates\erp\inventory\cycle_count_list.html:43
 #: .\erp\templates\erp\inventory\cycle_count_list.html:54
 msgid "Planned"
-msgstr ""
+msgstr "Direncanakan"
 
 #: .\erp\templates\erp\inventory\cycle_count_list.html:51
 #, fuzzy
@@ -6694,15 +6694,15 @@ msgstr "Cari pesanan..."
 #, fuzzy
 #| msgid "No accounts found yet"
 msgid "No cycle counts found."
-msgstr "Belum ada akun ditemukan"
+msgstr "Tidak ada penghitungan siklus ditemukan."
 
 #: .\erp\templates\erp\inventory\grn_detail.html:4
 msgid "GRN"
-msgstr ""
+msgstr "GRN"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:5
 msgid "Goods Receipt Note"
-msgstr ""
+msgstr "Nota Penerimaan Barang"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:39
 #: .\erp\templates\erp\inventory\grn_form.html:65
@@ -6710,38 +6710,38 @@ msgstr ""
 #, fuzzy
 #| msgid "Receipt"
 msgid "Receipt Date"
-msgstr "Kuitansi"
+msgstr "Tanggal Penerimaan"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:56
 msgid "Confirm this GRN?"
-msgstr ""
+msgstr "Konfirmasi GRN ini?"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:57
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Confirm Receipt"
-msgstr "Konfirmasi Hapus"
+msgstr "Konfirmasi Penerimaan"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:72
 #: .\erp\templates\erp\inventory\grn_form.html:84
 #, fuzzy
 #| msgid "Recent Leads"
 msgid "Receipt Lines"
-msgstr "Prospek Terbaru"
+msgstr "Baris Penerimaan"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:79
 #: .\erp\templates\erp\inventory\grn_form.html:107
 #, fuzzy
 #| msgid "Order Date"
 msgid "Ordered"
-msgstr "Tanggal Pesanan"
+msgstr "Dipesan"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:80
 #: .\erp\templates\erp\inventory\grn_form.html:108
 #, fuzzy
 #| msgid "Receipt"
 msgid "Received"
-msgstr "Kuitansi"
+msgstr "Diterima"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:81
 #: .\erp\templates\erp\inventory\grn_form.html:109
@@ -6753,35 +6753,35 @@ msgstr "Diterima"
 #: .\erp\templates\erp\inventory\grn_form.html:4
 #: .\erp\templates\erp\inventory\grn_form.html:5
 msgid "New Goods Receipt"
-msgstr ""
+msgstr "Penerimaan Barang Baru"
 
 #: .\erp\templates\erp\inventory\grn_form.html:40
 msgid "GRN Data"
-msgstr ""
+msgstr "Data GRN"
 
 #: .\erp\templates\erp\inventory\grn_form.html:45
 #: .\erp\templates\erp\inventory\grn_list.html:49
 #, fuzzy
 #| msgid "PO Number"
 msgid "GRN Number"
-msgstr "Nomor PO"
+msgstr "Nomor GRN"
 
 #: .\erp\templates\erp\inventory\grn_list.html:4
 #: .\erp\templates\erp\inventory\grn_list.html:5
 #, fuzzy
 #| msgid "Recent Quotes"
 msgid "Goods Receipt Notes"
-msgstr "Penawaran Terbaru"
+msgstr "Nota Penerimaan Barang"
 
 #: .\erp\templates\erp\inventory\grn_list.html:10
 #, fuzzy
 #| msgid "Purchase Orders"
 msgid "Receive goods against purchase orders"
-msgstr "Pesanan Pembelian"
+msgstr "Terima barang terhadap pesanan pembelian"
 
 #: .\erp\templates\erp\inventory\grn_list.html:13
 msgid "New GRN"
-msgstr ""
+msgstr "GRN Baru"
 
 #: .\erp\templates\erp\inventory\grn_list.html:23
 #, fuzzy
@@ -6793,69 +6793,69 @@ msgstr "Tidak ada item baris"
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Confirmed"
-msgstr "Konfirmasi Hapus"
+msgstr "Dikonfirmasi"
 
 #: .\erp\templates\erp\inventory\grn_list.html:93
 #, fuzzy
 #| msgid "No quotes found"
 msgid "No goods receipts found"
-msgstr "Tidak ada penawaran ditemukan"
+msgstr "Tidak ada penerimaan barang ditemukan"
 
 #: .\erp\templates\erp\inventory\lot_form.html:4
 #: .\erp\templates\erp\inventory\lot_form.html:5
 msgid "New Lot / Batch"
-msgstr ""
+msgstr "Lot/Batch Baru"
 
 #: .\erp\templates\erp\inventory\lot_form.html:35
 msgid "Lot / Batch Data"
-msgstr ""
+msgstr "Data Lot/Batch"
 
 #: .\erp\templates\erp\inventory\lot_form.html:45
 #: .\erp\templates\erp\inventory\lot_list.html:40
 #, fuzzy
 #| msgid "Quote Number"
 msgid "Lot Number"
-msgstr "Nomor Penawaran"
+msgstr "Nomor Lot"
 
 #: .\erp\templates\erp\inventory\lot_form.html:50
 #: .\erp\templates\erp\inventory\lot_list.html:42
 #, fuzzy
 #| msgid "Quote Date"
 msgid "Manufacture Date"
-msgstr "Tanggal Kutipan"
+msgstr "Tanggal Produksi"
 
 #: .\erp\templates\erp\inventory\lot_form.html:54
 #: .\erp\templates\erp\inventory\lot_list.html:43
 #, fuzzy
 #| msgid "Hire Date"
 msgid "Expiry Date"
-msgstr "Tanggal Bergabung"
+msgstr "Tanggal Kedaluwarsa"
 
 #: .\erp\templates\erp\inventory\lot_list.html:10
 msgid "Manage product lots and batches for traceability"
-msgstr ""
+msgstr "Kelola lot dan batch produk untuk ketertelusuran"
 
 #: .\erp\templates\erp\inventory\lot_list.html:13
 #, fuzzy
 #| msgid "New Lead"
 msgid "New Lot"
-msgstr "Prospek Baru"
+msgstr "Lot Baru"
 
 #: .\erp\templates\erp\inventory\lot_list.html:23
 msgid "Lot number, product..."
-msgstr ""
+msgstr "Nomor lot, produk..."
 
 #: .\erp\templates\erp\inventory\lot_list.html:60
 #, fuzzy
 #| msgid "Valid Until"
 msgid "Valid"
-msgstr "Berlaku Hingga"
+msgstr "Valid"
 
 #: .\erp\templates\erp\inventory\lot_list.html:79
 #, fuzzy
 #| msgid "No quotes found"
 msgid "No lots found"
-msgstr "Tidak ada penawaran ditemukan"
+msgstr "Tidak ada lot ditemukan"
 
 #: .\erp\templates\erp\inventory\movement_list.html:22
 #, fuzzy
@@ -6867,27 +6867,27 @@ msgstr "Produk & Layanan"
 #, fuzzy
 #| msgid "Payment Type"
 msgid "Movement Type"
-msgstr "Jenis Pembayaran"
+msgstr "Tipe Pergerakan"
 
 #: .\erp\templates\erp\inventory\movement_list.html:29
 msgid "Issue"
-msgstr ""
+msgstr "Pengeluaran"
 
 #: .\erp\templates\erp\inventory\movement_list.html:30
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfer In"
-msgstr "Nama Bank"
+msgstr "Transfer Masuk"
 
 #: .\erp\templates\erp\inventory\movement_list.html:31
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfer Out"
-msgstr "Nama Bank"
+msgstr "Transfer Keluar"
 
 #: .\erp\templates\erp\inventory\movement_list.html:33
 msgid "Return"
-msgstr ""
+msgstr "Pengembalian"
 
 #: .\erp\templates\erp\inventory\movement_list.html:39
 #: .\erp\templates\erp\inventory\stock_levels.html:59
@@ -6895,51 +6895,51 @@ msgstr ""
 #, fuzzy
 #| msgid "All Statuses"
 msgid "All Warehouses"
-msgstr "Semua Status"
+msgstr "Semua Gudang"
 
 #: .\erp\templates\erp\inventory\movement_list.html:63
 #, fuzzy
 #| msgid "General Ledger"
 msgid "Movement Ledger"
-msgstr "Buku Besar"
+msgstr "Buku Besar Pergerakan"
 
 #: .\erp\templates\erp\inventory\movement_list.html:79
 #, fuzzy
 #| msgid "Approved By"
 msgid "Performed By"
-msgstr "Disetujui Oleh"
+msgstr "Dilakukan Oleh"
 
 #: .\erp\templates\erp\inventory\movement_list.html:102
 #, fuzzy
 #| msgid "No customers found"
 msgid "No stock movements found."
-msgstr "Tidak ada pelanggan ditemukan"
+msgstr "Tidak ada pergerakan stok ditemukan."
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:22
 msgid "Pick List Info"
-msgstr ""
+msgstr "Info Daftar Pengambilan"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:27
 #: .\erp\templates\erp\inventory\pick_list_list.html:73
 msgid "Pick #"
-msgstr ""
+msgstr "No. Pengambilan"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:64
 msgid "Mark this pick list as picked?"
-msgstr ""
+msgstr "Tandai daftar pengambilan ini sebagai selesai?"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:65
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Complete Picking"
-msgstr "Konfirmasi Hapus"
+msgstr "Selesaikan Pengambilan"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:80
 #: .\erp\templates\erp\inventory\pick_list_form.html:78
 #, fuzzy
 #| msgid "Invoice Lines"
 msgid "Pick Lines"
-msgstr "Baris Faktur"
+msgstr "Baris Pengambilan"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:89
 #: .\erp\templates\erp\inventory\pick_list_form.html:101
@@ -6948,45 +6948,45 @@ msgstr "Baris Faktur"
 #, fuzzy
 #| msgid "From"
 msgid "From Bin"
-msgstr "Dari"
+msgstr "Dari Bin"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:91
 #, fuzzy
 #| msgid "Days Requested"
 msgid "Requested"
-msgstr "Hari Diminta"
+msgstr "Diminta"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:92
 #: .\erp\templates\erp\inventory\pick_list_list.html:36
 #: .\erp\templates\erp\inventory\pick_list_list.html:56
 msgid "Picked"
-msgstr ""
+msgstr "Diambil"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:4
 #: .\erp\templates\erp\inventory\pick_list_form.html:5
 #: .\erp\templates\erp\inventory\pick_list_list.html:62
 msgid "New Pick List"
-msgstr ""
+msgstr "Daftar Pengambilan Baru"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:40
 msgid "Pick List Data"
-msgstr ""
+msgstr "Data Daftar Pengambilan"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:45
 #, fuzzy
 #| msgid "PO Number"
 msgid "Pick Number"
-msgstr "Nomor PO"
+msgstr "Nomor Pengambilan"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:103
 #, fuzzy
 #| msgid "Days Requested"
 msgid "Qty Requested"
-msgstr "Hari Diminta"
+msgstr "Jumlah Diminta"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:104
 msgid "Qty Picked"
-msgstr ""
+msgstr "Jumlah Diambil"
 
 #: .\erp\templates\erp\inventory\pick_list_list.html:51
 #, fuzzy
@@ -6998,7 +6998,7 @@ msgstr "Cari pembayaran..."
 #, fuzzy
 #| msgid "No lines found"
 msgid "No pick lists found."
-msgstr "Tidak ada baris ditemukan"
+msgstr "Tidak ada daftar pengambilan ditemukan."
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:4
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:5
@@ -7011,7 +7011,7 @@ msgstr "Level Pemesanan Ulang"
 #, fuzzy
 #| msgid "Reorder Level"
 msgid "Reorder Rule"
-msgstr "Level Pemesanan Ulang"
+msgstr "Aturan Pemesanan Ulang"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:50
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:46
@@ -7019,34 +7019,34 @@ msgstr "Level Pemesanan Ulang"
 #, fuzzy
 #| msgid "New Quantity"
 msgid "Reorder Point"
-msgstr "Kuantitas Baru"
+msgstr "Titik Pemesanan Ulang"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:55
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:47
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:38
 msgid "Safety Stock"
-msgstr ""
+msgstr "Stok Pengaman"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:59
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:50
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Lead Time (days)"
-msgstr "Detail Prospek"
+msgstr "Waktu Tunggu (hari)"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:63
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:48
 #, fuzzy
 #| msgid "Min Order"
 msgid "Min Order Qty"
-msgstr "Pesanan Minimum"
+msgstr "Jumlah Pesanan Min"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:67
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:49
 #, fuzzy
 #| msgid "Min Order"
 msgid "Max Order Qty"
-msgstr "Pesanan Minimum"
+msgstr "Jumlah Pesanan Maks"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:71
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:40
@@ -7055,7 +7055,7 @@ msgstr "Pesanan Minimum"
 #, fuzzy
 #| msgid "Add Supplier"
 msgid "Preferred Supplier"
-msgstr "Tambah Pemasok"
+msgstr "Pemasok Pilihan"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:19
 #, fuzzy
@@ -7070,13 +7070,13 @@ msgstr "Cari pesanan..."
 #, fuzzy
 #| msgid "New Quantity"
 msgid "Reorder Suggestions"
-msgstr "Kuantitas Baru"
+msgstr "Saran Pemesanan Ulang"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:32
 #, fuzzy
 #| msgid "New Request"
 msgid "New Rule"
-msgstr "Permintaan Baru"
+msgstr "Aturan Baru"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:69
 #: .\erp\templates\erp\setup\step_review.html:218
@@ -7088,19 +7088,19 @@ msgstr "Ya"
 #, fuzzy
 #| msgid "Nov"
 msgid "No"
-msgstr "Nov"
+msgstr "Tidak"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:88
 #, fuzzy
 #| msgid "No leads found"
 msgid "No reorder rules found."
-msgstr "Tidak ada prospek ditemukan"
+msgstr "Tidak ada aturan pemesanan ulang ditemukan."
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:123
 #, fuzzy
 #| msgid "Are you sure you want to delete this purchase order?"
 msgid "Are you sure you want to delete the reorder rule for"
-msgstr "Apakah Anda yakin ingin menghapus pesanan pembelian ini?"
+msgstr "Apakah Anda yakin ingin menghapus aturan pemesanan ulang untuk"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:20
 msgid ""
@@ -7110,29 +7110,29 @@ msgstr ""
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:26
 msgid "Suggestions"
-msgstr ""
+msgstr "Saran"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:27
 #, fuzzy
 #| msgid "Line Items"
 msgid "items"
-msgstr "Item Baris"
+msgstr "item"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:36
 #, fuzzy
 #| msgid "Current Status"
 msgid "Current Stock"
-msgstr "Status Saat Ini"
+msgstr "Stok Saat Ini"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:39
 msgid "Suggested Qty"
-msgstr ""
+msgstr "Jumlah Disarankan"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:41
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Lead Time"
-msgstr "Detail Prospek"
+msgstr "Waktu Tunggu"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:62
 #: .\erp\templates\erp\suppliers\detail.html:93
@@ -7141,13 +7141,13 @@ msgstr "hari"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:68
 msgid "All stock levels are above reorder points. No suggestions at this time."
-msgstr ""
+msgstr "Semua level stok di atas titik pemesanan ulang. Tidak ada saran saat ini."
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:80
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Back to Reorder Rules"
-msgstr "Kembali ke Permintaan Cuti"
+msgstr "Kembali ke Aturan Pemesanan Ulang"
 
 #: .\erp\templates\erp\inventory\serial_form.html:4
 #: .\erp\templates\erp\inventory\serial_form.html:5
@@ -7155,86 +7155,86 @@ msgstr "Kembali ke Permintaan Cuti"
 #, fuzzy
 #| msgid "New Service"
 msgid "New Serial Number"
-msgstr "Layanan Baru"
+msgstr "Nomor Seri Baru"
 
 #: .\erp\templates\erp\inventory\serial_form.html:35
 #, fuzzy
 #| msgid "Lead Number"
 msgid "Serial Number Data"
-msgstr "Nomor Prospek"
+msgstr "Data Nomor Seri"
 
 #: .\erp\templates\erp\inventory\serial_form.html:45
 #: .\erp\templates\erp\inventory\serial_list.html:49
 #, fuzzy
 #| msgid "Lead Number"
 msgid "Serial Number"
-msgstr "Nomor Prospek"
+msgstr "Nomor Seri"
 
 #: .\erp\templates\erp\inventory\serial_list.html:10
 msgid "Track individual serial numbers"
-msgstr ""
+msgstr "Lacak nomor seri individual"
 
 #: .\erp\templates\erp\inventory\serial_list.html:23
 msgid "Serial number, product..."
-msgstr ""
+msgstr "Nomor seri, produk..."
 
 #: .\erp\templates\erp\inventory\serial_list.html:80
 #, fuzzy
 #| msgid "No lines found"
 msgid "No serial numbers found"
-msgstr "Tidak ada baris ditemukan"
+msgstr "Tidak ada nomor seri ditemukan"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:22
 msgid "Shipment Info"
-msgstr ""
+msgstr "Info Pengiriman"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:27
 #: .\erp\templates\erp\inventory\shipment_list.html:73
 #, fuzzy
 #| msgid "Payment"
 msgid "Shipment #"
-msgstr "Pembayaran"
+msgstr "No. Pengiriman"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:36
 #: .\erp\templates\erp\inventory\shipment_form.html:64
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Pick List"
-msgstr "Kembali ke Permintaan Cuti"
+msgstr "Daftar Pengambilan"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:50
 #: .\erp\templates\erp\inventory\shipment_list.html:77
 msgid "Carrier"
-msgstr ""
+msgstr "Kurir"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:53
 #: .\erp\templates\erp\inventory\shipment_list.html:78
 msgid "Tracking #"
-msgstr ""
+msgstr "No. Pelacakan"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:72
 msgid "Ship this shipment?"
-msgstr ""
+msgstr "Kirim pengiriman ini?"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:73
 #: .\erp\templates\erp\inventory\transfer_detail.html:65
 msgid "Ship"
-msgstr ""
+msgstr "Kirim"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:80
 #, fuzzy
 #| msgid "Mark all as read"
 msgid "Mark as delivered?"
-msgstr "Tandai semua sudah dibaca"
+msgstr "Tandai sebagai terkirim?"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:81
 msgid "Deliver"
-msgstr ""
+msgstr "Kirim"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:96
 #: .\erp\templates\erp\inventory\shipment_form.html:86
 msgid "Shipment Lines"
-msgstr ""
+msgstr "Baris Pengiriman"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:4
 #: .\erp\templates\erp\inventory\shipment_form.html:5
@@ -7242,41 +7242,41 @@ msgstr ""
 #, fuzzy
 #| msgid "New Payment"
 msgid "New Shipment"
-msgstr "Pembayaran Baru"
+msgstr "Pengiriman Baru"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:40
 #, fuzzy
 #| msgid "Payment Date"
 msgid "Shipment Data"
-msgstr "Tanggal Pembayaran"
+msgstr "Data Pengiriman"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:45
 #, fuzzy
 #| msgid "Payment Number"
 msgid "Shipment Number"
-msgstr "Nomor Pembayaran"
+msgstr "Nomor Pengiriman"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:72
 #, fuzzy
 #| msgid "Supplier Name"
 msgid "Carrier Name"
-msgstr "Nama Pemasok"
+msgstr "Nama Kurir"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:76
 #, fuzzy
 #| msgid "Tax Number"
 msgid "Tracking Number"
-msgstr "Nomor Pajak"
+msgstr "Nomor Pelacakan"
 
 #: .\erp\templates\erp\inventory\shipment_list.html:29
 #: .\erp\templates\erp\inventory\shipment_list.html:55
 msgid "Shipped"
-msgstr ""
+msgstr "Terkirim"
 
 #: .\erp\templates\erp\inventory\shipment_list.html:36
 #: .\erp\templates\erp\inventory\shipment_list.html:56
 msgid "Delivered"
-msgstr ""
+msgstr "Terkirim"
 
 #: .\erp\templates\erp\inventory\shipment_list.html:51
 #, fuzzy
@@ -7288,32 +7288,32 @@ msgstr "Cari pesanan..."
 #, fuzzy
 #| msgid "No payments found"
 msgid "No shipments found."
-msgstr "Tidak ada pembayaran ditemukan"
+msgstr "Tidak ada pengiriman ditemukan."
 
 #: .\erp\templates\erp\inventory\stock_levels.html:22
 #: .\erp\templates\erp\inventory\stock_levels.html:84
 #, fuzzy
 #| msgid "Stock"
 msgid "Stock Items"
-msgstr "Stok"
+msgstr "Item Stok"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:29
 #, fuzzy
 #| msgid "Total Records"
 msgid "Total On Hand"
-msgstr "Total Catatan"
+msgstr "Total Tersedia"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:36
 #, fuzzy
 #| msgid "Allocated Amount"
 msgid "Total Allocated"
-msgstr "Jumlah Dialokasikan"
+msgstr "Total Dialokasikan"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:43
 #, fuzzy
 #| msgid "Total Payables"
 msgid "Total Available"
-msgstr "Total Utang"
+msgstr "Total Tersedia"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:54
 #, fuzzy
@@ -7325,13 +7325,13 @@ msgstr "Kategori Produk"
 #, fuzzy
 #| msgid "Invoice Status"
 msgid "Stock Status"
-msgstr "Status Faktur"
+msgstr "Status Stok"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:69
 #, fuzzy
 #| msgid "Stock"
 msgid "In Stock"
-msgstr "Stok"
+msgstr "Tersedia"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:70
 #: .\erp\templates\erp\products\detail.html:169
@@ -7343,17 +7343,17 @@ msgstr "Stok Rendah"
 #, fuzzy
 #| msgid "Low Stock"
 msgid "Out of Stock"
-msgstr "Stok Rendah"
+msgstr "Habis"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:92
 #: .\erp\templates\erp\inventory\warehouse_detail.html:144
 msgid "SKU"
-msgstr ""
+msgstr "SKU"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:96
 #: .\erp\templates\erp\inventory\warehouse_detail.html:145
 msgid "On Hand"
-msgstr ""
+msgstr "Tersedia"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:97
 #: .\erp\templates\erp\inventory\warehouse_detail.html:146
@@ -7361,31 +7361,31 @@ msgstr ""
 #, fuzzy
 #| msgid "Allocated Amount"
 msgid "Allocated"
-msgstr "Jumlah Dialokasikan"
+msgstr "Dialokasikan"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:98
 #, fuzzy
 #| msgid "Bank Name"
 msgid "In Transit"
-msgstr "Nama Bank"
+msgstr "Dalam Perjalanan"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:99
 #, fuzzy
 #| msgid "Original Quantity"
 msgid "Available"
-msgstr "Kuantitas Asli"
+msgstr "Tersedia"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:123
 #, fuzzy
 #| msgid "No quotes found"
 msgid "No stock items found."
-msgstr "Tidak ada penawaran ditemukan"
+msgstr "Tidak ada item stok ditemukan."
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:5
 #, fuzzy
 #| msgid "Customer Details"
 msgid "Stock Transfer Details"
-msgstr "Detail Pelanggan"
+msgstr "Detail Transfer Stok"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:11
 #: .\erp\templates\erp\inventory\transfer_form.html:12
@@ -7394,7 +7394,7 @@ msgstr "Detail Pelanggan"
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Stock Transfers"
-msgstr "Nama Bank"
+msgstr "Transfer Stok"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:27
 #: .\erp\templates\erp\inventory\transfer_form.html:50
@@ -7402,13 +7402,13 @@ msgstr "Nama Bank"
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Warehouse"
-msgstr "Tanggal Bergabung"
+msgstr "Dari Gudang"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:31
 #: .\erp\templates\erp\inventory\transfer_form.html:55
 #: .\erp\templates\erp\inventory\transfer_list.html:27
 msgid "To Warehouse"
-msgstr ""
+msgstr "Ke Gudang"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:35
 #: .\erp\templates\erp\inventory\transfer_form.html:60
@@ -7416,47 +7416,47 @@ msgstr ""
 #, fuzzy
 #| msgid "Order Date"
 msgid "Transfer Date"
-msgstr "Tanggal Pesanan"
+msgstr "Tanggal Transfer"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:40
 #, fuzzy
 #| msgid "Hire Date"
 msgid "Shipped Date"
-msgstr "Tanggal Bergabung"
+msgstr "Tanggal Pengiriman"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:46
 #, fuzzy
 #| msgid "Review Date"
 msgid "Received Date"
-msgstr "Tanggal Peninjauan"
+msgstr "Tanggal Diterima"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:64
 msgid "Ship this transfer?"
-msgstr ""
+msgstr "Kirim transfer ini?"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:74
 #, fuzzy
 #| msgid "Mark all as read"
 msgid "Mark as received?"
-msgstr "Tandai semua sudah dibaca"
+msgstr "Tandai sebagai diterima?"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:75
 #, fuzzy
 #| msgid "Receipt"
 msgid "Receive"
-msgstr "Kuitansi"
+msgstr "Terima"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:86
 #: .\erp\templates\erp\inventory\transfer_form.html:79
 #, fuzzy
 #| msgid "Order Lines"
 msgid "Transfer Lines"
-msgstr "Baris Pesanan"
+msgstr "Baris Transfer"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:95
 #: .\erp\templates\erp\inventory\transfer_form.html:104
 msgid "To Bin"
-msgstr ""
+msgstr "Ke Bin"
 
 #: .\erp\templates\erp\inventory\transfer_form.html:4
 #: .\erp\templates\erp\inventory\transfer_form.html:5
@@ -7469,30 +7469,30 @@ msgstr "Nama Bank"
 #, fuzzy
 #| msgid "Purchase Order Data"
 msgid "Transfer Data"
-msgstr "Data Pesanan Pembelian"
+msgstr "Data Transfer"
 
 #: .\erp\templates\erp\inventory\transfer_form.html:45
 #: .\erp\templates\erp\inventory\transfer_list.html:25
 #, fuzzy
 #| msgid "Order Number"
 msgid "Transfer Number"
-msgstr "Nomor Pesanan"
+msgstr "Nomor Transfer"
 
 #: .\erp\templates\erp\inventory\transfer_list.html:10
 msgid "Transfer stock between warehouses"
-msgstr ""
+msgstr "Transfer stok antar gudang"
 
 #: .\erp\templates\erp\inventory\transfer_list.html:19
 #, fuzzy
 #| msgid "Bank Name"
 msgid "All Transfers"
-msgstr "Nama Bank"
+msgstr "Semua Transfer"
 
 #: .\erp\templates\erp\inventory\transfer_list.html:65
 #, fuzzy
 #| msgid "No assets found"
 msgid "No transfers found"
-msgstr "Tidak ada aset ditemukan"
+msgstr "Tidak ada transfer ditemukan"
 
 #: .\erp\templates\erp\inventory\uom_form.html:4
 #: .\erp\templates\erp\inventory\uom_form.html:5
@@ -7505,131 +7505,131 @@ msgstr "Satuan Ukur"
 #, fuzzy
 #| msgid "Unit of Measure"
 msgid "Unit of Measure Data"
-msgstr "Satuan Ukur"
+msgstr "Data Satuan Ukuran"
 
 #: .\erp\templates\erp\inventory\uom_form.html:49
 #: .\erp\templates\erp\inventory\uom_list.html:23
 msgid "Abbreviation"
-msgstr ""
+msgstr "Singkatan"
 
 #: .\erp\templates\erp\inventory\uom_form.html:60
 #: .\erp\templates\erp\inventory\uom_list.html:25
 #, fuzzy
 #| msgid "Unit Price"
 msgid "Base Unit"
-msgstr "Harga Satuan"
+msgstr "Satuan Dasar"
 
 #: .\erp\templates\erp\inventory\uom_list.html:10
 #, fuzzy
 #| msgid "Manage customer payments and transactions"
 msgid "Manage units of measure and conversions"
-msgstr "Kelola pembayaran pelanggan dan transaksi"
+msgstr "Kelola satuan ukuran dan konversi"
 
 #: .\erp\templates\erp\inventory\uom_list.html:13
 #, fuzzy
 #| msgid "New Entry"
 msgid "New Unit"
-msgstr "Entri Baru"
+msgstr "Satuan Baru"
 
 #: .\erp\templates\erp\inventory\uom_list.html:38
 msgid "Base"
-msgstr ""
+msgstr "Dasar"
 
 #: .\erp\templates\erp\inventory\uom_list.html:65
 #, fuzzy
 #| msgid "No customers found"
 msgid "No units of measure found"
-msgstr "Tidak ada pelanggan ditemukan"
+msgstr "Tidak ada satuan ukuran ditemukan"
 
 #: .\erp\templates\erp\inventory\uom_list.html:66
 #, fuzzy
 #| msgid "Add Lead"
 msgid "Add First Unit"
-msgstr "Tambah Prospek"
+msgstr "Tambah Satuan Pertama"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:4
 #: .\erp\templates\erp\inventory\valuation_config.html:5
 msgid "Inventory Valuation Configuration"
-msgstr ""
+msgstr "Konfigurasi Penilaian Persediaan"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:12
 msgid "Valuation Configuration"
-msgstr ""
+msgstr "Konfigurasi Penilaian"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:44
 #: .\erp\templates\erp\inventory\valuation_config.html:49
 #, fuzzy
 #| msgid "Payment Method"
 msgid "Valuation Method"
-msgstr "Metode Pembayaran"
+msgstr "Metode Penilaian"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:52
 msgid "Select the inventory costing method used for valuation calculations."
-msgstr ""
+msgstr "Pilih metode biaya persediaan yang digunakan untuk perhitungan penilaian."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:61
 #, fuzzy
 #| msgid "General Ledger"
 msgid "General Ledger Accounts"
-msgstr "Buku Besar"
+msgstr "Akun Buku Besar"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:66
 #, fuzzy
 #| msgid "New Account"
 msgid "Inventory Account"
-msgstr "Akun Baru"
+msgstr "Akun Persediaan"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:69
 msgid "Asset account for inventory on hand."
-msgstr ""
+msgstr "Akun aset untuk persediaan yang tersedia."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:72
 #, fuzzy
 #| msgid "New Account"
 msgid "COGS Account"
-msgstr "Akun Baru"
+msgstr "Akun HPP"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:75
 #, fuzzy
 #| msgid "Expense account for this category"
 msgid "Expense account for cost of goods sold."
-msgstr "Akun beban untuk kategori ini"
+msgstr "Akun beban untuk harga pokok penjualan."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:78
 #, fuzzy
 #| msgid "New Account"
 msgid "GRNI Account"
-msgstr "Akun Baru"
+msgstr "Akun GRNI"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:81
 msgid "Goods Received Not Invoiced (accrual) account."
-msgstr ""
+msgstr "Akun barang diterima belum difaktur (akrual)."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:84
 #, fuzzy
 #| msgid "New Account"
 msgid "Adjustment Account"
-msgstr "Akun Baru"
+msgstr "Akun Penyesuaian"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:87
 msgid "Account for stock adjustment gains/losses."
-msgstr ""
+msgstr "Akun keuntungan/kerugian penyesuaian stok."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:90
 #, fuzzy
 #| msgid "New Account"
 msgid "Write-Off Account"
-msgstr "Akun Baru"
+msgstr "Akun Penghapusan"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:93
 msgid "Account for inventory write-offs."
-msgstr ""
+msgstr "Akun penghapusan persediaan."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:105
 #, fuzzy
 #| msgid "Basic Information"
 msgid "Save Configuration"
-msgstr "Informasi Dasar"
+msgstr "Simpan Konfigurasi"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:114
 msgid ""
@@ -7641,56 +7641,56 @@ msgstr ""
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Warehouse Details"
-msgstr "Detail Prospek"
+msgstr "Detail Gudang"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:21
 #, fuzzy
 #| msgid "Status Information"
 msgid "Warehouse Information"
-msgstr "Informasi Status"
+msgstr "Informasi Gudang"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:73
 #, fuzzy
 #| msgid "Edit Lead"
 msgid "Edit Warehouse"
-msgstr "Edit Prospek"
+msgstr "Edit Gudang"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:76
 #, fuzzy
 #| msgid "Delete Lead"
 msgid "Delete Warehouse"
-msgstr "Hapus Prospek"
+msgstr "Hapus Gudang"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:86
 #: .\erp\templates\erp\inventory\warehouse_form.html:97
 #: .\erp\templates\erp\inventory\warehouse_list.html:47
 msgid "Zones"
-msgstr ""
+msgstr "Zona"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:88
 #: .\erp\templates\erp\inventory\warehouse_form.html:99
 #, fuzzy
 #| msgid "Add Line"
 msgid "Add Zone"
-msgstr "Tambah Baris"
+msgstr "Tambah Zona"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:98
 #: .\erp\templates\erp\inventory\zone_detail.html:72
 #: .\erp\templates\erp\inventory\zone_form.html:76
 msgid "Bins"
-msgstr ""
+msgstr "Bin"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:126
 #, fuzzy
 #| msgid "No lines found"
 msgid "No zones defined"
-msgstr "Tidak ada baris ditemukan"
+msgstr "Tidak ada zona yang ditentukan"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:137
 #, fuzzy
 #| msgid "Customer Summary"
 msgid "Stock Summary"
-msgstr "Ringkasan Pelanggan"
+msgstr "Ringkasan Stok"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:159
 #, fuzzy
@@ -7702,11 +7702,11 @@ msgstr "Tidak ada entri yang diposting dalam periode ini"
 #: .\erp\templates\erp\inventory\warehouse_form.html:5
 #: .\erp\templates\erp\inventory\warehouse_list.html:13
 msgid "New Warehouse"
-msgstr ""
+msgstr "Gudang Baru"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:41
 msgid "Warehouse Data"
-msgstr ""
+msgstr "Data Gudang"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:122
 #: .\erp\templates\erp\inventory\zone_detail.html:39
@@ -7714,102 +7714,102 @@ msgstr ""
 #, fuzzy
 #| msgid "Invoice Type"
 msgid "Zone Type"
-msgstr "Jenis Faktur"
+msgstr "Tipe Zona"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:177
 #, fuzzy
 #| msgid "Receipt"
 msgid "Receiving"
-msgstr "Kuitansi"
+msgstr "Penerimaan"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:178
 msgid "Storage"
-msgstr ""
+msgstr "Penyimpanan"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:179
 msgid "Picking"
-msgstr ""
+msgstr "Pengambilan"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:180
 msgid "Packing"
-msgstr ""
+msgstr "Pengemasan"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:181
 #, fuzzy
 #| msgid "Shipping Address"
 msgid "Shipping"
-msgstr "Alamat Pengiriman"
+msgstr "Pengiriman"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:182
 #, fuzzy
 #| msgid "Quarter"
 msgid "Quarantine"
-msgstr "Kuartal"
+msgstr "Karantina"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:183
 msgid "Returns"
-msgstr ""
+msgstr "Pengembalian"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:184
 msgid "Other"
-msgstr ""
+msgstr "Lainnya"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:10
 #, fuzzy
 #| msgid "Manage customer payments and transactions"
 msgid "Manage warehouses and storage locations"
-msgstr "Kelola pembayaran pelanggan dan transaksi"
+msgstr "Kelola gudang dan lokasi penyimpanan"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:27
 #, fuzzy
 #| msgid "Monthly Expenses"
 msgid "Total Warehouses"
-msgstr "Pengeluaran Bulanan"
+msgstr "Total Gudang"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:89
 #, fuzzy
 #| msgid "No assets found"
 msgid "No warehouses found"
-msgstr "Tidak ada aset ditemukan"
+msgstr "Tidak ada gudang ditemukan"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:90
 #, fuzzy
 #| msgid "Add First Customer"
 msgid "Add First Warehouse"
-msgstr "Tambah Pelanggan Pertama"
+msgstr "Tambah Gudang Pertama"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:5
 #, fuzzy
 #| msgid "Quote Details"
 msgid "Zone Details"
-msgstr "Detail Kutipan"
+msgstr "Detail Zona"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:21
 #, fuzzy
 #| msgid "Information"
 msgid "Zone Information"
-msgstr "Informasi"
+msgstr "Informasi Zona"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:59
 #, fuzzy
 #| msgid "New Account"
 msgid "Edit Zone"
-msgstr "Akun Baru"
+msgstr "Edit Zona"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:62
 #, fuzzy
 #| msgid "Delete Lead"
 msgid "Delete Zone"
-msgstr "Hapus Prospek"
+msgstr "Hapus Zona"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:81
 #: .\erp\templates\erp\inventory\zone_form.html:101
 msgid "Max Capacity"
-msgstr ""
+msgstr "Kapasitas Maksimum"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:102
 msgid "No bins defined"
-msgstr ""
+msgstr "Tidak ada bin yang ditentukan"
 
 #: .\erp\templates\erp\inventory\zone_form.html:4
 #: .\erp\templates\erp\inventory\zone_form.html:5
@@ -7823,13 +7823,13 @@ msgstr "Akun Baru"
 #, fuzzy
 #| msgid "Quote Date"
 msgid "Zone Data"
-msgstr "Tanggal Kutipan"
+msgstr "Data Zona"
 
 #: .\erp\templates\erp\inventory\zone_form.html:78
 #, fuzzy
 #| msgid "Add Line"
 msgid "Add Bin"
-msgstr "Tambah Baris"
+msgstr "Tambah Bin"
 
 #: .\erp\templates\erp\invoices\credit_debit_form.html:19
 msgid "for Invoice"
@@ -7996,7 +7996,7 @@ msgstr "Dibuat pada"
 
 #: .\erp\templates\erp\journal_entries\detail.html:122
 msgid "Are you sure you want to post this entry? This action cannot be undone."
-msgstr ""
+msgstr "Apakah Anda yakin ingin memposting entri ini? Tindakan ini tidak dapat dibatalkan."
 "Apakah Anda yakin ingin memposting entri ini? Tindakan ini tidak dapat "
 "dibatalkan.Apakah Anda yakin ingin memposting entri ini? Tindakan ini tidak "
 "dapat dibatalkan."
@@ -8460,7 +8460,7 @@ msgstr "Tidak ada akun yang dikonfigurasi."
 
 #: .\erp\templates\erp\payment_methods\list.html:90
 msgid "Add payment methods like cash, credit card, bank transfer, etc."
-msgstr ""
+msgstr "Tambahkan metode pembayaran seperti tunai, kartu kredit, transfer bank, dll."
 "Tambahkan metode pembayaran seperti tunai, kartu kredit, transfer bank, dll."
 
 #: .\erp\templates\erp\payment_methods\list.html:92
@@ -8601,7 +8601,7 @@ msgstr "Hitung"
 
 #: .\erp\templates\erp\payroll\detail.html:45
 msgid "Disburse salary and create journal entry?"
-msgstr ""
+msgstr "Cairkan gaji dan buat entri jurnal?"
 
 #: .\erp\templates\erp\payroll\detail.html:49
 #, fuzzy
@@ -8684,7 +8684,7 @@ msgstr "Laba Ditahan"
 #: .\erp\templates\erp\payroll\form.html:239
 #: .\erp\templates\erp\payroll\form.html:262
 msgid "Remove"
-msgstr ""
+msgstr "Hapus"
 
 #: .\erp\templates\erp\payroll\form.html:161
 #, fuzzy
@@ -9072,7 +9072,7 @@ msgstr "Kuantitas Baru"
 #: .\erp\templates\erp\products\detail.html:176
 #: .\erp\templates\erp\products\form.html:147
 msgid "Unit of Measure"
-msgstr "Satuan Ukur"
+msgstr "Satuan Ukuran"
 
 #: .\erp\templates\erp\products\detail.html:179
 msgid "Inventory tracking disabled"
@@ -10385,7 +10385,7 @@ msgstr ""
 
 #: .\tenants\templates\tenants\employee_register.html:29
 msgid "Login Credentials"
-msgstr ""
+msgstr "Kredensial Login"
 
 #: .\tenants\templates\tenants\employee_register.html:181
 #, fuzzy
@@ -10395,7 +10395,7 @@ msgstr "Administrasi"
 
 #: .\tenants\templates\tenants\employee_register.html:187
 msgid "Already have an account? Login"
-msgstr ""
+msgstr "Sudah punya akun? Login"
 
 #~ msgid "Disburse Salary"
 #~ msgstr "Bayar Gaji"

@@ -8,6 +8,7 @@ pick lists, shipments, reorder rules, stock movements, and valuation config.
 
 from django.db.models import Q, Sum, F
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from erp.models import (
     Product, Warehouse, WarehouseZone, WarehouseBin,
@@ -93,14 +94,14 @@ def warehouse_create(request):
             wh.save()
             zone_formset.instance = wh
             zone_formset.save()
-            messages.success(request, f'تم إنشاء المستودع "{wh.name}" بنجاح.')
+            messages.success(request, _('Warehouse "%(name)s" created successfully.') % {'name': wh.name})
             return redirect('erp:warehouse_detail', pk=wh.pk)
     else:
         form = WarehouseForm(company=company)
         zone_formset = WarehouseZoneFormSet()
     return render(request, 'erp/inventory/warehouse_form.html', {
         'form': form, 'zone_formset': zone_formset,
-        'title': 'إنشاء مستودع', 'submit_text': 'حفظ',
+        'title': _('Create Warehouse'), 'submit_text': _('Save'),
     })
 
 
@@ -114,14 +115,14 @@ def warehouse_edit(request, pk):
         if form.is_valid() and zone_formset.is_valid():
             form.save()
             zone_formset.save()
-            messages.success(request, 'تم تحديث المستودع بنجاح.')
+            messages.success(request, _('Warehouse updated successfully.'))
             return redirect('erp:warehouse_detail', pk=warehouse.pk)
     else:
         form = WarehouseForm(instance=warehouse, company=company)
         zone_formset = WarehouseZoneFormSet(instance=warehouse)
     return render(request, 'erp/inventory/warehouse_form.html', {
         'form': form, 'zone_formset': zone_formset,
-        'title': 'تعديل مستودع', 'submit_text': 'حفظ التغييرات', 'warehouse': warehouse,
+        'title': _('Edit Warehouse'), 'submit_text': _('Save Changes'), 'warehouse': warehouse,
     })
 
 
@@ -131,10 +132,10 @@ def warehouse_delete(request, pk):
     warehouse = get_object_or_404(Warehouse, pk=pk, company=company)
     if request.method == 'POST':
         warehouse.delete()
-        messages.success(request, 'تم حذف المستودع بنجاح.')
+        messages.success(request, _('Warehouse deleted successfully.'))
         return redirect('erp:warehouse_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': warehouse, 'object_type': 'مستودع',
+        'object': warehouse, 'object_type': _('Warehouse'),
         'cancel_url': reverse('erp:warehouse_detail', args=[pk]),
     })
 
@@ -166,14 +167,14 @@ def zone_create(request, warehouse_pk):
             zone.save()
             bin_formset.instance = zone
             bin_formset.save()
-            messages.success(request, f'تم إنشاء المنطقة "{zone.name}" بنجاح.')
+            messages.success(request, _('Zone "%(name)s" created successfully.') % {'name': zone.name})
             return redirect('erp:warehouse_detail', pk=warehouse.pk)
     else:
         form = WarehouseZoneForm()
         bin_formset = WarehouseBinFormSet()
     return render(request, 'erp/inventory/zone_form.html', {
         'form': form, 'bin_formset': bin_formset, 'warehouse': warehouse,
-        'title': 'إنشاء منطقة', 'submit_text': 'حفظ',
+        'title': _('Create Zone'), 'submit_text': _('Save'),
     })
 
 
@@ -187,14 +188,14 @@ def zone_edit(request, pk):
         if form.is_valid() and bin_formset.is_valid():
             form.save()
             bin_formset.save()
-            messages.success(request, 'تم تحديث المنطقة بنجاح.')
+            messages.success(request, _('Zone updated successfully.'))
             return redirect('erp:zone_detail', pk=zone.pk)
     else:
         form = WarehouseZoneForm(instance=zone)
         bin_formset = WarehouseBinFormSet(instance=zone)
     return render(request, 'erp/inventory/zone_form.html', {
         'form': form, 'bin_formset': bin_formset, 'warehouse': zone.warehouse,
-        'title': 'تعديل منطقة', 'submit_text': 'حفظ التغييرات', 'zone': zone,
+        'title': _('Edit Zone'), 'submit_text': _('Save Changes'), 'zone': zone,
     })
 
 
@@ -205,10 +206,10 @@ def zone_delete(request, pk):
     wh_pk = zone.warehouse_id
     if request.method == 'POST':
         zone.delete()
-        messages.success(request, 'تم حذف المنطقة بنجاح.')
+        messages.success(request, _('Zone deleted successfully.'))
         return redirect('erp:warehouse_detail', pk=wh_pk)
     return render(request, 'erp/confirm_delete.html', {
-        'object': zone, 'object_type': 'منطقة مستودع',
+        'object': zone, 'object_type': _('Warehouse Zone'),
         'cancel_url': reverse('erp:zone_detail', args=[pk]),
     })
 
@@ -233,12 +234,12 @@ def uom_create(request):
             obj = form.save(commit=False)
             obj.company = company
             obj.save()
-            messages.success(request, f'تم إنشاء وحدة القياس "{obj.name}" بنجاح.')
+            messages.success(request, _('Unit of measure "%(name)s" created successfully.') % {'name': obj.name})
             return redirect('erp:uom_list')
     else:
         form = UnitOfMeasureForm(company=company)
     return render(request, 'erp/inventory/uom_form.html', {
-        'form': form, 'title': 'إنشاء وحدة قياس', 'submit_text': 'حفظ',
+        'form': form, 'title': _('Create Unit of Measure'), 'submit_text': _('Save'),
     })
 
 
@@ -250,12 +251,12 @@ def uom_edit(request, pk):
         form = UnitOfMeasureForm(request.POST, instance=obj, company=company)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تم تحديث وحدة القياس بنجاح.')
+            messages.success(request, _('Unit of measure updated successfully.'))
             return redirect('erp:uom_list')
     else:
         form = UnitOfMeasureForm(instance=obj, company=company)
     return render(request, 'erp/inventory/uom_form.html', {
-        'form': form, 'title': 'تعديل وحدة قياس', 'submit_text': 'حفظ التغييرات',
+        'form': form, 'title': _('Edit Unit of Measure'), 'submit_text': _('Save Changes'),
     })
 
 
@@ -265,10 +266,10 @@ def uom_delete(request, pk):
     obj = get_object_or_404(UnitOfMeasure, pk=pk, company=company)
     if request.method == 'POST':
         obj.delete()
-        messages.success(request, 'تم حذف وحدة القياس بنجاح.')
+        messages.success(request, _('Unit of measure deleted successfully.'))
         return redirect('erp:uom_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': obj, 'object_type': 'وحدة قياس',
+        'object': obj, 'object_type': _('Unit of Measure'),
         'cancel_url': reverse('erp:uom_list'),
     })
 
@@ -298,12 +299,12 @@ def lot_create(request):
             obj = form.save(commit=False)
             obj.company = company
             obj.save()
-            messages.success(request, f'تم إنشاء الدفعة "{obj.lot_number}" بنجاح.')
+            messages.success(request, _('Lot/Batch "%(number)s" created successfully.') % {'number': obj.lot_number})
             return redirect('erp:lot_list')
     else:
         form = LotBatchForm(company=company)
     return render(request, 'erp/inventory/lot_form.html', {
-        'form': form, 'title': 'إنشاء دفعة', 'submit_text': 'حفظ',
+        'form': form, 'title': _('Create Lot/Batch'), 'submit_text': _('Save'),
     })
 
 
@@ -315,12 +316,12 @@ def lot_edit(request, pk):
         form = LotBatchForm(request.POST, instance=obj, company=company)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تم تحديث الدفعة بنجاح.')
+            messages.success(request, _('Lot/Batch updated successfully.'))
             return redirect('erp:lot_list')
     else:
         form = LotBatchForm(instance=obj, company=company)
     return render(request, 'erp/inventory/lot_form.html', {
-        'form': form, 'title': 'تعديل دفعة', 'submit_text': 'حفظ التغييرات',
+        'form': form, 'title': _('Edit Lot/Batch'), 'submit_text': _('Save Changes'),
     })
 
 
@@ -330,10 +331,10 @@ def lot_delete(request, pk):
     obj = get_object_or_404(LotBatch, pk=pk, company=company)
     if request.method == 'POST':
         obj.delete()
-        messages.success(request, 'تم حذف الدفعة بنجاح.')
+        messages.success(request, _('Lot/Batch deleted successfully.'))
         return redirect('erp:lot_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': obj, 'object_type': 'دفعة/لوط',
+        'object': obj, 'object_type': _('Lot/Batch'),
         'cancel_url': reverse('erp:lot_list'),
     })
 
@@ -369,12 +370,12 @@ def serial_create(request):
             obj = form.save(commit=False)
             obj.company = company
             obj.save()
-            messages.success(request, f'تم إنشاء الرقم التسلسلي "{obj.serial_number}" بنجاح.')
+            messages.success(request, _('Serial number "%(number)s" created successfully.') % {'number': obj.serial_number})
             return redirect('erp:serial_list')
     else:
         form = SerialNumberForm(company=company)
     return render(request, 'erp/inventory/serial_form.html', {
-        'form': form, 'title': 'إنشاء رقم تسلسلي', 'submit_text': 'حفظ',
+        'form': form, 'title': _('Create Serial Number'), 'submit_text': _('Save'),
     })
 
 
@@ -386,12 +387,12 @@ def serial_edit(request, pk):
         form = SerialNumberForm(request.POST, instance=obj, company=company)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تم تحديث الرقم التسلسلي بنجاح.')
+            messages.success(request, _('Serial number updated successfully.'))
             return redirect('erp:serial_list')
     else:
         form = SerialNumberForm(instance=obj, company=company)
     return render(request, 'erp/inventory/serial_form.html', {
-        'form': form, 'title': 'تعديل رقم تسلسلي', 'submit_text': 'حفظ التغييرات',
+        'form': form, 'title': _('Edit Serial Number'), 'submit_text': _('Save Changes'),
     })
 
 
@@ -446,7 +447,7 @@ def grn_create(request):
             grn.save()
             formset.instance = grn
             formset.save()
-            messages.success(request, f'تم إنشاء إذن استلام البضائع {grn.grn_number} بنجاح.')
+            messages.success(request, _('Goods receipt note %(number)s created successfully.') % {'number': grn.grn_number})
             return redirect('erp:grn_detail', pk=grn.pk)
     else:
         form = GoodsReceiptNoteForm(company=company)
@@ -454,7 +455,7 @@ def grn_create(request):
     return render(request, 'erp/inventory/grn_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'إنشاء إذن استلام بضائع', 'submit_text': 'حفظ',
+        'title': _('Create Goods Receipt Note'), 'submit_text': _('Save'),
     })
 
 
@@ -463,7 +464,7 @@ def grn_edit(request, pk):
     company = get_user_company(request.user)
     grn = get_object_or_404(GoodsReceiptNote, pk=pk, company=company)
     if grn.status != 'draft':
-        messages.error(request, 'لا يمكن تعديل إذن استلام مؤكد.')
+        messages.error(request, _('Cannot edit a confirmed goods receipt note.'))
         return redirect('erp:grn_detail', pk=grn.pk)
     if request.method == 'POST':
         form = GoodsReceiptNoteForm(request.POST, instance=grn, company=company)
@@ -471,7 +472,7 @@ def grn_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            messages.success(request, 'تم تحديث إذن استلام البضائع بنجاح.')
+            messages.success(request, _('Goods receipt note updated successfully.'))
             return redirect('erp:grn_detail', pk=grn.pk)
     else:
         form = GoodsReceiptNoteForm(instance=grn, company=company)
@@ -479,7 +480,7 @@ def grn_edit(request, pk):
     return render(request, 'erp/inventory/grn_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'تعديل إذن استلام بضائع', 'submit_text': 'حفظ التغييرات', 'grn': grn,
+        'title': _('Edit Goods Receipt Note'), 'submit_text': _('Save Changes'), 'grn': grn,
     })
 
 
@@ -490,14 +491,14 @@ def grn_confirm(request, pk):
     grn = get_object_or_404(GoodsReceiptNote, pk=pk, company=company)
     if request.method == 'POST':
         if grn.status != 'draft':
-            messages.error(request, 'هذا الإذن مؤكد بالفعل.')
+            messages.error(request, _('This receipt note is already confirmed.'))
             return redirect('erp:grn_detail', pk=grn.pk)
         try:
             from erp.services.inventory import confirm_goods_receipt
             confirm_goods_receipt(grn.pk, request.user)
-            messages.success(request, f'تم تأكيد إذن الاستلام {grn.grn_number} بنجاح.')
+            messages.success(request, _('Goods receipt note %(number)s confirmed successfully.') % {'number': grn.grn_number})
         except Exception as e:
-            messages.error(request, f'فشل تأكيد الإذن: {e}')
+            messages.error(request, _('Failed to confirm receipt note: %(error)s') % {'error': e})
     return redirect('erp:grn_detail', pk=grn.pk)
 
 
@@ -506,14 +507,14 @@ def grn_delete(request, pk):
     company = get_user_company(request.user)
     grn = get_object_or_404(GoodsReceiptNote, pk=pk, company=company)
     if grn.status != 'draft':
-        messages.error(request, 'لا يمكن حذف إذن مؤكد.')
+        messages.error(request, _('Cannot delete a confirmed receipt note.'))
         return redirect('erp:grn_detail', pk=grn.pk)
     if request.method == 'POST':
         grn.delete()
-        messages.success(request, 'تم حذف إذن الاستلام بنجاح.')
+        messages.success(request, _('Goods receipt note deleted successfully.'))
         return redirect('erp:grn_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': grn, 'object_type': 'إذن استلام بضائع',
+        'object': grn, 'object_type': _('Goods Receipt Note'),
         'cancel_url': reverse('erp:grn_detail', args=[pk]),
     })
 
@@ -571,7 +572,7 @@ def transfer_create(request):
             obj.save()
             formset.instance = obj
             formset.save()
-            messages.success(request, f'تم إنشاء تحويل المخزون {obj.transfer_number} بنجاح.')
+            messages.success(request, _('Stock transfer %(number)s created successfully.') % {'number': obj.transfer_number})
             return redirect('erp:transfer_detail', pk=obj.pk)
     else:
         form = StockTransferForm(company=company)
@@ -579,7 +580,7 @@ def transfer_create(request):
     return render(request, 'erp/inventory/transfer_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'إنشاء تحويل مخزون', 'submit_text': 'حفظ',
+        'title': _('Create Stock Transfer'), 'submit_text': _('Save'),
     })
 
 
@@ -588,7 +589,7 @@ def transfer_edit(request, pk):
     company = get_user_company(request.user)
     transfer = get_object_or_404(StockTransfer, pk=pk, company=company)
     if transfer.status != 'draft':
-        messages.error(request, 'لا يمكن تعديل تحويل غير مسودة.')
+        messages.error(request, _('Cannot edit a non-draft transfer.'))
         return redirect('erp:transfer_detail', pk=transfer.pk)
     if request.method == 'POST':
         form = StockTransferForm(request.POST, instance=transfer, company=company)
@@ -596,7 +597,7 @@ def transfer_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            messages.success(request, 'تم تحديث تحويل المخزون بنجاح.')
+            messages.success(request, _('Stock transfer updated successfully.'))
             return redirect('erp:transfer_detail', pk=transfer.pk)
     else:
         form = StockTransferForm(instance=transfer, company=company)
@@ -604,7 +605,7 @@ def transfer_edit(request, pk):
     return render(request, 'erp/inventory/transfer_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'تعديل تحويل مخزون', 'submit_text': 'حفظ التغييرات', 'transfer': transfer,
+        'title': _('Edit Stock Transfer'), 'submit_text': _('Save Changes'), 'transfer': transfer,
     })
 
 
@@ -616,9 +617,9 @@ def transfer_ship(request, pk):
         try:
             from erp.services.inventory import ship_stock_transfer
             ship_stock_transfer(transfer.pk, request.user)
-            messages.success(request, f'تم شحن التحويل {transfer.transfer_number} بنجاح.')
+            messages.success(request, _('Transfer %(number)s shipped successfully.') % {'number': transfer.transfer_number})
         except Exception as e:
-            messages.error(request, f'فشل شحن التحويل: {e}')
+            messages.error(request, _('Failed to ship transfer: %(error)s') % {'error': e})
     return redirect('erp:transfer_detail', pk=transfer.pk)
 
 
@@ -630,9 +631,9 @@ def transfer_receive(request, pk):
         try:
             from erp.services.inventory import receive_stock_transfer
             receive_stock_transfer(transfer.pk, request.user)
-            messages.success(request, f'تم استلام التحويل {transfer.transfer_number} بنجاح.')
+            messages.success(request, _('Transfer %(number)s received successfully.') % {'number': transfer.transfer_number})
         except Exception as e:
-            messages.error(request, f'فشل استلام التحويل: {e}')
+            messages.error(request, _('Failed to receive transfer: %(error)s') % {'error': e})
     return redirect('erp:transfer_detail', pk=transfer.pk)
 
 
@@ -641,14 +642,14 @@ def transfer_delete(request, pk):
     company = get_user_company(request.user)
     transfer = get_object_or_404(StockTransfer, pk=pk, company=company)
     if transfer.status != 'draft':
-        messages.error(request, 'لا يمكن حذف تحويل غير مسودة.')
+        messages.error(request, _('Cannot delete a non-draft transfer.'))
         return redirect('erp:transfer_detail', pk=transfer.pk)
     if request.method == 'POST':
         transfer.delete()
-        messages.success(request, 'تم حذف التحويل بنجاح.')
+        messages.success(request, _('Stock transfer deleted successfully.'))
         return redirect('erp:transfer_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': transfer, 'object_type': 'تحويل مخزون',
+        'object': transfer, 'object_type': _('Stock Transfer'),
         'cancel_url': reverse('erp:transfer_detail', args=[pk]),
     })
 
@@ -697,7 +698,7 @@ def adjustment_create(request):
             obj.save()
             formset.instance = obj
             formset.save()
-            messages.success(request, f'تم إنشاء تسوية المخزون {obj.adjustment_number} بنجاح.')
+            messages.success(request, _('Stock adjustment %(number)s created successfully.') % {'number': obj.adjustment_number})
             return redirect('erp:adjustment_detail', pk=obj.pk)
     else:
         form = StockAdjustmentForm(company=company)
@@ -705,7 +706,7 @@ def adjustment_create(request):
     return render(request, 'erp/inventory/adjustment_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'إنشاء تسوية مخزون', 'submit_text': 'حفظ',
+        'title': _('Create Stock Adjustment'), 'submit_text': _('Save'),
     })
 
 
@@ -714,7 +715,7 @@ def adjustment_edit(request, pk):
     company = get_user_company(request.user)
     adj = get_object_or_404(StockAdjustment, pk=pk, company=company)
     if adj.status != 'draft':
-        messages.error(request, 'لا يمكن تعديل تسوية غير مسودة.')
+        messages.error(request, _('Cannot edit a non-draft adjustment.'))
         return redirect('erp:adjustment_detail', pk=adj.pk)
     if request.method == 'POST':
         form = StockAdjustmentForm(request.POST, instance=adj, company=company)
@@ -722,7 +723,7 @@ def adjustment_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            messages.success(request, 'تم تحديث تسوية المخزون بنجاح.')
+            messages.success(request, _('Stock adjustment updated successfully.'))
             return redirect('erp:adjustment_detail', pk=adj.pk)
     else:
         form = StockAdjustmentForm(instance=adj, company=company)
@@ -730,7 +731,7 @@ def adjustment_edit(request, pk):
     return render(request, 'erp/inventory/adjustment_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'تعديل تسوية مخزون', 'submit_text': 'حفظ التغييرات', 'adjustment': adj,
+        'title': _('Edit Stock Adjustment'), 'submit_text': _('Save Changes'), 'adjustment': adj,
     })
 
 
@@ -742,9 +743,9 @@ def adjustment_approve(request, pk):
         try:
             from erp.services.inventory import approve_stock_adjustment
             approve_stock_adjustment(adj.pk, request.user)
-            messages.success(request, f'تم اعتماد التسوية {adj.adjustment_number} بنجاح.')
+            messages.success(request, _('Adjustment %(number)s approved successfully.') % {'number': adj.adjustment_number})
         except Exception as e:
-            messages.error(request, f'فشل اعتماد التسوية: {e}')
+            messages.error(request, _('Failed to approve adjustment: %(error)s') % {'error': e})
     return redirect('erp:adjustment_detail', pk=adj.pk)
 
 
@@ -753,14 +754,14 @@ def adjustment_delete(request, pk):
     company = get_user_company(request.user)
     adj = get_object_or_404(StockAdjustment, pk=pk, company=company)
     if adj.status not in ('draft', 'pending'):
-        messages.error(request, 'لا يمكن حذف تسوية معتمدة.')
+        messages.error(request, _('Cannot delete an approved adjustment.'))
         return redirect('erp:adjustment_detail', pk=adj.pk)
     if request.method == 'POST':
         adj.delete()
-        messages.success(request, 'تم حذف التسوية بنجاح.')
+        messages.success(request, _('Stock adjustment deleted successfully.'))
         return redirect('erp:adjustment_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': adj, 'object_type': 'تسوية مخزون',
+        'object': adj, 'object_type': _('Stock Adjustment'),
         'cancel_url': reverse('erp:adjustment_detail', args=[pk]),
     })
 
@@ -808,7 +809,7 @@ def cycle_count_create(request):
             obj.save()
             formset.instance = obj
             formset.save()
-            messages.success(request, f'تم إنشاء الجرد {obj.count_number} بنجاح.')
+            messages.success(request, _('Cycle count %(number)s created successfully.') % {'number': obj.count_number})
             return redirect('erp:cycle_count_detail', pk=obj.pk)
     else:
         form = CycleCountForm(company=company)
@@ -816,7 +817,7 @@ def cycle_count_create(request):
     return render(request, 'erp/inventory/cycle_count_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'إنشاء جرد دوري', 'submit_text': 'حفظ',
+        'title': _('Create Cycle Count'), 'submit_text': _('Save'),
     })
 
 
@@ -825,7 +826,7 @@ def cycle_count_edit(request, pk):
     company = get_user_company(request.user)
     cc = get_object_or_404(CycleCount, pk=pk, company=company)
     if cc.status not in ('planned', 'in_progress'):
-        messages.error(request, 'لا يمكن تعديل جرد مكتمل.')
+        messages.error(request, _('Cannot edit a completed cycle count.'))
         return redirect('erp:cycle_count_detail', pk=cc.pk)
     if request.method == 'POST':
         form = CycleCountForm(request.POST, instance=cc, company=company)
@@ -833,7 +834,7 @@ def cycle_count_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            messages.success(request, 'تم تحديث الجرد بنجاح.')
+            messages.success(request, _('Cycle count updated successfully.'))
             return redirect('erp:cycle_count_detail', pk=cc.pk)
     else:
         form = CycleCountForm(instance=cc, company=company)
@@ -841,7 +842,7 @@ def cycle_count_edit(request, pk):
     return render(request, 'erp/inventory/cycle_count_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'تعديل جرد دوري', 'submit_text': 'حفظ التغييرات', 'count': cc,
+        'title': _('Edit Cycle Count'), 'submit_text': _('Save Changes'), 'count': cc,
     })
 
 
@@ -853,9 +854,9 @@ def cycle_count_complete(request, pk):
         try:
             from erp.services.inventory import complete_cycle_count
             complete_cycle_count(cc.pk, request.user)
-            messages.success(request, f'تم إكمال الجرد {cc.count_number} بنجاح.')
+            messages.success(request, _('Cycle count %(number)s completed successfully.') % {'number': cc.count_number})
         except Exception as e:
-            messages.error(request, f'فشل إكمال الجرد: {e}')
+            messages.error(request, _('Failed to complete cycle count: %(error)s') % {'error': e})
     return redirect('erp:cycle_count_detail', pk=cc.pk)
 
 
@@ -864,14 +865,14 @@ def cycle_count_delete(request, pk):
     company = get_user_company(request.user)
     cc = get_object_or_404(CycleCount, pk=pk, company=company)
     if cc.status == 'completed':
-        messages.error(request, 'لا يمكن حذف جرد مكتمل.')
+        messages.error(request, _('Cannot delete a completed cycle count.'))
         return redirect('erp:cycle_count_detail', pk=cc.pk)
     if request.method == 'POST':
         cc.delete()
-        messages.success(request, 'تم حذف الجرد بنجاح.')
+        messages.success(request, _('Cycle count deleted successfully.'))
         return redirect('erp:cycle_count_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': cc, 'object_type': 'جرد دوري',
+        'object': cc, 'object_type': _('Cycle Count'),
         'cancel_url': reverse('erp:cycle_count_detail', args=[pk]),
     })
 
@@ -919,7 +920,7 @@ def pick_list_create(request):
             obj.save()
             formset.instance = obj
             formset.save()
-            messages.success(request, f'تم إنشاء قائمة الانتقاء {obj.pick_number} بنجاح.')
+            messages.success(request, _('Pick list %(number)s created successfully.') % {'number': obj.pick_number})
             return redirect('erp:pick_list_detail', pk=obj.pk)
     else:
         form = PickListForm(company=company)
@@ -927,7 +928,7 @@ def pick_list_create(request):
     return render(request, 'erp/inventory/pick_list_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'إنشاء قائمة انتقاء', 'submit_text': 'حفظ',
+        'title': _('Create Pick List'), 'submit_text': _('Save'),
     })
 
 
@@ -936,7 +937,7 @@ def pick_list_edit(request, pk):
     company = get_user_company(request.user)
     pick = get_object_or_404(PickList, pk=pk, company=company)
     if pick.status not in ('draft', 'in_progress'):
-        messages.error(request, 'لا يمكن تعديل قائمة انتقاء مكتملة.')
+        messages.error(request, _('Cannot edit a completed pick list.'))
         return redirect('erp:pick_list_detail', pk=pick.pk)
     if request.method == 'POST':
         form = PickListForm(request.POST, instance=pick, company=company)
@@ -944,7 +945,7 @@ def pick_list_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            messages.success(request, 'تم تحديث قائمة الانتقاء بنجاح.')
+            messages.success(request, _('Pick list updated successfully.'))
             return redirect('erp:pick_list_detail', pk=pick.pk)
     else:
         form = PickListForm(instance=pick, company=company)
@@ -952,7 +953,7 @@ def pick_list_edit(request, pk):
     return render(request, 'erp/inventory/pick_list_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'تعديل قائمة انتقاء', 'submit_text': 'حفظ التغييرات', 'pick': pick,
+        'title': _('Edit Pick List'), 'submit_text': _('Save Changes'), 'pick': pick,
     })
 
 
@@ -964,9 +965,9 @@ def pick_list_complete(request, pk):
         try:
             from erp.services.inventory import complete_pick_list
             complete_pick_list(pick.pk, request.user)
-            messages.success(request, f'تم إكمال قائمة الانتقاء {pick.pick_number} بنجاح.')
+            messages.success(request, _('Pick list %(number)s completed successfully.') % {'number': pick.pick_number})
         except Exception as e:
-            messages.error(request, f'فشل إكمال قائمة الانتقاء: {e}')
+            messages.error(request, _('Failed to complete pick list: %(error)s') % {'error': e})
     return redirect('erp:pick_list_detail', pk=pick.pk)
 
 
@@ -975,14 +976,14 @@ def pick_list_delete(request, pk):
     company = get_user_company(request.user)
     pick = get_object_or_404(PickList, pk=pk, company=company)
     if pick.status == 'picked':
-        messages.error(request, 'لا يمكن حذف قائمة انتقاء مكتملة.')
+        messages.error(request, _('Cannot delete a completed pick list.'))
         return redirect('erp:pick_list_detail', pk=pick.pk)
     if request.method == 'POST':
         pick.delete()
-        messages.success(request, 'تم حذف قائمة الانتقاء بنجاح.')
+        messages.success(request, _('Pick list deleted successfully.'))
         return redirect('erp:pick_list_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': pick, 'object_type': 'قائمة انتقاء',
+        'object': pick, 'object_type': _('Pick List'),
         'cancel_url': reverse('erp:pick_list_detail', args=[pk]),
     })
 
@@ -1039,7 +1040,7 @@ def shipment_create(request):
             obj.save()
             formset.instance = obj
             formset.save()
-            messages.success(request, f'تم إنشاء إذن الشحن {obj.shipment_number} بنجاح.')
+            messages.success(request, _('Shipment note %(number)s created successfully.') % {'number': obj.shipment_number})
             return redirect('erp:shipment_detail', pk=obj.pk)
     else:
         form = ShipmentNoteForm(company=company)
@@ -1047,7 +1048,7 @@ def shipment_create(request):
     return render(request, 'erp/inventory/shipment_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'إنشاء إذن شحن', 'submit_text': 'حفظ',
+        'title': _('Create Shipment Note'), 'submit_text': _('Save'),
     })
 
 
@@ -1056,7 +1057,7 @@ def shipment_edit(request, pk):
     company = get_user_company(request.user)
     shipment = get_object_or_404(ShipmentNote, pk=pk, company=company)
     if shipment.status != 'draft':
-        messages.error(request, 'لا يمكن تعديل إذن شحن غير مسودة.')
+        messages.error(request, _('Cannot edit a non-draft shipment note.'))
         return redirect('erp:shipment_detail', pk=shipment.pk)
     if request.method == 'POST':
         form = ShipmentNoteForm(request.POST, instance=shipment, company=company)
@@ -1064,7 +1065,7 @@ def shipment_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            messages.success(request, 'تم تحديث إذن الشحن بنجاح.')
+            messages.success(request, _('Shipment note updated successfully.'))
             return redirect('erp:shipment_detail', pk=shipment.pk)
     else:
         form = ShipmentNoteForm(instance=shipment, company=company)
@@ -1072,7 +1073,7 @@ def shipment_edit(request, pk):
     return render(request, 'erp/inventory/shipment_form.html', {
         'form': form, 'formset': formset,
         'products': Product.objects.filter(company=company, is_active=True).order_by('name'),
-        'title': 'تعديل إذن شحن', 'submit_text': 'حفظ التغييرات', 'shipment': shipment,
+        'title': _('Edit Shipment Note'), 'submit_text': _('Save Changes'), 'shipment': shipment,
     })
 
 
@@ -1084,9 +1085,9 @@ def shipment_ship(request, pk):
         try:
             from erp.services.inventory import ship_shipment
             ship_shipment(shipment.pk, request.user)
-            messages.success(request, f'تم شحن الإذن {shipment.shipment_number} بنجاح.')
+            messages.success(request, _('Shipment %(number)s shipped successfully.') % {'number': shipment.shipment_number})
         except Exception as e:
-            messages.error(request, f'فشل الشحن: {e}')
+            messages.error(request, _('Failed to ship: %(error)s') % {'error': e})
     return redirect('erp:shipment_detail', pk=shipment.pk)
 
 
@@ -1095,14 +1096,14 @@ def shipment_delete(request, pk):
     company = get_user_company(request.user)
     shipment = get_object_or_404(ShipmentNote, pk=pk, company=company)
     if shipment.status != 'draft':
-        messages.error(request, 'لا يمكن حذف إذن شحن غير مسودة.')
+        messages.error(request, _('Cannot delete a non-draft shipment note.'))
         return redirect('erp:shipment_detail', pk=shipment.pk)
     if request.method == 'POST':
         shipment.delete()
-        messages.success(request, 'تم حذف إذن الشحن بنجاح.')
+        messages.success(request, _('Shipment note deleted successfully.'))
         return redirect('erp:shipment_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': shipment, 'object_type': 'إذن شحن',
+        'object': shipment, 'object_type': _('Shipment Note'),
         'cancel_url': reverse('erp:shipment_detail', args=[pk]),
     })
 
@@ -1131,12 +1132,12 @@ def reorder_rule_create(request):
             obj = form.save(commit=False)
             obj.company = company
             obj.save()
-            messages.success(request, 'تم إنشاء قاعدة إعادة الطلب بنجاح.')
+            messages.success(request, _('Reorder rule created successfully.'))
             return redirect('erp:reorder_rule_list')
     else:
         form = ReorderRuleForm(company=company)
     return render(request, 'erp/inventory/reorder_rule_form.html', {
-        'form': form, 'title': 'إنشاء قاعدة إعادة طلب', 'submit_text': 'حفظ',
+        'form': form, 'title': _('Create Reorder Rule'), 'submit_text': _('Save'),
     })
 
 
@@ -1148,12 +1149,12 @@ def reorder_rule_edit(request, pk):
         form = ReorderRuleForm(request.POST, instance=rule, company=company)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تم تحديث قاعدة إعادة الطلب بنجاح.')
+            messages.success(request, _('Reorder rule updated successfully.'))
             return redirect('erp:reorder_rule_list')
     else:
         form = ReorderRuleForm(instance=rule, company=company)
     return render(request, 'erp/inventory/reorder_rule_form.html', {
-        'form': form, 'title': 'تعديل قاعدة إعادة طلب', 'submit_text': 'حفظ التغييرات',
+        'form': form, 'title': _('Edit Reorder Rule'), 'submit_text': _('Save Changes'),
     })
 
 
@@ -1163,10 +1164,10 @@ def reorder_rule_delete(request, pk):
     rule = get_object_or_404(ReorderRule, pk=pk, company=company)
     if request.method == 'POST':
         rule.delete()
-        messages.success(request, 'تم حذف قاعدة إعادة الطلب بنجاح.')
+        messages.success(request, _('Reorder rule deleted successfully.'))
         return redirect('erp:reorder_rule_list')
     return render(request, 'erp/confirm_delete.html', {
-        'object': rule, 'object_type': 'قاعدة إعادة طلب',
+        'object': rule, 'object_type': _('Reorder Rule'),
         'cancel_url': reverse('erp:reorder_rule_list'),
     })
 
@@ -1262,7 +1263,7 @@ def valuation_config(request):
         form = InventoryValuationConfigForm(request.POST, instance=config, company=company)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تم حفظ إعدادات تقييم المخزون بنجاح.')
+            messages.success(request, _('Inventory valuation settings saved successfully.'))
             return redirect('erp:valuation_config')
     else:
         form = InventoryValuationConfigForm(instance=config, company=company)

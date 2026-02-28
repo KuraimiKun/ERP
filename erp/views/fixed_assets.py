@@ -22,6 +22,7 @@ from erp.forms.fixed_assets import (
     AssetDisposalForm, AssetTransferForm, AssetRevaluationForm,
     AssetMaintenanceLogForm, GenerateDepreciationForm,
 )
+from django.utils.translation import gettext as _
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
     get_user_company, staff_member_required,
@@ -56,10 +57,10 @@ def asset_category_create(request):
         obj = form.save(commit=False)
         obj.company = company
         obj.save()
-        messages.success(request, 'Asset category created.')
+        messages.success(request, _('Asset category created.'))
         return redirect('erp:asset_category_list')
     return render(request, 'erp/fixed_assets/categories/form.html', {
-        'form': form, 'title': 'New Asset Category',
+        'form': form, 'title': _('New Asset Category'),
     })
 
 
@@ -70,10 +71,10 @@ def asset_category_edit(request, pk):
     form = AssetCategoryForm(request.POST or None, instance=obj, company=company)
     if form.is_valid():
         form.save()
-        messages.success(request, 'Asset category updated.')
+        messages.success(request, _('Asset category updated.'))
         return redirect('erp:asset_category_list')
     return render(request, 'erp/fixed_assets/categories/form.html', {
-        'form': form, 'title': f'Edit {obj.name}',
+        'form': form, 'title': _('Edit %(name)s') % {'name': obj.name},
     })
 
 
@@ -83,7 +84,7 @@ def asset_category_delete(request, pk):
     obj = get_object_or_404(AssetCategory, pk=pk, company=company)
     if request.method == 'POST':
         obj.delete()
-        messages.success(request, 'Asset category deleted.')
+        messages.success(request, _('Asset category deleted.'))
         return redirect('erp:asset_category_list')
     return render(request, 'erp/confirm_delete.html', {
         'object': obj, 'cancel_url': reverse('erp:asset_category_list'),
@@ -185,10 +186,10 @@ def asset_create(request):
         obj.company = company
         obj.current_book_value = obj.acquisition_cost
         obj.save()
-        messages.success(request, f'Asset {obj.asset_number} created.')
+        messages.success(request, _('Asset %(number)s created.') % {'number': obj.asset_number})
         return redirect('erp:asset_detail', pk=obj.pk)
     return render(request, 'erp/fixed_assets/assets/form.html', {
-        'form': form, 'title': 'Register New Asset',
+        'form': form, 'title': _('Register New Asset'),
     })
 
 
@@ -199,10 +200,10 @@ def asset_edit(request, pk):
     form = FixedAssetForm(request.POST or None, instance=obj, company=company)
     if form.is_valid():
         form.save()
-        messages.success(request, f'Asset {obj.asset_number} updated.')
+        messages.success(request, _('Asset %(number)s updated.') % {'number': obj.asset_number})
         return redirect('erp:asset_detail', pk=obj.pk)
     return render(request, 'erp/fixed_assets/assets/form.html', {
-        'form': form, 'title': f'Edit {obj.name}',
+        'form': form, 'title': _('Edit %(name)s') % {'name': obj.name},
     })
 
 
@@ -212,7 +213,7 @@ def asset_delete(request, pk):
     obj = get_object_or_404(FixedAsset, pk=pk, company=company)
     if request.method == 'POST':
         obj.delete()
-        messages.success(request, 'Asset deleted.')
+        messages.success(request, _('Asset deleted.'))
         return redirect('erp:asset_list')
     return render(request, 'erp/confirm_delete.html', {
         'object': obj, 'cancel_url': reverse('erp:asset_detail', args=[obj.pk]),
@@ -227,9 +228,9 @@ def asset_activate(request, pk):
     if request.method == 'POST':
         je = asset.activate(request.user)
         if je:
-            messages.success(request, f'Asset activated. Journal entry {je.entry_number} created.')
+            messages.success(request, _('Asset activated. Journal entry %(number)s created.') % {'number': je.entry_number})
         else:
-            messages.success(request, 'Asset activated (no GL accounts configured for journal entry).')
+            messages.success(request, _('Asset activated (no GL accounts configured for journal entry).'))
         return redirect('erp:asset_detail', pk=asset.pk)
     return redirect('erp:asset_detail', pk=asset.pk)
 
@@ -300,7 +301,7 @@ def depreciation_generate(request, pk):
             if was_created:
                 created += 1
 
-        messages.success(request, f'{created} depreciation period(s) generated.')
+        messages.success(request, _('%(count)s depreciation period(s) generated.') % {'count': created})
         return redirect('erp:asset_detail', pk=asset.pk)
 
     return render(request, 'erp/fixed_assets/depreciation/generate.html', {
@@ -320,7 +321,7 @@ def depreciation_post(request, pk):
             je = schedule.post(request.user)
             messages.success(
                 request,
-                f'Depreciation posted. Journal entry {je.entry_number} created.',
+                _('Depreciation posted. Journal entry %(number)s created.') % {'number': je.entry_number},
             )
         except ValueError as e:
             messages.error(request, str(e))
@@ -350,7 +351,7 @@ def depreciation_post_batch(request):
                 except (ValueError, Exception):
                     errors += 1
 
-            messages.success(request, f'{posted} depreciation entries posted, {errors} errors.')
+            messages.success(request, _('%(posted)s depreciation entries posted, %(errors)s errors.') % {'posted': posted, 'errors': errors})
     return redirect('erp:depreciation_list')
 
 
@@ -376,7 +377,7 @@ def disposal_create(request, pk):
     asset = get_object_or_404(FixedAsset, pk=pk, company=company)
 
     if hasattr(asset, 'disposal'):
-        messages.warning(request, 'This asset already has a disposal record.')
+        messages.warning(request, _('This asset already has a disposal record.'))
         return redirect('erp:asset_detail', pk=asset.pk)
 
     form = AssetDisposalForm(request.POST or None)
@@ -384,11 +385,11 @@ def disposal_create(request, pk):
         disposal = form.save(commit=False)
         disposal.asset = asset
         disposal.save()
-        messages.success(request, f'Disposal record created for {asset.asset_number}.')
+        messages.success(request, _('Disposal record created for %(number)s.') % {'number': asset.asset_number})
         return redirect('erp:disposal_detail', pk=disposal.pk)
 
     return render(request, 'erp/fixed_assets/disposals/form.html', {
-        'form': form, 'asset': asset, 'title': f'Dispose Asset: {asset.name}',
+        'form': form, 'asset': asset, 'title': _('Dispose Asset: %(name)s') % {'name': asset.name},
     })
 
 
@@ -412,15 +413,15 @@ def disposal_process(request, pk):
         AssetDisposal, pk=pk, asset__company=company,
     )
     if disposal.journal_entry:
-        messages.warning(request, 'This disposal has already been processed.')
+        messages.warning(request, _('This disposal has already been processed.'))
         return redirect('erp:disposal_detail', pk=disposal.pk)
 
     if request.method == 'POST':
         je = disposal.process(request.user)
         if je:
-            messages.success(request, f'Disposal processed. Journal entry {je.entry_number} created.')
+            messages.success(request, _('Disposal processed. Journal entry %(number)s created.') % {'number': je.entry_number})
         else:
-            messages.success(request, 'Disposal processed.')
+            messages.success(request, _('Disposal processed.'))
         return redirect('erp:disposal_detail', pk=disposal.pk)
     return redirect('erp:disposal_detail', pk=disposal.pk)
 
@@ -458,10 +459,10 @@ def transfer_fa_create(request, pk):
         transfer.from_custodian = asset.custodian
         transfer.save()
         transfer.apply()
-        messages.success(request, f'Asset {asset.asset_number} transferred successfully.')
+        messages.success(request, _('Asset %(number)s transferred successfully.') % {'number': asset.asset_number})
         return redirect('erp:asset_detail', pk=asset.pk)
     return render(request, 'erp/fixed_assets/transfers/form.html', {
-        'form': form, 'asset': asset, 'title': f'Transfer Asset: {asset.name}',
+        'form': form, 'asset': asset, 'title': _('Transfer Asset: %(name)s') % {'name': asset.name},
     })
 
 
@@ -491,10 +492,10 @@ def revaluation_create(request, pk):
         reval.asset = asset
         reval.old_value = asset.current_book_value
         reval.save()
-        messages.success(request, f'Revaluation record created for {asset.asset_number}.')
+        messages.success(request, _('Revaluation record created for %(number)s.') % {'number': asset.asset_number})
         return redirect('erp:revaluation_detail', pk=reval.pk)
     return render(request, 'erp/fixed_assets/revaluations/form.html', {
-        'form': form, 'asset': asset, 'title': f'Revalue Asset: {asset.name}',
+        'form': form, 'asset': asset, 'title': _('Revalue Asset: %(name)s') % {'name': asset.name},
     })
 
 
@@ -518,15 +519,15 @@ def revaluation_process(request, pk):
         AssetRevaluation, pk=pk, asset__company=company,
     )
     if reval.journal_entry:
-        messages.warning(request, 'This revaluation has already been processed.')
+        messages.warning(request, _('This revaluation has already been processed.'))
         return redirect('erp:revaluation_detail', pk=reval.pk)
 
     if request.method == 'POST':
         je = reval.process(request.user)
         if je:
-            messages.success(request, f'Revaluation processed. Journal entry {je.entry_number} created.')
+            messages.success(request, _('Revaluation processed. Journal entry %(number)s created.') % {'number': je.entry_number})
         else:
-            messages.success(request, 'No change in value.')
+            messages.success(request, _('No change in value.'))
         return redirect('erp:revaluation_detail', pk=reval.pk)
     return redirect('erp:revaluation_detail', pk=reval.pk)
 
@@ -567,10 +568,10 @@ def maintenance_create(request, pk):
         log = form.save(commit=False)
         log.asset = asset
         log.save()
-        messages.success(request, 'Maintenance log created.')
+        messages.success(request, _('Maintenance log created.'))
         return redirect('erp:asset_detail', pk=asset.pk)
     return render(request, 'erp/fixed_assets/maintenance/form.html', {
-        'form': form, 'asset': asset, 'title': f'Log Maintenance: {asset.name}',
+        'form': form, 'asset': asset, 'title': _('Log Maintenance: %(name)s') % {'name': asset.name},
     })
 
 
@@ -581,10 +582,10 @@ def maintenance_edit(request, pk):
     form = AssetMaintenanceLogForm(request.POST or None, instance=log, company=company)
     if form.is_valid():
         form.save()
-        messages.success(request, 'Maintenance log updated.')
+        messages.success(request, _('Maintenance log updated.'))
         return redirect('erp:asset_detail', pk=log.asset.pk)
     return render(request, 'erp/fixed_assets/maintenance/form.html', {
-        'form': form, 'asset': log.asset, 'title': f'Edit Maintenance: {log.asset.name}',
+        'form': form, 'asset': log.asset, 'title': _('Edit Maintenance: %(name)s') % {'name': log.asset.name},
     })
 
 
@@ -595,7 +596,7 @@ def maintenance_delete(request, pk):
     asset_pk = log.asset.pk
     if request.method == 'POST':
         log.delete()
-        messages.success(request, 'Maintenance log deleted.')
+        messages.success(request, _('Maintenance log deleted.'))
         return redirect('erp:asset_detail', pk=asset_pk)
     return render(request, 'erp/confirm_delete.html', {
         'object': log, 'cancel_url': reverse('erp:asset_detail', args=[asset_pk]),

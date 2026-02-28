@@ -29,17 +29,17 @@ msgstr "البريد الإلكتروني"
 
 #: .\erp\forms\employee_registration.py:29
 msgid "your.email@example.com"
-msgstr ""
+msgstr "your.email@example.com"
 
 #: .\erp\forms\employee_registration.py:34
 #: .\tenants\templates\tenants\employee_register.html:42
 msgid "Password"
-msgstr ""
+msgstr "كلمة المرور"
 
 #: .\erp\forms\employee_registration.py:42
 #: .\tenants\templates\tenants\employee_register.html:49
 msgid "Confirm Password"
-msgstr ""
+msgstr "تأكيد كلمة المرور"
 
 #: .\erp\forms\employee_registration.py:51
 #: .\erp\templates\erp\employees\form.html:19
@@ -203,7 +203,7 @@ msgstr "المسمى الوظيفي"
 
 #: .\erp\forms\employee_registration.py:146
 msgid "Passwords do not match."
-msgstr ""
+msgstr "كلمات المرور غير متطابقة."
 
 #: .\erp\setup_forms.py:52 .\erp\templates\erp\setup\step_review.html:41
 
@@ -343,7 +343,7 @@ msgstr "مثل FY 2026، 2026-2027"
 #: .\erp\templates\erp\leave_requests\form.html:44
 #: .\erp\templates\erp\leave_requests\list.html:91
 msgid "Start Date"
-msgstr "تاريخ البداية"
+msgstr "تاريخ البدء"
 
 #: .\erp\setup_forms.py:199 .\erp\templates\erp\campaigns\detail.html:53
 #: .\erp\templates\erp\campaigns\form.html:61
@@ -580,7 +580,7 @@ msgstr "دليل الحسابات"
 #: .\erp\templates\erp\tasks\detail.html:49
 #: .\erp\templates\erp\tasks\list.html:129
 msgid "Edit"
-msgstr " تعديل"
+msgstr "تعديل"
 
 #: .\erp\templates\erp\accounts\detail.html:51
 #, fuzzy
@@ -629,7 +629,7 @@ msgstr "ميزان المراجعة"
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Date"
-msgstr "تاريخ التوظيف"
+msgstr "من تاريخ"
 
 #: .\erp\templates\erp\accounts\detail.html:101
 #: .\erp\templates\erp\attendance\list.html:69
@@ -642,7 +642,7 @@ msgstr "تاريخ التوظيف"
 #, fuzzy
 #| msgid "Date"
 msgid "To Date"
-msgstr "التاريخ"
+msgstr "إلى تاريخ"
 
 #: .\erp\templates\erp\accounts\detail.html:106
 #: .\erp\templates\erp\attendance\list.html:85
@@ -800,7 +800,7 @@ msgstr "النوع"
 #, fuzzy
 #| msgid "Description & Notes"
 msgid "Description"
-msgstr "الوصف والملاحظات"
+msgstr "الوصف"
 
 #: .\erp\templates\erp\accounts\detail.html:127
 #: .\erp\templates\erp\inventory\movement_list.html:78
@@ -983,7 +983,7 @@ msgstr "الاسم (بالإنجليزية)"
 #, fuzzy
 #| msgid "Last Name (Arabic)"
 msgid "Name (Arabic)"
-msgstr "اسم العائلة (عربي)"
+msgstr "الاسم (عربي)"
 
 #: .\erp\templates\erp\accounts\form.html:62
 #, fuzzy
@@ -1554,16 +1554,16 @@ msgstr "تفاصيل الفاتورة"
 
 #: .\erp\templates\erp\attendance\device_detail.html:34
 msgid "Kiosk URL"
-msgstr ""
+msgstr "رابط الكشك"
 
 #: .\erp\templates\erp\attendance\device_detail.html:37
 msgid "Open this URL on a TV or tablet to display the attendance QR code:"
-msgstr ""
+msgstr "افتح هذا الرابط على تلفاز أو جهاز لوحي لعرض رمز QR للحضور:"
 
 #: .\erp\templates\erp\attendance\device_detail.html:41
 #: .\erp\templates\erp\employees\invite_links.html:46
 msgid "Copy"
-msgstr ""
+msgstr "نسخ"
 
 #: .\erp\templates\erp\attendance\device_detail.html:44
 #: .\erp\templates\erp\fiscal_years\list.html:38
@@ -1590,7 +1590,7 @@ msgstr "الفترة"
 
 #: .\erp\templates\erp\attendance\device_detail.html:66
 msgid "Work End"
-msgstr ""
+msgstr "نهاية العمل"
 
 #: .\erp\templates\erp\attendance\device_detail.html:70
 #, fuzzy
@@ -1601,16 +1601,16 @@ msgstr "متأخر اليوم"
 #: .\erp\templates\erp\attendance\device_detail.html:71
 #: .\erp\templates\erp\employee_portal\my_attendance.html:129
 msgid "min"
-msgstr ""
+msgstr "دقيقة"
 
 #: .\erp\templates\erp\attendance\device_detail.html:74
 #: .\erp\templates\erp\attendance\device_list.html:71
 msgid "QR Refresh"
-msgstr ""
+msgstr "تحديث رمز QR"
 
 #: .\erp\templates\erp\attendance\device_detail.html:84
 msgid "Device Binding"
-msgstr ""
+msgstr "ربط الجهاز"
 
 #: .\erp\templates\erp\attendance\device_detail.html:87
 #, fuzzy
@@ -1641,7 +1641,7 @@ msgstr "الخدمة"
 
 #: .\erp\templates\erp\attendance\device_detail.html:103
 msgid "Connection Requested"
-msgstr ""
+msgstr "تم طلب الاتصال"
 
 #: .\erp\templates\erp\attendance\device_detail.html:107
 #: .\erp\templates\erp\attendance\device_detail.html:159
@@ -1654,7 +1654,7 @@ msgstr "منذ"
 
 #: .\erp\templates\erp\attendance\device_detail.html:114
 msgid "Browser / User Agent"
-msgstr ""
+msgstr "المتصفح / وكيل المستخدم"
 
 #: .\erp\templates\erp\attendance\device_detail.html:123
 #: .\erp\templates\erp\attendance\device_list.html:100
@@ -1672,7 +1672,7 @@ msgstr ""
 
 #: .\erp\templates\erp\attendance\device_detail.html:131
 msgid "Revoke Binding"
-msgstr ""
+msgstr "إلغاء الربط"
 
 #: .\erp\templates\erp\attendance\device_detail.html:138
 msgid ""
@@ -1696,7 +1696,7 @@ msgstr "آخر تحديث"
 #: .\erp\templates\erp\attendance\device_detail.html:161
 #: .\erp\templates\erp\employees\invite_links.html:68
 msgid "Never"
-msgstr ""
+msgstr "أبداً"
 
 #: .\erp\templates\erp\attendance\device_detail.html:166
 #: .\erp\templates\erp\employee_portal\task_detail.html:66
@@ -1708,7 +1708,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Create"
 msgid "Created"
-msgstr "إنشاء"
+msgstr "تم الإنشاء"
 
 #: .\erp\templates\erp\attendance\device_detail.html:175
 #, fuzzy
@@ -1718,7 +1718,7 @@ msgstr "العودة إلى طلبات الإجازة"
 
 #: .\erp\templates\erp\attendance\device_detail.html:189
 msgid "Copied!"
-msgstr ""
+msgstr "تم النسخ!"
 
 #: .\erp\templates\erp\attendance\device_form.html:14
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:66
@@ -1728,7 +1728,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Back to List"
-msgstr "العودة إلى طلبات الإجازة"
+msgstr "العودة للقائمة"
 
 #: .\erp\templates\erp\attendance\device_list.html:4
 #: .\erp\templates\erp\attendance\device_list.html:5
@@ -1741,7 +1741,7 @@ msgstr "سجلات الحضور"
 
 #: .\erp\templates\erp\attendance\device_list.html:11
 msgid "Manage QR code kiosk devices for employee attendance."
-msgstr ""
+msgstr "إدارة أجهزة كشك رمز QR لحضور الموظفين."
 
 #: .\erp\templates\erp\attendance\device_list.html:14
 #, fuzzy
@@ -1751,7 +1751,7 @@ msgstr "خدمة جديدة"
 
 #: .\erp\templates\erp\attendance\device_list.html:22
 msgid "device(s) waiting for approval."
-msgstr ""
+msgstr "جهاز (أجهزة) في انتظار الموافقة."
 
 #: .\erp\templates\erp\attendance\device_list.html:23
 msgid ""
@@ -1785,11 +1785,11 @@ msgstr "تفاصيل الفاتورة"
 
 #: .\erp\templates\erp\attendance\device_list.html:84
 msgid "IP"
-msgstr ""
+msgstr "عنوان IP"
 
 #: .\erp\templates\erp\attendance\device_list.html:88
 msgid "Browser"
-msgstr ""
+msgstr "المتصفح"
 
 #: .\erp\templates\erp\attendance\device_list.html:92
 #: .\erp\templates\erp\attendance\kiosk.html:151
@@ -1824,7 +1824,7 @@ msgstr "تفاصيل العميل المحتمل"
 
 #: .\erp\templates\erp\attendance\device_list.html:145
 msgid "Revoke device binding"
-msgstr ""
+msgstr "إلغاء ربط الجهاز"
 
 #: .\erp\templates\erp\attendance\device_list.html:159
 #, fuzzy
@@ -1834,7 +1834,7 @@ msgstr "سجلات الحضور"
 
 #: .\erp\templates\erp\attendance\device_list.html:160
 msgid "Add a kiosk device to start QR code attendance tracking."
-msgstr ""
+msgstr "أضف جهاز كشك لبدء تتبع الحضور بواسطة رمز QR."
 
 #: .\erp\templates\erp\attendance\device_list.html:162
 #, fuzzy
@@ -1969,11 +1969,11 @@ msgstr "الحضور والانصراف"
 
 #: .\erp\templates\erp\attendance\kiosk.html:146
 msgid "Scan with your phone to check in / check out"
-msgstr ""
+msgstr "امسح بهاتفك لتسجيل الحضور / الانصراف"
 
 #: .\erp\templates\erp\attendance\kiosk.html:152
 msgid "QR refreshes every"
-msgstr ""
+msgstr "يتم تحديث رمز QR كل"
 
 #: .\erp\templates\erp\attendance\kiosk.html:158
 #, fuzzy
@@ -1983,11 +1983,11 @@ msgstr "سجل التفاعلات"
 
 #: .\erp\templates\erp\attendance\kiosk.html:159
 msgid "Trying to reconnect..."
-msgstr ""
+msgstr "جاري محاولة إعادة الاتصال..."
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:106
 msgid "Waiting for Approval"
-msgstr ""
+msgstr "في انتظار الموافقة"
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:108
 msgid ""
@@ -1997,20 +1997,20 @@ msgstr ""
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:110
 msgid "Once approved, the attendance QR code will appear here automatically."
-msgstr ""
+msgstr "بمجرد الموافقة، سيظهر رمز QR للحضور هنا تلقائيًا."
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:7
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:73
 msgid "Device Not Authorised"
-msgstr ""
+msgstr "الجهاز غير مصرح"
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:75
 msgid "This kiosk has already been bound to a different device."
-msgstr ""
+msgstr "هذا الكشك مرتبط بالفعل بجهاز آخر."
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:77
 msgid "Only the originally approved device can display the attendance QR code."
-msgstr ""
+msgstr "فقط الجهاز المعتمد الأصلي يمكنه عرض رمز QR للحضور."
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:82
 msgid ""
@@ -2238,7 +2238,7 @@ msgstr "آخر تحديث"
 #: .\erp\templates\erp\leave_requests\list.html:164
 #: .\erp\templates\erp\payroll\detail.html:38
 msgid "Approve"
-msgstr "موافقة"
+msgstr "اعتماد"
 
 #: .\erp\templates\erp\audit_log\list.html:90
 msgid "Login"
@@ -2486,21 +2486,21 @@ msgstr "المخزون"
 #: .\erp\templates\erp\inventory\zone_detail.html:11
 #: .\erp\templates\erp\inventory\zone_form.html:12
 msgid "Warehouses"
-msgstr ""
+msgstr "المستودعات"
 
 #: .\erp\templates\erp\base.html:413
 #: .\erp\templates\erp\inventory\stock_levels.html:4
 #: .\erp\templates\erp\inventory\stock_levels.html:5
 #: .\erp\templates\erp\inventory\stock_levels.html:12
 msgid "Stock Levels"
-msgstr ""
+msgstr "مستويات المخزون"
 
 #: .\erp\templates\erp\base.html:417
 #: .\erp\templates\erp\inventory\movement_list.html:4
 #: .\erp\templates\erp\inventory\movement_list.html:5
 #: .\erp\templates\erp\inventory\movement_list.html:12
 msgid "Stock Movements"
-msgstr ""
+msgstr "حركات المخزون"
 
 #: .\erp\templates\erp\base.html:421
 #: .\erp\templates\erp\inventory\grn_detail.html:11
@@ -2508,14 +2508,14 @@ msgstr ""
 #, fuzzy
 #| msgid "Receipt"
 msgid "Goods Receipts"
-msgstr "الإيصال"
+msgstr "استلام البضائع"
 
 #: .\erp\templates\erp\base.html:425
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:71
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfers"
-msgstr "اسم البنك"
+msgstr "التحويلات"
 
 #: .\erp\templates\erp\base.html:429
 #, fuzzy
@@ -2532,7 +2532,7 @@ msgstr "المرفقات"
 #, fuzzy
 #| msgid "Invoice Count"
 msgid "Cycle Counts"
-msgstr "عدد الفواتير"
+msgstr "الجرد الدوري"
 
 #: .\erp\templates\erp\base.html:437
 #: .\erp\templates\erp\inventory\pick_list_detail.html:12
@@ -2543,7 +2543,7 @@ msgstr "عدد الفواتير"
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Pick Lists"
-msgstr "العودة إلى طلبات الإجازة"
+msgstr "قوائم الانتقاء"
 
 #: .\erp\templates\erp\base.html:441
 #: .\erp\templates\erp\inventory\shipment_detail.html:12
@@ -2554,7 +2554,7 @@ msgstr "العودة إلى طلبات الإجازة"
 #, fuzzy
 #| msgid "Departments"
 msgid "Shipments"
-msgstr "الأقسام"
+msgstr "الشحنات"
 
 #: .\erp\templates\erp\base.html:445
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:12
@@ -2565,13 +2565,13 @@ msgstr "الأقسام"
 #, fuzzy
 #| msgid "Reorder Level"
 msgid "Reorder Rules"
-msgstr "مستوى إعادة الطلب"
+msgstr "قواعد إعادة الطلب"
 
 #: .\erp\templates\erp\base.html:449
 #, fuzzy
 #| msgid "Reorder Level"
 msgid "Reorder Alerts"
-msgstr "مستوى إعادة الطلب"
+msgstr "تنبيهات إعادة الطلب"
 
 #: .\erp\templates\erp\base.html:453
 #: .\erp\templates\erp\inventory\uom_form.html:12
@@ -2580,14 +2580,14 @@ msgstr "مستوى إعادة الطلب"
 #, fuzzy
 #| msgid "Unit of Measure"
 msgid "Units of Measure"
-msgstr "وحدة القياس"
+msgstr "وحدات القياس"
 
 #: .\erp\templates\erp\base.html:457
 #: .\erp\templates\erp\inventory\lot_form.html:12
 #: .\erp\templates\erp\inventory\lot_list.html:4
 #: .\erp\templates\erp\inventory\lot_list.html:5
 msgid "Lots / Batches"
-msgstr ""
+msgstr "الدفعات / اللوطات"
 
 #: .\erp\templates\erp\base.html:461
 #: .\erp\templates\erp\inventory\serial_form.html:12
@@ -2596,11 +2596,11 @@ msgstr ""
 #, fuzzy
 #| msgid "Lead Number"
 msgid "Serial Numbers"
-msgstr "رقم العميل المحتمل"
+msgstr "الأرقام التسلسلية"
 
 #: .\erp\templates\erp\base.html:465
 msgid "Valuation Config"
-msgstr ""
+msgstr "إعدادات التقييم"
 
 #: .\erp\templates\erp\base.html:468
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:11
@@ -2614,14 +2614,14 @@ msgstr ""
 #, fuzzy
 #| msgid "Assets"
 msgid "Fixed Assets"
-msgstr "الأصول"
+msgstr "الأصول الثابتة"
 
 #: .\erp\templates\erp\base.html:471
 #: .\erp\templates\erp\fixed_assets\assets\list.html:4
 #, fuzzy
 #| msgid "Assets"
 msgid "Asset Register"
-msgstr "الأصول"
+msgstr "سجل الأصول"
 
 #: .\erp\templates\erp\base.html:475
 #: .\erp\templates\erp\fixed_assets\categories\form.html:10
@@ -2630,7 +2630,7 @@ msgstr "الأصول"
 #, fuzzy
 #| msgid "Product Categories"
 msgid "Asset Categories"
-msgstr "تصنيفات المنتجات"
+msgstr "فئات الأصول"
 
 #: .\erp\templates\erp\base.html:479
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:70
@@ -2638,12 +2638,12 @@ msgstr "تصنيفات المنتجات"
 #, fuzzy
 #| msgid "Description & Notes"
 msgid "Depreciation"
-msgstr "الوصف والملاحظات"
+msgstr "الإهلاك"
 
 #: .\erp\templates\erp\base.html:483
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:10
 msgid "Disposals"
-msgstr ""
+msgstr "التصرفات"
 
 #: .\erp\templates\erp\base.html:487
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:4
@@ -2651,7 +2651,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Asset Transfers"
-msgstr "اسم البنك"
+msgstr "تحويلات الأصول"
 
 #: .\erp\templates\erp\base.html:491
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:72
@@ -2659,13 +2659,13 @@ msgstr "اسم البنك"
 #, fuzzy
 #| msgid "Operations"
 msgid "Revaluations"
-msgstr "العمليات"
+msgstr "إعادة التقييم"
 
 #: .\erp\templates\erp\base.html:495
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:224
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:4
 msgid "Maintenance Logs"
-msgstr ""
+msgstr "سجلات الصيانة"
 
 #: .\erp\templates\erp\base.html:498
 msgid "Operations"
@@ -3326,7 +3326,7 @@ msgstr "لا توجد تفاعلات مسجلة"
 #: .\erp\templates\erp\services\detail.html:23
 #: .\erp\templates\erp\suppliers\form.html:38
 msgid "Basic Information"
-msgstr "المعلومات الأساسية"
+msgstr "معلومات أساسية"
 
 #: .\erp\templates\erp\customers\form.html:19
 #: .\erp\templates\erp\leads\convert_confirm.html:29
@@ -3354,7 +3354,7 @@ msgstr "رقم الضريبة"
 #: .\erp\templates\erp\tasks\form.html:43
 #: .\erp\templates\erp\tasks\list.html:58
 msgid "Assigned To"
-msgstr "مسؤول عن"
+msgstr "معيّن لـ"
 
 #: .\erp\templates\erp\customers\form.html:58
 msgid "Billing Address"
@@ -3394,7 +3394,7 @@ msgstr "الاسم، البريد الإلكتروني، أو المعرف..."
 #: .\erp\templates\erp\inventory\movement_list.html:27
 #: .\erp\templates\erp\suppliers\list.html:18
 msgid "All Types"
-msgstr "جميع الأنواع"
+msgstr "كل الأنواع"
 
 #: .\erp\templates\erp\customers\list.html:33
 #: .\erp\templates\erp\finance\reports.html:282
@@ -3816,7 +3816,7 @@ msgstr "تفاصيل الموظف"
 
 #: .\erp\templates\erp\employee_portal\base.html:60
 msgid "Scan QR"
-msgstr ""
+msgstr "مسح رمز QR"
 
 #: .\erp\templates\erp\employee_portal\base.html:68
 #: .\erp\templates\erp\employee_portal\my_attendance.html:4
@@ -3855,7 +3855,7 @@ msgstr "الربح الشهري"
 #: .\erp\templates\erp\employee_portal\change_password.html:8
 #: .\erp\templates\erp\employee_portal\change_password.html:65
 msgid "Change Password"
-msgstr ""
+msgstr "تغيير كلمة المرور"
 
 #: .\erp\templates\erp\employee_portal\change_password.html:9
 #, fuzzy
@@ -3877,11 +3877,11 @@ msgstr "الرواتب"
 
 #: .\erp\templates\erp\employee_portal\change_password.html:47
 msgid "Minimum 8 characters."
-msgstr ""
+msgstr "الحد الأدنى 8 أحرف."
 
 #: .\erp\templates\erp\employee_portal\change_password.html:52
 msgid "Confirm New Password"
-msgstr ""
+msgstr "تأكيد كلمة المرور الجديدة"
 
 #: .\erp\templates\erp\employee_portal\change_password.html:62
 #: .\erp\templates\erp\employee_portal\leave_form.html:75
@@ -3910,7 +3910,7 @@ msgstr "غائب"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:58
 msgid "Working Days"
-msgstr ""
+msgstr "أيام العمل"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:73
 #, fuzzy
@@ -3927,15 +3927,15 @@ msgstr "دقائق التأخير"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:107
 msgid "You haven't checked in yet today."
-msgstr ""
+msgstr "لم تسجل حضورك اليوم بعد."
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:108
 msgid "Scan the QR code at your workplace to check in."
-msgstr ""
+msgstr "امسح رمز QR في مكان عملك لتسجيل الحضور."
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:110
 msgid "Open QR Scanner"
-msgstr ""
+msgstr "فتح ماسح رمز QR"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:122
 #, fuzzy
@@ -4004,7 +4004,7 @@ msgstr "قيد الانتظار"
 #: .\erp\templates\erp\tasks\detail.html:34
 #: .\erp\templates\erp\tasks\list.html:119
 msgid "Cancelled"
-msgstr "ملغي"
+msgstr "ملغى"
 
 #: .\erp\templates\erp\employee_portal\dashboard.html:196
 #: .\erp\templates\erp\employee_portal\leave_list.html:64
@@ -4120,7 +4120,7 @@ msgstr "المبلغ المخصص"
 
 #: .\erp\templates\erp\employee_portal\leave_list.html:33
 msgid "Used"
-msgstr ""
+msgstr "مستخدم"
 
 #: .\erp\templates\erp\employee_portal\leave_list.html:37
 #, fuzzy
@@ -4143,7 +4143,7 @@ msgstr "لا توجد طلبات إجازة"
 #: .\erp\templates\erp\employee_portal\my_attendance.html:85
 #: .\erp\templates\erp\employee_portal\scan_result.html:60
 msgid "Hours Worked"
-msgstr ""
+msgstr "ساعات العمل"
 
 #: .\erp\templates\erp\employee_portal\my_attendance.html:86
 #: .\erp\templates\erp\employee_portal\scan_result.html:69
@@ -4156,7 +4156,7 @@ msgstr "متأخرة"
 #: .\erp\templates\erp\employee_portal\my_attendance.html:113
 #: .\erp\templates\erp\employee_portal\my_attendance.html:120
 msgid "hrs"
-msgstr ""
+msgstr "ساعات"
 
 #: .\erp\templates\erp\employee_portal\my_attendance.html:142
 #, fuzzy
@@ -4254,7 +4254,7 @@ msgstr "الرواتب"
 
 #: .\erp\templates\erp\employee_portal\payslip_list.html:9
 msgid "View your salary history and payslip details."
-msgstr ""
+msgstr "عرض سجل رواتبك وتفاصيل كشوف المرتبات."
 
 #: .\erp\templates\erp\employee_portal\payslip_list.html:30
 #: .\erp\templates\erp\payroll\list.html:71
@@ -4269,7 +4269,7 @@ msgstr "تفاصيل العميل المحتمل"
 
 #: .\erp\templates\erp\employee_portal\payslip_list.html:60
 msgid "No payslips available yet."
-msgstr ""
+msgstr "لا توجد كشوف مرتبات متاحة بعد."
 
 #: .\erp\templates\erp\employee_portal\profile.html:28
 #: .\erp\templates\erp\employees\approve_form.html:24
@@ -4338,11 +4338,11 @@ msgstr "أدخل معلومات شركتك الأساسية"
 #: .\erp\templates\erp\employee_portal\profile_edit.html:79
 #: .\erp\templates\erp\journal_entries\form.html:192
 msgid "Save Changes"
-msgstr "حفظ التعديلات"
+msgstr "حفظ التغييرات"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:4
 msgid "QR Scanner"
-msgstr ""
+msgstr "ماسح رمز QR"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:44
 #, fuzzy
@@ -4352,19 +4352,19 @@ msgstr "سجل الحضور الأخير"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:45
 msgid "Point your camera at the QR code displayed on the attendance device."
-msgstr ""
+msgstr "وجّه الكاميرا إلى رمز QR المعروض على جهاز الحضور."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:54
 msgid "Starting camera..."
-msgstr ""
+msgstr "جاري تشغيل الكاميرا..."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:57
 msgid "Scanning... hold steady"
-msgstr ""
+msgstr "جاري المسح... ثبّت الجهاز"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:60
 msgid "QR Code detected! Processing..."
-msgstr ""
+msgstr "تم اكتشاف رمز QR! جاري المعالجة..."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:78
 #, fuzzy
@@ -4374,7 +4374,7 @@ msgstr "تاريخ البداية"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:81
 msgid "Stop"
-msgstr ""
+msgstr "إيقاف"
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:88
 msgid ""
@@ -4384,11 +4384,11 @@ msgstr ""
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:138
 msgid "Camera access denied or not available. Please check permissions."
-msgstr ""
+msgstr "تم رفض الوصول إلى الكاميرا أو غير متوفرة. يرجى التحقق من الأذونات."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:151
 msgid "Scanner stopped."
-msgstr ""
+msgstr "تم إيقاف الماسح."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:177
 msgid ""
@@ -4404,7 +4404,7 @@ msgstr "سجلات الحضور"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:5
 msgid "Scan Error"
-msgstr ""
+msgstr "خطأ في المسح"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:21
 #, fuzzy
@@ -4414,11 +4414,11 @@ msgstr "تسجيل دخول"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:22
 msgid "Your check-in has been recorded successfully."
-msgstr ""
+msgstr "تم تسجيل حضورك بنجاح."
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:24
 msgid "Check-in Time"
-msgstr ""
+msgstr "وقت الحضور"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:32
 #, fuzzy
@@ -4434,7 +4434,7 @@ msgstr "تسجيل خروج"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:44
 msgid "Your check-out has been recorded. Have a great rest of day!"
-msgstr ""
+msgstr "تم تسجيل انصرافك. أتمنى لك بقية يوم سعيد!"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:69
 #, fuzzy
@@ -4444,18 +4444,18 @@ msgstr "الساعات"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:87
 msgid "Scan Failed"
-msgstr ""
+msgstr "فشل المسح"
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:89
 msgid "Please try scanning the QR code again or contact your administrator."
-msgstr ""
+msgstr "يرجى محاولة مسح رمز QR مرة أخرى أو الاتصال بالمسؤول."
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:94
 #: .\erp\templates\erp\inventory\valuation_config.html:108
 #, fuzzy
 #| msgid "Dashboard"
 msgid "Back to Dashboard"
-msgstr "لوحة التحكم"
+msgstr "العودة للوحة التحكم"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:10
 #, fuzzy
@@ -4499,7 +4499,7 @@ msgstr "منخفض"
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Completed"
-msgstr "تأكيد الحذف"
+msgstr "مكتمل"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:36
 #: .\erp\templates\erp\employee_portal\task_list.html:28
@@ -4518,7 +4518,7 @@ msgstr "قيد التنفيذ"
 #: .\erp\templates\erp\employee_portal\task_list.html:107
 #: .\erp\templates\erp\employees\detail.html:260
 msgid "On Hold"
-msgstr ""
+msgstr "معلّق"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:42
 #: .\erp\templates\erp\employee_portal\task_list.html:22
@@ -4589,7 +4589,7 @@ msgstr "أضف تعليقاً..."
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:114
 msgid "Write your comment here..."
-msgstr ""
+msgstr "اكتب تعليقك هنا..."
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:117
 #: .\erp\templates\erp\tasks\detail.html:146
@@ -4606,7 +4606,7 @@ msgstr "حالة العميل المحتمل"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:154
 msgid "Info"
-msgstr ""
+msgstr "معلومات"
 
 #: .\erp\templates\erp\employee_portal\task_detail.html:159
 #: .\erp\templates\erp\employee_portal\task_list.html:64
@@ -4651,7 +4651,7 @@ msgstr "تعديل الموظف"
 
 #: .\erp\templates\erp\employees\approve_form.html:5
 msgid "Review Employee Registration"
-msgstr ""
+msgstr "مراجعة تسجيل الموظف"
 
 #: .\erp\templates\erp\employees\approve_form.html:55
 #, fuzzy
@@ -4673,7 +4673,7 @@ msgstr "هاتف جهة اتصال الطوارئ"
 
 #: .\erp\templates\erp\employees\approve_form.html:89
 msgid "Registered via invite link"
-msgstr ""
+msgstr "مسجل عبر رابط الدعوة"
 
 #: .\erp\templates\erp\employees\approve_form.html:102
 #, fuzzy
@@ -4683,7 +4683,7 @@ msgstr "إضافة موظف"
 
 #: .\erp\templates\erp\employees\approve_form.html:103
 msgid "Employee will receive a unique ID and can access the portal."
-msgstr ""
+msgstr "سيحصل الموظف على معرّف فريد ويمكنه الوصول إلى البوابة."
 
 #: .\erp\templates\erp\employees\approve_form.html:118
 #, fuzzy
@@ -4693,11 +4693,11 @@ msgstr "تعديل الموظف"
 
 #: .\erp\templates\erp\employees\approve_form.html:119
 msgid "Employee will be notified that their registration was rejected."
-msgstr ""
+msgstr "سيتم إخطار الموظف بأن تسجيله قد تم رفضه."
 
 #: .\erp\templates\erp\employees\approve_form.html:125
 msgid "Reason for rejection (optional)"
-msgstr ""
+msgstr "سبب الرفض (اختياري)"
 
 #: .\erp\templates\erp\employees\approve_form.html:138
 #, fuzzy
@@ -4750,7 +4750,7 @@ msgstr "المستندات"
 #: .\erp\templates\erp\employees\detail.html:125
 #: .\erp\templates\erp\employees\detail.html:313
 msgid "Portal Permissions"
-msgstr ""
+msgstr "صلاحيات البوابة"
 
 #: .\erp\templates\erp\employees\detail.html:135
 msgid "Recent Attendance Record"
@@ -4804,7 +4804,7 @@ msgstr "لم يتم رفع أي مستندات"
 
 #: .\erp\templates\erp\employees\detail.html:314
 msgid "Control what this employee can access in the Employee Portal"
-msgstr ""
+msgstr "التحكم بما يمكن لهذا الموظف الوصول إليه في بوابة الموظف"
 
 #: .\erp\templates\erp\employees\detail.html:325
 #, fuzzy
@@ -4814,7 +4814,7 @@ msgstr "الحضور والانصراف"
 
 #: .\erp\templates\erp\employees\detail.html:327
 msgid "Allow employee to scan QR code for attendance check-in/out"
-msgstr ""
+msgstr "السماح للموظف بمسح رمز QR لتسجيل الحضور والانصراف"
 
 #: .\erp\templates\erp\employees\detail.html:335
 #, fuzzy
@@ -4824,7 +4824,7 @@ msgstr "تعديل الحضور"
 
 #: .\erp\templates\erp\employees\detail.html:337
 msgid "Allow employee to view their attendance history"
-msgstr ""
+msgstr "السماح للموظف بعرض سجل حضوره"
 
 #: .\erp\templates\erp\employees\detail.html:345
 #, fuzzy
@@ -4834,7 +4834,7 @@ msgstr "طلبات الإجازة"
 
 #: .\erp\templates\erp\employees\detail.html:347
 msgid "Allow employee to view and submit leave requests"
-msgstr ""
+msgstr "السماح للموظف بعرض وتقديم طلبات الإجازة"
 
 #: .\erp\templates\erp\employees\detail.html:355
 #, fuzzy
@@ -4844,11 +4844,11 @@ msgstr "كشف الراتب"
 
 #: .\erp\templates\erp\employees\detail.html:357
 msgid "Allow employee to view their pay slips"
-msgstr ""
+msgstr "السماح للموظف بعرض كشوف مرتباته"
 
 #: .\erp\templates\erp\employees\detail.html:367
 msgid "Allow employee to edit their personal information"
-msgstr ""
+msgstr "السماح للموظف بتعديل معلوماته الشخصية"
 
 #: .\erp\templates\erp\employees\detail.html:375
 #, fuzzy
@@ -4858,11 +4858,11 @@ msgstr "مهمة جديدة"
 
 #: .\erp\templates\erp\employees\detail.html:377
 msgid "Allow employee to view tasks assigned to them"
-msgstr ""
+msgstr "السماح للموظف بعرض المهام المسندة إليه"
 
 #: .\erp\templates\erp\employees\detail.html:383
 msgid "Save Permissions"
-msgstr ""
+msgstr "حفظ الصلاحيات"
 
 #: .\erp\templates\erp\employees\form.html:61
 #: .\erp\templates\erp\employees\form.html:64
@@ -4916,11 +4916,11 @@ msgstr "الصورة الرمزية"
 #: .\erp\templates\erp\employees\invite_link_form.html:4
 #: .\erp\templates\erp\employees\invite_link_form.html:5
 msgid "Generate Invite Link"
-msgstr ""
+msgstr "إنشاء رابط دعوة"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:12
 msgid "Generate Employee Invite Link"
-msgstr ""
+msgstr "إنشاء رابط دعوة موظف"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:20
 msgid ""
@@ -4943,24 +4943,24 @@ msgstr "التسجيل والضريبة"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:35
 msgid "Enter 0 for unlimited registrations."
-msgstr ""
+msgstr "أدخل 0 لتسجيلات غير محدودة."
 
 #: .\erp\templates\erp\employees\invite_link_form.html:39
 msgid "Expires After (days)"
-msgstr ""
+msgstr "تنتهي بعد (أيام)"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:41
 msgid "Leave empty for no expiry"
-msgstr ""
+msgstr "اتركه فارغاً بدون تاريخ انتهاء"
 
 #: .\erp\templates\erp\employees\invite_link_form.html:42
 msgid "Number of days before the link expires. Leave empty for no expiry."
-msgstr ""
+msgstr "عدد الأيام قبل انتهاء صلاحية الرابط. اتركه فارغاً بدون تاريخ انتهاء."
 
 #: .\erp\templates\erp\employees\invite_link_form.html:48
 #: .\erp\templates\erp\employees\invite_links.html:18
 msgid "Generate Link"
-msgstr ""
+msgstr "إنشاء الرابط"
 
 #: .\erp\templates\erp\employees\invite_links.html:4
 #: .\erp\templates\erp\employees\invite_links.html:5
@@ -4972,11 +4972,11 @@ msgstr "تفاصيل الموظف"
 
 #: .\erp\templates\erp\employees\invite_links.html:11
 msgid "Generate unique registration links for new employees."
-msgstr ""
+msgstr "إنشاء روابط تسجيل فريدة للموظفين الجدد."
 
 #: .\erp\templates\erp\employees\invite_links.html:29
 msgid "Link"
-msgstr ""
+msgstr "الرابط"
 
 #: .\erp\templates\erp\employees\invite_links.html:30
 #, fuzzy
@@ -4998,7 +4998,7 @@ msgstr "منتهي الصلاحية"
 
 #: .\erp\templates\erp\employees\invite_links.html:58
 msgid "Unlimited"
-msgstr ""
+msgstr "غير محدود"
 
 #: .\erp\templates\erp\employees\invite_links.html:65
 #: .\erp\templates\erp\inventory\lot_list.html:44
@@ -5007,7 +5007,7 @@ msgstr ""
 #: .\erp\templates\erp\quotes\list.html:82
 #: .\erp\templates\erp\quotes\list.html:96
 msgid "Expired"
-msgstr "منتهي الصلاحية"
+msgstr "منتهي"
 
 #: .\erp\templates\erp\employees\invite_links.html:83
 #, fuzzy
@@ -5044,7 +5044,7 @@ msgstr "جميع الأقسام"
 #: .\erp\templates\erp\supplier_invoices\list.html:12
 #: .\erp\templates\erp\tasks\list.html:14
 msgid "All Statuses"
-msgstr "جميع الحالات"
+msgstr "كل الحالات"
 
 #: .\erp\templates\erp\employees\list.html:42
 msgid "Add Employee"
@@ -5082,15 +5082,15 @@ msgstr "إضافة أول موظف"
 #: .\erp\templates\erp\employees\pending_list.html:5
 #: .\erp\templates\erp\employees\pending_list.html:10
 msgid "Pending Employee Approvals"
-msgstr ""
+msgstr "موافقات الموظفين المعلقة"
 
 #: .\erp\templates\erp\employees\pending_list.html:11
 msgid "Review and approve employee registrations."
-msgstr ""
+msgstr "مراجعة والموافقة على تسجيلات الموظفين."
 
 #: .\erp\templates\erp\employees\pending_list.html:57
 msgid "Registered"
-msgstr ""
+msgstr "مسجّل"
 
 #: .\erp\templates\erp\employees\pending_list.html:64
 #, fuzzy
@@ -5100,11 +5100,11 @@ msgstr "تمت المراجعة بواسطة"
 
 #: .\erp\templates\erp\employees\pending_list.html:75
 msgid "No Pending Approvals"
-msgstr ""
+msgstr "لا توجد موافقات معلقة"
 
 #: .\erp\templates\erp\employees\pending_list.html:76
 msgid "All employee registrations have been reviewed."
-msgstr ""
+msgstr "تمت مراجعة جميع تسجيلات الموظفين."
 
 #: .\erp\templates\erp\expense_categories\form.html:4
 #: .\erp\templates\erp\expense_categories\form.html:5
@@ -5165,7 +5165,7 @@ msgstr "تصنيف المصروفات لتسهيل التتبع والتقاري
 #, fuzzy
 #| msgid "New Customer"
 msgid "New Category"
-msgstr "عميل جديد"
+msgstr "فئة جديدة"
 
 #: .\erp\templates\erp\expense_categories\list.html:76
 #, fuzzy
@@ -5197,7 +5197,7 @@ msgstr "تفاصيل المصروف"
 #: .\erp\templates\erp\services\form.html:26
 #: .\erp\templates\erp\services\list.html:43
 msgid "Category"
-msgstr "التصنيف"
+msgstr "الفئة"
 
 #: .\erp\templates\erp\expenses\form.html:23
 msgid "Expense Date"
@@ -5238,7 +5238,7 @@ msgstr "مبلغ الضريبة"
 #, fuzzy
 #| msgid "Suppliers"
 msgid "Supplier"
-msgstr "الموردون"
+msgstr "المورد"
 
 #: .\erp\templates\erp\expenses\form.html:69
 msgid "Attachments"
@@ -5247,7 +5247,7 @@ msgstr "المرفقات"
 #: .\erp\templates\erp\expenses\form.html:72
 #: .\erp\templates\erp\inventory\movement_list.html:28
 msgid "Receipt"
-msgstr "الإيصال"
+msgstr "استلام"
 
 #: .\erp\templates\erp\expenses\form.html:73
 msgid "You can attach receipts from the expense details page after saving."
@@ -5332,7 +5332,7 @@ msgstr "المبلغ المستحق"
 #: .\erp\templates\erp\payments\list.html:48
 #: .\erp\templates\erp\pdf\invoice_pdf.html:20
 msgid "Invoice"
-msgstr "الفاتورة"
+msgstr "فاتورة"
 
 #: .\erp\templates\erp\finance\aging_payables.html:150
 #: .\erp\templates\erp\finance\aging_receivables.html:151
@@ -5632,7 +5632,7 @@ msgstr "السنة المالية"
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Asset Details"
-msgstr "تفاصيل العميل المحتمل"
+msgstr "تفاصيل الأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:31
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:93
@@ -5642,48 +5642,48 @@ msgstr "تفاصيل العميل المحتمل"
 #, fuzzy
 #| msgid "Value"
 msgid "Book Value"
-msgstr "القيمة"
+msgstr "القيمة الدفترية"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:38
 #: .\erp\templates\erp\fixed_assets\assets\list.html:82
 #, fuzzy
 #| msgid "Submission Date"
 msgid "Acquisition Date"
-msgstr "تاريخ الإرسال"
+msgstr "تاريخ الاقتناء"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:39
 #, fuzzy
 #| msgid "Actions"
 msgid "Acquisition Cost"
-msgstr "الإجراءات"
+msgstr "تكلفة الاقتناء"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:40
 msgid "Accumulated Depreciation"
-msgstr ""
+msgstr "الإهلاك المتراكم"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:41
 msgid "Salvage Value"
-msgstr ""
+msgstr "قيمة الخردة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:42
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:31
 #, fuzzy
 #| msgid "Original Amount"
 msgid "Depreciable Amount"
-msgstr "المبلغ الأصلي"
+msgstr "المبلغ القابل للإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:47
 #: .\erp\templates\erp\fixed_assets\categories\list.html:33
 #, fuzzy
 #| msgid "Payment Method"
 msgid "Depreciation Method"
-msgstr "طريقة الدفع"
+msgstr "طريقة الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:48
 #: .\erp\templates\erp\fixed_assets\categories\list.html:34
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:41
 msgid "Useful Life"
-msgstr ""
+msgstr "العمر الإنتاجي"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:48
 #: .\erp\templates\erp\fixed_assets\categories\list.html:46
@@ -5691,11 +5691,11 @@ msgstr ""
 #, fuzzy
 #| msgid "This Month"
 msgid "months"
-msgstr "هذا الشهر"
+msgstr "أشهر"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:50
 msgid "Serial #"
-msgstr ""
+msgstr "الرقم التسلسلي"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:51
 #: .\erp\templates\erp\inventory\zone_detail.html:80
@@ -5709,31 +5709,31 @@ msgstr "الباركود"
 #, fuzzy
 #| msgid "In Progress"
 msgid "Depreciation Progress"
-msgstr "قيد التنفيذ"
+msgstr "تقدم الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:73
 #: .\erp\templates\erp\fixed_assets\maintenance\form.html:12
 #, fuzzy
 #| msgid "Finance"
 msgid "Maintenance"
-msgstr "المالية"
+msgstr "الصيانة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:81
 msgid "Depreciation Schedule"
-msgstr ""
+msgstr "جدول الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:83
 #, fuzzy
 #| msgid "General Ledger"
 msgid "Generate Schedule"
-msgstr "الدليل المحاسبي"
+msgstr "إنشاء الجدول"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:92
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:45
 #, fuzzy
 #| msgid "Calculated"
 msgid "Accumulated"
-msgstr "محتسب"
+msgstr "المتراكم"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:95
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:190
@@ -5744,7 +5744,7 @@ msgstr "محتسب"
 #, fuzzy
 #| msgid "Journal View"
 msgid "Journal"
-msgstr "القيد المحاسبي"
+msgstr "يومية"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:118
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:72
@@ -5757,62 +5757,62 @@ msgstr "تم الترحيل بواسطة"
 #, fuzzy
 #| msgid "No payments recorded yet"
 msgid "No depreciation schedule generated yet."
-msgstr "لا توجد مدفوعات مسجلة بعد"
+msgstr "لم يتم إنشاء جدول إهلاك بعد."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:136
 #, fuzzy
 #| msgid "Payments"
 msgid "Transfer History"
-msgstr "المدفوعات"
+msgstr "سجل التحويلات"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:138
 #: .\erp\templates\erp\inventory\transfer_list.html:13
 #, fuzzy
 #| msgid "Bank Name"
 msgid "New Transfer"
-msgstr "اسم البنك"
+msgstr "تحويل جديد"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:146
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Dept"
-msgstr "تاريخ التوظيف"
+msgstr "من القسم"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:147
 #, fuzzy
 #| msgid "Date"
 msgid "To Dept"
-msgstr "التاريخ"
+msgstr "إلى القسم"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:148
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:17
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Location"
-msgstr "تاريخ التوظيف"
+msgstr "من الموقع"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:149
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:18
 #, fuzzy
 #| msgid "No notifications"
 msgid "To Location"
-msgstr "لا توجد إشعارات"
+msgstr "إلى الموقع"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:164
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No transfers recorded."
-msgstr "لا توجد تفاعلات مسجلة"
+msgstr "لم يتم تسجيل تحويلات."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:176
 msgid "Revaluation History"
-msgstr ""
+msgstr "سجل إعادة التقييم"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:178
 #, fuzzy
 #| msgid "New Request"
 msgid "New Revaluation"
-msgstr "طلب جديد"
+msgstr "إعادة تقييم جديدة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:186
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:26
@@ -5820,7 +5820,7 @@ msgstr "طلب جديد"
 #, fuzzy
 #| msgid "Value"
 msgid "Old Value"
-msgstr "القيمة"
+msgstr "القيمة القديمة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:187
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:27
@@ -5828,7 +5828,7 @@ msgstr "القيمة"
 #, fuzzy
 #| msgid "Value"
 msgid "New Value"
-msgstr "القيمة"
+msgstr "القيمة الجديدة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:188
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:28
@@ -5836,7 +5836,7 @@ msgstr "القيمة"
 #, fuzzy
 #| msgid "Save Changes"
 msgid "Change"
-msgstr "حفظ التعديلات"
+msgstr "التغيير"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:189
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:37
@@ -5844,27 +5844,27 @@ msgstr "حفظ التعديلات"
 #, fuzzy
 #| msgid "Approve"
 msgid "Appraiser"
-msgstr "موافقة"
+msgstr "المقيّم"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:207
 msgid "View / Process"
-msgstr ""
+msgstr "عرض / معالجة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:212
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No revaluations recorded."
-msgstr "لا توجد تفاعلات مسجلة"
+msgstr "لم يتم تسجيل إعادة تقييم."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:226
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:297
 msgid "Log Maintenance"
-msgstr ""
+msgstr "تسجيل صيانة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:235
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:45
 msgid "Scheduled"
-msgstr ""
+msgstr "مجدول"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:237
 #: .\erp\templates\erp\fixed_assets\assets\list.html:83
@@ -5880,19 +5880,19 @@ msgstr "التكلفة"
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No maintenance logs recorded."
-msgstr "لا توجد تفاعلات مسجلة"
+msgstr "لم يتم تسجيل سجلات صيانة."
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:277
 #, fuzzy
 #| msgid "New Account"
 msgid "Edit Asset"
-msgstr "حساب جديد"
+msgstr "تعديل الأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:282
 #, fuzzy
 #| msgid "Active Tasks"
 msgid "Activate Asset"
-msgstr "المهام النشطة"
+msgstr "تفعيل الأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:287
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:4
@@ -5900,46 +5900,46 @@ msgstr "المهام النشطة"
 #, fuzzy
 #| msgid "Late Deduction"
 msgid "Generate Depreciation"
-msgstr "خصم التأخير"
+msgstr "إنشاء الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:288
 #, fuzzy
 #| msgid "Total Assets"
 msgid "Transfer Asset"
-msgstr "إجمالي الأصول"
+msgstr "نقل الأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:289
 #, fuzzy
 #| msgid "Total Assets"
 msgid "Revalue Asset"
-msgstr "إجمالي الأصول"
+msgstr "إعادة تقييم الأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:293
 msgid "Dispose Asset"
-msgstr ""
+msgstr "التصرف بالأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:306
 #: .\erp\templates\erp\fixed_assets\assets\form.html:92
 #, fuzzy
 #| msgid "Assigned To"
 msgid "Location & Assignment"
-msgstr "مسؤول عن"
+msgstr "الموقع والتعيين"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:310
 #, fuzzy
 #| msgid "Actions"
 msgid "Location"
-msgstr "الإجراءات"
+msgstr "الموقع"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:311
 msgid "Custodian"
-msgstr ""
+msgstr "الحارس"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:322
 #, fuzzy
 #| msgid "Quote Details"
 msgid "Acquisition Details"
-msgstr "تفاصيل عرض السعر"
+msgstr "تفاصيل الاقتناء"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:330
 #: .\erp\templates\erp\inventory\grn_detail.html:31
@@ -5950,20 +5950,20 @@ msgstr "تفاصيل عرض السعر"
 #: .\erp\templates\erp\supplier_invoices\detail.html:61
 #: .\erp\templates\erp\supplier_invoices\form.html:31
 msgid "Purchase Order"
-msgstr "أمر شراء"
+msgstr "أمر الشراء"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:335
 #, fuzzy
 #| msgid "Invoice"
 msgid "Invoice Ref"
-msgstr "الفاتورة"
+msgstr "مرجع الفاتورة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:343
 #: .\erp\templates\erp\fixed_assets\categories\form.html:58
 #, fuzzy
 #| msgid "Amounts"
 msgid "GL Accounts"
-msgstr "المبالغ"
+msgstr "حسابات دفتر الأستاذ"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:346
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:27
@@ -5975,22 +5975,22 @@ msgstr "المبالغ"
 #, fuzzy
 #| msgid "Assets"
 msgid "Asset"
-msgstr "الأصول"
+msgstr "الأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:347
 #, fuzzy
 #| msgid "New Expense"
 msgid "Depr. Expense"
-msgstr "مصروف جديد"
+msgstr "مصروف الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:348
 msgid "Accum. Depr."
-msgstr ""
+msgstr "الإهلاك المتراكم"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:356
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:4
 msgid "Disposal"
-msgstr ""
+msgstr "التصرف"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:361
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:27
@@ -5998,38 +5998,38 @@ msgstr ""
 #, fuzzy
 #| msgid "Total Amount"
 msgid "Sale Amount"
-msgstr "المبلغ الإجمالي"
+msgstr "مبلغ البيع"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:363
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:18
 msgid "Gain/Loss"
-msgstr ""
+msgstr "ربح/خسارة"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:364
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:38
 msgid "Buyer"
-msgstr ""
+msgstr "المشتري"
 
 #: .\erp\templates\erp\fixed_assets\assets\detail.html:372
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:59
 msgid "Process Disposal (Create Journal)"
-msgstr ""
+msgstr "معالجة التصرف (إنشاء قيد)"
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:60
 #, fuzzy
 #| msgid "Actions"
 msgid "Acquisition"
-msgstr "الإجراءات"
+msgstr "اقتناء"
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:135
 #, fuzzy
 #| msgid "Quote Details"
 msgid "GL Account Overrides"
-msgstr "تفاصيل عرض السعر"
+msgstr "تجاوزات حساب دفتر الأستاذ"
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:136
 msgid "Leave blank to use category defaults."
-msgstr ""
+msgstr "اتركه فارغاً لاستخدام الإعدادات الافتراضية للفئة."
 
 #: .\erp\templates\erp\fixed_assets\assets\form.html:163
 #: .\erp\templates\erp\fixed_assets\categories\form.html:104
@@ -6055,233 +6055,233 @@ msgstr "حفظ"
 #, fuzzy
 #| msgid "Total Records"
 msgid "Total Acquisition Cost"
-msgstr "إجمالي السجلات"
+msgstr "إجمالي تكلفة الاقتناء"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:21
 #, fuzzy
 #| msgid "Total Payables"
 msgid "Total Book Value"
-msgstr "إجمالي المستحقات عليك"
+msgstr "إجمالي القيمة الدفترية"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:29
 #, fuzzy
 #| msgid "Total Records"
 msgid "Total Depreciation"
-msgstr "إجمالي السجلات"
+msgstr "إجمالي الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:42
 msgid "Asset #, name, serial..."
-msgstr ""
+msgstr "رقم الأصل، الاسم، التسلسلي..."
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:67
 #, fuzzy
 #| msgid "Assets"
 msgid "New Asset"
-msgstr "الأصول"
+msgstr "أصل جديد"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:79
 #, fuzzy
 #| msgid "Assets"
 msgid "Asset #"
-msgstr "الأصول"
+msgstr "رقم الأصل"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:118
 #, fuzzy
 #| msgid "No assets found"
 msgid "No fixed assets found"
-msgstr "لا توجد أصول"
+msgstr "لم يتم العثور على أصول ثابتة"
 
 #: .\erp\templates\erp\fixed_assets\assets\list.html:119
 #, fuzzy
 #| msgid "Record Payment"
 msgid "Register First Asset"
-msgstr "تسجيل دفعة"
+msgstr "تسجيل أول أصل"
 
 #: .\erp\templates\erp\fixed_assets\categories\form.html:42
 msgid "Default Depreciation Settings"
-msgstr ""
+msgstr "إعدادات الإهلاك الافتراضية"
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:13
 #, fuzzy
 #| msgid "Name, Email, or ID..."
 msgid "Name or code..."
-msgstr "الاسم، البريد الإلكتروني، أو المعرف..."
+msgstr "الاسم أو الرمز..."
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:35
 #, python-format
 msgid "Salvage %%"
-msgstr ""
+msgstr "نسبة الخردة %%"
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:66
 #, fuzzy
 #| msgid "No expenses found"
 msgid "No asset categories found"
-msgstr "لا توجد مصروفات"
+msgstr "لم يتم العثور على فئات أصول"
 
 #: .\erp\templates\erp\fixed_assets\categories\list.html:67
 #, fuzzy
 #| msgid "Create Entry"
 msgid "Create First Category"
-msgstr "إنشاء القيد"
+msgstr "إنشاء أول فئة"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:5
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:20
 msgid "Generate Depreciation Schedule"
-msgstr ""
+msgstr "إنشاء جدول الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:37
 #, fuzzy
 #| msgid "Payment Method"
 msgid "Method"
-msgstr "طريقة الدفع"
+msgstr "الطريقة"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\generate.html:61
 #, fuzzy
 #| msgid "General Ledger"
 msgid "Generate"
-msgstr "الدليل المحاسبي"
+msgstr "إنشاء"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:4
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:5
 msgid "Depreciation Schedules"
-msgstr ""
+msgstr "جداول الإهلاك"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:29
 msgid "Post All Up To Date"
-msgstr ""
+msgstr "ترحيل الكل حتى تاريخه"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:46
 msgid "Book Value After"
-msgstr ""
+msgstr "القيمة الدفترية بعد"
 
 #: .\erp\templates\erp\fixed_assets\depreciation\list.html:81
 #, fuzzy
 #| msgid "No expenses found"
 msgid "No depreciation schedules found"
-msgstr "لا توجد مصروفات"
+msgstr "لم يتم العثور على جداول إهلاك"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:5
 #, fuzzy
 #| msgid "Customer Details"
 msgid "Disposal Details"
-msgstr "تفاصيل العميل"
+msgstr "تفاصيل التصرف"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:19
 msgid "Disposal of"
-msgstr ""
+msgstr "تصرف بـ"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:26
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:14
 #, fuzzy
 #| msgid "Date"
 msgid "Disposal Date"
-msgstr "التاريخ"
+msgstr "تاريخ التصرف"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:28
 msgid "Book Value at Disposal"
-msgstr ""
+msgstr "القيمة الدفترية عند التصرف"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:29
 msgid "Gain / Loss"
-msgstr ""
+msgstr "ربح / خسارة"
 
 #: .\erp\templates\erp\fixed_assets\disposals\detail.html:55
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:54
 #, fuzzy
 #| msgid "View All"
 msgid "View Asset"
-msgstr "عرض الكل"
+msgstr "عرض الأصل"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:12
 msgid "Dispose"
-msgstr ""
+msgstr "تصرف"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:24
 #: .\erp\templates\erp\fixed_assets\revaluations\form.html:24
 #, fuzzy
 #| msgid "Trial Balance"
 msgid "Current Book Value:"
-msgstr "ميزان المراجعة"
+msgstr "القيمة الدفترية الحالية:"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:25
 msgid "Accumulated Depreciation:"
-msgstr ""
+msgstr "الإهلاك المتراكم:"
 
 #: .\erp\templates\erp\fixed_assets\disposals\form.html:37
 #, fuzzy
 #| msgid "Create Fiscal Year"
 msgid "Create Disposal"
-msgstr "إنشاء سنة مالية"
+msgstr "إنشاء تصرف"
 
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:4
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:5
 msgid "Asset Disposals"
-msgstr ""
+msgstr "تصرفات الأصول"
 
 #: .\erp\templates\erp\fixed_assets\disposals\list.html:49
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No asset disposals recorded"
-msgstr "لا توجد تفاعلات مسجلة"
+msgstr "لم يتم تسجيل تصرفات أصول"
 
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:5
 #, fuzzy
 #| msgid "Attendance Records"
 msgid "Asset Maintenance Logs"
-msgstr "سجلات الحضور"
+msgstr "سجلات صيانة الأصول"
 
 #: .\erp\templates\erp\fixed_assets\maintenance\list.html:75
 #, fuzzy
 #| msgid "No attendance records found"
 msgid "No maintenance logs found"
-msgstr "لا توجد سجلات حضور"
+msgstr "لم يتم العثور على سجلات صيانة"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:4
 msgid "Revaluation"
-msgstr ""
+msgstr "إعادة التقييم"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:5
 #, fuzzy
 #| msgid "Campaigns"
 msgid "Revaluation Details"
-msgstr "الحملات التسويقية"
+msgstr "تفاصيل إعادة التقييم"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:19
 msgid "Revaluation of"
-msgstr ""
+msgstr "إعادة تقييم"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:25
 #, fuzzy
 #| msgid "Review Date"
 msgid "Revaluation Date"
-msgstr "تاريخ المراجعة"
+msgstr "تاريخ إعادة التقييم"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\detail.html:58
 msgid "Process Revaluation (Create Journal)"
-msgstr ""
+msgstr "معالجة إعادة التقييم (إنشاء قيد)"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\form.html:12
 #, fuzzy
 #| msgid "Value"
 msgid "Revalue"
-msgstr "القيمة"
+msgstr "إعادة تقييم"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\form.html:36
 #, fuzzy
 #| msgid "Campaigns"
 msgid "Create Revaluation"
-msgstr "الحملات التسويقية"
+msgstr "إنشاء إعادة تقييم"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\list.html:4
 #: .\erp\templates\erp\fixed_assets\revaluations\list.html:5
 msgid "Asset Revaluations"
-msgstr ""
+msgstr "إعادة تقييم الأصول"
 
 #: .\erp\templates\erp\fixed_assets\revaluations\list.html:49
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No revaluations recorded"
-msgstr "لا توجد تفاعلات مسجلة"
+msgstr "لم يتم تسجيل إعادة تقييم"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:12
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:40
@@ -6289,43 +6289,43 @@ msgstr "لا توجد تفاعلات مسجلة"
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfer"
-msgstr "اسم البنك"
+msgstr "تحويل"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:24
 #, fuzzy
 #| msgid "Department"
 msgid "Current Department:"
-msgstr "القسم"
+msgstr "القسم الحالي:"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:25
 #, fuzzy
 #| msgid "Current Status"
 msgid "Current Location:"
-msgstr "الحالة الحالية"
+msgstr "الموقع الحالي:"
 
 #: .\erp\templates\erp\fixed_assets\transfers\form.html:26
 #, fuzzy
 #| msgid "Current Status"
 msgid "Current Custodian:"
-msgstr "الحالة الحالية"
+msgstr "الحارس الحالي:"
 
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:15
 #, fuzzy
 #| msgid "Department"
 msgid "From Department"
-msgstr "القسم"
+msgstr "من القسم"
 
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:16
 #, fuzzy
 #| msgid "Department"
 msgid "To Department"
-msgstr "القسم"
+msgstr "إلى القسم"
 
 #: .\erp\templates\erp\fixed_assets\transfers\list.html:37
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No asset transfers recorded"
-msgstr "لا توجد تفاعلات مسجلة"
+msgstr "لم يتم تسجيل تحويلات أصول"
 
 #: .\erp\templates\erp\form_base.html:5 .\erp\templates\erp\form_base.html:92
 msgid "ERP System"
@@ -6334,13 +6334,13 @@ msgstr "نظام ERP"
 #: .\erp\templates\erp\inventory\adjustment_detail.html:4
 #: .\erp\templates\erp\inventory\movement_list.html:32
 msgid "Adjustment"
-msgstr ""
+msgstr "تسوية"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:5
 #, fuzzy
 #| msgid "Customer Details"
 msgid "Stock Adjustment Details"
-msgstr "تفاصيل العميل"
+msgstr "تفاصيل تسوية المخزون"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:11
 #: .\erp\templates\erp\inventory\adjustment_form.html:12
@@ -6349,7 +6349,7 @@ msgstr "تفاصيل العميل"
 #, fuzzy
 #| msgid "No documents"
 msgid "Stock Adjustments"
-msgstr "لا توجد مستندات"
+msgstr "تسويات المخزون"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:31
 #: .\erp\templates\erp\inventory\adjustment_form.html:60
@@ -6378,23 +6378,23 @@ msgstr "لا توجد مستندات"
 #: .\erp\templates\erp\inventory\warehouse_detail.html:4
 #: .\erp\templates\erp\inventory\zone_detail.html:43
 msgid "Warehouse"
-msgstr ""
+msgstr "مستودع"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:46
 #: .\erp\templates\erp\purchase_orders\detail.html:55
 msgid "Approved By"
-msgstr "معتمد بواسطة"
+msgstr "تمت الموافقة بواسطة"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:64
 msgid "Approve this adjustment?"
-msgstr ""
+msgstr "اعتماد هذه التسوية؟"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:79
 #: .\erp\templates\erp\inventory\adjustment_form.html:83
 #, fuzzy
 #| msgid "Quote Lines"
 msgid "Adjustment Lines"
-msgstr "بنود عرض السعر"
+msgstr "بنود التسوية"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:85
 #: .\erp\templates\erp\inventory\adjustment_form.html:105
@@ -6424,7 +6424,7 @@ msgstr "بنود عرض السعر"
 #, fuzzy
 #| msgid "Products"
 msgid "Product"
-msgstr "المنتجات"
+msgstr "المنتج"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:86
 #: .\erp\templates\erp\inventory\adjustment_form.html:106
@@ -6457,7 +6457,7 @@ msgstr "الكمية"
 #, fuzzy
 #| msgid "Cost"
 msgid "Unit Cost"
-msgstr "التكلفة"
+msgstr "تكلفة الوحدة"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:88
 #: .\erp\templates\erp\inventory\adjustment_form.html:108
@@ -6470,7 +6470,7 @@ msgstr "التكلفة"
 #: .\erp\templates\erp\inventory\stock_levels.html:94
 #: .\erp\templates\erp\inventory\zone_form.html:87
 msgid "Bin"
-msgstr ""
+msgstr "حاوية"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:89
 #: .\erp\templates\erp\inventory\adjustment_form.html:109
@@ -6491,7 +6491,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Low"
 msgid "Lot"
-msgstr "منخفض"
+msgstr "دفعة"
 
 #: .\erp\templates\erp\inventory\adjustment_detail.html:108
 #: .\erp\templates\erp\inventory\grn_detail.html:111
@@ -6499,12 +6499,12 @@ msgstr "منخفض"
 #: .\erp\templates\erp\purchase_orders\detail.html:97
 #: .\erp\templates\erp\quotes\detail.html:87
 msgid "No lines found"
-msgstr "لا توجد بنود"
+msgstr "لم يتم العثور على بنود"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:4
 #: .\erp\templates\erp\inventory\adjustment_form.html:5
 msgid "New Stock Adjustment"
-msgstr ""
+msgstr "تسوية مخزون جديدة"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:22
 #: .\erp\templates\erp\inventory\cycle_count_form.html:22
@@ -6529,14 +6529,14 @@ msgstr "يرجى تصحيح الأخطاء التالية:"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:40
 msgid "Adjustment Data"
-msgstr ""
+msgstr "بيانات التسوية"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:45
 #: .\erp\templates\erp\inventory\adjustment_list.html:22
 #, fuzzy
 #| msgid "Payment Number"
 msgid "Adjustment Number"
-msgstr "رقم الدفعة"
+msgstr "رقم التسوية"
 
 #: .\erp\templates\erp\inventory\adjustment_form.html:85
 #: .\erp\templates\erp\inventory\cycle_count_form.html:80
@@ -6564,32 +6564,32 @@ msgstr "بند"
 
 #: .\erp\templates\erp\inventory\adjustment_list.html:10
 msgid "Record inventory adjustments, gains and losses"
-msgstr ""
+msgstr "تسجيل تسويات المخزون، الأرباح والخسائر"
 
 #: .\erp\templates\erp\inventory\adjustment_list.html:13
 #, fuzzy
 #| msgid "New Customer"
 msgid "New Adjustment"
-msgstr "عميل جديد"
+msgstr "تسوية جديدة"
 
 #: .\erp\templates\erp\inventory\adjustment_list.html:62
 #, fuzzy
 #| msgid "No payments found"
 msgid "No adjustments found"
-msgstr "لا توجد مدفوعات"
+msgstr "لم يتم العثور على تسويات"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:22
 #, fuzzy
 #| msgid "Contact Information"
 msgid "Count Info"
-msgstr "معلومات الاتصال"
+msgstr "معلومات الجرد"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:27
 #: .\erp\templates\erp\inventory\cycle_count_list.html:73
 #, fuzzy
 #| msgid "Country"
 msgid "Count #"
-msgstr "الدولة"
+msgstr "رقم الجرد"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:36
 #: .\erp\templates\erp\inventory\cycle_count_form.html:64
@@ -6598,7 +6598,7 @@ msgstr "الدولة"
 #: .\erp\templates\erp\inventory\zone_detail.html:4
 #: .\erp\templates\erp\inventory\zone_detail.html:13
 msgid "Zone"
-msgstr ""
+msgstr "منطقة"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:39
 #: .\erp\templates\erp\inventory\cycle_count_form.html:68
@@ -6606,44 +6606,44 @@ msgstr ""
 #, fuzzy
 #| msgid "Country"
 msgid "Counted By"
-msgstr "الدولة"
+msgstr "تم العد بواسطة"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:60
 msgid "Complete this cycle count?"
-msgstr ""
+msgstr "إكمال هذا الجرد؟"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:61
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Complete"
-msgstr "تأكيد الحذف"
+msgstr "إكمال"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:76
 #: .\erp\templates\erp\inventory\cycle_count_form.html:78
 #, fuzzy
 #| msgid "Journal Lines"
 msgid "Count Lines"
-msgstr "سطور القيد"
+msgstr "بنود الجرد"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:87
 #: .\erp\templates\erp\inventory\cycle_count_form.html:103
 #, fuzzy
 #| msgid "System Setup"
 msgid "System Qty"
-msgstr "إعداد النظام"
+msgstr "كمية النظام"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:88
 #: .\erp\templates\erp\inventory\cycle_count_form.html:104
 #, fuzzy
 #| msgid "Country"
 msgid "Counted Qty"
-msgstr "الدولة"
+msgstr "الكمية المعدودة"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:89
 #, fuzzy
 #| msgid "Balance"
 msgid "Variance"
-msgstr "الرصيد"
+msgstr "الفرق"
 
 #: .\erp\templates\erp\inventory\cycle_count_detail.html:111
 #: .\erp\templates\erp\inventory\pick_list_detail.html:107
@@ -6651,7 +6651,7 @@ msgstr "الرصيد"
 #, fuzzy
 #| msgid "No interactions recorded"
 msgid "No lines recorded."
-msgstr "لا توجد تفاعلات مسجلة"
+msgstr "لم يتم تسجيل بنود."
 
 #: .\erp\templates\erp\inventory\cycle_count_form.html:4
 #: .\erp\templates\erp\inventory\cycle_count_form.html:5
@@ -6659,24 +6659,24 @@ msgstr "لا توجد تفاعلات مسجلة"
 #, fuzzy
 #| msgid "New Account"
 msgid "New Cycle Count"
-msgstr "حساب جديد"
+msgstr "جرد دوري جديد"
 
 #: .\erp\templates\erp\inventory\cycle_count_form.html:40
 #, fuzzy
 #| msgid "Quote Details"
 msgid "Count Data"
-msgstr "تفاصيل عرض السعر"
+msgstr "بيانات الجرد"
 
 #: .\erp\templates\erp\inventory\cycle_count_form.html:45
 #, fuzzy
 #| msgid "Account Number"
 msgid "Count Number"
-msgstr "رقم الحساب"
+msgstr "رقم الجرد"
 
 #: .\erp\templates\erp\inventory\cycle_count_list.html:43
 #: .\erp\templates\erp\inventory\cycle_count_list.html:54
 msgid "Planned"
-msgstr ""
+msgstr "مخطط"
 
 #: .\erp\templates\erp\inventory\cycle_count_list.html:51
 #, fuzzy
@@ -6688,15 +6688,15 @@ msgstr "البحث في الطلبات..."
 #, fuzzy
 #| msgid "No accounts found yet"
 msgid "No cycle counts found."
-msgstr "لا توجد حسابات حتى الآن"
+msgstr "لم يتم العثور على عمليات جرد."
 
 #: .\erp\templates\erp\inventory\grn_detail.html:4
 msgid "GRN"
-msgstr ""
+msgstr "إذن استلام"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:5
 msgid "Goods Receipt Note"
-msgstr ""
+msgstr "إذن استلام بضائع"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:39
 #: .\erp\templates\erp\inventory\grn_form.html:65
@@ -6704,38 +6704,38 @@ msgstr ""
 #, fuzzy
 #| msgid "Receipt"
 msgid "Receipt Date"
-msgstr "الإيصال"
+msgstr "تاريخ الاستلام"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:56
 msgid "Confirm this GRN?"
-msgstr ""
+msgstr "تأكيد هذا الإذن؟"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:57
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Confirm Receipt"
-msgstr "تأكيد الحذف"
+msgstr "تأكيد الاستلام"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:72
 #: .\erp\templates\erp\inventory\grn_form.html:84
 #, fuzzy
 #| msgid "Recent Leads"
 msgid "Receipt Lines"
-msgstr "أحدث العملاء المحتملين"
+msgstr "بنود الاستلام"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:79
 #: .\erp\templates\erp\inventory\grn_form.html:107
 #, fuzzy
 #| msgid "Order Date"
 msgid "Ordered"
-msgstr "تاريخ الطلب"
+msgstr "مطلوب"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:80
 #: .\erp\templates\erp\inventory\grn_form.html:108
 #, fuzzy
 #| msgid "Receipt"
 msgid "Received"
-msgstr "الإيصال"
+msgstr "تم الاستلام"
 
 #: .\erp\templates\erp\inventory\grn_detail.html:81
 #: .\erp\templates\erp\inventory\grn_form.html:109
@@ -6747,35 +6747,35 @@ msgstr "مقبول"
 #: .\erp\templates\erp\inventory\grn_form.html:4
 #: .\erp\templates\erp\inventory\grn_form.html:5
 msgid "New Goods Receipt"
-msgstr ""
+msgstr "إذن استلام جديد"
 
 #: .\erp\templates\erp\inventory\grn_form.html:40
 msgid "GRN Data"
-msgstr ""
+msgstr "بيانات إذن الاستلام"
 
 #: .\erp\templates\erp\inventory\grn_form.html:45
 #: .\erp\templates\erp\inventory\grn_list.html:49
 #, fuzzy
 #| msgid "PO Number"
 msgid "GRN Number"
-msgstr "رقم أمر الشراء"
+msgstr "رقم إذن الاستلام"
 
 #: .\erp\templates\erp\inventory\grn_list.html:4
 #: .\erp\templates\erp\inventory\grn_list.html:5
 #, fuzzy
 #| msgid "Recent Quotes"
 msgid "Goods Receipt Notes"
-msgstr "آخر عروض الأسعار"
+msgstr "إذونات استلام البضائع"
 
 #: .\erp\templates\erp\inventory\grn_list.html:10
 #, fuzzy
 #| msgid "Purchase Orders"
 msgid "Receive goods against purchase orders"
-msgstr "أوامر الشراء"
+msgstr "استلام البضائع مقابل أوامر الشراء"
 
 #: .\erp\templates\erp\inventory\grn_list.html:13
 msgid "New GRN"
-msgstr ""
+msgstr "إذن استلام جديد"
 
 #: .\erp\templates\erp\inventory\grn_list.html:23
 #, fuzzy
@@ -6787,69 +6787,69 @@ msgstr "لا توجد بنود"
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Confirmed"
-msgstr "تأكيد الحذف"
+msgstr "مؤكد"
 
 #: .\erp\templates\erp\inventory\grn_list.html:93
 #, fuzzy
 #| msgid "No quotes found"
 msgid "No goods receipts found"
-msgstr "لا توجد عروض أسعار"
+msgstr "لم يتم العثور على إذونات استلام"
 
 #: .\erp\templates\erp\inventory\lot_form.html:4
 #: .\erp\templates\erp\inventory\lot_form.html:5
 msgid "New Lot / Batch"
-msgstr ""
+msgstr "دفعة جديدة"
 
 #: .\erp\templates\erp\inventory\lot_form.html:35
 msgid "Lot / Batch Data"
-msgstr ""
+msgstr "بيانات الدفعة"
 
 #: .\erp\templates\erp\inventory\lot_form.html:45
 #: .\erp\templates\erp\inventory\lot_list.html:40
 #, fuzzy
 #| msgid "Quote Number"
 msgid "Lot Number"
-msgstr "رقم عرض السعر"
+msgstr "رقم الدفعة"
 
 #: .\erp\templates\erp\inventory\lot_form.html:50
 #: .\erp\templates\erp\inventory\lot_list.html:42
 #, fuzzy
 #| msgid "Quote Date"
 msgid "Manufacture Date"
-msgstr "تاريخ العرض"
+msgstr "تاريخ التصنيع"
 
 #: .\erp\templates\erp\inventory\lot_form.html:54
 #: .\erp\templates\erp\inventory\lot_list.html:43
 #, fuzzy
 #| msgid "Hire Date"
 msgid "Expiry Date"
-msgstr "تاريخ التوظيف"
+msgstr "تاريخ الانتهاء"
 
 #: .\erp\templates\erp\inventory\lot_list.html:10
 msgid "Manage product lots and batches for traceability"
-msgstr ""
+msgstr "إدارة دفعات المنتجات للتتبع"
 
 #: .\erp\templates\erp\inventory\lot_list.html:13
 #, fuzzy
 #| msgid "New Lead"
 msgid "New Lot"
-msgstr "عميل محتمل"
+msgstr "دفعة جديدة"
 
 #: .\erp\templates\erp\inventory\lot_list.html:23
 msgid "Lot number, product..."
-msgstr ""
+msgstr "رقم الدفعة، المنتج..."
 
 #: .\erp\templates\erp\inventory\lot_list.html:60
 #, fuzzy
 #| msgid "Valid Until"
 msgid "Valid"
-msgstr "صالح حتى"
+msgstr "صالح"
 
 #: .\erp\templates\erp\inventory\lot_list.html:79
 #, fuzzy
 #| msgid "No quotes found"
 msgid "No lots found"
-msgstr "لا توجد عروض أسعار"
+msgstr "لم يتم العثور على دفعات"
 
 #: .\erp\templates\erp\inventory\movement_list.html:22
 #, fuzzy
@@ -6861,27 +6861,27 @@ msgstr "المنتجات والخدمات"
 #, fuzzy
 #| msgid "Payment Type"
 msgid "Movement Type"
-msgstr "نوع الدفعة"
+msgstr "نوع الحركة"
 
 #: .\erp\templates\erp\inventory\movement_list.html:29
 msgid "Issue"
-msgstr ""
+msgstr "إصدار"
 
 #: .\erp\templates\erp\inventory\movement_list.html:30
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfer In"
-msgstr "اسم البنك"
+msgstr "تحويل وارد"
 
 #: .\erp\templates\erp\inventory\movement_list.html:31
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Transfer Out"
-msgstr "اسم البنك"
+msgstr "تحويل صادر"
 
 #: .\erp\templates\erp\inventory\movement_list.html:33
 msgid "Return"
-msgstr ""
+msgstr "إرجاع"
 
 #: .\erp\templates\erp\inventory\movement_list.html:39
 #: .\erp\templates\erp\inventory\stock_levels.html:59
@@ -6889,51 +6889,51 @@ msgstr ""
 #, fuzzy
 #| msgid "All Statuses"
 msgid "All Warehouses"
-msgstr "جميع الحالات"
+msgstr "كل المستودعات"
 
 #: .\erp\templates\erp\inventory\movement_list.html:63
 #, fuzzy
 #| msgid "General Ledger"
 msgid "Movement Ledger"
-msgstr "الدليل المحاسبي"
+msgstr "دفتر الحركات"
 
 #: .\erp\templates\erp\inventory\movement_list.html:79
 #, fuzzy
 #| msgid "Approved By"
 msgid "Performed By"
-msgstr "معتمد بواسطة"
+msgstr "تم بواسطة"
 
 #: .\erp\templates\erp\inventory\movement_list.html:102
 #, fuzzy
 #| msgid "No customers found"
 msgid "No stock movements found."
-msgstr "لا يوجد عملاء"
+msgstr "لم يتم العثور على حركات مخزون."
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:22
 msgid "Pick List Info"
-msgstr ""
+msgstr "معلومات قائمة الانتقاء"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:27
 #: .\erp\templates\erp\inventory\pick_list_list.html:73
 msgid "Pick #"
-msgstr ""
+msgstr "رقم الانتقاء"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:64
 msgid "Mark this pick list as picked?"
-msgstr ""
+msgstr "تحديد قائمة الانتقاء هذه كمكتملة؟"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:65
 #, fuzzy
 #| msgid "Confirm Delete"
 msgid "Complete Picking"
-msgstr "تأكيد الحذف"
+msgstr "إكمال الانتقاء"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:80
 #: .\erp\templates\erp\inventory\pick_list_form.html:78
 #, fuzzy
 #| msgid "Invoice Lines"
 msgid "Pick Lines"
-msgstr "بنود الفاتورة"
+msgstr "بنود الانتقاء"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:89
 #: .\erp\templates\erp\inventory\pick_list_form.html:101
@@ -6942,45 +6942,45 @@ msgstr "بنود الفاتورة"
 #, fuzzy
 #| msgid "From"
 msgid "From Bin"
-msgstr "من"
+msgstr "من الحاوية"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:91
 #, fuzzy
 #| msgid "Days Requested"
 msgid "Requested"
-msgstr "الأيام المطلوبة"
+msgstr "مطلوب"
 
 #: .\erp\templates\erp\inventory\pick_list_detail.html:92
 #: .\erp\templates\erp\inventory\pick_list_list.html:36
 #: .\erp\templates\erp\inventory\pick_list_list.html:56
 msgid "Picked"
-msgstr ""
+msgstr "تم الانتقاء"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:4
 #: .\erp\templates\erp\inventory\pick_list_form.html:5
 #: .\erp\templates\erp\inventory\pick_list_list.html:62
 msgid "New Pick List"
-msgstr ""
+msgstr "قائمة انتقاء جديدة"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:40
 msgid "Pick List Data"
-msgstr ""
+msgstr "بيانات قائمة الانتقاء"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:45
 #, fuzzy
 #| msgid "PO Number"
 msgid "Pick Number"
-msgstr "رقم أمر الشراء"
+msgstr "رقم الانتقاء"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:103
 #, fuzzy
 #| msgid "Days Requested"
 msgid "Qty Requested"
-msgstr "الأيام المطلوبة"
+msgstr "الكمية المطلوبة"
 
 #: .\erp\templates\erp\inventory\pick_list_form.html:104
 msgid "Qty Picked"
-msgstr ""
+msgstr "الكمية المنتقاة"
 
 #: .\erp\templates\erp\inventory\pick_list_list.html:51
 #, fuzzy
@@ -6992,7 +6992,7 @@ msgstr "بحث في المدفوعات..."
 #, fuzzy
 #| msgid "No lines found"
 msgid "No pick lists found."
-msgstr "لا توجد بنود"
+msgstr "لم يتم العثور على قوائم انتقاء."
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:4
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:5
@@ -7005,7 +7005,7 @@ msgstr "مستوى إعادة الطلب"
 #, fuzzy
 #| msgid "Reorder Level"
 msgid "Reorder Rule"
-msgstr "مستوى إعادة الطلب"
+msgstr "قاعدة إعادة طلب"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:50
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:46
@@ -7013,20 +7013,20 @@ msgstr "مستوى إعادة الطلب"
 #, fuzzy
 #| msgid "New Quantity"
 msgid "Reorder Point"
-msgstr "الكمية الجديدة"
+msgstr "نقطة إعادة الطلب"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:55
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:47
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:38
 msgid "Safety Stock"
-msgstr ""
+msgstr "مخزون الأمان"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:59
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:50
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Lead Time (days)"
-msgstr "تفاصيل العميل المحتمل"
+msgstr "وقت التوريد (أيام)"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:63
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:48
@@ -7040,7 +7040,7 @@ msgstr "الحد الأدنى للطلب"
 #, fuzzy
 #| msgid "Min Order"
 msgid "Max Order Qty"
-msgstr "الحد الأدنى للطلب"
+msgstr "الحد الأقصى للطلب"
 
 #: .\erp\templates\erp\inventory\reorder_rule_form.html:71
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:40
@@ -7049,7 +7049,7 @@ msgstr "الحد الأدنى للطلب"
 #, fuzzy
 #| msgid "Add Supplier"
 msgid "Preferred Supplier"
-msgstr "إضافة مورد"
+msgstr "المورد المفضل"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:19
 #, fuzzy
@@ -7064,13 +7064,13 @@ msgstr "البحث في الطلبات..."
 #, fuzzy
 #| msgid "New Quantity"
 msgid "Reorder Suggestions"
-msgstr "الكمية الجديدة"
+msgstr "اقتراحات إعادة الطلب"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:32
 #, fuzzy
 #| msgid "New Request"
 msgid "New Rule"
-msgstr "طلب جديد"
+msgstr "قاعدة جديدة"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:69
 #: .\erp\templates\erp\setup\step_review.html:218
@@ -7082,19 +7082,19 @@ msgstr "نعم"
 #, fuzzy
 #| msgid "Nov"
 msgid "No"
-msgstr "نوفمبر"
+msgstr "لا"
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:88
 #, fuzzy
 #| msgid "No leads found"
 msgid "No reorder rules found."
-msgstr "لا يوجد عملاء محتملون"
+msgstr "لم يتم العثور على قواعد إعادة طلب."
 
 #: .\erp\templates\erp\inventory\reorder_rule_list.html:123
 #, fuzzy
 #| msgid "Are you sure you want to delete this purchase order?"
 msgid "Are you sure you want to delete the reorder rule for"
-msgstr "هل أنت متأكد من حذف أمر الشراء هذا؟"
+msgstr "هل أنت متأكد من حذف قاعدة إعادة الطلب لـ"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:20
 msgid ""
@@ -7104,44 +7104,44 @@ msgstr ""
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:26
 msgid "Suggestions"
-msgstr ""
+msgstr "الاقتراحات"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:27
 #, fuzzy
 #| msgid "Line Items"
 msgid "items"
-msgstr "البنود"
+msgstr "عناصر"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:36
 #, fuzzy
 #| msgid "Current Status"
 msgid "Current Stock"
-msgstr "الحالة الحالية"
+msgstr "المخزون الحالي"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:39
 msgid "Suggested Qty"
-msgstr ""
+msgstr "الكمية المقترحة"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:41
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Lead Time"
-msgstr "تفاصيل العميل المحتمل"
+msgstr "وقت التوريد"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:62
 #: .\erp\templates\erp\suppliers\detail.html:93
 msgid "days"
-msgstr "يوم"
+msgstr "أيام"
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:68
 msgid "All stock levels are above reorder points. No suggestions at this time."
-msgstr ""
+msgstr "جميع مستويات المخزون أعلى من نقاط إعادة الطلب. لا توجد اقتراحات في الوقت الحالي."
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:80
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Back to Reorder Rules"
-msgstr "العودة إلى طلبات الإجازة"
+msgstr "العودة لقواعد إعادة الطلب"
 
 #: .\erp\templates\erp\inventory\serial_form.html:4
 #: .\erp\templates\erp\inventory\serial_form.html:5
@@ -7149,86 +7149,86 @@ msgstr "العودة إلى طلبات الإجازة"
 #, fuzzy
 #| msgid "New Service"
 msgid "New Serial Number"
-msgstr "خدمة جديدة"
+msgstr "رقم تسلسلي جديد"
 
 #: .\erp\templates\erp\inventory\serial_form.html:35
 #, fuzzy
 #| msgid "Lead Number"
 msgid "Serial Number Data"
-msgstr "رقم العميل المحتمل"
+msgstr "بيانات الرقم التسلسلي"
 
 #: .\erp\templates\erp\inventory\serial_form.html:45
 #: .\erp\templates\erp\inventory\serial_list.html:49
 #, fuzzy
 #| msgid "Lead Number"
 msgid "Serial Number"
-msgstr "رقم العميل المحتمل"
+msgstr "رقم تسلسلي"
 
 #: .\erp\templates\erp\inventory\serial_list.html:10
 msgid "Track individual serial numbers"
-msgstr ""
+msgstr "تتبع الأرقام التسلسلية الفردية"
 
 #: .\erp\templates\erp\inventory\serial_list.html:23
 msgid "Serial number, product..."
-msgstr ""
+msgstr "الرقم التسلسلي، المنتج..."
 
 #: .\erp\templates\erp\inventory\serial_list.html:80
 #, fuzzy
 #| msgid "No lines found"
 msgid "No serial numbers found"
-msgstr "لا توجد بنود"
+msgstr "لم يتم العثور على أرقام تسلسلية"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:22
 msgid "Shipment Info"
-msgstr ""
+msgstr "معلومات الشحنة"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:27
 #: .\erp\templates\erp\inventory\shipment_list.html:73
 #, fuzzy
 #| msgid "Payment"
 msgid "Shipment #"
-msgstr "دفعة"
+msgstr "رقم الشحنة"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:36
 #: .\erp\templates\erp\inventory\shipment_form.html:64
 #, fuzzy
 #| msgid "Back to Leave Requests"
 msgid "Pick List"
-msgstr "العودة إلى طلبات الإجازة"
+msgstr "قائمة انتقاء"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:50
 #: .\erp\templates\erp\inventory\shipment_list.html:77
 msgid "Carrier"
-msgstr ""
+msgstr "شركة الشحن"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:53
 #: .\erp\templates\erp\inventory\shipment_list.html:78
 msgid "Tracking #"
-msgstr ""
+msgstr "رقم التتبع"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:72
 msgid "Ship this shipment?"
-msgstr ""
+msgstr "شحن هذه الشحنة؟"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:73
 #: .\erp\templates\erp\inventory\transfer_detail.html:65
 msgid "Ship"
-msgstr ""
+msgstr "شحن"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:80
 #, fuzzy
 #| msgid "Mark all as read"
 msgid "Mark as delivered?"
-msgstr "تعليم الكل كمقروء"
+msgstr "تحديد كتم التسليم؟"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:81
 msgid "Deliver"
-msgstr ""
+msgstr "تسليم"
 
 #: .\erp\templates\erp\inventory\shipment_detail.html:96
 #: .\erp\templates\erp\inventory\shipment_form.html:86
 msgid "Shipment Lines"
-msgstr ""
+msgstr "بنود الشحنة"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:4
 #: .\erp\templates\erp\inventory\shipment_form.html:5
@@ -7236,41 +7236,41 @@ msgstr ""
 #, fuzzy
 #| msgid "New Payment"
 msgid "New Shipment"
-msgstr "دفعة جديدة"
+msgstr "شحنة جديدة"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:40
 #, fuzzy
 #| msgid "Payment Date"
 msgid "Shipment Data"
-msgstr "تاريخ الدفع"
+msgstr "بيانات الشحنة"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:45
 #, fuzzy
 #| msgid "Payment Number"
 msgid "Shipment Number"
-msgstr "رقم الدفعة"
+msgstr "رقم الشحنة"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:72
 #, fuzzy
 #| msgid "Supplier Name"
 msgid "Carrier Name"
-msgstr "اسم المورد"
+msgstr "اسم شركة الشحن"
 
 #: .\erp\templates\erp\inventory\shipment_form.html:76
 #, fuzzy
 #| msgid "Tax Number"
 msgid "Tracking Number"
-msgstr "الرقم الضريبي"
+msgstr "رقم التتبع"
 
 #: .\erp\templates\erp\inventory\shipment_list.html:29
 #: .\erp\templates\erp\inventory\shipment_list.html:55
 msgid "Shipped"
-msgstr ""
+msgstr "تم الشحن"
 
 #: .\erp\templates\erp\inventory\shipment_list.html:36
 #: .\erp\templates\erp\inventory\shipment_list.html:56
 msgid "Delivered"
-msgstr ""
+msgstr "تم التسليم"
 
 #: .\erp\templates\erp\inventory\shipment_list.html:51
 #, fuzzy
@@ -7282,32 +7282,32 @@ msgstr "البحث في الطلبات..."
 #, fuzzy
 #| msgid "No payments found"
 msgid "No shipments found."
-msgstr "لا توجد مدفوعات"
+msgstr "لم يتم العثور على شحنات."
 
 #: .\erp\templates\erp\inventory\stock_levels.html:22
 #: .\erp\templates\erp\inventory\stock_levels.html:84
 #, fuzzy
 #| msgid "Stock"
 msgid "Stock Items"
-msgstr "المخزون"
+msgstr "عناصر المخزون"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:29
 #, fuzzy
 #| msgid "Total Records"
 msgid "Total On Hand"
-msgstr "إجمالي السجلات"
+msgstr "إجمالي المتوفر"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:36
 #, fuzzy
 #| msgid "Allocated Amount"
 msgid "Total Allocated"
-msgstr "المبلغ المخصص"
+msgstr "إجمالي المخصص"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:43
 #, fuzzy
 #| msgid "Total Payables"
 msgid "Total Available"
-msgstr "إجمالي المستحقات عليك"
+msgstr "إجمالي المتاح"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:54
 #, fuzzy
@@ -7319,13 +7319,13 @@ msgstr "تصنيفات المنتجات"
 #, fuzzy
 #| msgid "Invoice Status"
 msgid "Stock Status"
-msgstr "حالة الفواتير"
+msgstr "حالة المخزون"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:69
 #, fuzzy
 #| msgid "Stock"
 msgid "In Stock"
-msgstr "المخزون"
+msgstr "في المخزون"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:70
 #: .\erp\templates\erp\products\detail.html:169
@@ -7337,17 +7337,17 @@ msgstr "مخزون منخفض"
 #, fuzzy
 #| msgid "Low Stock"
 msgid "Out of Stock"
-msgstr "مخزون منخفض"
+msgstr "نفذ من المخزون"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:92
 #: .\erp\templates\erp\inventory\warehouse_detail.html:144
 msgid "SKU"
-msgstr ""
+msgstr "رمز المنتج"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:96
 #: .\erp\templates\erp\inventory\warehouse_detail.html:145
 msgid "On Hand"
-msgstr ""
+msgstr "متوفر"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:97
 #: .\erp\templates\erp\inventory\warehouse_detail.html:146
@@ -7355,31 +7355,31 @@ msgstr ""
 #, fuzzy
 #| msgid "Allocated Amount"
 msgid "Allocated"
-msgstr "المبلغ المخصص"
+msgstr "مخصص"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:98
 #, fuzzy
 #| msgid "Bank Name"
 msgid "In Transit"
-msgstr "اسم البنك"
+msgstr "قيد النقل"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:99
 #, fuzzy
 #| msgid "Original Quantity"
 msgid "Available"
-msgstr "الكمية الأصلية"
+msgstr "متاح"
 
 #: .\erp\templates\erp\inventory\stock_levels.html:123
 #, fuzzy
 #| msgid "No quotes found"
 msgid "No stock items found."
-msgstr "لا توجد عروض أسعار"
+msgstr "لم يتم العثور على عناصر مخزون."
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:5
 #, fuzzy
 #| msgid "Customer Details"
 msgid "Stock Transfer Details"
-msgstr "تفاصيل العميل"
+msgstr "تفاصيل تحويل المخزون"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:11
 #: .\erp\templates\erp\inventory\transfer_form.html:12
@@ -7388,7 +7388,7 @@ msgstr "تفاصيل العميل"
 #, fuzzy
 #| msgid "Bank Name"
 msgid "Stock Transfers"
-msgstr "اسم البنك"
+msgstr "تحويلات المخزون"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:27
 #: .\erp\templates\erp\inventory\transfer_form.html:50
@@ -7396,13 +7396,13 @@ msgstr "اسم البنك"
 #, fuzzy
 #| msgid "Hire Date"
 msgid "From Warehouse"
-msgstr "تاريخ التوظيف"
+msgstr "من المستودع"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:31
 #: .\erp\templates\erp\inventory\transfer_form.html:55
 #: .\erp\templates\erp\inventory\transfer_list.html:27
 msgid "To Warehouse"
-msgstr ""
+msgstr "إلى المستودع"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:35
 #: .\erp\templates\erp\inventory\transfer_form.html:60
@@ -7410,47 +7410,47 @@ msgstr ""
 #, fuzzy
 #| msgid "Order Date"
 msgid "Transfer Date"
-msgstr "تاريخ الطلب"
+msgstr "تاريخ التحويل"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:40
 #, fuzzy
 #| msgid "Hire Date"
 msgid "Shipped Date"
-msgstr "تاريخ التوظيف"
+msgstr "تاريخ الشحن"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:46
 #, fuzzy
 #| msgid "Review Date"
 msgid "Received Date"
-msgstr "تاريخ المراجعة"
+msgstr "تاريخ الاستلام"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:64
 msgid "Ship this transfer?"
-msgstr ""
+msgstr "شحن هذا التحويل؟"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:74
 #, fuzzy
 #| msgid "Mark all as read"
 msgid "Mark as received?"
-msgstr "تعليم الكل كمقروء"
+msgstr "تحديد كمستلم؟"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:75
 #, fuzzy
 #| msgid "Receipt"
 msgid "Receive"
-msgstr "الإيصال"
+msgstr "استلام"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:86
 #: .\erp\templates\erp\inventory\transfer_form.html:79
 #, fuzzy
 #| msgid "Order Lines"
 msgid "Transfer Lines"
-msgstr "بنود الطلب"
+msgstr "بنود التحويل"
 
 #: .\erp\templates\erp\inventory\transfer_detail.html:95
 #: .\erp\templates\erp\inventory\transfer_form.html:104
 msgid "To Bin"
-msgstr ""
+msgstr "إلى الحاوية"
 
 #: .\erp\templates\erp\inventory\transfer_form.html:4
 #: .\erp\templates\erp\inventory\transfer_form.html:5
@@ -7463,30 +7463,30 @@ msgstr "اسم البنك"
 #, fuzzy
 #| msgid "Purchase Order Data"
 msgid "Transfer Data"
-msgstr "بيانات أمر الشراء"
+msgstr "بيانات التحويل"
 
 #: .\erp\templates\erp\inventory\transfer_form.html:45
 #: .\erp\templates\erp\inventory\transfer_list.html:25
 #, fuzzy
 #| msgid "Order Number"
 msgid "Transfer Number"
-msgstr "رقم الطلب"
+msgstr "رقم التحويل"
 
 #: .\erp\templates\erp\inventory\transfer_list.html:10
 msgid "Transfer stock between warehouses"
-msgstr ""
+msgstr "تحويل المخزون بين المستودعات"
 
 #: .\erp\templates\erp\inventory\transfer_list.html:19
 #, fuzzy
 #| msgid "Bank Name"
 msgid "All Transfers"
-msgstr "اسم البنك"
+msgstr "كل التحويلات"
 
 #: .\erp\templates\erp\inventory\transfer_list.html:65
 #, fuzzy
 #| msgid "No assets found"
 msgid "No transfers found"
-msgstr "لا توجد أصول"
+msgstr "لم يتم العثور على تحويلات"
 
 #: .\erp\templates\erp\inventory\uom_form.html:4
 #: .\erp\templates\erp\inventory\uom_form.html:5
@@ -7499,131 +7499,131 @@ msgstr "وحدة القياس"
 #, fuzzy
 #| msgid "Unit of Measure"
 msgid "Unit of Measure Data"
-msgstr "وحدة القياس"
+msgstr "بيانات وحدة القياس"
 
 #: .\erp\templates\erp\inventory\uom_form.html:49
 #: .\erp\templates\erp\inventory\uom_list.html:23
 msgid "Abbreviation"
-msgstr ""
+msgstr "الاختصار"
 
 #: .\erp\templates\erp\inventory\uom_form.html:60
 #: .\erp\templates\erp\inventory\uom_list.html:25
 #, fuzzy
 #| msgid "Unit Price"
 msgid "Base Unit"
-msgstr "سعر الوحدة"
+msgstr "الوحدة الأساسية"
 
 #: .\erp\templates\erp\inventory\uom_list.html:10
 #, fuzzy
 #| msgid "Manage customer payments and transactions"
 msgid "Manage units of measure and conversions"
-msgstr "إدارة مدفوعات العملاء والمعاملات"
+msgstr "إدارة وحدات القياس والتحويلات"
 
 #: .\erp\templates\erp\inventory\uom_list.html:13
 #, fuzzy
 #| msgid "New Entry"
 msgid "New Unit"
-msgstr "قيد جديد"
+msgstr "وحدة جديدة"
 
 #: .\erp\templates\erp\inventory\uom_list.html:38
 msgid "Base"
-msgstr ""
+msgstr "أساسي"
 
 #: .\erp\templates\erp\inventory\uom_list.html:65
 #, fuzzy
 #| msgid "No customers found"
 msgid "No units of measure found"
-msgstr "لا يوجد عملاء"
+msgstr "لم يتم العثور على وحدات قياس"
 
 #: .\erp\templates\erp\inventory\uom_list.html:66
 #, fuzzy
 #| msgid "Add Lead"
 msgid "Add First Unit"
-msgstr "إضافة عميل محتمل"
+msgstr "إضافة أول وحدة"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:4
 #: .\erp\templates\erp\inventory\valuation_config.html:5
 msgid "Inventory Valuation Configuration"
-msgstr ""
+msgstr "إعدادات تقييم المخزون"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:12
 msgid "Valuation Configuration"
-msgstr ""
+msgstr "إعدادات التقييم"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:44
 #: .\erp\templates\erp\inventory\valuation_config.html:49
 #, fuzzy
 #| msgid "Payment Method"
 msgid "Valuation Method"
-msgstr "طريقة الدفع"
+msgstr "طريقة التقييم"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:52
 msgid "Select the inventory costing method used for valuation calculations."
-msgstr ""
+msgstr "اختر طريقة تكلفة المخزون المستخدمة لحسابات التقييم."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:61
 #, fuzzy
 #| msgid "General Ledger"
 msgid "General Ledger Accounts"
-msgstr "الدليل المحاسبي"
+msgstr "حسابات دفتر الأستاذ العام"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:66
 #, fuzzy
 #| msgid "New Account"
 msgid "Inventory Account"
-msgstr "حساب جديد"
+msgstr "حساب المخزون"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:69
 msgid "Asset account for inventory on hand."
-msgstr ""
+msgstr "حساب الأصول للمخزون المتوفر."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:72
 #, fuzzy
 #| msgid "New Account"
 msgid "COGS Account"
-msgstr "حساب جديد"
+msgstr "حساب تكلفة البضائع المباعة"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:75
 #, fuzzy
 #| msgid "Expense account for this category"
 msgid "Expense account for cost of goods sold."
-msgstr "حساب المصروف لهذا التصنيف"
+msgstr "حساب المصروفات لتكلفة البضائع المباعة."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:78
 #, fuzzy
 #| msgid "New Account"
 msgid "GRNI Account"
-msgstr "حساب جديد"
+msgstr "حساب البضائع المستلمة غير المفوترة"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:81
 msgid "Goods Received Not Invoiced (accrual) account."
-msgstr ""
+msgstr "حساب البضائع المستلمة غير المفوترة (الاستحقاق)."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:84
 #, fuzzy
 #| msgid "New Account"
 msgid "Adjustment Account"
-msgstr "حساب جديد"
+msgstr "حساب التسوية"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:87
 msgid "Account for stock adjustment gains/losses."
-msgstr ""
+msgstr "حساب أرباح/خسائر تسوية المخزون."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:90
 #, fuzzy
 #| msgid "New Account"
 msgid "Write-Off Account"
-msgstr "حساب جديد"
+msgstr "حساب الشطب"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:93
 msgid "Account for inventory write-offs."
-msgstr ""
+msgstr "حساب شطب المخزون."
 
 #: .\erp\templates\erp\inventory\valuation_config.html:105
 #, fuzzy
 #| msgid "Basic Information"
 msgid "Save Configuration"
-msgstr "المعلومات الأساسية"
+msgstr "حفظ الإعدادات"
 
 #: .\erp\templates\erp\inventory\valuation_config.html:114
 msgid ""
@@ -7635,56 +7635,56 @@ msgstr ""
 #, fuzzy
 #| msgid "Lead Details"
 msgid "Warehouse Details"
-msgstr "تفاصيل العميل المحتمل"
+msgstr "تفاصيل المستودع"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:21
 #, fuzzy
 #| msgid "Status Information"
 msgid "Warehouse Information"
-msgstr "معلومات الحالة"
+msgstr "معلومات المستودع"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:73
 #, fuzzy
 #| msgid "Edit Lead"
 msgid "Edit Warehouse"
-msgstr "تعديل العميل المحتمل"
+msgstr "تعديل مستودع"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:76
 #, fuzzy
 #| msgid "Delete Lead"
 msgid "Delete Warehouse"
-msgstr "حذف العميل المحتمل"
+msgstr "حذف المستودع"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:86
 #: .\erp\templates\erp\inventory\warehouse_form.html:97
 #: .\erp\templates\erp\inventory\warehouse_list.html:47
 msgid "Zones"
-msgstr ""
+msgstr "المناطق"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:88
 #: .\erp\templates\erp\inventory\warehouse_form.html:99
 #, fuzzy
 #| msgid "Add Line"
 msgid "Add Zone"
-msgstr "إضافة بند"
+msgstr "إضافة منطقة"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:98
 #: .\erp\templates\erp\inventory\zone_detail.html:72
 #: .\erp\templates\erp\inventory\zone_form.html:76
 msgid "Bins"
-msgstr ""
+msgstr "الحاويات"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:126
 #, fuzzy
 #| msgid "No lines found"
 msgid "No zones defined"
-msgstr "لا توجد بنود"
+msgstr "لم يتم تحديد مناطق"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:137
 #, fuzzy
 #| msgid "Customer Summary"
 msgid "Stock Summary"
-msgstr "ملخص حسب العميل"
+msgstr "ملخص المخزون"
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:159
 #, fuzzy
@@ -7696,11 +7696,11 @@ msgstr "لا توجد قيود مرحّلة في هذه الفترة"
 #: .\erp\templates\erp\inventory\warehouse_form.html:5
 #: .\erp\templates\erp\inventory\warehouse_list.html:13
 msgid "New Warehouse"
-msgstr ""
+msgstr "مستودع جديد"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:41
 msgid "Warehouse Data"
-msgstr ""
+msgstr "بيانات المستودع"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:122
 #: .\erp\templates\erp\inventory\zone_detail.html:39
@@ -7708,102 +7708,102 @@ msgstr ""
 #, fuzzy
 #| msgid "Invoice Type"
 msgid "Zone Type"
-msgstr "نوع الفاتورة"
+msgstr "نوع المنطقة"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:177
 #, fuzzy
 #| msgid "Receipt"
 msgid "Receiving"
-msgstr "الإيصال"
+msgstr "الاستلام"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:178
 msgid "Storage"
-msgstr ""
+msgstr "تخزين"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:179
 msgid "Picking"
-msgstr ""
+msgstr "جاري الانتقاء"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:180
 msgid "Packing"
-msgstr ""
+msgstr "تعبئة"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:181
 #, fuzzy
 #| msgid "Shipping Address"
 msgid "Shipping"
-msgstr "عنوان الشحن"
+msgstr "الشحن"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:182
 #, fuzzy
 #| msgid "Quarter"
 msgid "Quarantine"
-msgstr "الربع"
+msgstr "حجر"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:183
 msgid "Returns"
-msgstr ""
+msgstr "المرتجعات"
 
 #: .\erp\templates\erp\inventory\warehouse_form.html:184
 msgid "Other"
-msgstr ""
+msgstr "أخرى"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:10
 #, fuzzy
 #| msgid "Manage customer payments and transactions"
 msgid "Manage warehouses and storage locations"
-msgstr "إدارة مدفوعات العملاء والمعاملات"
+msgstr "إدارة المستودعات ومواقع التخزين"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:27
 #, fuzzy
 #| msgid "Monthly Expenses"
 msgid "Total Warehouses"
-msgstr "المصروفات الشهرية"
+msgstr "إجمالي المستودعات"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:89
 #, fuzzy
 #| msgid "No assets found"
 msgid "No warehouses found"
-msgstr "لا توجد أصول"
+msgstr "لم يتم العثور على مستودعات"
 
 #: .\erp\templates\erp\inventory\warehouse_list.html:90
 #, fuzzy
 #| msgid "Add First Customer"
 msgid "Add First Warehouse"
-msgstr "إضافة أول عميل"
+msgstr "إضافة أول مستودع"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:5
 #, fuzzy
 #| msgid "Quote Details"
 msgid "Zone Details"
-msgstr "تفاصيل عرض السعر"
+msgstr "تفاصيل المنطقة"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:21
 #, fuzzy
 #| msgid "Information"
 msgid "Zone Information"
-msgstr "معلومات"
+msgstr "معلومات المنطقة"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:59
 #, fuzzy
 #| msgid "New Account"
 msgid "Edit Zone"
-msgstr "حساب جديد"
+msgstr "تعديل منطقة"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:62
 #, fuzzy
 #| msgid "Delete Lead"
 msgid "Delete Zone"
-msgstr "حذف العميل المحتمل"
+msgstr "حذف المنطقة"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:81
 #: .\erp\templates\erp\inventory\zone_form.html:101
 msgid "Max Capacity"
-msgstr ""
+msgstr "السعة القصوى"
 
 #: .\erp\templates\erp\inventory\zone_detail.html:102
 msgid "No bins defined"
-msgstr ""
+msgstr "لم يتم تحديد حاويات"
 
 #: .\erp\templates\erp\inventory\zone_form.html:4
 #: .\erp\templates\erp\inventory\zone_form.html:5
@@ -7817,13 +7817,13 @@ msgstr "حساب جديد"
 #, fuzzy
 #| msgid "Quote Date"
 msgid "Zone Data"
-msgstr "تاريخ العرض"
+msgstr "بيانات المنطقة"
 
 #: .\erp\templates\erp\inventory\zone_form.html:78
 #, fuzzy
 #| msgid "Add Line"
 msgid "Add Bin"
-msgstr "إضافة بند"
+msgstr "إضافة حاوية"
 
 #: .\erp\templates\erp\invoices\credit_debit_form.html:19
 msgid "for Invoice"
@@ -8589,7 +8589,7 @@ msgstr "احتساب"
 
 #: .\erp\templates\erp\payroll\detail.html:45
 msgid "Disburse salary and create journal entry?"
-msgstr ""
+msgstr "صرف الراتب وإنشاء قيد يومية؟"
 
 #: .\erp\templates\erp\payroll\detail.html:49
 #, fuzzy
@@ -8672,7 +8672,7 @@ msgstr "الأرباح المحتجزة"
 #: .\erp\templates\erp\payroll\form.html:239
 #: .\erp\templates\erp\payroll\form.html:262
 msgid "Remove"
-msgstr ""
+msgstr "إزالة"
 
 #: .\erp\templates\erp\payroll\form.html:161
 #, fuzzy
@@ -9060,7 +9060,7 @@ msgstr "الكمية الجديدة"
 #: .\erp\templates\erp\products\detail.html:176
 #: .\erp\templates\erp\products\form.html:147
 msgid "Unit of Measure"
-msgstr "وحدة القياس"
+msgstr "وحدة قياس"
 
 #: .\erp\templates\erp\products\detail.html:179
 msgid "Inventory tracking disabled"
@@ -10367,7 +10367,7 @@ msgstr ""
 
 #: .\tenants\templates\tenants\employee_register.html:29
 msgid "Login Credentials"
-msgstr ""
+msgstr "بيانات تسجيل الدخول"
 
 #: .\tenants\templates\tenants\employee_register.html:181
 #, fuzzy
@@ -10377,7 +10377,7 @@ msgstr "الإدارة"
 
 #: .\tenants\templates\tenants\employee_register.html:187
 msgid "Already have an account? Login"
-msgstr ""
+msgstr "لديك حساب بالفعل؟ تسجيل الدخول"
 
 #~ msgid "Disburse Salary"
 #~ msgstr "صرف الراتب"
