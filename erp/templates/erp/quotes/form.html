@@ -14,7 +14,7 @@
 <!-- Global errors -->
 {% if form.errors %}
 <div class="alert alert-danger mb-3">
-    <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> {% trans "Please correct the following errors:" %}</h6>
+    <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle me-1"></i> {% trans "Please correct the following errors:" %}</h6>
     <ul class="mb-0">
         {% for field, errors in form.errors.items %}
         <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
@@ -24,7 +24,7 @@
 {% endif %}
 
 <!-- Quote Details -->
-<div class="form-section" dir="rtl">
+<div class="form-section">
     <h6 class="form-section-title">{% trans "Quote Details" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -60,7 +60,7 @@
 </div>
 
 <!-- Discount -->
-<div class="form-section" dir="rtl">
+<div class="form-section">
     <h6 class="form-section-title">{% trans "Discount" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -71,7 +71,7 @@
 </div>
 
 <!-- Notes -->
-<div class="form-section" dir="rtl">
+<div class="form-section">
     <h6 class="form-section-title">{% trans "Notes and Terms" %}</h6>
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -88,11 +88,11 @@
 
 {% block formset_content %}
 <!-- Quote Lines -->
-<div class="form-section" dir="rtl">
+<div class="form-section">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="form-section-title mb-0">{% trans "Quote Lines" %}</h6>
         <button type="button" id="add-line-btn" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-plus-circle ms-1"></i> {% trans "Add Line" %}
+            <i class="bi bi-plus-circle me-1"></i> {% trans "Add Line" %}
         </button>
     </div>
 
