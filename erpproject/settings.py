@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tenants.middleware.TenantMiddleware',  # Custom tenant middleware
     'erp.middleware.ERPSetupMiddleware',  # ERP setup check middleware
+    'erp.services.audit.AuditMiddleware',  # Audit logging context middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

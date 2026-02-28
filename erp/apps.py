@@ -8,5 +8,5 @@ class ErpConfig(AppConfig):
 
     def ready(self):
         """Import signals when app is ready."""
-        pass  # Signals can be imported here when needed
+        import erp.signals  # noqa: F401 – connect audit signals
 
