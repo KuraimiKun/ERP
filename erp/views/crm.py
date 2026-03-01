@@ -15,7 +15,7 @@ from erp.forms import (
 from erp.services import get_lead_number
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -43,8 +43,12 @@ def lead_list(request):
             Q(lead_number__icontains=search)
         )
 
+    page_obj, query_string = paginate_qs(request, leads)
+
     return render(request, 'erp/leads/list.html', {
-        'leads': leads,
+        'leads': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': Lead.Status.choices,
         'sources': Lead.Source.choices,
     })
@@ -166,8 +170,12 @@ def campaign_list(request):
     if status:
         campaigns = campaigns.filter(status=status)
 
+    page_obj, query_string = paginate_qs(request, campaigns.order_by('-start_date'))
+
     return render(request, 'erp/campaigns/list.html', {
-        'campaigns': campaigns.order_by('-start_date')[:100],
+        'campaigns': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': Campaign.Status.choices,
     })
 
@@ -264,8 +272,12 @@ def task_list(request):
     if my_tasks and hasattr(request.user, 'employee_profile'):
         tasks = tasks.filter(assigned_to=request.user.employee_profile)
 
+    page_obj, query_string = paginate_qs(request, tasks)
+
     return render(request, 'erp/tasks/list.html', {
-        'tasks': tasks,
+        'tasks': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': Task.Status.choices,
         'priorities': Task.Priority.choices,
     })

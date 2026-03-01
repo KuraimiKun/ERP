@@ -25,7 +25,7 @@ from erp.services import (
 )
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -48,8 +48,12 @@ def supplier_list(request):
             Q(supplier_id__icontains=search)
         )
 
+    page_obj, query_string = paginate_qs(request, suppliers)
+
     return render(request, 'erp/suppliers/list.html', {
-        'suppliers': suppliers,
+        'suppliers': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'supplier_types': Supplier.SupplierType.choices,
     })
 
@@ -156,8 +160,12 @@ def purchase_order_list(request):
     if status:
         orders = orders.filter(status=status)
 
+    page_obj, query_string = paginate_qs(request, orders.order_by('-po_date'))
+
     return render(request, 'erp/purchase_orders/list.html', {
-        'orders': orders.order_by('-po_date')[:100],
+        'orders': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': PurchaseOrder.Status.choices,
     })
 
@@ -393,8 +401,12 @@ def supplier_invoice_list(request):
             Q(supplier_invoice_number__icontains=search)
         )
 
+    page_obj, query_string = paginate_qs(request, invoices.order_by('-invoice_date'))
+
     return render(request, 'erp/supplier_invoices/list.html', {
-        'invoices': invoices.order_by('-invoice_date')[:100],
+        'invoices': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': SupplierInvoice.Status.choices,
     })
 
@@ -535,8 +547,12 @@ def supplier_payment_list(request):
 
     suppliers = Supplier.objects.filter(company=company, is_active=True).order_by('name')
 
+    page_obj, query_string = paginate_qs(request, payments.order_by('-payment_date'))
+
     return render(request, 'erp/supplier_payments/list.html', {
-        'payments': payments.order_by('-payment_date')[:100],
+        'payments': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'stats': stats,
         'suppliers': suppliers,
         'selected_supplier': supplier_filter or '',

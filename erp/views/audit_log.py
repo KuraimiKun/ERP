@@ -45,12 +45,18 @@ def audit_log_list(request):
     paginator = Paginator(qs, 30)
     page = paginator.get_page(request.GET.get('page', 1))
 
+    # Build query string for pagination links (strip 'page' param)
+    qd = request.GET.copy()
+    qd.pop('page', None)
+    query_string = qd.urlencode()
+
     users = User.objects.filter(
         pk__in=AuditLog.objects.values_list('user_id', flat=True).distinct()
     ).order_by('email')
 
     return render(request, 'erp/audit_log/list.html', {
         'page_obj': page,
+        'query_string': query_string,
         'action_choices': AuditLog.Action.choices,
         'users': users,
         'current_user_id': user_id,

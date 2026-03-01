@@ -8,7 +8,7 @@ from erp.models import JournalEntry, Account
 from erp.forms import JournalEntryForm, JournalEntryLineFormSet
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -36,8 +36,12 @@ def journal_entry_list(request):
     posted_count = entries.filter(status='posted').count()
     draft_count = entries.filter(status='draft').count()
 
+    page_obj, query_string = paginate_qs(request, entries)
+
     context = {
-        'entries': entries[:50],
+        'entries': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'total_entries': total_entries,
         'posted_count': posted_count,
         'draft_count': draft_count,

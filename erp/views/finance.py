@@ -23,7 +23,7 @@ from erp.forms import (
 )
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -45,8 +45,12 @@ def invoice_list(request):
             Q(customer__name__icontains=search)
         )
 
+    page_obj, query_string = paginate_qs(request, invoices)
+
     return render(request, 'erp/invoices/list.html', {
-        'invoices': invoices,
+        'invoices': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': Invoice.Status.choices,
     })
 
@@ -171,8 +175,12 @@ def payment_list(request):
     if payment_type:
         payments = payments.filter(payment_type=payment_type)
 
+    page_obj, query_string = paginate_qs(request, payments.order_by('-payment_date'))
+
     return render(request, 'erp/payments/list.html', {
-        'payments': payments.order_by('-payment_date')[:100],
+        'payments': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'payment_types': Payment.PaymentType.choices,
     })
 
@@ -288,8 +296,12 @@ def expense_list(request):
     if status:
         expenses = expenses.filter(status=status)
 
+    page_obj, query_string = paginate_qs(request, expenses.order_by('-expense_date'))
+
     return render(request, 'erp/expenses/list.html', {
-        'expenses': expenses.order_by('-expense_date')[:100],
+        'expenses': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': Expense.Status.choices,
     })
 
@@ -455,8 +467,12 @@ def tax_rate_list(request):
     company = get_user_company(request.user)
     tax_rates = TaxRate.objects.filter(company=company) if company else TaxRate.objects.none()
 
+    page_obj, query_string = paginate_qs(request, tax_rates)
+
     return render(request, 'erp/tax_rates/list.html', {
-        'tax_rates': tax_rates,
+        'tax_rates': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'company': company,
     })
 
@@ -527,8 +543,12 @@ def payment_method_list(request):
     company = get_user_company(request.user)
     payment_methods = PaymentMethod.objects.filter(company=company) if company else PaymentMethod.objects.none()
 
+    page_obj, query_string = paginate_qs(request, payment_methods)
+
     return render(request, 'erp/payment_methods/list.html', {
-        'payment_methods': payment_methods,
+        'payment_methods': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'company': company,
     })
 
@@ -599,8 +619,12 @@ def expense_category_list(request):
     company = get_user_company(request.user)
     expense_categories = ExpenseCategory.objects.filter(company=company) if company else ExpenseCategory.objects.none()
 
+    page_obj, query_string = paginate_qs(request, expense_categories)
+
     return render(request, 'erp/expense_categories/list.html', {
-        'expense_categories': expense_categories,
+        'expense_categories': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'company': company,
     })
 
@@ -671,8 +695,12 @@ def currency_list(request):
     company = get_user_company(request.user)
     currencies = Currency.objects.all()
 
+    page_obj, query_string = paginate_qs(request, currencies)
+
     return render(request, 'erp/currencies/list.html', {
-        'currencies': currencies,
+        'currencies': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'company': company,
     })
 
@@ -740,8 +768,12 @@ def fiscal_year_list(request):
     company = get_user_company(request.user)
     fiscal_years = FiscalYear.objects.filter(company=company) if company else FiscalYear.objects.none()
 
+    page_obj, query_string = paginate_qs(request, fiscal_years)
+
     return render(request, 'erp/fiscal_years/list.html', {
-        'fiscal_years': fiscal_years,
+        'fiscal_years': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'company': company,
     })
 

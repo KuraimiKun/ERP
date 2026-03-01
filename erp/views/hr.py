@@ -21,7 +21,7 @@ from erp.forms import (
 )
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -51,8 +51,12 @@ def employee_list(request):
 
     departments = Department.objects.filter(company=company, is_active=True)
 
+    page_obj, query_string = paginate_qs(request, employees)
+
     return render(request, 'erp/employees/list.html', {
-        'employees': employees,
+        'employees': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'departments': departments,
         'statuses': Employee.EmploymentStatus.choices,
     })
@@ -163,8 +167,12 @@ def department_list(request):
     company = get_user_company(request.user)
     departments = Department.objects.filter(company=company).select_related('parent', 'manager')
 
+    page_obj, query_string = paginate_qs(request, departments.order_by('name'))
+
     return render(request, 'erp/departments/list.html', {
-        'departments': departments.order_by('name'),
+        'departments': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -245,8 +253,12 @@ def attendance_list(request):
         date__lte=end_date
     ).select_related('employee').order_by('-date', 'employee__first_name')
 
+    page_obj, query_string = paginate_qs(request, attendances)
+
     return render(request, 'erp/attendance/list.html', {
-        'attendances': attendances[:200],
+        'attendances': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'start_date': start_date,
         'end_date': end_date,
     })
@@ -307,8 +319,12 @@ def leave_request_list(request):
     if status:
         leave_requests = leave_requests.filter(status=status)
 
+    page_obj, query_string = paginate_qs(request, leave_requests)
+
     return render(request, 'erp/leave_requests/list.html', {
-        'leave_requests': leave_requests[:100],
+        'leave_requests': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': LeaveRequest.Status.choices,
     })
 
@@ -404,8 +420,12 @@ def payroll_list(request):
         total_gross=Sum('gross_salary'),
     )
 
+    page_obj, query_string = paginate_qs(request, payrolls)
+
     return render(request, 'erp/payroll/list.html', {
-        'payrolls': payrolls[:100],
+        'payrolls': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'stats': stats,
         'selected_status': status or '',
         'statuses': Payroll.Status.choices,

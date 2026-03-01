@@ -12,7 +12,7 @@ from erp.forms import (
 from erp.services import get_quote_number
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -28,8 +28,13 @@ def quote_list(request):
         quotes = quotes.filter(status=status)
 
     from datetime import date
+
+    page_obj, query_string = paginate_qs(request, quotes.order_by('-quote_date'))
+
     return render(request, 'erp/quotes/list.html', {
-        'quotes': quotes.order_by('-quote_date')[:100],
+        'quotes': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'statuses': Quote.Status.choices,
         'today': date.today(),
     })
@@ -139,8 +144,12 @@ def quote_delete(request, pk):
 def service_category_list(request):
     company = get_user_company(request.user)
     categories = ServiceCategory.objects.filter(company=company)
+    page_obj, query_string = paginate_qs(request, categories)
+
     return render(request, 'erp/service_categories/list.html', {
-        'categories': categories,
+        'categories': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -209,8 +218,12 @@ def service_list(request):
     if cat:
         services = services.filter(category_id=cat)
 
+    page_obj, query_string = paginate_qs(request, services.order_by('name'))
+
     return render(request, 'erp/services/list.html', {
-        'services': services.order_by('name')[:200],
+        'services': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'categories': ServiceCategory.objects.filter(company=company, is_active=True),
     })
 

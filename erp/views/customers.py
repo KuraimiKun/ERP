@@ -9,7 +9,7 @@ from erp.forms import CustomerForm
 from erp.services import get_customer_id
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -31,8 +31,12 @@ def customer_list(request):
             Q(customer_id__icontains=search)
         )
 
+    page_obj, query_string = paginate_qs(request, customers)
+
     return render(request, 'erp/customers/list.html', {
-        'customers': customers,
+        'customers': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'customer_types': Customer.CustomerType.choices,
     })
 

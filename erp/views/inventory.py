@@ -38,7 +38,7 @@ from erp.forms.inventory import (
 from erp.services.sequence import SequenceService
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    get_user_company, staff_member_required, paginate_qs,
 )
 
 
@@ -56,8 +56,12 @@ def warehouse_list(request):
             Q(name__icontains=search) | Q(code__icontains=search) |
             Q(name_ar__icontains=search) | Q(city__icontains=search)
         )
+    page_obj, query_string = paginate_qs(request, warehouses.order_by('code'))
+
     return render(request, 'erp/inventory/warehouse_list.html', {
-        'warehouses': warehouses.order_by('code'),
+        'warehouses': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -222,7 +226,13 @@ def zone_delete(request, pk):
 def uom_list(request):
     company = get_user_company(request.user)
     uoms = UnitOfMeasure.objects.filter(company=company)
-    return render(request, 'erp/inventory/uom_list.html', {'uoms': uoms.order_by('category', 'name')})
+    page_obj, query_string = paginate_qs(request, uoms.order_by('category', 'name'))
+
+    return render(request, 'erp/inventory/uom_list.html', {
+        'uoms': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
+    })
 
 
 @staff_member_required
@@ -287,7 +297,13 @@ def lot_list(request):
         lots = lots.filter(
             Q(lot_number__icontains=search) | Q(product__name__icontains=search)
         )
-    return render(request, 'erp/inventory/lot_list.html', {'lots': lots.order_by('-created_at')[:200]})
+    page_obj, query_string = paginate_qs(request, lots.order_by('-created_at'))
+
+    return render(request, 'erp/inventory/lot_list.html', {
+        'lots': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
+    })
 
 
 @staff_member_required
@@ -355,8 +371,12 @@ def serial_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         serials = serials.filter(status=status_filter)
+    page_obj, query_string = paginate_qs(request, serials.order_by('-created_at'))
+
     return render(request, 'erp/inventory/serial_list.html', {
-        'serials': serials.order_by('-created_at')[:200],
+        'serials': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'status_choices': SerialNumber.Status.choices,
     })
 
@@ -414,8 +434,12 @@ def grn_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         grns = grns.filter(status=status_filter)
+    page_obj, query_string = paginate_qs(request, grns.order_by('-receipt_date', '-created_at'))
+
     return render(request, 'erp/inventory/grn_list.html', {
-        'grns': grns.order_by('-receipt_date', '-created_at')[:200],
+        'grns': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -539,8 +563,12 @@ def transfer_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         transfers = transfers.filter(status=status_filter)
+    page_obj, query_string = paginate_qs(request, transfers.order_by('-transfer_date', '-created_at'))
+
     return render(request, 'erp/inventory/transfer_list.html', {
-        'transfers': transfers.order_by('-transfer_date', '-created_at')[:200],
+        'transfers': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -665,8 +693,12 @@ def adjustment_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         adjustments = adjustments.filter(status=status_filter)
+    page_obj, query_string = paginate_qs(request, adjustments.order_by('-adjustment_date', '-created_at'))
+
     return render(request, 'erp/inventory/adjustment_list.html', {
-        'adjustments': adjustments.order_by('-adjustment_date', '-created_at')[:200],
+        'adjustments': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -777,8 +809,12 @@ def cycle_count_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         counts = counts.filter(status=status_filter)
+    page_obj, query_string = paginate_qs(request, counts.order_by('-count_date', '-created_at'))
+
     return render(request, 'erp/inventory/cycle_count_list.html', {
-        'counts': counts.order_by('-count_date', '-created_at')[:200],
+        'counts': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -888,8 +924,12 @@ def pick_list_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         picks = picks.filter(status=status_filter)
+    page_obj, query_string = paginate_qs(request, picks.order_by('-pick_date', '-created_at'))
+
     return render(request, 'erp/inventory/pick_list_list.html', {
-        'picks': picks.order_by('-pick_date', '-created_at')[:200],
+        'picks': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -1008,8 +1048,12 @@ def shipment_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         shipments = shipments.filter(status=status_filter)
+    page_obj, query_string = paginate_qs(request, shipments.order_by('-shipment_date', '-created_at'))
+
     return render(request, 'erp/inventory/shipment_list.html', {
-        'shipments': shipments.order_by('-shipment_date', '-created_at')[:200],
+        'shipments': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -1118,8 +1162,12 @@ def reorder_rule_list(request):
     rules = ReorderRule.objects.filter(company=company).select_related(
         'product', 'warehouse', 'preferred_supplier'
     )
+    page_obj, query_string = paginate_qs(request, rules.order_by('product__name'))
+
     return render(request, 'erp/inventory/reorder_rule_list.html', {
-        'rules': rules.order_by('product__name'),
+        'rules': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -1210,8 +1258,12 @@ def stock_movement_list(request):
     if product_id:
         movements = movements.filter(product_id=product_id)
 
+    page_obj, query_string = paginate_qs(request, movements.order_by('-movement_date', '-created_at'))
+
     return render(request, 'erp/inventory/movement_list.html', {
-        'movements': movements.order_by('-movement_date', '-created_at')[:200],
+        'movements': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'movement_types': StockMovement.MovementType.choices,
         'warehouses': Warehouse.objects.filter(company=company, is_active=True),
     })
