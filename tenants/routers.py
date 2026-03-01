@@ -140,8 +140,8 @@ class TenantDatabaseRouter:
             # These apps migrate to both default and tenant databases
             return True
 
-        # ERP app migrates to tenant databases only
-        if app_label == 'erp':
+        # ERP app (and its sub-apps like erp_ai) migrates to tenant databases only
+        if app_label in {'erp', 'erp_ai'}:
             if db == 'default':
                 return False
             return True

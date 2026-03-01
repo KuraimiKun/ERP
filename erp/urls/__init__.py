@@ -433,6 +433,16 @@ _fixed_assets_patterns = [
     path('asset-maintenance/<int:pk>/delete/', views.maintenance_delete, name='maintenance_delete'),
 ]
 
+# ── AI & ML ─────────────────────────────────────────────────────────────────
+from erp.ai import views as ai_views
+
+_ai_patterns = [
+    path('ai/', ai_views.ai_dashboard, name='ai_dashboard'),
+    path('ai/insights/', ai_views.ai_insights_list, name='ai_insights_list'),
+    path('ai/settings/', ai_views.ai_settings, name='ai_settings'),
+    path('ai/api/', include('erp.ai.api.urls')),
+]
+
 # ── Combined ────────────────────────────────────────────────────────────────
 urlpatterns = (
     _setup_patterns
@@ -457,4 +467,5 @@ urlpatterns = (
     + _device_patterns
     + _invite_approval_patterns
     + _api_patterns
+    + _ai_patterns
 )

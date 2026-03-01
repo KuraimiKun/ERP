@@ -1,0 +1,400 @@
+{% extends "erp/base.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block title %}{% trans "AI & ML Insights" %}{% endblock %}
+{% block page_title %}{% trans "AI & ML Insights" %}{% endblock %}
+
+{% block content %}
+<!-- AI Dashboard Header -->
+<div class="mb-4 d-flex justify-content-between align-items-start">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-robot"></i> {% trans "AI & Machine Learning Dashboard" %}</h4>
+        <p class="text-muted mb-0">{% trans "Automated insights and predictions powered by your ERP data." %}</p>
+    </div>
+    <a href="{% url 'erp:ai_settings' %}" class="btn btn-outline-primary">
+        <i class="bi bi-gear me-1"></i>{% trans "AI Settings" %}
+    </a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card border-start border-danger border-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-danger">{{ total_critical }}</div>
+                    <div class="stat-label">{% trans "Critical Alerts" %}</div>
+                </div>
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card border-start border-warning border-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-warning">{{ total_warnings }}</div>
+                    <div class="stat-label">{% trans "Warnings" %}</div>
+                </div>
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card border-start border-info border-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-info">{{ total_infos }}</div>
+                    <div class="stat-label">{% trans "Informational" %}</div>
+                </div>
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-info-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card border-start border-success border-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-success">{{ ml_models.count }}</div>
+                    <div class="stat-label">{% trans "Active Models" %}</div>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Critical Alerts -->
+{% if critical_insights %}
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>{% trans "Critical Alerts" %}</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for insight in critical_insights %}
+            <div class="list-group-item list-group-item-danger">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">{{ insight.title }}</h6>
+                        <p class="mb-1 text-muted small">{{ insight.description }}</p>
+                        {% if insight.recommendation %}
+                        <p class="mb-0 small"><strong>{% trans "Recommendation" %}:</strong> {{ insight.recommendation }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">{{ insight.created_at|timesince }} {% trans "ago" %}</small>
+                        {% if insight.action_url %}
+                        <br><a href="{{ insight.action_url }}" class="btn btn-sm btn-outline-danger mt-1">{% trans "View" %} <i class="bi bi-arrow-right"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Warnings -->
+{% if warning_insights %}
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0"><i class="bi bi-exclamation-circle-fill me-2"></i>{% trans "Warnings" %}</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for insight in warning_insights %}
+            <div class="list-group-item list-group-item-warning">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">{{ insight.title }}</h6>
+                        <p class="mb-1 text-muted small">{{ insight.description }}</p>
+                        {% if insight.recommendation %}
+                        <p class="mb-0 small"><strong>{% trans "Recommendation" %}:</strong> {{ insight.recommendation }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">{{ insight.created_at|timesince }} {% trans "ago" %}</small>
+                        {% if insight.action_url %}
+                        <br><a href="{{ insight.action_url }}" class="btn btn-sm btn-outline-warning mt-1">{% trans "View" %} <i class="bi bi-arrow-right"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Informational -->
+{% if info_insights %}
+<div class="card mb-4 border-info">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-info-circle-fill me-2"></i>{% trans "Informational Insights" %}</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for insight in info_insights %}
+            <div class="list-group-item list-group-item-info">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">{{ insight.title }}</h6>
+                        <p class="mb-1 text-muted small">{{ insight.description }}</p>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">{{ insight.created_at|timesince }} {% trans "ago" %}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- On-Demand Actions & ML Models Row -->
+<div class="row g-4 mb-4">
+    <!-- Quick Actions -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge-fill me-2"></i>{% trans "Run AI Analysis" %}</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">{% trans "Trigger AI analyses manually. Scheduled tasks run automatically." %}</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary ai-trigger-btn" data-url="{% url 'erp:ai-trigger-lead-scoring' %}">
+                        <i class="bi bi-bullseye me-2"></i>{% trans "Score Leads" %}
+                    </button>
+                    <button class="btn btn-outline-primary ai-trigger-btn" data-url="{% url 'erp:ai-trigger-invoice-scoring' %}">
+                        <i class="bi bi-receipt me-2"></i>{% trans "Score Invoice Risk" %}
+                    </button>
+                    <button class="btn btn-outline-primary ai-trigger-btn" data-url="{% url 'erp:ai-trigger-expense-anomaly' %}">
+                        <i class="bi bi-search me-2"></i>{% trans "Detect Expense Anomalies" %}
+                    </button>
+                    <button class="btn btn-outline-primary ai-trigger-btn" data-url="{% url 'erp:ai-trigger-demand-forecast' %}">
+                        <i class="bi bi-graph-up me-2"></i>{% trans "Update Demand Forecast" %}
+                    </button>
+                    <button class="btn btn-outline-primary ai-trigger-btn" data-url="{% url 'erp:ai-trigger-attrition' %}">
+                        <i class="bi bi-people me-2"></i>{% trans "Score Attrition Risk" %}
+                    </button>
+                    <button class="btn btn-outline-primary ai-trigger-btn" data-url="{% url 'erp:ai-trigger-kpi-checks' %}">
+                        <i class="bi bi-speedometer2 me-2"></i>{% trans "Run KPI Checks" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ML Models -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cpu-fill me-2"></i>{% trans "ML Model Registry" %}</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if ml_models %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Model" %}</th>
+                                <th>{% trans "Type" %}</th>
+                                <th>{% trans "Accuracy" %}</th>
+                                <th>{% trans "Samples" %}</th>
+                                <th>{% trans "Last Trained" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for model in ml_models %}
+                            <tr>
+                                <td>{{ model.name }}</td>
+                                <td><span class="badge bg-secondary">{{ model.get_model_type_display }}</span></td>
+                                <td>
+                                    {% if model.accuracy_score %}
+                                    <span class="badge {% if model.accuracy_score >= 0.8 %}bg-success{% elif model.accuracy_score >= 0.6 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ model.accuracy_score|floatformat:2 }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ model.training_samples|default:"—"|intcomma }}</td>
+                                <td>
+                                    {% if model.last_trained_at %}
+                                    {{ model.last_trained_at|timesince }} {% trans "ago" %}
+                                    {% else %}
+                                    <span class="text-muted">{% trans "Not trained" %}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-cpu display-6 d-block mb-2"></i>
+                    {% trans "No models trained yet. Run an analysis to get started." %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Assistant -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-chat-dots-fill me-2"></i>{% trans "AI Assistant" %}</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">{% trans "Ask questions about your ERP data in plain English or Arabic." %}</p>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="ai-question"
+                   placeholder="{% trans 'e.g., What is the total revenue this month?' %}">
+            <button class="btn btn-primary" id="ai-ask-btn">
+                <i class="bi bi-send"></i> {% trans "Ask" %}
+            </button>
+        </div>
+        <div id="ai-answer-box" class="d-none">
+            <div class="alert alert-info">
+                <h6>{% trans "Answer" %}</h6>
+                <pre id="ai-answer-text" class="mb-0" style="white-space: pre-wrap;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Predictions -->
+{% if recent_predictions %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>{% trans "Recent Predictions" %}</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Model" %}</th>
+                        <th>{% trans "Entity" %}</th>
+                        <th>{% trans "Score" %}</th>
+                        <th>{% trans "When" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in recent_predictions %}
+                    <tr>
+                        <td>{{ pred.model.name }}</td>
+                        <td>{{ pred.entity_type }} #{{ pred.entity_id }}</td>
+                        <td>
+                            <span class="badge {% if pred.score >= 0.7 %}bg-danger{% elif pred.score >= 0.4 %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ pred.score|floatformat:2 }}
+                            </span>
+                        </td>
+                        <td>{{ pred.created_at|timesince }} {% trans "ago" %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // On-demand trigger buttons
+    document.querySelectorAll('.ai-trigger-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url;
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{% trans "Running..." %}';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+                        || '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin',
+            })
+            .then(r => r.json())
+            .then(data => {
+                this.innerHTML = '<i class="bi bi-check-circle me-2"></i>' + (data.message || 'Done');
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 3000);
+            })
+            .catch(() => {
+                this.innerHTML = '<i class="bi bi-x-circle me-2"></i>{% trans "Error" %}';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 3000);
+            });
+        });
+    });
+
+    // AI Assistant
+    const questionInput = document.getElementById('ai-question');
+    const askBtn = document.getElementById('ai-ask-btn');
+    const answerBox = document.getElementById('ai-answer-box');
+    const answerText = document.getElementById('ai-answer-text');
+
+    askBtn.addEventListener('click', function () {
+        const question = questionInput.value.trim();
+        if (!question) return;
+
+        askBtn.disabled = true;
+        askBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        fetch("{% url 'erp:ai-assistant' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+                    || '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ question }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            answerBox.classList.remove('d-none');
+            answerText.textContent = typeof data.answer === 'object'
+                ? JSON.stringify(data.answer, null, 2) : data.answer;
+        })
+        .catch(err => {
+            answerBox.classList.remove('d-none');
+            answerText.textContent = 'Error: ' + err.message;
+        })
+        .finally(() => {
+            askBtn.disabled = false;
+            askBtn.innerHTML = '<i class="bi bi-send"></i> {% trans "Ask" %}';
+        });
+    });
+
+    questionInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') askBtn.click();
+    });
+});
+</script>
+{% endblock %}

@@ -62,6 +62,10 @@ INSTALLED_APPS = [
     # Local apps
     'tenants',  # Multi-tenant management app
     'erp',      # ERP application
+    'erp.ai',   # AI & ML module
+    
+    # Task scheduling
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -266,3 +270,30 @@ LOGGING = {
 
 # Create logs directory if it doesn't exist
 (BASE_DIR / 'logs').mkdir(exist_ok=True)
+
+
+# ── Celery (async task queue) ───────────────────────────────────────────────
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
+# ── AI / ML Configuration ──────────────────────────────────────────────────
+# Global fallback key (used only if a tenant has not set their own).
+# Each tenant stores their own OpenAI API key in Company.openai_api_key.
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+ML_MODEL_DIR = BASE_DIR / 'ml_models'
+ML_MODEL_DIR.mkdir(exist_ok=True)
+
+# How many data points are required before training a model
+ML_MIN_TRAINING_SAMPLES = int(os.getenv('ML_MIN_TRAINING_SAMPLES', '30'))
+
+# Service-level target for safety stock (z-score, 1.65 ≈ 95 %)
+ML_SAFETY_STOCK_Z = float(os.getenv('ML_SAFETY_STOCK_Z', '1.65'))
+
+# Lead scoring threshold (probability above which a lead is "hot")
+ML_LEAD_HOT_THRESHOLD = float(os.getenv('ML_LEAD_HOT_THRESHOLD', '0.70'))

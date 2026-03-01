@@ -19,10 +19,15 @@ class CompanyForm(BootstrapFormMixin, forms.ModelForm):
             'name', 'name_ar', 'legal_name', 'tax_number', 'commercial_register',
             'license_number', 'email', 'phone', 'fax', 'website', 'address',
             'city', 'state', 'country', 'postal_code', 'logo', 'base_currency',
-            'fiscal_year_start', 'bank_name', 'bank_account', 'iban', 'swift_code'
+            'fiscal_year_start', 'bank_name', 'bank_account', 'iban', 'swift_code',
+            'ai_enabled', 'openai_api_key', 'openai_model',
         ]
         widgets = {
             'address': forms.Textarea(attrs={'rows': 2}),
+            'openai_api_key': forms.PasswordInput(attrs={
+                'placeholder': 'sk-…',
+                'autocomplete': 'off',
+            }),
         }
 
 

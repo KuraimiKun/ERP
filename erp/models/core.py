@@ -80,6 +80,20 @@ class Company(ERPBaseModel):
     iban = models.CharField(max_length=50, blank=True)
     swift_code = models.CharField(max_length=20, blank=True)
 
+    # AI / ML Configuration (per-tenant)
+    openai_api_key = models.CharField(
+        max_length=255, blank=True,
+        help_text='Your OpenAI API key (sk-…). Stored per tenant.',
+    )
+    openai_model = models.CharField(
+        max_length=100, blank=True, default='gpt-4o-mini',
+        help_text='OpenAI model to use (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).',
+    )
+    ai_enabled = models.BooleanField(
+        default=True,
+        help_text='Enable or disable AI features for this company.',
+    )
+
     class Meta:
         verbose_name = 'Company'
         verbose_name_plural = 'Companies'

@@ -19,7 +19,7 @@ from tenants.models import TenantDatabase
 from tenants.routers import add_tenant_database
 
 # The apps that must be migrated on every tenant DB, in dependency order.
-TENANT_MIGRATION_ORDER = ('contenttypes', 'auth', 'tenants', 'erp')
+TENANT_MIGRATION_ORDER = ('contenttypes', 'auth', 'tenants', 'erp', 'erp_ai')
 
 
 class Command(BaseCommand):
