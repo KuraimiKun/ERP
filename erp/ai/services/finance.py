@@ -50,8 +50,22 @@ class LatePaymentPredictor:
 
     # ── Feature Engineering ─────────────────────────────────────────────
 
+    FEATURE_COLS = [
+        'invoice_amount', 'days_to_due', 'invoice_month',
+        'invoice_day_of_week', 'cust_total_invoices',
+        'cust_avg_amount', 'cust_avg_days_to_due',
+        'cust_payment_delay_mean', 'customer_type_code',
+        'amount_vs_cust_avg',
+    ]
+
     def _build_dataset(self) -> pd.DataFrame:
-        """Build a labelled dataset from closed invoices."""
+        """Build a labelled dataset from closed invoices.
+
+        IMPORTANT: We avoid data-leaking features (e.g. per-customer
+        late-payment ratio computed from ALL rows).  Instead we use
+        leave-one-out historical statistics that a model would realistically
+        have at prediction time.
+        """
         invoices = Invoice.objects.filter(
             company=self.company,
             status__in=['paid', 'overdue', 'partial'],
@@ -59,59 +73,83 @@ class LatePaymentPredictor:
         ).select_related('customer').values(
             'id', 'customer_id', 'total_amount', 'invoice_date',
             'due_date', 'status', 'customer__customer_type',
+            'paid_amount', 'balance_due',
         )
         df = pd.DataFrame(list(invoices))
         if df.empty or len(df) < self.min_samples:
             return pd.DataFrame()
 
-        # Label: 1 = was paid late (or still overdue)
-        # Look up the first payment date for each invoice
-        payment_dates = {}
-        for inv_id in df['id'].unique():
-            first_pay = Payment.objects.filter(
-                company=self.company,
-                allocations__invoice_id=inv_id,
-            ).order_by('payment_date').values_list('payment_date', flat=True).first()
-            payment_dates[inv_id] = first_pay
+        # ── Label ───────────────────────────────────────────────────────
+        # 1 = paid late (first payment after due date) OR still overdue
+        # Batch-fetch first payment date per invoice via PaymentAllocation
+        from django.db.models import Min
+        alloc_qs = PaymentAllocation.objects.filter(
+            invoice_id__in=df['id'].tolist(),
+        ).values('invoice_id').annotate(
+            first_pay=Min('payment__payment_date'),
+        )
+        payment_dates = {r['invoice_id']: r['first_pay'] for r in alloc_qs}
 
         df['first_payment_date'] = df['id'].map(payment_dates)
         df['late'] = 0
         mask_overdue = df['status'] == 'overdue'
         mask_paid_late = (
             df['first_payment_date'].notna()
-            & (df['first_payment_date'] > df['due_date'])
+            & (pd.to_datetime(df['first_payment_date'])
+               > pd.to_datetime(df['due_date']))
         )
         df.loc[mask_overdue | mask_paid_late, 'late'] = 1
 
-        # Features
+        # ── Basic Features ──────────────────────────────────────────────
         df['invoice_amount'] = df['total_amount'].astype(float)
-        df['days_to_due'] = (
-            pd.to_datetime(df['due_date']) - pd.to_datetime(df['invoice_date'])
-        ).dt.days
-        df['invoice_month'] = pd.to_datetime(df['invoice_date']).dt.month
+        df['invoice_date_dt'] = pd.to_datetime(df['invoice_date'])
+        df['due_date_dt'] = pd.to_datetime(df['due_date'])
+        df['days_to_due'] = (df['due_date_dt'] - df['invoice_date_dt']).dt.days
+        df['invoice_month'] = df['invoice_date_dt'].dt.month
+        df['invoice_day_of_week'] = df['invoice_date_dt'].dt.dayofweek
 
-        # Customer historical stats
-        customer_stats = (
-            df.groupby('customer_id')
-            .agg(
-                cust_total_invoices=('id', 'count'),
-                cust_avg_amount=('invoice_amount', 'mean'),
-                cust_late_ratio=('late', 'mean'),
-            )
-            .reset_index()
+        # ── Customer Features (NO label leakage) ────────────────────────
+        # Sort by invoice_date so we can compute expanding (cumulative) stats
+        df = df.sort_values('invoice_date_dt').reset_index(drop=True)
+
+        # Cumulative count of invoices per customer (excluding current)
+        df['cust_total_invoices'] = (
+            df.groupby('customer_id').cumcount()  # 0-based count before this row
         )
-        df = df.merge(customer_stats, on='customer_id', how='left')
+        # Expanding mean of amount (excluding current row → shift)
+        df['cust_avg_amount'] = (
+            df.groupby('customer_id')['invoice_amount']
+            .transform(lambda s: s.expanding().mean().shift(1))
+        ).fillna(0)
+        # Expanding mean of days_to_due
+        df['cust_avg_days_to_due'] = (
+            df.groupby('customer_id')['days_to_due']
+            .transform(lambda s: s.expanding().mean().shift(1))
+        ).fillna(0)
+
+        # Historical average payment delay per customer
+        # (only using invoices chronologically BEFORE the current one)
+        df['payment_delay'] = np.nan
+        paid_mask = df['first_payment_date'].notna()
+        df.loc[paid_mask, 'payment_delay'] = (
+            pd.to_datetime(df.loc[paid_mask, 'first_payment_date'])
+            - df.loc[paid_mask, 'due_date_dt']
+        ).dt.days.astype(float)
+        df['cust_payment_delay_mean'] = (
+            df.groupby('customer_id')['payment_delay']
+            .transform(lambda s: s.expanding().mean().shift(1))
+        ).fillna(0)
+
+        # Amount relative to customer average
+        df['amount_vs_cust_avg'] = (
+            df['invoice_amount'] / df['cust_avg_amount'].clip(lower=0.01)
+        ).clip(0, 10).fillna(1)
 
         # Encode customer type
         df['customer_type_code'] = df['customer__customer_type'].astype(
             'category').cat.codes
 
-        feature_cols = [
-            'invoice_amount', 'days_to_due', 'invoice_month',
-            'cust_total_invoices', 'cust_avg_amount', 'cust_late_ratio',
-            'customer_type_code',
-        ]
-        df[feature_cols] = df[feature_cols].fillna(0)
+        df[self.FEATURE_COLS] = df[self.FEATURE_COLS].fillna(0)
         return df
 
     # ── Training ────────────────────────────────────────────────────────
@@ -124,12 +162,7 @@ class LatePaymentPredictor:
                         self.company.pk)
             return {'status': 'skipped', 'reason': 'insufficient_data'}
 
-        feature_cols = [
-            'invoice_amount', 'days_to_due', 'invoice_month',
-            'cust_total_invoices', 'cust_avg_amount', 'cust_late_ratio',
-            'customer_type_code',
-        ]
-        X = df[feature_cols].values
+        X = df[self.FEATURE_COLS].values
         y = df['late'].values
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -145,6 +178,10 @@ class LatePaymentPredictor:
         y_proba = clf.predict_proba(X_test)[:, 1]
         auc = roc_auc_score(y_test, y_proba) if len(set(y_test)) > 1 else 0.0
 
+        # Feature importance for interpretability
+        feat_imp = dict(zip(self.FEATURE_COLS,
+                            clf.feature_importances_.round(4).tolist()))
+
         # Persist
         registry = get_or_create_registry(
             self.company, MLModel.ModelType.LATE_PAYMENT,
@@ -152,21 +189,30 @@ class LatePaymentPredictor:
         )
         registry.training_samples = len(df)
         registry.accuracy_score = auc
-        registry.parameters = {'feature_cols': feature_cols}
+        registry.parameters = {
+            'feature_cols': self.FEATURE_COLS,
+            'feature_importance': feat_imp,
+            'late_ratio': round(float(y.mean()), 4),
+            'class_report': classification_report(
+                y_test, (y_proba > 0.5).astype(int), output_dict=True,
+            ),
+        }
         save_model_artefact(registry, {
             'classifier': clf,
-            'feature_cols': feature_cols,
+            'feature_cols': self.FEATURE_COLS,
         })
 
         self._model = clf
         self._registry = registry
 
-        logger.info('Late-payment model trained: AUC=%.4f samples=%d',
-                     auc, len(df))
+        logger.info('Late-payment model trained: AUC=%.4f samples=%d late_ratio=%.2f%%',
+                     auc, len(df), y.mean() * 100)
         return {
             'status': 'trained',
             'auc': round(auc, 4),
             'samples': len(df),
+            'late_ratio': round(float(y.mean()), 4),
+            'feature_importance': feat_imp,
         }
 
     # ── Prediction ──────────────────────────────────────────────────────
@@ -190,26 +236,75 @@ class LatePaymentPredictor:
         if self._model is None:
             return 0.0
 
-        # Build feature vector
+        # Build feature vector matching FEATURE_COLS order
         cust = invoice.customer
-        cust_invoices = Invoice.objects.filter(
-            company=self.company, customer=cust,
+
+        # Historical stats: only invoices BEFORE this one
+        past_invoices = Invoice.objects.filter(
+            company=self.company,
+            customer=cust,
+            invoice_date__lt=invoice.invoice_date,
         )
-        cust_total = cust_invoices.count() or 1
+        cust_total = past_invoices.count()
         cust_avg_amount = float(
-            cust_invoices.aggregate(avg=Avg('total_amount'))['avg'] or 0
+            past_invoices.aggregate(avg=Avg('total_amount'))['avg'] or 0
         )
-        cust_late = cust_invoices.filter(status='overdue').count() / cust_total
+        cust_avg_days = float(
+            past_invoices.filter(due_date__isnull=False).extra(
+                select={'dtd': "due_date - invoice_date"}
+            ).aggregate(avg=Avg('total_amount'))['avg'] or 0
+        )
+        # Simpler approach for avg days_to_due
+        past_vals = past_invoices.filter(due_date__isnull=False).values_list(
+            'invoice_date', 'due_date'
+        )
+        if past_vals:
+            avg_dtd = np.mean([(dd - id).days for id, dd in past_vals])
+        else:
+            avg_dtd = 0.0
+
+        # Average payment delay for past invoices
+        from django.db.models import Min
+        past_ids = list(past_invoices.values_list('id', flat=True)[:500])
+        if past_ids:
+            delays = []
+            allocs = PaymentAllocation.objects.filter(
+                invoice_id__in=past_ids,
+            ).values('invoice_id').annotate(
+                first_pay=Min('payment__payment_date'),
+            )
+            inv_dues = dict(past_invoices.filter(
+                id__in=[a['invoice_id'] for a in allocs],
+            ).values_list('id', 'due_date'))
+            for a in allocs:
+                dd = inv_dues.get(a['invoice_id'])
+                if dd and a['first_pay']:
+                    delays.append((a['first_pay'] - dd).days)
+            cust_delay_mean = np.mean(delays) if delays else 0.0
+        else:
+            cust_delay_mean = 0.0
+
+        days_to_due = (
+            (invoice.due_date - invoice.invoice_date).days
+            if invoice.due_date else 30
+        )
+        amount_vs_avg = (
+            float(invoice.total_amount) / max(cust_avg_amount, 0.01)
+            if cust_avg_amount > 0 else 1.0
+        )
 
         features = np.array([[
-            float(invoice.total_amount),
-            (invoice.due_date - invoice.invoice_date).days if invoice.due_date else 30,
-            invoice.invoice_date.month,
-            cust_total,
-            cust_avg_amount,
-            cust_late,
+            float(invoice.total_amount),       # invoice_amount
+            days_to_due,                       # days_to_due
+            invoice.invoice_date.month,        # invoice_month
+            invoice.invoice_date.weekday(),    # invoice_day_of_week
+            cust_total,                        # cust_total_invoices
+            cust_avg_amount,                   # cust_avg_amount
+            avg_dtd,                           # cust_avg_days_to_due
+            cust_delay_mean,                   # cust_payment_delay_mean
             {'individual': 0, 'company': 1, 'government': 2}.get(
-                cust.customer_type, 0),
+                cust.customer_type, 0),        # customer_type_code
+            min(amount_vs_avg, 10.0),          # amount_vs_cust_avg
         ]])
 
         prob = float(self._model.predict_proba(features)[0][1])

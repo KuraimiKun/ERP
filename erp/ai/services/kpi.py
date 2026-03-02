@@ -164,6 +164,14 @@ class KPIAnomalyDetector:
                 'value': overdue_count,
                 'ratio': round(ratio, 4),
             }
+        else:
+            # Condition cleared — auto-dismiss any stale overdue alerts
+            AIInsight.objects.filter(
+                company=self.company,
+                category=AIInsight.Category.REVENUE,
+                title__startswith='High overdue ratio',
+                is_dismissed=False,
+            ).update(is_dismissed=True, dismissed_at=timezone.now())
         return None
 
     def _check_inventory_movements(self) -> dict | None:

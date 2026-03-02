@@ -35,12 +35,15 @@ class AttritionPredictor:
         'tenure_days', 'salary', 'leave_frequency',
         'employment_type_code', 'department_turnover_rate',
         'has_reports_to', 'leave_balance_ratio',
+        'avg_overtime_hours', 'salary_vs_dept_avg',
+        'attendance_rate',
     ]
 
     def __init__(self, company):
         self.company = company
         self.min_samples = getattr(settings, 'ML_MIN_TRAINING_SAMPLES', 30)
         self._model = None
+        self._scaler = None
         self._registry = None
 
     # ── Dataset ─────────────────────────────────────────────────────────
@@ -108,6 +111,65 @@ class AttritionPredictor:
             (df['annual_leave_balance'].fillna(0).astype(float)
              + df['sick_leave_balance'].fillna(0).astype(float)) / 60
         ).clip(0, 1)
+
+        # ── Additional features from Attendance & Payroll ───────────────
+        # Average overtime hours from attendance records
+        overtime_data = dict(
+            Attendance.objects.filter(
+                employee__company=self.company,
+            ).values('employee_id').annotate(
+                avg_ot=Avg('overtime_hours'),
+            ).values_list('employee_id', 'avg_ot')
+        )
+        df['avg_overtime_hours'] = (
+            df['id'].map(overtime_data).astype(float)
+        )
+        # Fill missing with draws from observed distribution (avoids
+        # zero-variance leakage that arises when all missing rows get
+        # the same constant).
+        ot_known = df['avg_overtime_hours'].dropna()
+        ot_missing = df['avg_overtime_hours'].isna()
+        if len(ot_known) > 0 and ot_missing.any():
+            ot_mu, ot_sig = ot_known.mean(), max(ot_known.std(), 0.01)
+            df.loc[ot_missing, 'avg_overtime_hours'] = np.random.normal(
+                ot_mu, ot_sig, size=ot_missing.sum(),
+            ).clip(min=0)
+        else:
+            df['avg_overtime_hours'] = df['avg_overtime_hours'].fillna(0)
+
+        # Salary relative to department average
+        dept_salary = (
+            df.groupby('department_id')['salary']
+            .transform('mean')
+        ).clip(lower=1)
+        df['salary_vs_dept_avg'] = df['salary'] / dept_salary
+
+        # Attendance rate (present days / total work days)
+        att_stats = (
+            Attendance.objects.filter(
+                employee__company=self.company,
+            ).values('employee_id').annotate(
+                total_days=Count('id'),
+                present_days=Count('id', filter=Q(is_present=True)),
+            )
+        )
+        att_dict = {
+            r['employee_id']: (
+                r['present_days'] / max(r['total_days'], 1)
+            ) for r in att_stats
+        }
+        df['attendance_rate'] = df['id'].map(att_dict).astype(float)
+        # Fill missing with draws from observed distribution
+        att_known = df['attendance_rate'].dropna()
+        att_missing = df['attendance_rate'].isna()
+        if len(att_known) > 0 and att_missing.any():
+            att_mu, att_sig = att_known.mean(), max(att_known.std(), 0.01)
+            df['attendance_rate'] = df['attendance_rate'].copy()
+            df.loc[att_missing, 'attendance_rate'] = np.random.normal(
+                att_mu, att_sig, size=att_missing.sum(),
+            ).clip(0, 1)
+        else:
+            df['attendance_rate'] = df['attendance_rate'].fillna(0.9)
 
         return df
 
@@ -196,6 +258,44 @@ class AttritionPredictor:
         emp_types = {'full_time': 0, 'part_time': 1, 'contract': 2,
                      'intern': 3, 'freelance': 4}
 
+        # Avg overtime hours from attendance
+        avg_ot_val = Attendance.objects.filter(
+            employee=employee,
+        ).aggregate(avg_ot=Avg('overtime_hours'))['avg_ot']
+        if avg_ot_val is None:
+            # Use company-wide mean to avoid leakage
+            avg_ot_val = Attendance.objects.filter(
+                employee__company=self.company,
+            ).aggregate(avg_ot=Avg('overtime_hours'))['avg_ot'] or 0
+        avg_ot = float(avg_ot_val)
+
+        # Salary vs department average
+        dept_avg_salary = dept_employees.aggregate(
+            avg_sal=Avg('basic_salary'))['avg_sal'] or 1
+        salary_vs_dept = float(employee.basic_salary) / max(float(dept_avg_salary), 1)
+
+        # Attendance rate
+        att_data = Attendance.objects.filter(
+            employee=employee,
+        ).aggregate(
+            total=Count('id'),
+            present=Count('id', filter=Q(is_present=True)),
+        )
+        if att_data['total']:
+            att_rate = att_data['present'] / max(att_data['total'], 1)
+        else:
+            # Use company-wide mean to avoid leakage
+            co_att = Attendance.objects.filter(
+                employee__company=self.company,
+            ).aggregate(
+                total=Count('id'),
+                present=Count('id', filter=Q(is_present=True)),
+            )
+            att_rate = (
+                co_att['present'] / max(co_att['total'], 1)
+                if co_att['total'] else 0.9
+            )
+
         features = np.array([[
             tenure,
             float(employee.basic_salary),
@@ -205,6 +305,9 @@ class AttritionPredictor:
             1 if employee.reports_to else 0,
             (float(employee.annual_leave_balance or 0)
              + float(employee.sick_leave_balance or 0)) / 60,
+            float(avg_ot),
+            salary_vs_dept,
+            att_rate,
         ]])
 
         features_scaled = self._scaler.transform(features)
