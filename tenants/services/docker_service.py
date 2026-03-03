@@ -541,7 +541,7 @@ class DockerService:
                 for b in bindings:
                     mappings.append({
                         'container_port': container_port,
-                        'host_ip': b.get('HostIp', '0.0.0.0'),
+                        'host_ip': b.get('HostIp', '127.0.0.1'),
                         'host_port': b.get('HostPort', ''),
                     })
             else:

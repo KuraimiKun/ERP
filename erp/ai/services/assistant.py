@@ -6,6 +6,7 @@ plain Arabic or English.  Generates safe read-only Django ORM queries,
 validates them, and returns formatted results.
 """
 
+import ast
 import json
 import logging
 import re
@@ -151,11 +152,62 @@ class ERPAssistant:
             return match.group(1).strip()
         return text.strip()
 
+    # AST node types allowed in generated code
+    _ALLOWED_AST_NODES = {
+        ast.Module, ast.Expr, ast.Assign, ast.Name, ast.Store, ast.Load,
+        ast.Attribute, ast.Call, ast.keyword, ast.Constant,
+        ast.List, ast.Tuple, ast.Dict, ast.Set,
+        ast.Subscript, ast.Slice, ast.Index,  # Index for older Python
+        ast.BinOp, ast.UnaryOp, ast.BoolOp, ast.Compare,
+        ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, ast.Pow,
+        ast.USub, ast.UAdd, ast.Not,
+        ast.And, ast.Or,
+        ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
+        ast.In, ast.NotIn, ast.Is, ast.IsNot,
+        ast.IfExp, ast.ListComp, ast.SetComp, ast.DictComp,
+        ast.GeneratorExp, ast.comprehension,
+        ast.JoinedStr, ast.FormattedValue,  # f-strings
+        ast.Starred,
+    }
+
     def _validate_code(self, code: str) -> str | None:
-        """Return a violation message if code is unsafe, else None."""
+        """Return a violation message if code is unsafe, else None.
+
+        Performs two layers of validation:
+        1. Regex pattern blocklist (fast reject).
+        2. AST whitelist – only explicitly allowed node types pass.
+        """
+        # Layer 1: regex blocklist
         for pattern in self.FORBIDDEN_PATTERNS:
             if re.search(pattern, code, re.IGNORECASE):
                 return f'Forbidden pattern: {pattern}'
+
+        # Layer 2: parse and walk the AST
+        try:
+            tree = ast.parse(code, mode='exec')
+        except SyntaxError as exc:
+            return f'Code has syntax errors: {exc}'
+
+        for node in ast.walk(tree):
+            if type(node) not in self._ALLOWED_AST_NODES:
+                return f'Disallowed construct: {type(node).__name__}'
+
+            # Block dunder attribute access (e.g. __class__, __import__)
+            if isinstance(node, ast.Attribute) and node.attr.startswith('__'):
+                return f'Access to dunder attribute blocked: {node.attr}'
+
+            # Block calls to non-whitelisted names at the top level
+            # (e.g. prevent exec(), eval(), compile(), type() etc.)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+                if node.id in ('exec', 'eval', 'compile', '__import__',
+                               'globals', 'locals', 'vars', 'dir',
+                               'getattr', 'setattr', 'delattr',
+                               'breakpoint', 'exit', 'quit', 'help',
+                               'memoryview', 'bytearray', 'bytes',
+                               'classmethod', 'staticmethod', 'property',
+                               'super', 'type', 'object'):
+                    return f'Blocked built-in reference: {node.id}'
+
         return None
 
     def _execute(self, code: str) -> dict:
@@ -204,7 +256,9 @@ class ERPAssistant:
         }
 
         try:
-            exec(code, {'__builtins__': {}}, namespace)  # noqa: S102
+            # Compile to bytecode first (validated by _validate_code AST check)
+            bytecode = compile(code, '<ai-query>', 'exec')  # noqa: S102
+            exec(bytecode, {'__builtins__': {}}, namespace)  # noqa: S102
         except Exception as exc:
             logger.warning('Generated code execution failed: %s\nCode:\n%s',
                            exc, code)

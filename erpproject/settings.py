@@ -19,10 +19,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production-please!')
+_secret = os.getenv('SECRET_KEY', '')
+if not _secret:
+    import warnings
+    _secret = 'django-insecure-change-this-in-production-please!'
+    warnings.warn(
+        'SECRET_KEY is not set! Using an insecure default. '
+        'Set the SECRET_KEY environment variable before deploying.',
+        stacklevel=1,
+    )
+SECRET_KEY = _secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
+# Defaults to False so a missing .env in production does NOT accidentally
+# expose debug pages.
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -30,8 +41,9 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 if not DEBUG:
     # Tell Django it's behind a trusted SSL-terminating proxy (Nginx)
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    # Don't redirect in Django — Nginx handles HTTP→HTTPS redirect
-    SECURE_SSL_REDIRECT = False
+    # Enable SSL redirect as defence-in-depth; disable only if a
+    # reverse-proxy (Nginx) already handles HTTP→HTTPS.
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     # 1 year HSTS; remove includeSubDomains if subdomains don't use HTTPS
