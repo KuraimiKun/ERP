@@ -1,0 +1,72 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ database.display_name }} - {% trans "Locks" %}{% endblock %}
+{% block page_title %}{% trans "Database Locks" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_list' %}">{% trans "Databases" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_detail' pk=database.pk %}">{{ database.display_name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Locks" %}</li>
+    </ol>
+</nav>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'tenants:pa_db_performance' pk=database.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-speedometer2 me-1"></i>{% trans "Performance" %}</a>
+    <a href="{% url 'tenants:pa_db_connections' pk=database.pk %}" class="btn btn-outline-info btn-sm"><i class="bi bi-people me-1"></i>{% trans "Connections" %}</a>
+    <button class="btn btn-outline-secondary btn-sm ms-auto" onclick="location.reload()"><i class="bi bi-arrow-repeat me-1"></i>{% trans "Refresh" %}</button>
+</div>
+
+<div class="pa-card">
+    <div class="pa-card-header">
+        <h5><i class="bi bi-lock me-2"></i>{% trans "Current Locks" %} ({{ locks|length }})</h5>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if locks %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>{% trans "User" %}</th>
+                        <th>{% trans "Lock Type" %}</th>
+                        <th>{% trans "Mode" %}</th>
+                        <th>{% trans "Granted" %}</th>
+                        <th>{% trans "Relation" %}</th>
+                        <th>{% trans "State" %}</th>
+                        <th>{% trans "Query" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in locks %}
+                    <tr class="{% if not l.granted %}table-warning{% endif %}">
+                        <td><code>{{ l.pid }}</code></td>
+                        <td>{{ l.usename }}</td>
+                        <td><span class="badge bg-secondary-subtle text-secondary">{{ l.locktype }}</span></td>
+                        <td><code>{{ l.mode }}</code></td>
+                        <td>
+                            {% if l.granted %}
+                            <span class="badge bg-success-subtle text-success">{% trans "Yes" %}</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger">{% trans "Waiting" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ l.relation|default:"—" }}</td>
+                        <td>{{ l.state|default:"—" }}</td>
+                        <td><code style="font-size:.75rem;word-break:break-all">{{ l.query|truncatechars:80 }}</code></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-unlock fs-1 mb-2 d-block"></i>
+            {% trans "No locks currently held." %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

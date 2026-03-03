@@ -1,0 +1,134 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ database.display_name }} - {% trans "Tables" %}{% endblock %}
+{% block page_title %}{% trans "Table Browser" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_list' %}">{% trans "Databases" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_detail' pk=database.pk %}">{{ database.display_name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Tables" %}</li>
+    </ol>
+</nav>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'tenants:pa_db_performance' pk=database.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-speedometer2 me-1"></i>{% trans "Performance" %}</a>
+    <a href="{% url 'tenants:pa_db_connections' pk=database.pk %}" class="btn btn-outline-info btn-sm"><i class="bi bi-people me-1"></i>{% trans "Connections" %}</a>
+    <a href="{% url 'tenants:pa_db_maintenance' pk=database.pk %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-wrench me-1"></i>{% trans "Maintenance" %}</a>
+</div>
+
+<!-- Tables -->
+<div class="pa-card mb-4">
+    <div class="pa-card-header d-flex justify-content-between align-items-center">
+        <h5><i class="bi bi-table me-2"></i>{% trans "Tables" %} ({{ tables|length }})</h5>
+        <input type="text" id="tableSearch" class="form-control form-control-sm" style="width:200px" placeholder="{% trans 'Search tables...' %}">
+    </div>
+    <div class="pa-card-body p-0">
+        {% if tables %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0" id="tablesTable">
+                <thead>
+                    <tr>
+                        <th>{% trans "Schema" %}</th>
+                        <th>{% trans "Table" %}</th>
+                        <th class="text-end">{% trans "Live Rows" %}</th>
+                        <th class="text-end">{% trans "Dead Rows" %}</th>
+                        <th class="text-end">{% trans "Total Size" %}</th>
+                        <th class="text-end">{% trans "Table Size" %}</th>
+                        <th class="text-end">{% trans "Index Size" %}</th>
+                        <th>{% trans "Last Vacuum" %}</th>
+                        <th>{% trans "Last Analyze" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tables %}
+                    <tr>
+                        <td><code>{{ t.schemaname }}</code></td>
+                        <td><code class="fw-bold">{{ t.table_name }}</code></td>
+                        <td class="text-end">{{ t.live_rows }}</td>
+                        <td class="text-end">
+                            {% if t.dead_rows > 1000 %}
+                            <span class="text-danger fw-bold">{{ t.dead_rows }}</span>
+                            {% elif t.dead_rows > 100 %}
+                            <span class="text-warning">{{ t.dead_rows }}</span>
+                            {% else %}
+                            {{ t.dead_rows }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold">{{ t.total_size }}</td>
+                        <td class="text-end">{{ t.table_size }}</td>
+                        <td class="text-end">{{ t.index_size }}</td>
+                        <td><small>{{ t.last_vacuum|default:"never"|truncatechars:16 }}</small></td>
+                        <td><small>{{ t.last_analyze|default:"never"|truncatechars:16 }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-table fs-1 mb-2 d-block"></i>
+            {% trans "No tables found." %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Indexes -->
+{% if indexes %}
+<div class="pa-card">
+    <div class="pa-card-header"><h5><i class="bi bi-diagram-2 me-2"></i>{% trans "Index Statistics" %} ({{ indexes|length }})</h5></div>
+    <div class="pa-card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Table" %}</th>
+                        <th>{% trans "Index" %}</th>
+                        <th class="text-end">{% trans "Scans" %}</th>
+                        <th class="text-end">{% trans "Tuples Read" %}</th>
+                        <th class="text-end">{% trans "Tuples Fetched" %}</th>
+                        <th class="text-end">{% trans "Size" %}</th>
+                        <th>{% trans "Health" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for idx in indexes %}
+                    <tr>
+                        <td><code>{{ idx.table_name }}</code></td>
+                        <td><code>{{ idx.index_name }}</code></td>
+                        <td class="text-end">{{ idx.scans }}</td>
+                        <td class="text-end">{{ idx.tuples_read }}</td>
+                        <td class="text-end">{{ idx.tuples_fetched }}</td>
+                        <td class="text-end">{{ idx.index_size }}</td>
+                        <td>
+                            {% if idx.scans == 0 and idx.index_size_bytes > 65536 %}
+                            <span class="badge bg-danger-subtle text-danger">{% trans "Unused" %}</span>
+                            {% elif idx.scans < 10 %}
+                            <span class="badge bg-warning-subtle text-warning">{% trans "Rarely Used" %}</span>
+                            {% else %}
+                            <span class="badge bg-success-subtle text-success">{% trans "Active" %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+document.getElementById('tableSearch')?.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#tablesTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,363 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard" %}{% endblock %}
+{% block page_title %}{% trans "Platform Dashboard" %}{% endblock %}
+
+{% block content %}
+<!-- Stat Cards Row -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="pa-stat">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">{% trans "Total Users" %}</div>
+                    <div class="stat-value text-dark">{{ total_users }}</div>
+                    <div class="stat-change text-success"><i class="bi bi-arrow-up"></i> {{ new_users_7d }} {% trans "this week" %}</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(99,102,241,.1); color: #6366f1;">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="pa-stat">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">{% trans "Pending Approvals" %}</div>
+                    <div class="stat-value text-warning">{{ pending_users }}</div>
+                    <div class="stat-change text-muted">{% trans "Awaiting review" %}</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(245,158,11,.1); color: #f59e0b;">
+                    <i class="bi bi-person-exclamation"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="pa-stat">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">{% trans "Active Databases" %}</div>
+                    <div class="stat-value text-success">{{ active_databases }}</div>
+                    <div class="stat-change text-muted">{{ total_databases }} {% trans "total" %}</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(34,197,94,.1); color: #22c55e;">
+                    <i class="bi bi-database-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="pa-stat">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">{% trans "Active Servers" %}</div>
+                    <div class="stat-value text-primary">{{ active_servers }}</div>
+                    <div class="stat-change text-muted">{{ total_servers }} {% trans "total" %}</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(59,130,246,.1); color: #3b82f6;">
+                    <i class="bi bi-hdd-rack"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-sm-4 col-6">
+        <div class="pa-card text-center p-3">
+            <div class="text-success fw-bold fs-4">{{ approved_users }}</div>
+            <small class="text-muted">{% trans "Approved" %}</small>
+        </div>
+    </div>
+    <div class="col-xl-2 col-sm-4 col-6">
+        <div class="pa-card text-center p-3">
+            <div class="text-danger fw-bold fs-4">{{ rejected_users }}</div>
+            <small class="text-muted">{% trans "Rejected" %}</small>
+        </div>
+    </div>
+    <div class="col-xl-2 col-sm-4 col-6">
+        <div class="pa-card text-center p-3">
+            <div class="text-purple fw-bold fs-4" style="color:#7c3aed">{{ suspended_users }}</div>
+            <small class="text-muted">{% trans "Suspended" %}</small>
+        </div>
+    </div>
+    <div class="col-xl-2 col-sm-4 col-6">
+        <div class="pa-card text-center p-3">
+            <div class="text-info fw-bold fs-4">{{ total_assignments }}</div>
+            <small class="text-muted">{% trans "Active Assignments" %}</small>
+        </div>
+    </div>
+    <div class="col-xl-2 col-sm-4 col-6">
+        <div class="pa-card text-center p-3">
+            <div class="text-primary fw-bold fs-4">{{ new_users_30d }}</div>
+            <small class="text-muted">{% trans "New (30 days)" %}</small>
+        </div>
+    </div>
+    <div class="col-xl-2 col-sm-4 col-6">
+        <div class="pa-card text-center p-3">
+            <div class="text-success fw-bold fs-4">{{ new_users_7d }}</div>
+            <small class="text-muted">{% trans "New (7 days)" %}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-graph-up me-2"></i>{% trans "User Signups (Last 30 Days)" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="signupsChart" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-database me-2"></i>{% trans "Databases (6 Months)" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="dbChart" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending & Server Capacity Row -->
+<div class="row g-3 mb-4">
+    <!-- Pending Approvals -->
+    <div class="col-lg-6">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-person-exclamation me-2 text-warning"></i>{% trans "Pending Approvals" %}</h5>
+                <a href="{% url 'tenants:pa_user_list' %}?status=pending" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if pending_list %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "User" %}</th>
+                                <th>{% trans "Company" %}</th>
+                                <th>{% trans "Since" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in pending_list %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="user-avatar" style="background: #f59e0b; width: 32px; height: 32px; font-size: .75rem;">
+                                            {{ u.first_name|first|default:"?" }}{{ u.last_name|first|default:"" }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ u.get_full_name }}</div>
+                                            <small class="text-muted">{{ u.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><small>{{ u.company_name|default:"-" }}</small></td>
+                                <td><small class="text-muted">{{ u.created_at|timesince }} {% trans "ago" %}</small></td>
+                                <td>
+                                    <a href="{% url 'tenants:pa_user_detail' u.pk %}" class="btn btn-sm btn-outline-primary action-btn">{% trans "Review" %}</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-check-circle text-success"></i>
+                    <p>{% trans "No pending approvals" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Server Capacity -->
+    <div class="col-lg-6">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-hdd-rack me-2 text-primary"></i>{% trans "Server Capacity" %}</h5>
+                <a href="{% url 'tenants:pa_server_list' %}" class="btn btn-sm btn-outline-primary">{% trans "Manage" %}</a>
+            </div>
+            <div class="pa-card-body">
+                {% if servers_with_capacity %}
+                {% for s in servers_with_capacity %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold">{{ s.name }}</span>
+                        <small class="text-muted">{{ s.db_count }} / {{ s.max_databases }}</small>
+                    </div>
+                    {% widthratio s.db_count s.max_databases 100 as pct %}
+                    <div class="progress" style="height: 8px; border-radius: 4px;">
+                        <div class="progress-bar {% if pct|add:"0" > 80 %}bg-danger{% elif pct|add:"0" > 50 %}bg-warning{% else %}bg-success{% endif %}"
+                             role="progressbar" style="width: {{ pct }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-hdd-rack"></i>
+                    <p>{% trans "No active servers" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity & Recent Users -->
+<div class="row g-3 mb-4">
+    <!-- Recent Logs -->
+    <div class="col-lg-7">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-journal-text me-2"></i>{% trans "Recent System Activity" %}</h5>
+                <a href="{% url 'tenants:pa_logs' %}" class="btn btn-sm btn-outline-primary">{% trans "All Logs" %}</a>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if recent_logs %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Action" %}</th>
+                                <th>{% trans "Message" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-status badge-{{ log.level }}">
+                                        {{ log.get_action_display }}
+                                    </span>
+                                </td>
+                                <td><small>{{ log.message|truncatechars:80 }}</small></td>
+                                <td><small class="text-muted">{{ log.created_at|timesince }} {% trans "ago" %}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-journal-text"></i>
+                    <p>{% trans "No recent activity" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="col-lg-5">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-clock-history me-2"></i>{% trans "Recent Registrations" %}</h5>
+                <a href="{% url 'tenants:pa_user_list' %}" class="btn btn-sm btn-outline-primary">{% trans "All Users" %}</a>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if recent_users %}
+                <ul class="list-group list-group-flush">
+                    {% for u in recent_users %}
+                    <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                        <div class="user-avatar" style="background: {% if u.approval_status == 'approved' %}#22c55e{% elif u.approval_status == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}; width: 32px; height: 32px; font-size: .7rem;">
+                            {{ u.first_name|first|default:"?" }}
+                        </div>
+                        <div class="flex-grow-1 min-width-0">
+                            <div class="fw-semibold text-truncate" style="font-size: .85rem;">{{ u.get_full_name }}</div>
+                            <small class="text-muted">{{ u.email }}</small>
+                        </div>
+                        <span class="badge badge-status badge-{{ u.approval_status }}">{{ u.get_approval_status_display }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-people"></i>
+                    <p>{% trans "No users yet" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // User Signups Chart
+    const signupsCtx = document.getElementById('signupsChart');
+    if (signupsCtx) {
+        new Chart(signupsCtx, {
+            type: 'line',
+            data: {
+                labels: {{ signups_labels|safe }},
+                datasets: [{
+                    label: '{% trans "New Users" %}',
+                    data: {{ signups_data|safe }},
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99,102,241,.08)',
+                    fill: true,
+                    tension: .4,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                    x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Databases Chart
+    const dbCtx = document.getElementById('dbChart');
+    if (dbCtx) {
+        new Chart(dbCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ db_labels|safe }},
+                datasets: [{
+                    label: '{% trans "Databases Created" %}',
+                    data: {{ db_data|safe }},
+                    backgroundColor: [
+                        'rgba(99,102,241,.7)', 'rgba(34,197,94,.7)', 'rgba(245,158,11,.7)',
+                        'rgba(59,130,246,.7)', 'rgba(168,85,247,.7)', 'rgba(239,68,68,.7)',
+                    ],
+                    borderRadius: 6,
+                    barPercentage: .6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                    x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -23,7 +23,7 @@ from .models import (
     TenantUser, PostgresServer, TenantDatabase,
     DatabaseAssignment, ServerLog
 )
-from .forms import UserApprovalForm, UserRejectionForm, DockerServerForm, UserAssignExistingDatabaseForm
+from .platform_admin.forms import UserApprovalForm, UserRejectionForm, DockerServerForm, UserAssignExistingDatabaseForm
 from .services.database_service import DatabaseService
 from .services.docker_service import DockerService
 

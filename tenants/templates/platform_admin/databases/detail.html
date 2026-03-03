@@ -1,0 +1,284 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ database.display_name|default:database.name }} - {% trans "Database Detail" %}{% endblock %}
+{% block page_title %}{% trans "Database Detail" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_list' %}">{% trans "Databases" %}</a></li>
+        <li class="breadcrumb-item active">{{ database.display_name|default:database.name }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- Left Column -->
+    <div class="col-lg-4">
+        <div class="pa-card mb-4">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-3" style="width:64px;height:64px;font-size:1.75rem;border-radius:.75rem;
+                    {% if database.status == 'active' %}background:rgba(34,197,94,.1);color:#22c55e{% elif database.status == 'error' %}background:rgba(239,68,68,.1);color:#ef4444{% else %}background:rgba(59,130,246,.1);color:#3b82f6{% endif %}">
+                    <i class="bi bi-database{% if database.status == 'active' %}-check{% elif database.status == 'error' %}-x{% endif %}"></i>
+                </div>
+                <h5 class="fw-bold mb-1">{{ database.display_name|default:database.name }}</h5>
+                <small class="text-muted d-block mb-2">{{ database.name }}</small>
+                <span class="badge badge-status badge-{{ database.status }} fs-6">{{ database.get_status_display }}</span>
+            </div>
+        </div>
+
+        <!-- Connection Info -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Connection Info" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="detail-label">{% trans "Server" %}</td>
+                        <td>
+                            <a href="{% url 'tenants:pa_server_detail' database.server.pk %}">{{ database.server.name }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Host" %}</td>
+                        <td><code>{{ database.server.host }}:{{ database.server.port }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "DB Name" %}</td>
+                        <td><code>{{ database.name }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "DB User" %}</td>
+                        <td><code>{{ database.db_username }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Migrated" %}</td>
+                        <td>
+                            {% if database.is_migrated %}
+                            <i class="bi bi-check-circle text-success"></i> {% trans "Yes" %}
+                            {% if database.migrated_at %}
+                            <br><small class="text-muted">{{ database.migrated_at|date:"M d, Y H:i" }}</small>
+                            {% endif %}
+                            {% else %}
+                            <i class="bi bi-x-circle text-danger"></i> {% trans "No" %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Created" %}</td>
+                        <td>{{ database.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% if database.created_by %}
+                    <tr>
+                        <td class="detail-label">{% trans "Created By" %}</td>
+                        <td>{{ database.created_by.get_full_name }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Actions" %}</h5></div>
+            <div class="pa-card-body d-grid gap-2">
+                <form method="post" action="{% url 'tenants:pa_database_test' database.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-plug me-1"></i>{% trans "Test Connection" %}
+                    </button>
+                </form>
+                <form method="post" action="{% url 'tenants:pa_database_migrate' database.pk %}"
+                      onsubmit="return confirm('{% trans "Run migrations on this database?" %}')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                        <i class="bi bi-arrow-repeat me-1"></i>{% trans "Run Migrations" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Enterprise Operations -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-lightning me-2"></i>{% trans "Enterprise Operations" %}</h5></div>
+            <div class="pa-card-body d-grid gap-2">
+                <a href="{% url 'tenants:pa_db_performance' database.pk %}" class="btn btn-outline-info btn-sm w-100">
+                    <i class="bi bi-speedometer2 me-1"></i>{% trans "Performance" %}
+                </a>
+                <a href="{% url 'tenants:pa_db_tables' database.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-table me-1"></i>{% trans "Tables & Indexes" %}
+                </a>
+                <a href="{% url 'tenants:pa_db_connections' database.pk %}" class="btn btn-outline-success btn-sm w-100">
+                    <i class="bi bi-plug me-1"></i>{% trans "Active Connections" %}
+                </a>
+                <a href="{% url 'tenants:pa_db_locks' database.pk %}" class="btn btn-outline-warning btn-sm w-100">
+                    <i class="bi bi-lock me-1"></i>{% trans "Database Locks" %}
+                </a>
+                <a href="{% url 'tenants:pa_db_maintenance' database.pk %}" class="btn btn-outline-dark btn-sm w-100">
+                    <i class="bi bi-wrench me-1"></i>{% trans "Maintenance" %}
+                </a>
+                <a href="{% url 'tenants:pa_db_clone' database.pk %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-copy me-1"></i>{% trans "Clone Database" %}
+                </a>
+            </div>
+        </div>
+
+        {% if database.error_message %}
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5 class="text-danger">{% trans "Error" %}</h5></div>
+            <div class="pa-card-body">
+                <div class="alert alert-danger mb-0" style="font-size:.85rem">{{ database.error_message }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-8">
+        <!-- Assigned Users -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-people me-2"></i>{% trans "Assigned Users" %} ({{ assignments|length }})</h5>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if assignments %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "User" %}</th>
+                                <th>{% trans "Role" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Assigned" %}</th>
+                                <th>{% trans "By" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in assignments %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="user-avatar" style="background:{% if a.is_active %}#22c55e{% else %}#94a3b8{% endif %};width:32px;height:32px;font-size:.7rem">
+                                            {{ a.user.first_name|first|default:"?" }}
+                                        </div>
+                                        <div>
+                                            <a href="{% url 'tenants:pa_user_detail' a.user.pk %}" class="fw-semibold text-decoration-none">{{ a.user.get_full_name }}</a>
+                                            <br><small class="text-muted">{{ a.user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-status badge-{{ a.role }}">{{ a.get_role_display }}</span></td>
+                                <td>
+                                    {% if a.is_active %}
+                                    <span class="badge badge-status badge-active">{% trans "Active" %}</span>
+                                    {% else %}
+                                    <span class="badge badge-status badge-inactive">{% trans "Inactive" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td><small class="text-muted">{{ a.assigned_at|date:"M d, Y" }}</small></td>
+                                <td><small class="text-muted">{{ a.assigned_by.get_full_name|default:"-" }}</small></td>
+                                <td>
+                                    <a href="{% url 'tenants:pa_user_detail' a.user.pk %}" class="btn btn-sm btn-outline-primary action-btn">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-people"></i>
+                    <p>{% trans "No users assigned to this database" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Invite Links -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-link-45deg me-2"></i>{% trans "Invite Links" %}</h5>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if invite_links %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Company" %}</th>
+                                <th>{% trans "Token" %}</th>
+                                <th>{% trans "Registrations" %}</th>
+                                <th>{% trans "Active" %}</th>
+                                <th>{% trans "Created" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for link in invite_links %}
+                            <tr>
+                                <td>{{ link.company_name|default:"-" }}</td>
+                                <td><code style="font-size:.75rem">{{ link.token|truncatechars:20 }}</code></td>
+                                <td>
+                                    {{ link.registration_count }}{% if link.max_registrations %} / {{ link.max_registrations }}{% endif %}
+                                </td>
+                                <td>
+                                    {% if link.is_valid %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                    {% endif %}
+                                </td>
+                                <td><small class="text-muted">{{ link.created_at|date:"M d, Y" }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-link-45deg"></i>
+                    <p>{% trans "No invite links for this database" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="pa-card">
+            <div class="pa-card-header"><h5><i class="bi bi-journal-text me-2"></i>{% trans "Database Logs" %}</h5></div>
+            <div class="pa-card-body p-0">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Level" %}</th>
+                                <th>{% trans "Action" %}</th>
+                                <th>{% trans "Message" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td><span class="badge badge-status badge-{{ log.level }}">{{ log.get_level_display }}</span></td>
+                                <td><small class="fw-semibold">{{ log.get_action_display }}</small></td>
+                                <td><small>{{ log.message|truncatechars:80 }}</small></td>
+                                <td><small class="text-muted">{{ log.created_at|timesince }} {% trans "ago" %}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-journal-text"></i>
+                    <p>{% trans "No logs" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

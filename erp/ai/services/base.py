@@ -167,6 +167,8 @@ def _notify_company_users(insight: AIInsight):
     """
     try:
         from erp.models import Employee, Notification
+        from tenants.models import DatabaseAssignment
+        from tenants.routers import get_current_db_alias
 
         notif_type = _SEVERITY_TO_NOTIF_TYPE.get(
             insight.severity, Notification.NotificationType.INFO,
@@ -181,24 +183,58 @@ def _notify_company_users(insight: AIInsight):
         # AI dashboard so the user can see full details.
         action_url = insight.action_url or '/erp/ai/'
 
-        recipients = (
-            Employee.objects.filter(
+        recipients = [
+            emp.user
+            for emp in Employee.objects.filter(
                 company=insight.company,
                 user__isnull=False,
                 employment_status='active',
-            )
-            .select_related('user')
-        )
+            ).select_related('user')
+            if emp.user and emp.user.is_active
+        ]
+
+        # Fallback for imported/demo datasets where employees are not linked
+        # to user accounts: notify active approved users assigned to the
+        # current tenant database.
+        if not recipients:
+            current_db_alias = get_current_db_alias()
+            assignment_qs = DatabaseAssignment.objects.filter(
+                is_active=True,
+                user__is_active=True,
+                user__is_approved=True,
+                database__status='active',
+            ).select_related('user', 'database')
+
+            # In this codebase, tenant context is tracked via alias like
+            # "tenant_<database_uuid>". Use that for precise recipient
+            # scoping instead of the SQL connection NAME.
+            if (
+                current_db_alias
+                and current_db_alias != 'default'
+                and current_db_alias.startswith('tenant_')
+            ):
+                tenant_db_id = current_db_alias.replace('tenant_', '', 1)
+                assignment_qs = assignment_qs.filter(database_id=tenant_db_id)
+            recipients = [a.user for a in assignment_qs if a.user]
+
+        # De-duplicate recipients by user id
+        deduped_recipients = []
+        seen_user_ids = set()
+        for user in recipients:
+            if user.pk in seen_user_ids:
+                continue
+            seen_user_ids.add(user.pk)
+            deduped_recipients.append(user)
 
         notifications = [
             Notification(
-                recipient=emp.user,
+                recipient=user,
                 notification_type=notif_type,
                 title=f'[AI] {insight.title}',
                 message=message,
                 action_url=action_url,
             )
-            for emp in recipients
+            for user in deduped_recipients
         ]
 
         if notifications:

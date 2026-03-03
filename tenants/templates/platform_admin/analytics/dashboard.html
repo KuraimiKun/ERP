@@ -1,0 +1,295 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Analytics" %}{% endblock %}
+{% block page_title %}{% trans "Analytics & Reports" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h3>{% trans "Analytics Dashboard" %}</h3>
+        <p>{% trans "Platform-wide analytics, trends, and data exports" %}</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <div class="dropdown">
+            <button class="btn btn-outline-success dropdown-toggle btn-sm" data-bs-toggle="dropdown">
+                <i class="bi bi-download me-1"></i> {% trans "Export" %}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'tenants:pa_export_users' %}"><i class="bi bi-people me-2"></i>{% trans "Users (CSV)" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'tenants:pa_export_users' %}?format=json"><i class="bi bi-filetype-json me-2"></i>{% trans "Users (JSON)" %}</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'tenants:pa_export_databases' %}"><i class="bi bi-database me-2"></i>{% trans "Databases (CSV)" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'tenants:pa_export_logs' %}"><i class="bi bi-journal-text me-2"></i>{% trans "Logs (CSV)" %}</a></li>
+            </ul>
+        </div>
+        <form method="get" class="d-flex gap-1">
+            <select name="period" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto">
+                <option value="7" {% if period == 7 %}selected{% endif %}>{% trans "7 Days" %}</option>
+                <option value="30" {% if period == 30 %}selected{% endif %}>{% trans "30 Days" %}</option>
+                <option value="90" {% if period == 90 %}selected{% endif %}>{% trans "90 Days" %}</option>
+                <option value="365" {% if period == 365 %}selected{% endif %}>{% trans "1 Year" %}</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-person-plus"></i></div>
+                <div>
+                    <div class="stat-value">{{ total_signups }}</div>
+                    <div class="stat-label">{% trans "Total Signups" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle"></i></div>
+                <div>
+                    <div class="stat-value">{{ approval_rate|floatformat:1 }}%</div>
+                    <div class="stat-label">{% trans "Approval Rate" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                <div>
+                    <div class="stat-value">{{ error_rate }}%</div>
+                    <div class="stat-label">{% trans "Error Rate" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-activity"></i></div>
+                <div>
+                    <div class="stat-value">{{ total_operations }}</div>
+                    <div class="stat-label">{% trans "Operations" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-graph-up me-2"></i>{% trans "User Growth Trend" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="userGrowthChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-pie-chart me-2"></i>{% trans "Approval Funnel" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="funnelChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-database me-2"></i>{% trans "Database Growth" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="dbGrowthChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-hdd-stack me-2"></i>{% trans "Server Utilization" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="serverChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3 -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-bar-chart me-2"></i>{% trans "Activity Breakdown" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="activityChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-calendar3 me-2"></i>{% trans "Monthly Trend (12 months)" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <canvas id="monthlyChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Databases -->
+<div class="pa-card">
+    <div class="pa-card-header">
+        <h5><i class="bi bi-trophy me-2"></i>{% trans "Top Databases by Users" %}</h5>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if top_databases %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% trans "Database" %}</th>
+                        <th>{% trans "Active Users" %}</th>
+                        <th>{% trans "Usage" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for db in top_databases %}
+                    <tr>
+                        <td><span class="badge bg-light text-dark">{{ forloop.counter }}</span></td>
+                        <td>{{ db.display_name|default:db.name }}</td>
+                        <td>{{ db.user_count }}</td>
+                        <td>
+                            <div class="progress" style="height: 6px; width: 120px">
+                                <div class="progress-bar bg-primary" style="width: {% widthratio db.user_count top_databases.0.user_count 100 %}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-database"></i>
+            <p>{% trans "No databases with active users yet." %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+};
+
+// User Growth
+new Chart(document.getElementById('userGrowthChart'), {
+    type: 'line',
+    data: {
+        labels: {{ user_growth_labels|safe }},
+        datasets: [{
+            label: '{% trans "Signups" %}',
+            data: {{ user_growth_data|safe }},
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102,126,234,.1)',
+            fill: true, tension: .4, pointRadius: 3,
+        }]
+    },
+    options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+// Funnel
+new Chart(document.getElementById('funnelChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['{% trans "Approved" %}', '{% trans "Rejected" %}', '{% trans "Pending" %}'],
+        datasets: [{
+            data: [{{ total_approved }}, {{ total_rejected }}, {{ total_pending }}],
+            backgroundColor: ['#22c55e', '#ef4444', '#f59e0b'],
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
+});
+
+// Database Growth
+new Chart(document.getElementById('dbGrowthChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ db_growth_labels|safe }},
+        datasets: [{
+            label: '{% trans "Databases Created" %}',
+            data: {{ db_growth_data|safe }},
+            backgroundColor: '#818cf8',
+            borderRadius: 6,
+        }]
+    },
+    options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+// Server Utilization
+new Chart(document.getElementById('serverChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ server_names|safe }},
+        datasets: [
+            { label: '{% trans "Used" %}', data: {{ server_usage|safe }}, backgroundColor: '#667eea', borderRadius: 6 },
+            { label: '{% trans "Capacity" %}', data: {{ server_capacity|safe }}, backgroundColor: '#e2e8f0', borderRadius: 6 },
+        ]
+    },
+    options: { ...chartDefaults, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+});
+
+// Activity Breakdown
+new Chart(document.getElementById('activityChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ activity_labels|safe }},
+        datasets: [{
+            data: {{ activity_data|safe }},
+            backgroundColor: ['#667eea','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#f97316','#14b8a6','#6366f1'],
+            borderRadius: 6,
+        }]
+    },
+    options: { ...chartDefaults, indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+});
+
+// Monthly Trend
+new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: {
+        labels: {{ monthly_labels|safe }},
+        datasets: [{
+            label: '{% trans "New Users" %}',
+            data: {{ monthly_data|safe }},
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34,197,94,.1)',
+            fill: true, tension: .4, pointRadius: 4,
+        }]
+    },
+    options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+</script>
+{% endblock %}

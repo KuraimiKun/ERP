@@ -1,0 +1,142 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Tenant Quotas" %}{% endblock %}
+{% block page_title %}{% trans "Tenant Quotas" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3><i class="bi bi-speedometer me-2"></i>{% trans "Tenant Quotas & Usage" %}</h3>
+    <p>{% trans "Resource limits and current usage for all tenant databases" %}</p>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form class="d-flex gap-3 align-items-center flex-wrap" method="get">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name="warning" value="1" id="warnFilter"
+                       {% if warning_only %}checked{% endif %} onchange="this.form.submit()">
+                <label class="form-check-label small" for="warnFilter">
+                    <i class="bi bi-exclamation-triangle text-warning"></i> {% trans "Warning only" %}
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name="over" value="1" id="overFilter"
+                       {% if over_limit %}checked{% endif %} onchange="this.form.submit()">
+                <label class="form-check-label small" for="overFilter">
+                    <i class="bi bi-exclamation-circle text-danger"></i> {% trans "Over limit" %}
+                </label>
+            </div>
+            <span class="text-muted small ms-auto">{{ total_databases }} {% trans "databases total" %}</span>
+        </form>
+    </div>
+</div>
+
+<!-- Quotas Grid -->
+<div class="row g-3">
+    {% for db in databases %}
+    <div class="col-lg-6 col-xl-4">
+        <div class="card h-100 {% if db.quota.is_over_limit %}border-danger{% elif db.quota.is_warning %}border-warning{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-database me-1"></i>
+                        {{ db.display_name|default:db.name }}
+                    </h6>
+                    <small class="text-muted">{{ db.server.name }}</small>
+                </div>
+                <div class="d-flex gap-1">
+                    <a href="{% url 'tenants:pa_quota_detail' pk=db.pk %}" class="btn btn-outline-primary btn-sm" title="{% trans 'Details' %}">
+                        <i class="bi bi-graph-up"></i>
+                    </a>
+                    <a href="{% url 'tenants:pa_quota_edit' pk=db.pk %}" class="btn btn-outline-secondary btn-sm" title="{% trans 'Edit Limits' %}">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if db.quota %}
+                <!-- Size Usage -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>{% trans "Database Size" %}</span>
+                        <span>
+                            {{ db.quota.current_db_size_mb|floatformat:1 }} MB
+                            {% if db.quota.max_db_size_mb %}/ {{ db.quota.max_db_size_mb }} MB{% else %}({% trans "unlimited" %}){% endif %}
+                        </span>
+                    </div>
+                    {% if db.quota.max_db_size_mb %}
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar {% if db.quota.size_usage_pct > 90 %}bg-danger{% elif db.quota.size_usage_pct >= db.quota.warning_threshold %}bg-warning{% else %}bg-success{% endif %}"
+                             style="width: {{ db.quota.size_usage_pct }}%"></div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Connections Usage -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>{% trans "Connections" %}</span>
+                        <span>
+                            {{ db.quota.current_connections }}
+                            {% if db.quota.max_connections %}/ {{ db.quota.max_connections }}{% else %}({% trans "unlimited" %}){% endif %}
+                        </span>
+                    </div>
+                    {% if db.quota.max_connections %}
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar {% if db.quota.connection_usage_pct > 90 %}bg-danger{% elif db.quota.connection_usage_pct >= db.quota.warning_threshold %}bg-warning{% else %}bg-success{% endif %}"
+                             style="width: {{ db.quota.connection_usage_pct }}%"></div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Tables -->
+                <div class="d-flex justify-content-between small">
+                    <span>{% trans "Tables" %}</span>
+                    <span>
+                        {{ db.quota.current_tables }}
+                        {% if db.quota.max_tables %} / {{ db.quota.max_tables }}{% endif %}
+                    </span>
+                </div>
+
+                {% if db.quota.last_checked %}
+                <div class="text-end mt-2">
+                    <small class="text-muted">{% trans "Checked" %}: {{ db.quota.last_checked|timesince }} {% trans "ago" %}</small>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% if db.quota.is_over_limit %}
+            <div class="card-footer bg-danger text-white text-center small py-1">
+                <i class="bi bi-exclamation-circle me-1"></i>{% trans "Over Limit" %}
+            </div>
+            {% elif db.quota.is_warning %}
+            <div class="card-footer bg-warning text-dark text-center small py-1">
+                <i class="bi bi-exclamation-triangle me-1"></i>{% trans "Approaching Limit" %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="bi bi-database-slash"></i>
+            <p>{% trans "No active databases." %}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if databases.has_other_pages %}
+<nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-center">
+        {% if databases.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ databases.previous_page_number }}">&laquo;</a></li>{% endif %}
+        {% for num in databases.paginator.page_range %}
+        <li class="page-item {% if databases.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+        {% endfor %}
+        {% if databases.has_next %}<li class="page-item"><a class="page-link" href="?page={{ databases.next_page_number }}">&raquo;</a></li>{% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Server Monitoring" %} — {{ server.name }}{% endblock %}
+{% block page_title %}{{ server.name }} {% trans "Monitoring" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start">
+    <div>
+        <h3><i class="bi bi-graph-up-arrow me-2"></i>{{ server.name }}</h3>
+        <p>{% trans "Detailed monitoring for" %} {{ server.host }}:{{ server.port }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <form method="get" class="d-flex gap-2">
+            <select name="hours" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                <option value="1" {% if hours == 1 %}selected{% endif %}>{% trans "1h" %}</option>
+                <option value="6" {% if hours == 6 %}selected{% endif %}>{% trans "6h" %}</option>
+                <option value="24" {% if hours == 24 %}selected{% endif %}>{% trans "24h" %}</option>
+                <option value="72" {% if hours == 72 %}selected{% endif %}>{% trans "3d" %}</option>
+                <option value="168" {% if hours == 168 %}selected{% endif %}>{% trans "7d" %}</option>
+                <option value="720" {% if hours == 720 %}selected{% endif %}>{% trans "30d" %}</option>
+            </select>
+        </form>
+        <a href="{% url 'tenants:pa_monitoring' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>{% trans "All Servers" %}
+        </a>
+    </div>
+</div>
+
+<!-- Current Status -->
+{% if latest %}
+<div class="row g-3 mb-4">
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold text-{{ latest.cpu_percent|floatformat:0 }}">{{ latest.cpu_percent|floatformat:1 }}%</div>
+                <small class="text-muted">{% trans "CPU" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold">{{ latest.memory_percent|floatformat:1 }}%</div>
+                <small class="text-muted">{% trans "Memory" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold">{{ latest.memory_used_mb|floatformat:0 }} MB</div>
+                <small class="text-muted">{% trans "Mem Used" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold">{{ latest.total_connections }}</div>
+                <small class="text-muted">{% trans "Connections" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold">{{ latest.transactions_per_sec|floatformat:1 }}</div>
+                <small class="text-muted">{% trans "TPS" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold">{{ latest.cache_hit_ratio|floatformat:1 }}%</div>
+                <small class="text-muted">{% trans "Cache Hit" %}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="small text-muted mb-3">{{ snapshot_count }} {% trans "data points in selected range" %}</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-cpu me-1"></i>{% trans "CPU %" %}</div>
+            <div class="card-body"><canvas id="cpuChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-memory me-1"></i>{% trans "Memory %" %}</div>
+            <div class="card-body"><canvas id="memChart" height="200"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-plug me-1"></i>{% trans "Connections" %}</div>
+            <div class="card-body"><canvas id="connChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-lightning me-1"></i>{% trans "TPS + Cache Hit" %}</div>
+            <div class="card-body"><canvas id="tpsChart" height="200"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-hdd me-1"></i>{% trans "Disk Usage (MB)" %}</div>
+            <div class="card-body"><canvas id="diskChart" height="200"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-arrow-left-right me-1"></i>{% trans "Network (MB)" %}</div>
+            <div class="card-body"><canvas id="netChart" height="200"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- Database Usage -->
+{% if db_usage %}
+<div class="card">
+    <div class="card-header fw-semibold"><i class="bi bi-database me-1"></i>{% trans "Database Usage (Latest Snapshots)" %}</div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>{% trans "Database" %}</th>
+                    <th>{% trans "Size (MB)" %}</th>
+                    <th>{% trans "Connections" %}</th>
+                    <th>{% trans "Tables" %}</th>
+                    <th>{% trans "Dead Tuples" %}</th>
+                    <th>{% trans "Cache Hit %" %}</th>
+                    <th>{% trans "Recorded" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for du in db_usage %}
+                <tr>
+                    <td class="fw-semibold">{{ du.database.display_name|default:du.database.name }}</td>
+                    {% if du.snapshot %}
+                    <td>{{ du.snapshot.db_size_mb|floatformat:1 }}</td>
+                    <td>{{ du.snapshot.connections }}</td>
+                    <td>{{ du.snapshot.table_count }}</td>
+                    <td>{{ du.snapshot.dead_tuples }}</td>
+                    <td>{{ du.snapshot.cache_hit_ratio|floatformat:2 }}%</td>
+                    <td><small>{{ du.snapshot.recorded_at|timesince }} {% trans "ago" %}</small></td>
+                    {% else %}
+                    <td colspan="6" class="text-muted">{% trans "No data" %}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const data = {{ chart_data|safe }};
+if (data.labels && data.labels.length) {
+    const opts = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { maxTicksLimit: 15, font: { size: 10 } } }, y: { beginAtZero: true } },
+        elements: { point: { radius: 0, hoverRadius: 4 }, line: { borderWidth: 2, tension: 0.3 } },
+    };
+
+    new Chart(document.getElementById('cpuChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [{
+            data: data.cpu, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)', fill: true
+        }] }, options: { ...opts, scales: { ...opts.scales, y: { beginAtZero: true, max: 100 } } }
+    });
+    new Chart(document.getElementById('memChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [{
+            data: data.memory, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.08)', fill: true
+        }] }, options: { ...opts, scales: { ...opts.scales, y: { beginAtZero: true, max: 100 } } }
+    });
+    new Chart(document.getElementById('connChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [
+            { label: 'Total', data: data.connections, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.08)', fill: true },
+            { label: 'Active', data: data.active, borderColor: '#f59e0b', borderDash: [5,5] },
+        ] }, options: { ...opts, plugins: { legend: { display: true, position: 'top' } } }
+    });
+    new Chart(document.getElementById('tpsChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [
+            { label: 'TPS', data: data.tps, borderColor: '#10b981', yAxisID: 'y' },
+            { label: 'Cache %', data: data.cache, borderColor: '#6366f1', borderDash: [5,5], yAxisID: 'y1' },
+        ] }, options: { ...opts,
+            plugins: { legend: { display: true, position: 'top' } },
+            scales: { ...opts.scales,
+                y: { beginAtZero: true, position: 'left', title: { display: true, text: 'TPS' } },
+                y1: { beginAtZero: true, max: 100, position: 'right', title: { display: true, text: 'Cache %' }, grid: { drawOnChartArea: false } },
+            }
+        }
+    });
+    new Chart(document.getElementById('diskChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [{
+            data: data.disk_used_mb, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.08)', fill: true
+        }] }, options: opts
+    });
+    new Chart(document.getElementById('netChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [
+            { label: 'RX (MB)', data: data.net_rx, borderColor: '#06b6d4' },
+            { label: 'TX (MB)', data: data.net_tx, borderColor: '#f43f5e', borderDash: [5,5] },
+        ] }, options: { ...opts, plugins: { legend: { display: true, position: 'top' } } }
+    });
+}
+</script>
+{% endblock %}

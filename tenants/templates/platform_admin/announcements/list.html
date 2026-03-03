@@ -1,0 +1,152 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "System Announcements" %}{% endblock %}
+{% block page_title %}{% trans "Announcements" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start">
+    <div>
+        <h3><i class="bi bi-megaphone me-2"></i>{% trans "System Announcements" %}</h3>
+        <p>{% trans "Broadcast messages to tenants — updates, maintenance, alerts" %}</p>
+    </div>
+    <a href="{% url 'tenants:pa_announcement_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>{% trans "New Announcement" %}
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <span class="fs-4 fw-bold text-primary">{{ total_count }}</span>
+                <span class="text-muted small ms-1">{% trans "Total" %}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <span class="fs-4 fw-bold text-success">{{ active_count }}</span>
+                <span class="text-muted small ms-1">{% trans "Active" %}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <span class="fs-4 fw-bold text-secondary">{{ total_count|add:"-"|add:active_count }}</span>
+                <span class="text-muted small ms-1">{% trans "Inactive" %}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form class="d-flex gap-3 align-items-center flex-wrap" method="get">
+            <div class="d-flex align-items-center gap-2">
+                <label class="small fw-semibold text-muted">{% trans "Type" %}:</label>
+                <select name="type" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                    <option value="">{% trans "All Types" %}</option>
+                    {% for val, label in type_choices %}
+                    <option value="{{ val }}" {% if current_type == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <label class="small fw-semibold text-muted">{% trans "Status" %}:</label>
+                <select name="status" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                    <option value="">{% trans "All" %}</option>
+                    <option value="active" {% if current_status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                    <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>{% trans "Inactive" %}</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Announcements -->
+{% for ann in announcements %}
+<div class="card mb-3 {% if not ann.is_active %}opacity-50{% endif %}
+    {% if ann.announcement_type == 'critical' %}border-danger
+    {% elif ann.announcement_type == 'warning' %}border-warning
+    {% elif ann.announcement_type == 'maintenance' %}border-info
+    {% elif ann.announcement_type == 'update' %}border-success
+    {% endif %}">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                {% if ann.announcement_type == 'critical' %}
+                    <span class="badge bg-danger"><i class="bi bi-exclamation-circle me-1"></i>{% trans "Critical" %}</span>
+                {% elif ann.announcement_type == 'warning' %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>{% trans "Warning" %}</span>
+                {% elif ann.announcement_type == 'maintenance' %}
+                    <span class="badge bg-info text-dark"><i class="bi bi-tools me-1"></i>{% trans "Maintenance" %}</span>
+                {% elif ann.announcement_type == 'update' %}
+                    <span class="badge bg-success"><i class="bi bi-arrow-up-circle me-1"></i>{% trans "Update" %}</span>
+                {% else %}
+                    <span class="badge bg-primary"><i class="bi bi-info-circle me-1"></i>{% trans "Info" %}</span>
+                {% endif %}
+                {% if ann.is_pinned %}<span class="badge bg-dark"><i class="bi bi-pin-fill me-1"></i>{% trans "Pinned" %}</span>{% endif %}
+                {% if not ann.is_active %}<span class="badge bg-secondary">{% trans "Inactive" %}</span>{% endif %}
+                <span class="badge bg-light text-dark">{{ ann.get_audience_display }}</span>
+            </div>
+            <div class="d-flex gap-1">
+                <a href="{% url 'tenants:pa_announcement_detail' pk=ann.pk %}" class="btn btn-outline-primary btn-sm" title="{% trans 'Detail' %}">
+                    <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'tenants:pa_announcement_edit' pk=ann.pk %}" class="btn btn-outline-secondary btn-sm" title="{% trans 'Edit' %}">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <form method="post" action="{% url 'tenants:pa_announcement_pin' pk=ann.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-dark btn-sm" title="{% if ann.is_pinned %}{% trans 'Unpin' %}{% else %}{% trans 'Pin' %}{% endif %}">
+                        <i class="bi bi-pin{% if ann.is_pinned %}-fill{% endif %}"></i>
+                    </button>
+                </form>
+                <form method="post" action="{% url 'tenants:pa_announcement_toggle' pk=ann.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-warning btn-sm" title="{% trans 'Toggle' %}">
+                        <i class="bi bi-{% if ann.is_active %}eye-slash{% else %}eye{% endif %}"></i>
+                    </button>
+                </form>
+                <form method="post" action="{% url 'tenants:pa_announcement_delete' pk=ann.pk %}" class="d-inline"
+                      onsubmit="return confirm('{% trans "Delete this announcement?" %}')">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        <h5 class="fw-bold mb-2">{{ ann.title }}</h5>
+        <p class="mb-2 small">{{ ann.body|truncatewords:60 }}</p>
+        <div class="d-flex gap-3 text-muted small">
+            <span><i class="bi bi-person me-1"></i>{{ ann.created_by.email|default:"System" }}</span>
+            <span><i class="bi bi-calendar me-1"></i>{{ ann.created_at|date:"M d, Y H:i" }}</span>
+            {% if ann.starts_at %}<span><i class="bi bi-play me-1"></i>{{ ann.starts_at|date:"M d, Y H:i" }}</span>{% endif %}
+            {% if ann.expires_at %}<span><i class="bi bi-stop me-1"></i>{{ ann.expires_at|date:"M d, Y H:i" }}</span>{% endif %}
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="empty-state">
+    <i class="bi bi-megaphone"></i>
+    <p>{% trans "No announcements yet." %}</p>
+    <a href="{% url 'tenants:pa_announcement_create' %}" class="btn btn-primary btn-sm">{% trans "Create First Announcement" %}</a>
+</div>
+{% endfor %}
+
+{% if announcements.has_other_pages %}
+<nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-center">
+        {% if announcements.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ announcements.previous_page_number }}">&laquo;</a></li>{% endif %}
+        {% for num in announcements.paginator.page_range %}
+        <li class="page-item {% if announcements.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+        {% endfor %}
+        {% if announcements.has_next %}<li class="page-item"><a class="page-link" href="?page={{ announcements.next_page_number }}">&raquo;</a></li>{% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

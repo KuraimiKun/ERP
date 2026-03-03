@@ -1,0 +1,172 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Tenant Databases" %}{% endblock %}
+{% block page_title %}{% trans "Tenant Databases" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div>
+        <h3>{% trans "Tenant Databases" %}</h3>
+        <p>{% trans "Monitor and manage all tenant database instances" %}</p>
+    </div>
+    <a href="{% url 'tenants:pa_database_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-database-add me-1"></i>{% trans "Create Database" %}
+    </a>
+</div>
+
+<!-- Status Tabs -->
+<div class="pa-card mb-4">
+    <div class="pa-card-body py-2 px-3">
+        <ul class="nav nav-pills gap-1">
+            <li class="nav-item">
+                <a class="nav-link {% if not current_status %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_database_list' %}">
+                    {% trans "All" %} <span class="badge bg-secondary ms-1">{{ status_counts.all }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'active' %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_database_list' %}?status=active">
+                    {% trans "Active" %} <span class="badge bg-success ms-1">{{ status_counts.active }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'creating' %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_database_list' %}?status=creating">
+                    {% trans "Creating" %} <span class="badge bg-info ms-1">{{ status_counts.creating }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'error' %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_database_list' %}?status=error">
+                    {% trans "Error" %} <span class="badge bg-danger ms-1">{{ status_counts.error }}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="pa-card mb-4">
+    <div class="pa-card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+            <div class="col-md-4">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" class="form-control form-control-sm"
+                           placeholder="{% trans 'Search databases...' %}" value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="server" class="form-select form-select-sm">
+                    <option value="">{% trans "All Servers" %}</option>
+                    {% for s in servers %}
+                    <option value="{{ s.pk }}" {% if request.GET.server == s.pk|slugify %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>{% trans "Filter" %}</button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'tenants:pa_database_list' %}" class="btn btn-outline-secondary btn-sm w-100">{% trans "Clear" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Database Table -->
+<div class="pa-card">
+    <div class="pa-card-body p-0">
+        {% if databases %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Database" %}</th>
+                        <th>{% trans "Server" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Users" %}</th>
+                        <th>{% trans "Migrated" %}</th>
+                        <th>{% trans "Created" %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for db in databases %}
+                    <tr>
+                        <td>
+                            <div>
+                                <div class="fw-semibold">
+                                    <i class="bi bi-database me-1 text-primary"></i>
+                                    {{ db.display_name|default:db.name }}
+                                </div>
+                                <small class="text-muted">{{ db.name }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'tenants:pa_server_detail' db.server.pk %}" class="text-decoration-none">
+                                <small>{{ db.server.name }}</small>
+                            </a>
+                        </td>
+                        <td><span class="badge badge-status badge-{{ db.status }}">{{ db.get_status_display }}</span></td>
+                        <td><span class="badge bg-secondary">{{ db.user_count }}</span></td>
+                        <td>
+                            {% if db.is_migrated %}
+                            <i class="bi bi-check-circle text-success" title="{% trans 'Migrated' %}"></i>
+                            {% else %}
+                            <i class="bi bi-x-circle text-danger" title="{% trans 'Not migrated' %}"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ db.created_at|date:"M d, Y" }}</small>
+                            {% if db.created_by %}
+                            <br><small class="text-muted">{% trans "by" %} {{ db.created_by.get_full_name }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'tenants:pa_database_detail' db.pk %}" class="btn btn-sm btn-outline-primary action-btn" title="{% trans 'Details' %}">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if databases.has_other_pages %}
+        <div class="pa-card-body border-top">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if databases.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ databases.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">&laquo;</a></li>
+                    {% endif %}
+                    {% for num in databases.paginator.page_range %}
+                    {% if databases.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > databases.number|add:"-3" and num < databases.number|add:"3" %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if databases.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ databases.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-database"></i>
+            <h6>{% trans "No databases found" %}</h6>
+            <p class="text-muted">{% trans "Databases are created when users are approved" %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

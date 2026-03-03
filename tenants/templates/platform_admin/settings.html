@@ -1,0 +1,179 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Platform Settings" %}{% endblock %}
+{% block page_title %}{% trans "Platform Settings" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3>{% trans "Platform Settings" %}</h3>
+    <p>{% trans "System configuration and environment overview" %}</p>
+</div>
+
+<div class="row g-4">
+    <!-- Environment Info -->
+    <div class="col-lg-6">
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-gear me-2"></i>{% trans "Environment" %}</h5>
+                {% if debug %}
+                <span class="badge bg-warning text-dark">DEBUG</span>
+                {% else %}
+                <span class="badge bg-success">PRODUCTION</span>
+                {% endif %}
+            </div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="detail-label" style="width:40%">{% trans "Debug Mode" %}</td>
+                        <td>
+                            {% if debug %}
+                            <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+                            <span class="text-warning fw-semibold">{% trans "Enabled" %}</span>
+                            {% else %}
+                            <i class="bi bi-shield-check text-success me-1"></i>
+                            <span class="text-success fw-semibold">{% trans "Disabled" %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Auth User Model" %}</td>
+                        <td><code class="small">{{ auth_user_model }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Language" %}</td>
+                        <td><code class="small">{{ language_code }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Time Zone" %}</td>
+                        <td><code class="small">{{ time_zone }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Static URL" %}</td>
+                        <td><code class="small">{{ static_url }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Media URL" %}</td>
+                        <td><code class="small">{{ media_url }}</code></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Allowed Hosts -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-globe me-2"></i>{% trans "Allowed Hosts" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                {% if allowed_hosts %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for host in allowed_hosts %}
+                    <span class="badge bg-light text-dark border px-3 py-2">
+                        <i class="bi bi-globe2 me-1"></i>{{ host }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <small class="text-muted">{% trans "No hosts configured (all allowed)" %}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Middleware -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-layers me-2"></i>{% trans "Middleware Stack" %}</h5>
+                <span class="badge bg-secondary">{{ middleware|length }}</span>
+            </div>
+            <div class="pa-card-body p-0">
+                <ol class="list-group list-group-flush list-group-numbered">
+                    {% for mw in middleware %}
+                    <li class="list-group-item py-2">
+                        <code class="small">{{ mw }}</code>
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-6">
+        <!-- Database Configuration -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-database me-2"></i>{% trans "Default Database" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="detail-label" style="width:40%">{% trans "Engine" %}</td>
+                        <td><code class="small">{{ database_engine }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Database Name" %}</td>
+                        <td><code class="small">{{ database_name }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Dynamic DBs" %}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ total_dynamic_dbs }}</span>
+                            <small class="text-muted ms-1">{% trans "tenant databases" %}</small>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Installed Apps -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-puzzle me-2"></i>{% trans "Installed Apps" %}</h5>
+                <span class="badge bg-secondary">{{ installed_apps|length }}</span>
+            </div>
+            <div class="pa-card-body p-0" style="max-height:500px;overflow-y:auto">
+                <ul class="list-group list-group-flush">
+                    {% for app in installed_apps %}
+                    <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                        {% if 'django.' in app %}
+                        <i class="bi bi-box text-success" style="font-size:.875rem"></i>
+                        {% elif 'rest_framework' in app or 'corsheaders' in app or 'celery' in app %}
+                        <i class="bi bi-plugin text-info" style="font-size:.875rem"></i>
+                        {% else %}
+                        <i class="bi bi-code-square text-primary" style="font-size:.875rem"></i>
+                        {% endif %}
+                        <code class="small">{{ app }}</code>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-lightning me-2"></i>{% trans "Quick Links" %}</h5>
+            </div>
+            <div class="pa-card-body d-grid gap-2">
+                <a href="{% url 'admin:index' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-sliders me-2"></i>{% trans "Django Admin" %}</span>
+                    <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+                <a href="{% url 'tenants:pa_logs' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-journal-text me-2"></i>{% trans "System Logs" %}</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'tenants:pa_server_list' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-hdd-rack me-2"></i>{% trans "Manage Servers" %}</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'tenants:pa_user_list' %}?status=pending" class="btn btn-outline-warning btn-sm d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-person-exclamation me-2"></i>{% trans "Pending Approvals" %}</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

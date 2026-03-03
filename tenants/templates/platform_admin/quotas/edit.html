@@ -1,0 +1,81 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Quota" %} — {{ database.display_name|default:database.name }}{% endblock %}
+{% block page_title %}{% trans "Edit Quota" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3><i class="bi bi-pencil me-2"></i>{% trans "Edit Quota" %}: {{ database.display_name|default:database.name }}</h3>
+    <p>{% trans "Set resource limits for this tenant database" %}</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Max DB Size (MB)" %}</label>
+                            {{ form.max_db_size_mb }}
+                            <small class="text-muted">{% trans "0 = unlimited" %}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Max Connections" %}</label>
+                            {{ form.max_connections }}
+                            <small class="text-muted">{% trans "0 = unlimited" %}</small>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Max Tables" %}</label>
+                            {{ form.max_tables }}
+                            <small class="text-muted">{% trans "0 = unlimited" %}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Max Storage (MB)" %}</label>
+                            {{ form.max_storage_mb }}
+                            <small class="text-muted">{% trans "Including indexes" %}</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Warning Threshold (%)" %}</label>
+                        {{ form.warning_threshold }}
+                        <small class="text-muted">{% trans "Alert when usage exceeds this % of any limit" %}</small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>{% trans "Save Quotas" %}
+                        </button>
+                        <a href="{% url 'tenants:pa_quota_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-bar-chart me-1"></i>{% trans "Current Usage" %}</div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr><td class="detail-label">{% trans "Size" %}</td><td>{{ quota.current_db_size_mb|floatformat:1 }} MB</td></tr>
+                    <tr><td class="detail-label">{% trans "Connections" %}</td><td>{{ quota.current_connections }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Tables" %}</td><td>{{ quota.current_tables }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Storage" %}</td><td>{{ quota.current_storage_mb|floatformat:1 }} MB</td></tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Last Checked" %}</td>
+                        <td>{% if quota.last_checked %}{{ quota.last_checked|timesince }} {% trans "ago" %}{% else %}{% trans "Never" %}{% endif %}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

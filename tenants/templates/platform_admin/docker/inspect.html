@@ -1,0 +1,161 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ server.name }} - {% trans "Container Inspect" %}{% endblock %}
+{% block page_title %}{% trans "Container Inspection" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_docker_dashboard' %}">{% trans "Docker" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_server_detail' pk=server.pk %}">{{ server.name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Inspect" %}</li>
+    </ol>
+</nav>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'tenants:pa_docker_stats' pk=server.pk %}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-speedometer2 me-1"></i>{% trans "Stats" %}
+    </a>
+    <a href="{% url 'tenants:pa_docker_logs' pk=server.pk %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-journal-text me-1"></i>{% trans "Logs" %}
+    </a>
+    <a href="{% url 'tenants:pa_docker_terminal' pk=server.pk %}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-terminal me-1"></i>{% trans "Terminal" %}
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Container Details -->
+    <div class="col-lg-6">
+        {% if uptime %}
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-info-circle me-2"></i>{% trans "Container Details" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="detail-label">{% trans "Status" %}</td><td>
+                        {% if uptime.running %}<span class="badge bg-success">{% trans "Running" %}</span>{% else %}<span class="badge bg-danger">{% trans "Stopped" %}</span>{% endif %}
+                    </td></tr>
+                    <tr><td class="detail-label">{% trans "Image" %}</td><td><code>{{ uptime.image }}</code></td></tr>
+                    <tr><td class="detail-label">{% trans "Created" %}</td><td>{{ uptime.created|truncatechars:19 }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Started" %}</td><td>{{ uptime.started_at|truncatechars:19 }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Restart Count" %}</td><td>{{ uptime.restart_count }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Platform" %}</td><td>{{ uptime.platform|default:"N/A" }}</td></tr>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Port Mappings -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-plug me-2"></i>{% trans "Port Mappings" %}</h5></div>
+            <div class="pa-card-body">
+                {% if ports %}
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>{% trans "Container Port" %}</th><th>{% trans "Host IP" %}</th><th>{% trans "Host Port" %}</th></tr></thead>
+                    <tbody>
+                        {% for p in ports %}
+                        <tr>
+                            <td><code>{{ p.container_port }}</code></td>
+                            <td>{{ p.host_ip|default:"—" }}</td>
+                            <td><code>{{ p.host_port|default:"—" }}</code></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No port mappings." %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Volume Info -->
+        {% if volume_info %}
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-database me-2"></i>{% trans "Volume Info" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="detail-label">{% trans "Name" %}</td><td><code>{{ volume_info.name }}</code></td></tr>
+                    <tr><td class="detail-label">{% trans "Driver" %}</td><td>{{ volume_info.driver }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Mountpoint" %}</td><td><code style="font-size:.8rem;word-break:break-all">{{ volume_info.mountpoint }}</code></td></tr>
+                    <tr><td class="detail-label">{% trans "Scope" %}</td><td>{{ volume_info.scope }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Created" %}</td><td>{{ volume_info.created|truncatechars:19 }}</td></tr>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-6">
+        <!-- Environment Variables -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-braces me-2"></i>{% trans "Environment Variables" %}</h5></div>
+            <div class="pa-card-body p-0">
+                {% if env_vars %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead><tr><th>{% trans "Key" %}</th><th>{% trans "Value" %}</th></tr></thead>
+                        <tbody>
+                            {% for e in env_vars %}
+                            <tr>
+                                <td><code>{{ e.key }}</code></td>
+                                <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ e.value }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-3 text-muted">{% trans "No environment variables." %}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mounts -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-folder me-2"></i>{% trans "Mounts" %}</h5></div>
+            <div class="pa-card-body p-0">
+                {% if mounts %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>{% trans "Type" %}</th><th>{% trans "Source" %}</th><th>{% trans "Dest" %}</th><th>{% trans "Mode" %}</th></tr></thead>
+                        <tbody>
+                            {% for m in mounts %}
+                            <tr>
+                                <td><span class="badge bg-secondary-subtle text-secondary">{{ m.type }}</span></td>
+                                <td><code style="font-size:.75rem;word-break:break-all">{{ m.source }}</code></td>
+                                <td><code style="font-size:.75rem">{{ m.destination }}</code></td>
+                                <td>{% if m.rw %}<span class="badge bg-warning-subtle text-warning">RW</span>{% else %}<span class="badge bg-info-subtle text-info">RO</span>{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-3 text-muted">{% trans "No mounts." %}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Networks -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-diagram-3 me-2"></i>{% trans "Networks" %}</h5></div>
+            <div class="pa-card-body">
+                {% if networks %}
+                {% for net_name, net in networks.items %}
+                <h6 class="fw-bold mb-2"><code>{{ net_name }}</code></h6>
+                <table class="table table-sm table-borderless mb-3">
+                    <tr><td class="detail-label">{% trans "IP Address" %}</td><td><code>{{ net.ip_address|default:"—" }}</code></td></tr>
+                    <tr><td class="detail-label">{% trans "Gateway" %}</td><td><code>{{ net.gateway|default:"—" }}</code></td></tr>
+                    <tr><td class="detail-label">{% trans "MAC Address" %}</td><td><code>{{ net.mac_address|default:"—" }}</code></td></tr>
+                    <tr><td class="detail-label">{% trans "Network ID" %}</td><td><code>{{ net.network_id|default:"—" }}</code></td></tr>
+                </table>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No network info." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% if editing %}{% trans "Edit Task" %}{% else %}{% trans "New Scheduled Task" %}{% endif %}{% endblock %}
+{% block page_title %}{% if editing %}{% trans "Edit Task" %}{% else %}{% trans "New Scheduled Task" %}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3>
+        <i class="bi bi-{% if editing %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+        {% if editing %}{% trans "Edit Task" %}: {{ task.name }}{% else %}{% trans "Create Scheduled Task" %}{% endif %}
+    </h3>
+    <p>{% trans "Configure automated task scheduling" %}</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Task Name" %} *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Task Type" %} *</label>
+                            {{ form.task_type }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Interval" %} *</label>
+                            {{ form.interval }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Target Server" %}</label>
+                            {{ form.server }}
+                            <small class="text-muted">{% trans "Optional — for server-level tasks" %}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Target Database" %}</label>
+                            {{ form.database }}
+                            <small class="text-muted">{% trans "Optional — for database-level tasks" %}</small>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="fw-bold mb-3"><i class="bi bi-clock me-1"></i>{% trans "Schedule" %}</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">{% trans "Hour (UTC)" %}</label>
+                            {{ form.run_at_hour }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">{% trans "Minute" %}</label>
+                            {{ form.run_at_minute }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">{% trans "Day of Week" %}</label>
+                            {{ form.run_on_day }}
+                            <small class="text-muted">{% trans "Used for weekly tasks only" %}</small>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        {{ form.is_active }}
+                        <label class="form-check-label fw-semibold ms-1">{% trans "Active" %}</label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            {% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Task" %}{% endif %}
+                        </button>
+                        <a href="{% url 'tenants:pa_scheduled_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-info-circle me-1"></i>{% trans "Task Types" %}</div>
+            <div class="card-body small">
+                <dl class="mb-0">
+                    <dt>{% trans "Database Backup" %}</dt>
+                    <dd class="text-muted">{% trans "Export a full database backup (pg_dump)." %}</dd>
+                    <dt>{% trans "VACUUM" %}</dt>
+                    <dd class="text-muted">{% trans "Reclaim dead tuple storage." %}</dd>
+                    <dt>{% trans "VACUUM FULL" %}</dt>
+                    <dd class="text-muted">{% trans "Full compaction — locks the database." %}</dd>
+                    <dt>{% trans "ANALYZE" %}</dt>
+                    <dd class="text-muted">{% trans "Update query planner statistics." %}</dd>
+                    <dt>{% trans "REINDEX" %}</dt>
+                    <dd class="text-muted">{% trans "Rebuild all indexes." %}</dd>
+                    <dt>{% trans "Health Check" %}</dt>
+                    <dd class="text-muted">{% trans "Run a connectivity & status check." %}</dd>
+                    <dt>{% trans "Collect Metrics" %}</dt>
+                    <dd class="text-muted mb-0">{% trans "Capture a performance snapshot for charts." %}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

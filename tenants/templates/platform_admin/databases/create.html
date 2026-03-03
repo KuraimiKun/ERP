@@ -1,0 +1,98 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Create Database" %}{% endblock %}
+{% block page_title %}{% trans "Create Database" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_list' %}">{% trans "Databases" %}</a></li>
+        <li class="breadcrumb-item active">{% trans "Create Database" %}</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-database-add me-2"></i>{% trans "New Tenant Database" %}</h5>
+            </div>
+            <div class="pa-card-body">
+                {% if servers %}
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <!-- Server Selection -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">{% trans "Server" %} <span class="text-danger">*</span></label>
+                            <select name="server_id" class="form-select" required>
+                                <option value="">{% trans "Select a server..." %}</option>
+                                {% for s in servers %}
+                                <option value="{{ s.pk }}">
+                                    {{ s.name }} ({{ s.get_server_type_display }}) — {{ s.db_count }}/{{ s.max_databases }} {% trans "databases" %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">{% trans "Only active servers with available capacity are shown" %}</small>
+                        </div>
+
+                        <div class="col-12"><hr class="my-1"></div>
+
+                        <!-- Database Details -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Database Name" %}</label>
+                            <input type="text" name="name" class="form-control" placeholder="{% trans 'Auto-generated if empty' %}">
+                            <small class="text-muted">{% trans "PostgreSQL identifier (letters, digits, underscores only)" %}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Display Name" %}</label>
+                            <input type="text" name="display_name" class="form-control" placeholder="{% trans 'e.g. Acme Corp ERP' %}">
+                        </div>
+
+                        <div class="col-12"><hr class="my-1"></div>
+
+                        <!-- User Assignment (optional) -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">{% trans "Assign to User" %} <small class="text-muted fw-normal">({% trans "optional" %})</small></label>
+                            <select name="assign_user_id" class="form-select">
+                                <option value="">{% trans "No user assignment" %}</option>
+                                {% for u in approved_users %}
+                                <option value="{{ u.pk }}">{{ u.get_full_name }} ({{ u.email }}) {% if u.company_name %}— {{ u.company_name }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Role" %}</label>
+                            <select name="role" class="form-select">
+                                <option value="owner">{% trans "Owner" %}</option>
+                                <option value="admin">{% trans "Admin" %}</option>
+                                <option value="user">{% trans "User" %}</option>
+                                <option value="readonly">{% trans "Read Only" %}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-database-add me-1"></i>{% trans "Create Database" %}
+                        </button>
+                        <a href="{% url 'tenants:pa_database_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-hdd-rack"></i>
+                    <h6>{% trans "No available servers" %}</h6>
+                    <p class="text-muted">{% trans "All servers are either full or inactive. Add or activate a server first." %}</p>
+                    <a href="{% url 'tenants:pa_server_create' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>{% trans "Add Server" %}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

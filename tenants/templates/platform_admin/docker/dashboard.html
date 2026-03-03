@@ -1,0 +1,230 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Docker Management" %}{% endblock %}
+{% block page_title %}{% trans "Docker Management" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item active">{% trans "Docker Management" %}</li>
+    </ol>
+</nav>
+
+{% if not docker_available %}
+<div class="alert alert-danger d-flex align-items-center">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <div>
+        <strong>{% trans "Docker is not available" %}</strong><br>
+        {% trans "Docker daemon is not running or not installed on this server." %}
+    </div>
+</div>
+{% else %}
+
+<!-- System Info Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(59,130,246,.1);color:#3b82f6">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ system_info.total_containers|default:"0" }}</h3>
+                <small class="text-muted">{% trans "Total Containers" %}</small>
+                <div class="mt-1">
+                    <span class="badge bg-success-subtle text-success">{{ system_info.running_containers }} {% trans "running" %}</span>
+                    <span class="badge bg-secondary-subtle text-secondary">{{ system_info.stopped_containers }} {% trans "stopped" %}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(168,85,247,.1);color:#a855f7">
+                    <i class="bi bi-layers"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ system_info.total_images|default:"0" }}</h3>
+                <small class="text-muted">{% trans "Docker Images" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(34,197,94,.1);color:#22c55e">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ system_info.cpus|default:"N/A" }}</h3>
+                <small class="text-muted">{% trans "CPUs Available" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(249,115,22,.1);color:#f97316">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+                <h4 class="fw-bold mb-0">{{ system_info.docker_version|default:"N/A" }}</h4>
+                <small class="text-muted">{% trans "Docker Version" %}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Details -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-gear me-2"></i>{% trans "System Details" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="detail-label">{% trans "Storage Driver" %}</td>
+                        <td>{{ system_info.storage_driver|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "OS" %}</td>
+                        <td>{{ system_info.os|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Architecture" %}</td>
+                        <td>{{ system_info.architecture|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Memory" %}</td>
+                        <td>{{ system_info.memory|default:"N/A" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pull Image -->
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-cloud-download me-2"></i>{% trans "Pull Image" %}</h5></div>
+            <div class="pa-card-body">
+                <form method="post" action="{% url 'tenants:pa_docker_pull_image' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Image Name" %}</label>
+                        <input type="text" name="image_name" class="form-control" placeholder="postgres:16-alpine" required>
+                        <div class="form-text">{% trans "Only PostgreSQL images are allowed." %}</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-cloud-download me-1"></i>{% trans "Pull Image" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Container List -->
+<div class="pa-card mb-4">
+    <div class="pa-card-header d-flex justify-content-between align-items-center">
+        <h5><i class="bi bi-boxes me-2"></i>{% trans "Docker Containers" %}</h5>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if server_statuses %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Server" %}</th>
+                        <th>{% trans "Container" %}</th>
+                        <th>{% trans "Host:Port" %}</th>
+                        <th>{% trans "Docker Status" %}</th>
+                        <th>{% trans "Server Status" %}</th>
+                        <th class="text-end">{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in server_statuses %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'tenants:pa_server_detail' pk=item.server.pk %}" class="fw-bold text-decoration-none">
+                                {{ item.server.name }}
+                            </a>
+                        </td>
+                        <td><code>{{ item.server.docker_container_name }}</code></td>
+                        <td><code>{{ item.server.host }}:{{ item.server.port }}</code></td>
+                        <td>
+                            {% if item.docker_status == 'running' %}
+                            <span class="badge bg-success-subtle text-success">{% trans "Running" %}</span>
+                            {% elif item.docker_status == 'exited' %}
+                            <span class="badge bg-danger-subtle text-danger">{% trans "Exited" %}</span>
+                            {% elif item.docker_status == 'paused' %}
+                            <span class="badge bg-warning-subtle text-warning">{% trans "Paused" %}</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">{{ item.docker_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge badge-status badge-{{ item.server.status }}">{{ item.server.get_status_display }}</span></td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'tenants:pa_docker_stats' pk=item.server.pk %}" class="btn btn-outline-primary" title="{% trans 'Stats' %}">
+                                    <i class="bi bi-speedometer2"></i>
+                                </a>
+                                <a href="{% url 'tenants:pa_docker_inspect' pk=item.server.pk %}" class="btn btn-outline-info" title="{% trans 'Inspect' %}">
+                                    <i class="bi bi-search"></i>
+                                </a>
+                                <a href="{% url 'tenants:pa_docker_logs' pk=item.server.pk %}" class="btn btn-outline-secondary" title="{% trans 'Logs' %}">
+                                    <i class="bi bi-journal-text"></i>
+                                </a>
+                                <a href="{% url 'tenants:pa_docker_terminal' pk=item.server.pk %}" class="btn btn-outline-success" title="{% trans 'Terminal' %}">
+                                    <i class="bi bi-terminal"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-box-seam fs-1 mb-2 d-block"></i>
+            {% trans "No Docker containers configured." %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Available Images -->
+{% if images %}
+<div class="pa-card">
+    <div class="pa-card-header"><h5><i class="bi bi-layers me-2"></i>{% trans "PostgreSQL Images" %}</h5></div>
+    <div class="pa-card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Repository" %}</th>
+                        <th>{% trans "Tag" %}</th>
+                        <th>{% trans "Image ID" %}</th>
+                        <th>{% trans "Size" %}</th>
+                        <th>{% trans "Created" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for img in images %}
+                    <tr>
+                        <td><code>{{ img.repo }}</code></td>
+                        <td><span class="badge bg-primary-subtle text-primary">{{ img.tag }}</span></td>
+                        <td><code>{{ img.id }}</code></td>
+                        <td>{{ img.size }}</td>
+                        <td>{{ img.created }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Server" %} - {{ server.name }}{% endblock %}
+{% block page_title %}{% trans "Edit Server" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_server_list' %}">{% trans "Servers" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_server_detail' server.pk %}">{{ server.name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Edit" %}</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-pencil me-2"></i>{% trans "Edit Server" %}: {{ server.name }}</h5>
+                <span class="badge badge-status badge-{{ server.status }}">{{ server.get_status_display }}</span>
+            </div>
+            <div class="pa-card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <!-- Server Name -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Server Name" %} <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" value="{{ server.name }}" required>
+                        </div>
+
+                        <!-- Server Type -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Server Type" %}</label>
+                            <select name="server_type" class="form-select" id="serverType">
+                                {% for val, label in server_type_choices %}
+                                <option value="{{ val }}" {% if server.server_type == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">{% trans "Description" %}</label>
+                            <textarea name="description" class="form-control" rows="2">{{ server.description }}</textarea>
+                        </div>
+
+                        <div class="col-12"><hr class="my-1"></div>
+
+                        <!-- Connection Details -->
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">{% trans "Host" %} <span class="text-danger">*</span></label>
+                            <input type="text" name="host" class="form-control" value="{{ server.host }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">{% trans "Port" %}</label>
+                            <input type="number" name="port" class="form-control" value="{{ server.port }}" min="1" max="65535">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Admin Username" %}</label>
+                            <input type="text" name="admin_username" class="form-control" value="{{ server.admin_username }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Admin Password" %}</label>
+                            <input type="password" name="admin_password" class="form-control" placeholder="{% trans 'Leave blank to keep current' %}">
+                            <small class="text-muted">{% trans "Leave blank to keep the current password" %}</small>
+                        </div>
+
+                        <!-- Docker Fields -->
+                        <div class="col-12 docker-fields">
+                            <hr class="my-1">
+                            <p class="fw-semibold text-muted mb-2"><i class="bi bi-box me-1"></i>{% trans "Docker Configuration" %}</p>
+                        </div>
+                        <div class="col-md-6 docker-fields">
+                            <label class="form-label fw-semibold">{% trans "Container Name" %}</label>
+                            <input type="text" name="docker_container_name" class="form-control" value="{{ server.docker_container_name }}">
+                        </div>
+                        <div class="col-md-6 docker-fields">
+                            <label class="form-label fw-semibold">{% trans "Volume Name" %}</label>
+                            <input type="text" name="docker_volume_name" class="form-control" value="{{ server.docker_volume_name }}">
+                        </div>
+
+                        <div class="col-12"><hr class="my-1"></div>
+
+                        <!-- Capacity & Status -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Max Databases" %}</label>
+                            <input type="number" name="max_databases" class="form-control" value="{{ server.max_databases }}" min="1">
+                            <small class="text-muted">{% trans "Currently hosting" %} {{ server.database_count }} {% trans "databases" %}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Status" %}</label>
+                            <select name="status" class="form-select">
+                                {% for val, label in status_choices %}
+                                <option value="{{ val }}" {% if server.status == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>{% trans "Save Changes" %}
+                        </button>
+                        <a href="{% url 'tenants:pa_server_detail' server.pk %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleDockerFields() {
+        const isDocker = document.getElementById('serverType').value === 'docker';
+        document.querySelectorAll('.docker-fields').forEach(el => {
+            el.style.display = isDocker ? '' : 'none';
+        });
+    }
+    document.getElementById('serverType').addEventListener('change', toggleDockerFields);
+    toggleDockerFields();
+</script>
+{% endblock %}

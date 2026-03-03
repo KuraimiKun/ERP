@@ -1,0 +1,884 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ server.name }} - {% trans "Terminal" %}{% endblock %}
+{% block page_title %}{% trans "Live Terminal" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Terminal Core ───────────────────────── */
+    :root {
+        --term-bg: #0d1117;
+        --term-fg: #c9d1d9;
+        --term-green: #3fb950;
+        --term-red: #f85149;
+        --term-yellow: #d29922;
+        --term-blue: #58a6ff;
+        --term-cyan: #39c5cf;
+        --term-magenta: #bc8cff;
+        --term-dim: #484f58;
+        --term-border: #21262d;
+        --term-selection: rgba(56, 139, 253, .25);
+        --term-scrollbar: #30363d;
+        --term-prompt: #3fb950;
+        --term-header: #161b22;
+    }
+
+    .terminal-wrapper {
+        background: var(--term-bg);
+        border: 1px solid var(--term-border);
+        border-radius: .75rem;
+        overflow: hidden;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, .35), 0 0 0 1px rgba(255,255,255,.04);
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 200px);
+        min-height: 500px;
+    }
+
+    /* ── Title Bar (macOS-style) ─────────── */
+    .terminal-titlebar {
+        background: var(--term-header);
+        border-bottom: 1px solid var(--term-border);
+        padding: .5rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        user-select: none;
+    }
+
+    .titlebar-dots {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .titlebar-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .titlebar-dot.red { background: #ff5f57; }
+    .titlebar-dot.yellow { background: #febc2e; }
+    .titlebar-dot.green { background: #28c840; }
+
+    .titlebar-title {
+        color: var(--term-dim);
+        font-size: .8rem;
+        font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+        letter-spacing: .02em;
+    }
+
+    .titlebar-actions {
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+    }
+
+    .titlebar-actions .btn {
+        padding: .15rem .5rem;
+        font-size: .72rem;
+        border-radius: .25rem;
+        font-family: 'SF Mono', 'Cascadia Code', monospace;
+    }
+
+    /* ── Status Bar ──────────────────────── */
+    .terminal-statusbar {
+        background: var(--term-header);
+        border-top: 1px solid var(--term-border);
+        padding: .35rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        font-family: 'SF Mono', 'Cascadia Code', monospace;
+        font-size: .72rem;
+        color: var(--term-dim);
+    }
+
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .status-indicator .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-indicator .dot.running { background: var(--term-green); box-shadow: 0 0 6px var(--term-green); }
+    .status-indicator .dot.stopped { background: var(--term-red); }
+    .status-indicator .dot.busy { background: var(--term-yellow); animation: pulse 1s ease-in-out infinite; }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .4; }
+    }
+
+    /* ── Output Area ─────────────────────── */
+    .terminal-output {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 1.25rem;
+        font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+        font-size: .85rem;
+        line-height: 1.65;
+        color: var(--term-fg);
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+
+    .terminal-output::-webkit-scrollbar { width: 8px; }
+    .terminal-output::-webkit-scrollbar-track { background: var(--term-bg); }
+    .terminal-output::-webkit-scrollbar-thumb { background: var(--term-scrollbar); border-radius: 4px; }
+    .terminal-output::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+    .terminal-output ::selection {
+        background: var(--term-selection);
+    }
+
+    /* ── Output Line Types ───────────────── */
+    .term-line { margin-bottom: 2px; }
+
+    .term-prompt-line {
+        color: var(--term-prompt);
+    }
+
+    .term-prompt-symbol {
+        color: var(--term-cyan);
+        font-weight: 700;
+    }
+
+    .term-prompt-user {
+        color: var(--term-blue);
+    }
+
+    .term-prompt-host {
+        color: var(--term-magenta);
+    }
+
+    .term-prompt-path {
+        color: var(--term-yellow);
+    }
+
+    .term-command {
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .term-stdout { color: var(--term-fg); }
+    .term-stderr { color: var(--term-red); }
+
+    .term-info {
+        color: var(--term-blue);
+        font-style: italic;
+    }
+
+    .term-success {
+        color: var(--term-green);
+    }
+
+    .term-error {
+        color: var(--term-red);
+    }
+
+    .term-warning {
+        color: var(--term-yellow);
+    }
+
+    .term-separator {
+        border-top: 1px solid var(--term-border);
+        margin: .5rem 0;
+    }
+
+    .term-exit-code {
+        display: inline-block;
+        padding: .1rem .4rem;
+        border-radius: .2rem;
+        font-size: .72rem;
+        font-weight: 600;
+    }
+
+    .term-exit-code.success {
+        background: rgba(63, 185, 80, .15);
+        color: var(--term-green);
+    }
+
+    .term-exit-code.error {
+        background: rgba(248, 81, 73, .15);
+        color: var(--term-red);
+    }
+
+    .term-elapsed {
+        color: var(--term-dim);
+        font-size: .75rem;
+    }
+
+    /* ── Input Area ──────────────────────── */
+    .terminal-input-area {
+        background: var(--term-header);
+        border-top: 1px solid var(--term-border);
+        padding: .65rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-shrink: 0;
+    }
+
+    .terminal-prompt-prefix {
+        color: var(--term-prompt);
+        font-family: 'SF Mono', 'Cascadia Code', monospace;
+        font-size: .85rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .terminal-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+        font-size: .85rem;
+        caret-color: var(--term-green);
+        padding: .25rem 0;
+    }
+
+    .terminal-input::placeholder {
+        color: var(--term-dim);
+    }
+
+    .terminal-input:disabled {
+        opacity: .5;
+    }
+
+    /* ── Suggestions Panel ───────────────── */
+    .suggestions-panel {
+        background: #1c2128;
+        border: 1px solid var(--term-border);
+        border-radius: .5rem;
+        margin: .5rem 1rem;
+        padding: .5rem;
+        display: none;
+        max-height: 180px;
+        overflow-y: auto;
+    }
+
+    .suggestions-panel.show { display: block; }
+
+    .suggestion-item {
+        padding: .3rem .65rem;
+        border-radius: .25rem;
+        cursor: pointer;
+        font-family: 'SF Mono', 'Cascadia Code', monospace;
+        font-size: .8rem;
+        color: var(--term-fg);
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+    }
+
+    .suggestion-item:hover, .suggestion-item.active {
+        background: rgba(56, 139, 253, .15);
+        color: white;
+    }
+
+    .suggestion-item .cmd { color: var(--term-cyan); min-width: 160px; }
+    .suggestion-item .desc { color: var(--term-dim); font-size: .72rem; }
+
+    /* ── Spinner ──────────────────────────── */
+    .term-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--term-dim);
+        border-top-color: var(--term-green);
+        border-radius: 50%;
+        animation: spin .6s linear infinite;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ── Welcome Banner ──────────────────── */
+    .term-banner {
+        color: var(--term-cyan);
+        margin-bottom: 1rem;
+    }
+
+    .term-banner .ascii-art {
+        color: var(--term-green);
+        font-size: .75rem;
+        line-height: 1.2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_docker_dashboard' %}">{% trans "Docker" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_server_detail' pk=server.pk %}">{{ server.name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Terminal" %}</li>
+    </ol>
+</nav>
+
+<!-- Quick Actions -->
+<div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+    <a href="{% url 'tenants:pa_docker_stats' pk=server.pk %}" class="btn btn-outline-info btn-sm">
+        <i class="bi bi-speedometer2 me-1"></i>{% trans "Stats" %}
+    </a>
+    <a href="{% url 'tenants:pa_docker_inspect' pk=server.pk %}" class="btn btn-outline-info btn-sm">
+        <i class="bi bi-search me-1"></i>{% trans "Inspect" %}
+    </a>
+    <a href="{% url 'tenants:pa_docker_logs' pk=server.pk %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-journal-text me-1"></i>{% trans "Logs" %}
+    </a>
+</div>
+
+<!-- Terminal -->
+<div class="terminal-wrapper" id="terminalWrapper">
+    <!-- Title Bar -->
+    <div class="terminal-titlebar">
+        <div class="titlebar-dots">
+            <span class="titlebar-dot red"></span>
+            <span class="titlebar-dot yellow"></span>
+            <span class="titlebar-dot green"></span>
+        </div>
+        <div class="titlebar-title">
+            <i class="bi bi-box me-1"></i>
+            {{ server.docker_container_name|default:server.name }} — docker exec -it sh
+        </div>
+        <div class="titlebar-actions">
+            <button class="btn btn-outline-secondary" onclick="clearTerminal()" title="{% trans 'Clear' %}">
+                <i class="bi bi-trash3"></i> {% trans "Clear" %}
+            </button>
+            <button class="btn btn-outline-secondary" onclick="exportTerminal()" title="{% trans 'Export' %}">
+                <i class="bi bi-download"></i>
+            </button>
+            <button class="btn btn-outline-warning" onclick="toggleFullscreen()" title="{% trans 'Fullscreen' %}" id="fullscreenBtn">
+                <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Output -->
+    <div class="terminal-output" id="terminalOutput"></div>
+
+    <!-- Suggestions Panel -->
+    <div class="suggestions-panel" id="suggestionsPanel"></div>
+
+    <!-- Input -->
+    <div class="terminal-input-area">
+        <span class="terminal-prompt-prefix">
+            <span style="color:var(--term-blue)">root</span><span style="color:var(--term-dim)">@</span><span style="color:var(--term-magenta)">{{ server.docker_container_name|default:"container" }}</span><span style="color:var(--term-dim)">:</span><span style="color:var(--term-yellow)">~</span><span style="color:var(--term-green)"> $</span>
+        </span>
+        <input type="text"
+               class="terminal-input"
+               id="terminalInput"
+               placeholder="{% trans 'Type a command...' %}"
+               autocomplete="off"
+               spellcheck="false"
+               {% if container_status != 'running' %}disabled{% endif %}>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="terminal-statusbar">
+        <div class="d-flex align-items-center gap-3">
+            <span class="status-indicator">
+                <span class="dot {% if container_status == 'running' %}running{% else %}stopped{% endif %}" id="statusDot"></span>
+                <span id="statusText">{{ container_status|default:"unknown" }}</span>
+            </span>
+            <span id="commandCount">0 {% trans "commands" %}</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span id="sessionDuration">00:00:00</span>
+            <span>{% trans "History" %}: <kbd>↑</kbd><kbd>↓</kbd> | {% trans "Clear" %}: <kbd>Ctrl+L</kbd> | {% trans "Search" %}: <kbd>Ctrl+R</kbd></span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+
+    // ── Configuration ──────────────────────────────────────────────
+    const API_URL = "{% url 'tenants:pa_docker_terminal_exec' pk=server.pk %}";
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    const CONTAINER_NAME = '{{ server.docker_container_name|default:"container" }}';
+    const CONTAINER_RUNNING = {{ container_status|yesno:"true,false,false" }} === true;
+
+    // ── State ──────────────────────────────────────────────────────
+    let commandHistory = JSON.parse(localStorage.getItem(`term_history_${CONTAINER_NAME}`) || '[]');
+    let historyIndex = -1;
+    let commandCount = 0;
+    let isExecuting = false;
+    let searchMode = false;
+    let searchQuery = '';
+    let sessionStart = Date.now();
+    let currentSuggestionIndex = -1;
+
+    // ── DOM References ─────────────────────────────────────────────
+    const output = document.getElementById('terminalOutput');
+    const input = document.getElementById('terminalInput');
+    const suggestionsPanel = document.getElementById('suggestionsPanel');
+    const commandCountEl = document.getElementById('commandCount');
+    const sessionDurationEl = document.getElementById('sessionDuration');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    // ── Quick-Access Commands ──────────────────────────────────────
+    const SUGGESTIONS = [
+        { cmd: 'psql -U postgres', desc: 'Open PostgreSQL interactive shell' },
+        { cmd: 'psql -U postgres -l', desc: 'List all databases' },
+        { cmd: 'psql -U postgres -c "SELECT version();"', desc: 'PostgreSQL version' },
+        { cmd: 'psql -U postgres -c "SELECT datname, pg_size_pretty(pg_database_size(datname)) FROM pg_database ORDER BY pg_database_size(datname) DESC;"', desc: 'Database sizes' },
+        { cmd: 'psql -U postgres -c "SELECT count(*) as connections, datname FROM pg_stat_activity GROUP BY datname;"', desc: 'Connections per database' },
+        { cmd: 'psql -U postgres -c "SELECT pid, usename, datname, state, query_start, query FROM pg_stat_activity WHERE state = \'active\';"', desc: 'Active queries' },
+        { cmd: 'pg_isready', desc: 'Check if PostgreSQL is ready' },
+        { cmd: 'cat /var/lib/postgresql/data/postgresql.conf | grep -v "^#" | grep -v "^$"', desc: 'View active pg config' },
+        { cmd: 'cat /var/lib/postgresql/data/pg_hba.conf | grep -v "^#" | grep -v "^$"', desc: 'View HBA config' },
+        { cmd: 'df -h', desc: 'Disk usage' },
+        { cmd: 'free -h', desc: 'Memory usage' },
+        { cmd: 'top -bn1 | head -20', desc: 'Process snapshot' },
+        { cmd: 'ls -la /var/lib/postgresql/data/', desc: 'Data directory contents' },
+        { cmd: 'cat /etc/os-release', desc: 'OS information' },
+        { cmd: 'env | sort', desc: 'Environment variables' },
+        { cmd: 'hostname -I', desc: 'Container IP address' },
+        { cmd: 'ps aux', desc: 'All running processes' },
+        { cmd: 'uptime', desc: 'System uptime' },
+        { cmd: 'pg_controldata /var/lib/postgresql/data/ 2>/dev/null || echo "pg_controldata not in PATH"', desc: 'PostgreSQL cluster info' },
+    ];
+
+    // ── Banner ─────────────────────────────────────────────────────
+    function showBanner() {
+        const banner = document.createElement('div');
+        banner.className = 'term-banner';
+        banner.innerHTML = `<div class="ascii-art">  ____  _       _    __                        _____                  _             _
+ |  _ \\| | __ _| |_ / _| ___  _ __ _ __ ___  |_   _|__ _ __ _ __ ___ (_)_ __   __ _| |
+ | |_) | |/ _\` | __| |_ / _ \\| '__| '_ \` _ \\   | |/ _ \\ '__| '_ \` _ \\| | '_ \\ / _\` | |
+ |  __/| | (_| | |_|  _| (_) | |  | | | | | |  | |  __/ |  | | | | | | | | | | (_| | |
+ |_|   |_|\\__,_|\\__|_|  \\___/|_|  |_| |_| |_|  |_|\\___|_|  |_| |_| |_|_|_| |_|\\__,_|_|</div>
+<span class="term-info">
+  {% trans "Container" %}: <span style="color:var(--term-cyan)">${CONTAINER_NAME}</span>
+  {% trans "Status" %}:    <span style="color:var(${CONTAINER_RUNNING ? '--term-green' : '--term-red'})">${CONTAINER_RUNNING ? '● {% trans "running" %}' : '● {% trans "stopped" %}'}</span>
+  {% trans "Type" %}:      <span style="color:var(--term-yellow)">{% trans "docker exec interactive shell" %}</span>
+  {% trans "Timeout" %}:   <span style="color:var(--term-dim)">30s {% trans "per command" %}</span>
+
+  {% trans "Tip" %}: {% trans "Press" %} <span style="color:var(--term-yellow)">Tab</span> {% trans "for suggestions" %}, <span style="color:var(--term-yellow)">↑↓</span> {% trans "for history" %}, <span style="color:var(--term-yellow)">Ctrl+L</span> {% trans "to clear" %}
+</span>`;
+        output.appendChild(banner);
+    }
+
+    // ── Render Helpers ─────────────────────────────────────────────
+    function appendLine(html, className) {
+        const div = document.createElement('div');
+        div.className = `term-line ${className || ''}`;
+        div.innerHTML = html;
+        output.appendChild(div);
+        scrollToBottom();
+    }
+
+    function appendPrompt(command) {
+        appendLine(
+            `<span class="term-prompt-user">root</span>` +
+            `<span style="color:var(--term-dim)">@</span>` +
+            `<span class="term-prompt-host">${CONTAINER_NAME}</span>` +
+            `<span style="color:var(--term-dim)">:</span>` +
+            `<span class="term-prompt-path">~</span>` +
+            `<span class="term-prompt-symbol"> $ </span>` +
+            `<span class="term-command">${escapeHtml(command)}</span>`,
+            'term-prompt-line'
+        );
+    }
+
+    function appendOutput(text, type) {
+        if (!text) return;
+        const div = document.createElement('div');
+        div.className = `term-line term-${type}`;
+        div.textContent = text;
+        output.appendChild(div);
+        scrollToBottom();
+    }
+
+    function appendSpinner() {
+        const div = document.createElement('div');
+        div.className = 'term-line';
+        div.id = 'activeSpinner';
+        div.innerHTML = '<span class="term-spinner"></span> <span class="term-info">{% trans "Executing..." %}</span>';
+        output.appendChild(div);
+        scrollToBottom();
+    }
+
+    function removeSpinner() {
+        const spinner = document.getElementById('activeSpinner');
+        if (spinner) spinner.remove();
+    }
+
+    function appendResultMeta(exitCode, elapsed) {
+        const cls = exitCode === 0 ? 'success' : 'error';
+        appendLine(
+            `<span class="term-exit-code ${cls}">exit ${exitCode}</span> ` +
+            `<span class="term-elapsed">${elapsed}s</span>`,
+            ''
+        );
+        const sep = document.createElement('div');
+        sep.className = 'term-separator';
+        output.appendChild(sep);
+    }
+
+    function scrollToBottom() {
+        requestAnimationFrame(() => {
+            output.scrollTop = output.scrollHeight;
+        });
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ── Command Execution ──────────────────────────────────────────
+    async function executeCommand(command) {
+        if (isExecuting || !command.trim()) return;
+
+        // Handle built-in commands
+        if (command.trim() === 'clear') {
+            clearTerminal();
+            return;
+        }
+        if (command.trim() === 'history') {
+            appendPrompt(command);
+            commandHistory.forEach((cmd, i) => {
+                appendLine(`  <span style="color:var(--term-dim)">${String(i + 1).padStart(4)}</span>  ${escapeHtml(cmd)}`, 'term-stdout');
+            });
+            appendLine('', '');
+            return;
+        }
+        if (command.trim() === 'help') {
+            appendPrompt(command);
+            appendLine(`<span class="term-info">{% trans "Available shortcuts:" %}</span>`, '');
+            SUGGESTIONS.forEach(s => {
+                appendLine(`  <span style="color:var(--term-cyan)">${escapeHtml(s.cmd)}</span>`, '');
+                appendLine(`    <span style="color:var(--term-dim)">${s.desc}</span>`, '');
+            });
+            appendLine('', '');
+            return;
+        }
+
+        isExecuting = true;
+        input.disabled = true;
+        setStatus('busy', '{% trans "executing" %}');
+        hideSuggestions();
+
+        // Save to history
+        if (!commandHistory.length || commandHistory[commandHistory.length - 1] !== command) {
+            commandHistory.push(command);
+            if (commandHistory.length > 500) commandHistory.shift();
+            localStorage.setItem(`term_history_${CONTAINER_NAME}`, JSON.stringify(commandHistory));
+        }
+        historyIndex = -1;
+
+        appendPrompt(command);
+        appendSpinner();
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF_TOKEN,
+                },
+                body: JSON.stringify({ command }),
+            });
+
+            removeSpinner();
+            const data = await resp.json();
+
+            if (data.error) {
+                if (data.blocked) {
+                    appendOutput(`⛔ ${data.error}`, 'error');
+                } else if (data.timeout) {
+                    appendOutput(`⏱ ${data.error}`, 'warning');
+                } else {
+                    appendOutput(`❌ ${data.error}`, 'error');
+                }
+                if (data.elapsed) appendResultMeta(data.exit_code || -1, data.elapsed);
+            } else {
+                if (data.stdout) appendOutput(data.stdout, 'stdout');
+                if (data.stderr) appendOutput(data.stderr, 'stderr');
+                if (data.truncated) {
+                    appendLine('<span class="term-warning">⚠ {% trans "Output was truncated due to size limits" %}</span>', '');
+                }
+                appendResultMeta(data.exit_code, data.elapsed);
+            }
+
+            commandCount++;
+            commandCountEl.textContent = `${commandCount} {% trans "commands" %}`;
+
+        } catch (err) {
+            removeSpinner();
+            appendOutput(`Network error: ${err.message}`, 'error');
+        }
+
+        isExecuting = false;
+        input.disabled = false;
+        setStatus(CONTAINER_RUNNING ? 'running' : 'stopped', CONTAINER_RUNNING ? '{% trans "running" %}' : '{% trans "stopped" %}');
+        input.focus();
+    }
+
+    // ── Suggestions ────────────────────────────────────────────────
+    function showSuggestions(query) {
+        const q = query.toLowerCase();
+        const matches = SUGGESTIONS.filter(s =>
+            s.cmd.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)
+        ).slice(0, 8);
+
+        if (!matches.length) { hideSuggestions(); return; }
+
+        currentSuggestionIndex = -1;
+        suggestionsPanel.innerHTML = matches.map((s, i) =>
+            `<div class="suggestion-item" data-index="${i}" data-cmd="${escapeHtml(s.cmd)}">` +
+            `<span class="cmd">${highlightMatch(s.cmd, q)}</span>` +
+            `<span class="desc">${s.desc}</span>` +
+            `</div>`
+        ).join('');
+        suggestionsPanel.classList.add('show');
+
+        suggestionsPanel.querySelectorAll('.suggestion-item').forEach(el => {
+            el.addEventListener('click', () => {
+                input.value = el.dataset.cmd;
+                hideSuggestions();
+                input.focus();
+            });
+        });
+    }
+
+    function hideSuggestions() {
+        suggestionsPanel.classList.remove('show');
+        currentSuggestionIndex = -1;
+    }
+
+    function highlightMatch(text, query) {
+        if (!query) return escapeHtml(text);
+        const idx = text.toLowerCase().indexOf(query);
+        if (idx === -1) return escapeHtml(text);
+        return escapeHtml(text.substring(0, idx)) +
+            `<span style="color:var(--term-yellow);font-weight:700">${escapeHtml(text.substring(idx, idx + query.length))}</span>` +
+            escapeHtml(text.substring(idx + query.length));
+    }
+
+    function navigateSuggestions(direction) {
+        const items = suggestionsPanel.querySelectorAll('.suggestion-item');
+        if (!items.length) return false;
+
+        items.forEach(el => el.classList.remove('active'));
+
+        if (direction === 'down') {
+            currentSuggestionIndex = (currentSuggestionIndex + 1) % items.length;
+        } else {
+            currentSuggestionIndex = currentSuggestionIndex <= 0 ? items.length - 1 : currentSuggestionIndex - 1;
+        }
+
+        items[currentSuggestionIndex].classList.add('active');
+        items[currentSuggestionIndex].scrollIntoView({ block: 'nearest' });
+        return true;
+    }
+
+    function acceptSuggestion() {
+        const items = suggestionsPanel.querySelectorAll('.suggestion-item');
+        if (currentSuggestionIndex >= 0 && items[currentSuggestionIndex]) {
+            input.value = items[currentSuggestionIndex].dataset.cmd;
+            hideSuggestions();
+            return true;
+        }
+        return false;
+    }
+
+    // ── Keyboard Handler ───────────────────────────────────────────
+    input.addEventListener('keydown', function(e) {
+        const suggestionsVisible = suggestionsPanel.classList.contains('show');
+
+        // Tab: show/accept suggestions
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            if (suggestionsVisible) {
+                acceptSuggestion();
+            } else if (input.value.trim()) {
+                showSuggestions(input.value);
+            } else {
+                showSuggestions('');
+            }
+            return;
+        }
+
+        // Escape: hide suggestions
+        if (e.key === 'Escape') {
+            if (suggestionsVisible) {
+                hideSuggestions();
+                e.preventDefault();
+            }
+            return;
+        }
+
+        // Enter
+        if (e.key === 'Enter') {
+            if (suggestionsVisible && currentSuggestionIndex >= 0) {
+                acceptSuggestion();
+                e.preventDefault();
+                return;
+            }
+            const cmd = input.value.trim();
+            if (cmd) {
+                input.value = '';
+                hideSuggestions();
+                executeCommand(cmd);
+            }
+            return;
+        }
+
+        // Arrow Up/Down
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            if (suggestionsVisible) {
+                e.preventDefault();
+                navigateSuggestions(e.key === 'ArrowDown' ? 'down' : 'up');
+                return;
+            }
+
+            e.preventDefault();
+            if (e.key === 'ArrowUp') {
+                if (historyIndex === -1) historyIndex = commandHistory.length;
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    input.value = commandHistory[historyIndex];
+                }
+            } else {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    input.value = commandHistory[historyIndex];
+                } else {
+                    historyIndex = -1;
+                    input.value = '';
+                }
+            }
+            return;
+        }
+
+        // Ctrl+L: clear
+        if (e.key === 'l' && e.ctrlKey) {
+            e.preventDefault();
+            clearTerminal();
+            return;
+        }
+
+        // Ctrl+C: cancel / clear input
+        if (e.key === 'c' && e.ctrlKey) {
+            if (input.value) {
+                appendPrompt(input.value + '^C');
+                input.value = '';
+                hideSuggestions();
+            }
+            return;
+        }
+
+        // Ctrl+R: reverse search
+        if (e.key === 'r' && e.ctrlKey) {
+            e.preventDefault();
+            const searchTerm = prompt('{% trans "Search command history:" %}');
+            if (searchTerm) {
+                const found = [...commandHistory].reverse().find(c => c.includes(searchTerm));
+                if (found) {
+                    input.value = found;
+                    input.focus();
+                }
+            }
+            return;
+        }
+    });
+
+    // Hide suggestions when typing changes
+    input.addEventListener('input', function() {
+        if (suggestionsPanel.classList.contains('show')) {
+            if (input.value.trim()) {
+                showSuggestions(input.value);
+            } else {
+                hideSuggestions();
+            }
+        }
+    });
+
+    // ── Helpers ────────────────────────────────────────────────────
+    function setStatus(type, text) {
+        statusDot.className = `dot ${type}`;
+        statusText.textContent = text;
+    }
+
+    function updateSessionDuration() {
+        const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+        const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+        const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+        const s = (elapsed % 60).toString().padStart(2, '0');
+        sessionDurationEl.textContent = `${h}:${m}:${s}`;
+    }
+
+    // ── Global Functions ───────────────────────────────────────────
+    window.clearTerminal = function() {
+        output.innerHTML = '';
+        showBanner();
+    };
+
+    window.exportTerminal = function() {
+        const text = output.innerText;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `terminal_${CONTAINER_NAME}_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    window.toggleFullscreen = function() {
+        const wrapper = document.getElementById('terminalWrapper');
+        if (!document.fullscreenElement) {
+            wrapper.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    // Click on output area focuses input
+    output.addEventListener('click', function(e) {
+        if (!window.getSelection().toString()) {
+            input.focus();
+        }
+    });
+
+    // ── Init ───────────────────────────────────────────────────────
+    showBanner();
+
+    if (!CONTAINER_RUNNING) {
+        appendLine('<span class="term-error">⚠ {% trans "Container is not running. Start the container to use the terminal." %}</span>', '');
+    }
+
+    input.focus();
+
+    // Session timer
+    setInterval(updateSessionDuration, 1000);
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,375 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ tenant_user.get_full_name }} - {% trans "User Detail" %}{% endblock %}
+{% block page_title %}{% trans "User Detail" %}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_user_list' %}">{% trans "Users" %}</a></li>
+        <li class="breadcrumb-item active">{{ tenant_user.get_full_name }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- Left Column - User Info -->
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-body text-center">
+                <div class="user-avatar mx-auto mb-3" style="width: 72px; height: 72px; font-size: 1.5rem;
+                    background: {% if tenant_user.approval_status == 'approved' %}#22c55e{% elif tenant_user.approval_status == 'pending' %}#f59e0b{% elif tenant_user.approval_status == 'suspended' %}#7c3aed{% else %}#ef4444{% endif %};">
+                    {{ tenant_user.first_name|first|default:"?" }}{{ tenant_user.last_name|first|default:"" }}
+                </div>
+                <h5 class="fw-bold mb-1">{{ tenant_user.get_full_name }}</h5>
+                <p class="text-muted mb-2">{{ tenant_user.email }}</p>
+                <span class="badge badge-status badge-{{ tenant_user.approval_status }} fs-6">
+                    {{ tenant_user.get_approval_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Details Card -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Details" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="detail-label" style="width:40%">{% trans "Company" %}</td>
+                        <td>{{ tenant_user.company_name|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Phone" %}</td>
+                        <td>{{ tenant_user.phone|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Joined" %}</td>
+                        <td>{{ tenant_user.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Last Login" %}</td>
+                        <td>{{ tenant_user.last_login|date:"M d, Y H:i"|default:"-" }}</td>
+                    </tr>
+                    {% if tenant_user.approved_by %}
+                    <tr>
+                        <td class="detail-label">{% trans "Approved By" %}</td>
+                        <td>{{ tenant_user.approved_by.get_full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Approved At" %}</td>
+                        <td>{{ tenant_user.approved_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if tenant_user.rejection_reason %}
+                    <tr>
+                        <td class="detail-label">{% trans "Rejection Reason" %}</td>
+                        <td class="text-danger">{{ tenant_user.rejection_reason }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="detail-label">{% trans "Active" %}</td>
+                        <td>
+                            {% if tenant_user.is_active %}
+                            <i class="bi bi-check-circle text-success"></i> {% trans "Yes" %}
+                            {% else %}
+                            <i class="bi bi-x-circle text-danger"></i> {% trans "No" %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Actions" %}</h5></div>
+            <div class="pa-card-body d-grid gap-2">
+                {% if tenant_user.approval_status == 'pending' %}
+                <!-- Approve Form -->
+                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    <i class="bi bi-check-lg me-1"></i>{% trans "Approve User" %}
+                </button>
+                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-lg me-1"></i>{% trans "Reject User" %}
+                </button>
+                {% elif tenant_user.approval_status == 'approved' %}
+                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#suspendModal">
+                    <i class="bi bi-pause me-1"></i>{% trans "Suspend User" %}
+                </button>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assignDbModal">
+                    <i class="bi bi-database-add me-1"></i>{% trans "Assign Database" %}
+                </button>
+                {% elif tenant_user.approval_status == 'suspended' or tenant_user.approval_status == 'rejected' %}
+                <form method="post" action="{% url 'tenants:pa_user_reactivate' tenant_user.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm w-100">
+                        <i class="bi bi-arrow-clockwise me-1"></i>{% trans "Reactivate User" %}
+                    </button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'tenants:pa_user_delete' tenant_user.pk %}"
+                      onsubmit="return confirm('{% trans "Are you sure? This action cannot be undone." %}')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="bi bi-trash me-1"></i>{% trans "Delete User" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-8">
+        <!-- Database Assignments -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-database me-2"></i>{% trans "Database Assignments" %}</h5>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if assignments %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Database" %}</th>
+                                <th>{% trans "Server" %}</th>
+                                <th>{% trans "Role" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Assigned" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in assignments %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'tenants:pa_database_detail' a.database.pk %}">
+                                        <i class="bi bi-database me-1"></i>{{ a.database.display_name|default:a.database.name }}
+                                    </a>
+                                </td>
+                                <td><small>{{ a.database.server.name }}</small></td>
+                                <td><span class="badge badge-status badge-{{ a.role }}">{{ a.get_role_display }}</span></td>
+                                <td>
+                                    {% if a.is_active %}
+                                    <span class="badge badge-status badge-active">{% trans "Active" %}</span>
+                                    {% else %}
+                                    <span class="badge badge-status badge-inactive">{% trans "Inactive" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td><small class="text-muted">{{ a.assigned_at|date:"M d, Y" }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-database-slash"></i>
+                    <p>{% trans "No database assignments" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-clock-history me-2"></i>{% trans "Activity Log" %}</h5>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Action" %}</th>
+                                <th>{% trans "Message" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td><span class="badge badge-status badge-{{ log.level }}">{{ log.get_action_display }}</span></td>
+                                <td><small>{{ log.message|truncatechars:100 }}</small></td>
+                                <td><small class="text-muted">{{ log.created_at|timesince }} {% trans "ago" %}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-journal-text"></i>
+                    <p>{% trans "No activity logged" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'tenants:pa_user_approve' tenant_user.pk %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{% trans "Approve User" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans "Approve" %} <strong>{{ tenant_user.get_full_name }}</strong> ({{ tenant_user.email }})?</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Database Assignment" %}</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="db_action" id="dbNew" value="new" checked>
+                            <label class="form-check-label" for="dbNew">{% trans "Create new database" %}</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="db_action" id="dbExisting" value="existing">
+                            <label class="form-check-label" for="dbExisting">{% trans "Assign to existing database" %}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="db_action" id="dbNone" value="none">
+                            <label class="form-check-label" for="dbNone">{% trans "Approve without database" %}</label>
+                        </div>
+                    </div>
+
+                    <div id="existingDbSection" style="display:none">
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "Select Database" %}</label>
+                            <select name="database_id" class="form-select form-select-sm">
+                                <option value="">---</option>
+                                {% for db in available_databases %}
+                                <option value="{{ db.pk }}">{{ db.display_name|default:db.name }} ({{ db.server.name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "Role" %}</label>
+                            <select name="role" class="form-select form-select-sm">
+                                <option value="owner">{% trans "Owner" %}</option>
+                                <option value="admin">{% trans "Admin" %}</option>
+                                <option value="user">{% trans "User" %}</option>
+                                <option value="readonly">{% trans "Read Only" %}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-success btn-sm">{% trans "Approve" %}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'tenants:pa_user_reject' tenant_user.pk %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">{% trans "Reject User" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans "Reject" %} <strong>{{ tenant_user.get_full_name }}</strong>?</p>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Reason (optional)" %}</label>
+                        <textarea name="reason" class="form-control" rows="3" placeholder="{% trans 'Enter rejection reason...' %}"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-danger btn-sm">{% trans "Reject" %}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Suspend Modal -->
+<div class="modal fade" id="suspendModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'tenants:pa_user_suspend' tenant_user.pk %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-warning">{% trans "Suspend User" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans "Are you sure you want to suspend" %} <strong>{{ tenant_user.get_full_name }}</strong>?</p>
+                    <p class="text-muted small">{% trans "The user will be deactivated and unable to log in." %}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-warning btn-sm">{% trans "Suspend" %}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assign Database Modal -->
+<div class="modal fade" id="assignDbModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'tenants:pa_user_assign_db' tenant_user.pk %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{% trans "Assign Database" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Database" %}</label>
+                        <select name="database_id" class="form-select" required>
+                            <option value="">{% trans "Select a database..." %}</option>
+                            {% for db in available_databases %}
+                            <option value="{{ db.pk }}">{{ db.display_name|default:db.name }} ({{ db.server.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Role" %}</label>
+                        <select name="role" class="form-select">
+                            <option value="owner">{% trans "Owner" %}</option>
+                            <option value="admin">{% trans "Admin" %}</option>
+                            <option value="user" selected>{% trans "User" %}</option>
+                            <option value="readonly">{% trans "Read Only" %}</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="deactivate_existing" value="1" id="deactivateExisting">
+                        <label class="form-check-label" for="deactivateExisting">{% trans "Deactivate existing assignments" %}</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary btn-sm">{% trans "Assign" %}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle existing DB section in approve modal
+    document.querySelectorAll('input[name="db_action"]').forEach(r => {
+        r.addEventListener('change', function() {
+            document.getElementById('existingDbSection').style.display =
+                this.value === 'existing' ? 'block' : 'none';
+        });
+    });
+</script>
+{% endblock %}

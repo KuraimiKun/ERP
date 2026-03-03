@@ -1,0 +1,237 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "User Management" %}{% endblock %}
+{% block page_title %}{% trans "User Management" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div>
+        <h3>{% trans "All Users" %}</h3>
+        <p>{% trans "Manage tenant users, approvals, and database assignments" %}</p>
+    </div>
+</div>
+
+<!-- Status Tabs -->
+<div class="pa-card mb-4">
+    <div class="pa-card-body py-2 px-3">
+        <ul class="nav nav-pills gap-1">
+            <li class="nav-item">
+                <a class="nav-link {% if not current_status %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_user_list' %}">
+                    {% trans "All" %} <span class="badge bg-secondary ms-1">{{ status_counts.all }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'pending' %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_user_list' %}?status=pending">
+                    {% trans "Pending" %} <span class="badge bg-warning text-dark ms-1">{{ status_counts.pending }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'approved' %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_user_list' %}?status=approved">
+                    {% trans "Approved" %} <span class="badge bg-success ms-1">{{ status_counts.approved }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'rejected' %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_user_list' %}?status=rejected">
+                    {% trans "Rejected" %} <span class="badge bg-danger ms-1">{{ status_counts.rejected }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'suspended' %}active{% endif %} px-3 py-1" style="font-size:.85rem"
+                   href="{% url 'tenants:pa_user_list' %}?status=suspended">
+                    {% trans "Suspended" %} <span class="badge bg-secondary ms-1">{{ status_counts.suspended }}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="pa-card mb-4">
+    <div class="pa-card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+            <div class="col-md-5">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" class="form-control form-control-sm" 
+                           placeholder="{% trans 'Search by name, email, or company...' %}"
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="has_db" class="form-select form-select-sm">
+                    <option value="">{% trans "All (DB status)" %}</option>
+                    <option value="1" {% if has_db_filter == '1' %}selected{% endif %}>{% trans "Has database" %}</option>
+                    <option value="0" {% if has_db_filter == '0' %}selected{% endif %}>{% trans "No database" %}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'tenants:pa_user_list' %}" class="btn btn-outline-secondary btn-sm w-100">{% trans "Clear" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- User Table -->
+<div class="pa-card">
+    <div class="pa-card-body p-0">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:40px">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                        </th>
+                        <th>{% trans "User" %}</th>
+                        <th>{% trans "Company" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Database" %}</th>
+                        <th>{% trans "Joined" %}</th>
+                        <th style="width:100px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="form-check-input user-check" value="{{ u.pk }}">
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar" style="background: {% if u.approval_status == 'approved' %}#22c55e{% elif u.approval_status == 'pending' %}#f59e0b{% elif u.approval_status == 'suspended' %}#7c3aed{% else %}#ef4444{% endif %}; width: 36px; height: 36px; font-size: .8rem;">
+                                    {{ u.first_name|first|default:"?" }}{{ u.last_name|first|default:"" }}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">{{ u.get_full_name }}</div>
+                                    <small class="text-muted">{{ u.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ u.company_name|default:"-" }}</td>
+                        <td>
+                            <span class="badge badge-status badge-{{ u.approval_status }}">
+                                {{ u.get_approval_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% with db=u.assigned_database %}
+                            {% if db %}
+                            <small class="text-success"><i class="bi bi-database-check me-1"></i>{{ db.display_name|default:db.name }}</small>
+                            {% else %}
+                            <small class="text-muted">{% trans "None" %}</small>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ u.created_at|date:"M d, Y" }}</small>
+                        </td>
+                        <td>
+                            <a href="{% url 'tenants:pa_user_detail' u.pk %}" class="btn btn-sm btn-outline-primary action-btn">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="pa-card-body border-top d-flex flex-wrap align-items-center gap-2" id="bulkBar" style="display:none!important">
+            <span class="text-muted me-2"><span id="selectedCount">0</span> {% trans "selected" %}</span>
+            <button class="btn btn-sm btn-success" onclick="bulkAction('approve')"><i class="bi bi-check-lg me-1"></i>{% trans "Approve" %}</button>
+            <button class="btn btn-sm btn-warning" onclick="bulkAction('reject')"><i class="bi bi-x-lg me-1"></i>{% trans "Reject" %}</button>
+            <button class="btn btn-sm btn-secondary" onclick="bulkAction('suspend')"><i class="bi bi-pause me-1"></i>{% trans "Suspend" %}</button>
+            <button class="btn btn-sm btn-danger" onclick="bulkAction('delete')"><i class="bi bi-trash me-1"></i>{% trans "Delete" %}</button>
+        </div>
+
+        <!-- Pagination -->
+        {% if users.has_other_pages %}
+        <div class="pa-card-body border-top">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if users.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ users.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&laquo;</a>
+                    </li>
+                    {% endif %}
+                    {% for num in users.paginator.page_range %}
+                    {% if users.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > users.number|add:"-3" and num < users.number|add:"3" %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if users.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ users.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <h6>{% trans "No users found" %}</h6>
+            <p class="text-muted">{% trans "Try adjusting your filters" %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const selectAll = document.getElementById('selectAll');
+    const checks = document.querySelectorAll('.user-check');
+    const bulkBar = document.getElementById('bulkBar');
+    const selectedCount = document.getElementById('selectedCount');
+
+    function updateBulkBar() {
+        const checked = document.querySelectorAll('.user-check:checked');
+        if (checked.length > 0) {
+            bulkBar.style.setProperty('display', 'flex', 'important');
+            selectedCount.textContent = checked.length;
+        } else {
+            bulkBar.style.setProperty('display', 'none', 'important');
+        }
+    }
+
+    selectAll?.addEventListener('change', function() {
+        checks.forEach(c => c.checked = this.checked);
+        updateBulkBar();
+    });
+    checks.forEach(c => c.addEventListener('change', updateBulkBar));
+
+    function bulkAction(action) {
+        const ids = Array.from(document.querySelectorAll('.user-check:checked')).map(c => c.value);
+        if (!ids.length) return;
+
+        if (action === 'delete' && !confirm('{% trans "Are you sure you want to delete selected users?" %}')) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "tenants:pa_bulk_user_action" %}';
+        form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="${action}">`;
+        ids.forEach(id => {
+            form.innerHTML += `<input type="hidden" name="user_ids" value="${id}">`;
+        });
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ database.display_name }} - {% trans "Performance" %}{% endblock %}
+{% block page_title %}{% trans "Database Performance" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_list' %}">{% trans "Databases" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_detail' pk=database.pk %}">{{ database.display_name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Performance" %}</li>
+    </ol>
+</nav>
+
+<!-- Quick Actions -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'tenants:pa_db_tables' pk=database.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-table me-1"></i>{% trans "Tables" %}</a>
+    <a href="{% url 'tenants:pa_db_connections' pk=database.pk %}" class="btn btn-outline-info btn-sm"><i class="bi bi-people me-1"></i>{% trans "Connections" %}</a>
+    <a href="{% url 'tenants:pa_db_maintenance' pk=database.pk %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-wrench me-1"></i>{% trans "Maintenance" %}</a>
+    <a href="{% url 'tenants:pa_db_locks' pk=database.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-lock me-1"></i>{% trans "Locks" %}</a>
+</div>
+
+<!-- Size & Overview -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(59,130,246,.1);color:#3b82f6">
+                    <i class="bi bi-database"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ size.pretty|default:"N/A" }}</h3>
+                <small class="text-muted">{% trans "Database Size" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;
+                    {% if performance.cache_hit_ratio >= 95 %}background:rgba(34,197,94,.1);color:#22c55e{% elif performance.cache_hit_ratio >= 80 %}background:rgba(249,115,22,.1);color:#f97316{% else %}background:rgba(239,68,68,.1);color:#ef4444{% endif %}">
+                    <i class="bi bi-lightning-charge"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ performance.cache_hit_ratio|default:"0" }}%</h3>
+                <small class="text-muted">{% trans "Cache Hit Ratio" %}</small>
+                <div class="progress mt-2" style="height:6px">
+                    <div class="progress-bar {% if performance.cache_hit_ratio >= 95 %}bg-success{% elif performance.cache_hit_ratio >= 80 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ performance.cache_hit_ratio|default:0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;
+                    {% if performance.index_usage_ratio >= 90 %}background:rgba(34,197,94,.1);color:#22c55e{% elif performance.index_usage_ratio >= 70 %}background:rgba(249,115,22,.1);color:#f97316{% else %}background:rgba(239,68,68,.1);color:#ef4444{% endif %}">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ performance.index_usage_ratio|default:"0" }}%</h3>
+                <small class="text-muted">{% trans "Index Usage Ratio" %}</small>
+                <div class="progress mt-2" style="height:6px">
+                    <div class="progress-bar {% if performance.index_usage_ratio >= 90 %}bg-success{% elif performance.index_usage_ratio >= 70 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ performance.index_usage_ratio|default:0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(239,68,68,.1);color:#ef4444">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ performance.total_dead_tuples|default:"0" }}</h3>
+                <small class="text-muted">{% trans "Dead Tuples" %}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if performance %}
+<!-- Transaction Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-arrow-left-right me-2"></i>{% trans "Transaction Stats" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="detail-label">{% trans "Commits" %}</td><td class="fw-bold text-success">{{ performance.xact_commit|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Rollbacks" %}</td><td class="fw-bold text-danger">{{ performance.xact_rollback|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Conflicts" %}</td><td>{{ performance.conflicts|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Deadlocks" %}</td><td>{{ performance.deadlocks|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Temp Files" %}</td><td>{{ performance.temp_files|default:"0" }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-arrows-move me-2"></i>{% trans "Tuple Operations" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="detail-label">{% trans "Returned" %}</td><td>{{ performance.tup_returned|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Fetched" %}</td><td>{{ performance.tup_fetched|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Inserted" %}</td><td class="text-success">{{ performance.tup_inserted|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Updated" %}</td><td class="text-warning">{{ performance.tup_updated|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Deleted" %}</td><td class="text-danger">{{ performance.tup_deleted|default:"0" }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scan Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-bar-chart me-2"></i>{% trans "Scan Distribution" %}</h5></div>
+            <div class="pa-card-body">
+                <canvas id="scanChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-hdd me-2"></i>{% trans "I/O Stats" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="detail-label">{% trans "Cache Hits" %}</td><td class="text-success fw-bold">{{ performance.cache_hits|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Disk Reads" %}</td><td class="text-warning fw-bold">{{ performance.cache_reads|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Block Read Time" %}</td><td>{{ performance.blk_read_time_ms|default:"0" }} ms</td></tr>
+                    <tr><td class="detail-label">{% trans "Block Write Time" %}</td><td>{{ performance.blk_write_time_ms|default:"0" }} ms</td></tr>
+                    <tr><td class="detail-label">{% trans "Index Scans" %}</td><td class="text-success">{{ performance.index_scans|default:"0" }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Seq. Scans" %}</td><td class="text-danger">{{ performance.sequential_scans|default:"0" }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Long Running Queries -->
+{% if long_queries %}
+<div class="pa-card mb-4">
+    <div class="pa-card-header"><h5><i class="bi bi-clock-history me-2 text-warning"></i>{% trans "Long Running Queries" %} (>5s)</h5></div>
+    <div class="pa-card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>{% trans "User" %}</th>
+                        <th>{% trans "Duration" %}</th>
+                        <th>{% trans "State" %}</th>
+                        <th>{% trans "Query" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in long_queries %}
+                    <tr>
+                        <td><code>{{ q.pid }}</code></td>
+                        <td>{{ q.usename }}</td>
+                        <td><span class="badge bg-warning-subtle text-warning">{{ q.duration_secs }}s</span></td>
+                        <td>{{ q.state }}</td>
+                        <td><code style="font-size:.75rem;word-break:break-all">{{ q.query|truncatechars:120 }}</code></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if performance %}
+{% block extra_js %}
+<script>
+new Chart(document.getElementById('scanChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['{% trans "Index Scans" %}', '{% trans "Sequential Scans" %}'],
+        datasets: [{
+            data: [{{ performance.index_scans|default:0 }}, {{ performance.sequential_scans|default:0 }}],
+            backgroundColor: ['#22c55e', '#ef4444'],
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+</script>
+{% endblock %}
+{% endif %}
+{% endblock %}

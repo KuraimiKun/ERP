@@ -1,0 +1,96 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ database.display_name }} - {% trans "Connections" %}{% endblock %}
+{% block page_title %}{% trans "Active Connections" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_list' %}">{% trans "Databases" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_detail' pk=database.pk %}">{{ database.display_name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Connections" %}</li>
+    </ol>
+</nav>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'tenants:pa_db_performance' pk=database.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-speedometer2 me-1"></i>{% trans "Performance" %}</a>
+    <a href="{% url 'tenants:pa_db_tables' pk=database.pk %}" class="btn btn-outline-info btn-sm"><i class="bi bi-table me-1"></i>{% trans "Tables" %}</a>
+    <form method="post" action="{% url 'tenants:pa_db_kill_all_connections' pk=database.pk %}" class="d-inline"
+          onsubmit="return confirm('{% trans "Terminate ALL connections to this database?" %}')">
+        {% csrf_token %}
+        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-x-octagon me-1"></i>{% trans "Kill All Connections" %}</button>
+    </form>
+    <button class="btn btn-outline-secondary btn-sm ms-auto" id="refreshBtn"><i class="bi bi-arrow-repeat me-1"></i>{% trans "Refresh" %}</button>
+</div>
+
+<div class="pa-card">
+    <div class="pa-card-header d-flex justify-content-between align-items-center">
+        <h5><i class="bi bi-people me-2"></i>{% trans "Connections" %} ({{ connections|length }})</h5>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if connections %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>{% trans "User" %}</th>
+                        <th>{% trans "State" %}</th>
+                        <th>{% trans "Client" %}</th>
+                        <th>{% trans "Connected Since" %}</th>
+                        <th>{% trans "Wait Event" %}</th>
+                        <th>{% trans "Query" %}</th>
+                        <th class="text-end">{% trans "Action" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in connections %}
+                    <tr>
+                        <td><code>{{ c.pid }}</code></td>
+                        <td>{{ c.usename }}</td>
+                        <td>
+                            {% if c.state == 'active' %}
+                            <span class="badge bg-success-subtle text-success">{% trans "active" %}</span>
+                            {% elif c.state == 'idle' %}
+                            <span class="badge bg-secondary-subtle text-secondary">{% trans "idle" %}</span>
+                            {% elif c.state == 'idle in transaction' %}
+                            <span class="badge bg-warning-subtle text-warning">{% trans "idle in tx" %}</span>
+                            {% else %}
+                            <span class="badge bg-info-subtle text-info">{{ c.state|default:"—" }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ c.client_addr|default:"local" }}</td>
+                        <td><small>{{ c.backend_start|truncatechars:19 }}</small></td>
+                        <td>{{ c.wait_event|default:"—" }}</td>
+                        <td><code style="font-size:.75rem;word-break:break-all">{{ c.query|truncatechars:80 }}</code></td>
+                        <td class="text-end">
+                            <form method="post" action="{% url 'tenants:pa_db_kill_connection' pk=database.pk %}" class="d-inline"
+                                  onsubmit="return confirm('Kill connection PID {{ c.pid }}?')">
+                                {% csrf_token %}
+                                <input type="hidden" name="pid" value="{{ c.pid }}">
+                                <button class="btn btn-outline-danger btn-sm" title="{% trans 'Terminate' %}">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-people fs-1 mb-2 d-block"></i>
+            {% trans "No active connections." %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('refreshBtn')?.addEventListener('click', () => location.reload());
+</script>
+{% endblock %}
+{% endblock %}

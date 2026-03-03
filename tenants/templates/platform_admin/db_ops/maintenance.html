@@ -1,0 +1,144 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ database.display_name }} - {% trans "Maintenance" %}{% endblock %}
+{% block page_title %}{% trans "Database Maintenance" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_list' %}">{% trans "Databases" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_database_detail' pk=database.pk %}">{{ database.display_name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Maintenance" %}</li>
+    </ol>
+</nav>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'tenants:pa_db_performance' pk=database.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-speedometer2 me-1"></i>{% trans "Performance" %}</a>
+    <a href="{% url 'tenants:pa_db_tables' pk=database.pk %}" class="btn btn-outline-info btn-sm"><i class="bi bi-table me-1"></i>{% trans "Tables" %}</a>
+</div>
+
+<div class="row g-4">
+    <!-- Operations -->
+    <div class="col-lg-6">
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-wrench me-2"></i>{% trans "Run Maintenance" %}</h5></div>
+            <div class="pa-card-body">
+                <form method="post" action="{% url 'tenants:pa_db_run_maintenance' pk=database.pk %}" onsubmit="return confirm('{% trans "Run this maintenance operation?" %}')">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{% trans "Operation" %}</label>
+                        <select name="operation" class="form-select">
+                            <option value="vacuum">VACUUM — {% trans "Reclaim storage from dead tuples" %}</option>
+                            <option value="vacuum_full">VACUUM FULL — {% trans "Full compaction (locks DB!)" %}</option>
+                            <option value="analyze">ANALYZE — {% trans "Update planner statistics" %}</option>
+                            <option value="vacuum_analyze">VACUUM ANALYZE — {% trans "Combined vacuum + analyze" %}</option>
+                            <option value="reindex">REINDEX — {% trans "Rebuild all indexes" %}</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-warning py-2 mb-3">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <strong>{% trans "Warning:" %}</strong> {% trans "VACUUM FULL and REINDEX lock the database. Use during low-traffic periods." %}
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="bi bi-play-circle me-1"></i>{% trans "Execute Maintenance" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Export / Import -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-download me-2"></i>{% trans "Export & Import" %}</h5></div>
+            <div class="pa-card-body">
+                <form method="post" action="{% url 'tenants:pa_db_export' pk=database.pk %}" class="mb-4">
+                    {% csrf_token %}
+                    <p class="text-muted mb-2">{% trans "Download a full SQL dump of this database." %}</p>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-cloud-download me-1"></i>{% trans "Export Database (pg_dump)" %}
+                    </button>
+                </form>
+
+                <hr>
+
+                <form method="post" action="{% url 'tenants:pa_db_import' pk=database.pk %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p class="text-muted mb-2">{% trans "Import a SQL file into this database." %}</p>
+                    <div class="mb-3">
+                        <input type="file" name="sql_file" class="form-control" accept=".sql,.dump,.backup" required>
+                    </div>
+                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('{% trans "This will execute SQL commands on the database. Continue?" %}')">
+                        <i class="bi bi-cloud-upload me-1"></i>{% trans "Import SQL File" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Password Reset -->
+        <div class="pa-card">
+            <div class="pa-card-header"><h5><i class="bi bi-key me-2"></i>{% trans "Password Reset" %}</h5></div>
+            <div class="pa-card-body">
+                <p class="text-muted mb-3">{% trans "Generate a new random password for the database user. All existing connections will need the new password." %}</p>
+                <form method="post" action="{% url 'tenants:pa_db_reset_password' pk=database.pk %}" onsubmit="return confirm('{% trans "Reset the database password? Existing connections will be affected." %}')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-warning w-100">
+                        <i class="bi bi-arrow-repeat me-1"></i>{% trans "Reset Password" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance History -->
+    <div class="col-lg-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-clock-history me-2"></i>{% trans "Maintenance History" %}</h5></div>
+            <div class="pa-card-body p-0">
+                {% if maintenance_logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Time" %}</th>
+                                <th>{% trans "Operation" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Message" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in maintenance_logs %}
+                            <tr>
+                                <td><small>{{ log.created_at|date:"Y-m-d H:i" }}</small></td>
+                                <td>
+                                    {% if log.details.operation %}
+                                    <code>{{ log.details.operation }}</code>
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.level == 'success' %}
+                                    <span class="badge bg-success-subtle text-success">{% trans "Success" %}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">{% trans "Error" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ log.message|truncatechars:60 }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-clock-history fs-1 mb-2 d-block"></i>
+                    {% trans "No maintenance history yet." %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

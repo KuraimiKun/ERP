@@ -1,0 +1,96 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% if editing %}{% trans "Edit Announcement" %}{% else %}{% trans "New Announcement" %}{% endif %}{% endblock %}
+{% block page_title %}{% if editing %}{% trans "Edit Announcement" %}{% else %}{% trans "New Announcement" %}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3>
+        <i class="bi bi-{% if editing %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+        {% if editing %}{% trans "Edit Announcement" %}{% else %}{% trans "Create Announcement" %}{% endif %}
+    </h3>
+    <p>{% trans "Broadcast a message to platform users" %}</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Title" %} *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Body" %} *</label>
+                        {{ form.body }}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Type" %}</label>
+                            {{ form.announcement_type }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Audience" %}</label>
+                            {{ form.audience }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Starts At" %}</label>
+                            {{ form.starts_at }}
+                            <small class="text-muted">{% trans "Leave empty to show immediately" %}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{% trans "Expires At" %}</label>
+                            {{ form.expires_at }}
+                            <small class="text-muted">{% trans "Leave empty to never expire" %}</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="form-check">
+                            {{ form.is_active }}
+                            <label class="form-check-label fw-semibold ms-1">{% trans "Active" %}</label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.is_pinned }}
+                            <label class="form-check-label fw-semibold ms-1">{% trans "Pinned" %}</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            {% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Publish" %}{% endif %}
+                        </button>
+                        <a href="{% url 'tenants:pa_announcement_list' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-lightbulb me-1"></i>{% trans "Tips" %}</div>
+            <div class="card-body small text-muted">
+                <ul class="mb-0 ps-3">
+                    <li>{% trans "Use 'Critical' type for outage notifications" %}</li>
+                    <li>{% trans "Use 'Maintenance' type for scheduled downtime" %}</li>
+                    <li>{% trans "Pin important announcements to keep them at the top" %}</li>
+                    <li>{% trans "Set an expiry date for time-limited notices" %}</li>
+                    <li>{% trans "Choose 'All Users' audience for system-wide messages" %}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

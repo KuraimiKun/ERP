@@ -1,0 +1,156 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Backups" %}{% endblock %}
+{% block page_title %}{% trans "Backup Management" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h3>{% trans "Backup Management" %}</h3>
+        <p>{% trans "Manage database backups and restore operations" %}</p>
+    </div>
+    <form method="post" action="{% url 'tenants:pa_backup_all' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" onclick="return confirm('{% trans "Backup ALL active databases? This may take a while." %}')">
+            <i class="bi bi-cloud-arrow-up me-1"></i> {% trans "Backup All" %}
+        </button>
+    </form>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-database"></i></div>
+                <div>
+                    <div class="stat-value">{{ total_dbs }}</div>
+                    <div class="stat-label">{% trans "Active Databases" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-hdd-rack"></i></div>
+                <div>
+                    <div class="stat-value">{{ servers|length }}</div>
+                    <div class="stat-label">{% trans "Active Servers" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-clock-history"></i></div>
+                <div>
+                    <div class="stat-value">{{ backup_logs|length }}</div>
+                    <div class="stat-label">{% trans "Recent Operations" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Databases List -->
+<div class="pa-card mb-4">
+    <div class="pa-card-header">
+        <h5><i class="bi bi-database me-2"></i>{% trans "Databases" %}</h5>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if databases %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Database" %}</th>
+                        <th>{% trans "Server" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Migrated" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for db in databases %}
+                    <tr>
+                        <td>
+                            <strong>{{ db.display_name|default:db.name }}</strong>
+                            <br><small class="text-muted">{{ db.name }}</small>
+                        </td>
+                        <td>{{ db.server.name }}</td>
+                        <td><span class="badge badge-status badge-{{ db.status }}">{{ db.get_status_display }}</span></td>
+                        <td>
+                            {% if db.is_migrated %}
+                            <span class="text-success"><i class="bi bi-check-circle"></i></span>
+                            {% else %}
+                            <span class="text-warning"><i class="bi bi-dash-circle"></i></span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'tenants:pa_backup_database' pk=db.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-primary action-btn"
+                                        onclick="return confirm('{% trans "Backup this database?" %}')">
+                                    <i class="bi bi-cloud-arrow-up me-1"></i> {% trans "Backup" %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-database"></i>
+            <p>{% trans "No active databases found." %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Backup Operations -->
+<div class="pa-card">
+    <div class="pa-card-header">
+        <h5><i class="bi bi-clock-history me-2"></i>{% trans "Recent Backup Operations" %}</h5>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if backup_logs %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Time" %}</th>
+                        <th>{% trans "Action" %}</th>
+                        <th>{% trans "Database" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "User" %}</th>
+                        <th>{% trans "Message" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in backup_logs %}
+                    <tr>
+                        <td><small>{{ log.created_at|date:"M d, H:i" }}</small></td>
+                        <td>{{ log.get_action_display }}</td>
+                        <td>{{ log.database.name|default:"—" }}</td>
+                        <td><span class="badge badge-status badge-{{ log.level }}">{{ log.get_level_display }}</span></td>
+                        <td>{{ log.user.email|default:"System" }}</td>
+                        <td><small>{{ log.message|truncatechars:60 }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-clock-history"></i>
+            <p>{% trans "No backup operations recorded yet." %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

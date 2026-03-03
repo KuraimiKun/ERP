@@ -1,0 +1,276 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ server.name }} - {% trans "Server Detail" %}{% endblock %}
+{% block page_title %}{% trans "Server Detail" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_server_list' %}">{% trans "Servers" %}</a></li>
+        <li class="breadcrumb-item active">{{ server.name }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- Left Column -->
+    <div class="col-lg-4">
+        <!-- Server Info -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-3" style="width:64px;height:64px;font-size:1.75rem;border-radius:.75rem;
+                    {% if server.server_type == 'docker' %}background:rgba(59,130,246,.1);color:#3b82f6{% else %}background:rgba(34,197,94,.1);color:#22c55e{% endif %}">
+                    <i class="bi bi-{% if server.server_type == 'docker' %}box{% else %}hdd-network{% endif %}"></i>
+                </div>
+                <h5 class="fw-bold mb-1">{{ server.name }}</h5>
+                <span class="badge badge-status badge-{{ server.server_type }} mb-2">{{ server.get_server_type_display }}</span>
+                <br>
+                <span class="badge badge-status badge-{{ server.status }} fs-6">{{ server.get_status_display }}</span>
+            </div>
+        </div>
+
+        <!-- Connection Details -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Connection" %}</h5></div>
+            <div class="pa-card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="detail-label">{% trans "Host" %}</td>
+                        <td><code>{{ server.host }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Port" %}</td>
+                        <td><code>{{ server.port }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Admin User" %}</td>
+                        <td><code>{{ server.admin_username }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Max DBs" %}</td>
+                        <td>{{ server.max_databases }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">{% trans "Created" %}</td>
+                        <td>{{ server.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% if server.last_health_check %}
+                    <tr>
+                        <td class="detail-label">{% trans "Last Check" %}</td>
+                        <td>{{ server.last_health_check|timesince }} {% trans "ago" %}</td>
+                    </tr>
+                    {% endif %}
+                    {% if server.docker_container_name %}
+                    <tr>
+                        <td class="detail-label">{% trans "Container" %}</td>
+                        <td><code>{{ server.docker_container_name }}</code></td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Actions" %}</h5></div>
+            <div class="pa-card-body d-grid gap-2">
+                <a href="{% url 'tenants:pa_server_edit' server.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-pencil me-1"></i>{% trans "Edit Server" %}
+                </a>
+                <form method="post" action="{% url 'tenants:pa_server_health_check' server.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm w-100">
+                        <i class="bi bi-heart-pulse me-1"></i>{% trans "Run Health Check" %}
+                    </button>
+                </form>
+                {% if server.server_type == 'docker' %}
+                {% if server.status == 'active' %}
+                <form method="post" action="{% url 'tenants:pa_server_toggle' server.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="stop">
+                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                        <i class="bi bi-stop-circle me-1"></i>{% trans "Stop Server" %}
+                    </button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'tenants:pa_server_toggle' server.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="start">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-play-circle me-1"></i>{% trans "Start Server" %}
+                    </button>
+                </form>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Enterprise Operations -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5><i class="bi bi-lightning me-2"></i>{% trans "Enterprise Operations" %}</h5></div>
+            <div class="pa-card-body d-grid gap-2">
+                {% if server.server_type == 'docker' %}
+                <a href="{% url 'tenants:pa_docker_stats' server.pk %}" class="btn btn-outline-info btn-sm w-100">
+                    <i class="bi bi-speedometer2 me-1"></i>{% trans "Container Stats" %}
+                </a>
+                <a href="{% url 'tenants:pa_docker_inspect' server.pk %}" class="btn btn-outline-info btn-sm w-100">
+                    <i class="bi bi-search me-1"></i>{% trans "Inspect Container" %}
+                </a>
+                <a href="{% url 'tenants:pa_docker_logs' server.pk %}" class="btn btn-outline-dark btn-sm w-100">
+                    <i class="bi bi-journal-text me-1"></i>{% trans "Container Logs" %}
+                </a>
+                <a href="{% url 'tenants:pa_docker_terminal' server.pk %}" class="btn btn-outline-success btn-sm w-100">
+                    <i class="bi bi-terminal me-1"></i>{% trans "Live Terminal" %}
+                </a>
+                {% endif %}
+                <a href="{% url 'tenants:pa_server_db_overview' server.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-diagram-3 me-1"></i>{% trans "All Databases Overview" %}
+                </a>
+            </div>
+        </div>
+
+        {% if server.health_check_message %}
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Health Status" %}</h5></div>
+            <div class="pa-card-body">
+                <div class="alert alert-{% if server.status == 'active' %}success{% else %}danger{% endif %} mb-0" style="font-size:.85rem">
+                    {{ server.health_check_message }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-8">
+        <!-- Capacity -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header"><h5>{% trans "Capacity" %}</h5></div>
+            <div class="pa-card-body">
+                {% widthratio server.database_count server.max_databases 100 as pct %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span>{{ server.database_count }} / {{ server.max_databases }} {% trans "databases" %}</span>
+                    <span class="fw-bold">{{ pct }}%</span>
+                </div>
+                <div class="progress" style="height: 12px; border-radius: 6px;">
+                    <div class="progress-bar {% if pct|add:"0" > 80 %}bg-danger{% elif pct|add:"0" > 50 %}bg-warning{% else %}bg-success{% endif %}"
+                         style="width: {{ pct }}%"></div>
+                </div>
+                <div class="row g-2 mt-3 text-center">
+                    <div class="col-4">
+                        <div class="bg-light rounded p-3">
+                            <div class="fw-bold fs-4 text-primary">{{ server.database_count }}</div>
+                            <small class="text-muted">{% trans "Total DBs" %}</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-light rounded p-3">
+                            <div class="fw-bold fs-4 text-success">{{ server.available_slots }}</div>
+                            <small class="text-muted">{% trans "Available" %}</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-light rounded p-3">
+                            <div class="fw-bold fs-4 {% if server.is_full %}text-danger{% else %}text-info{% endif %}">{% if server.is_full %}{% trans "Full" %}{% else %}{% trans "Open" %}{% endif %}</div>
+                            <small class="text-muted">{% trans "Status" %}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Databases on this server -->
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-database me-2"></i>{% trans "Databases" %} ({{ databases|length }})</h5>
+            </div>
+            <div class="pa-card-body p-0">
+                {% if databases %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Database" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Users" %}</th>
+                                <th>{% trans "Migrated" %}</th>
+                                <th>{% trans "Created" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for db in databases %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <div class="fw-semibold">{{ db.display_name|default:db.name }}</div>
+                                        <small class="text-muted">{{ db.name }}</small>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-status badge-{{ db.status }}">{{ db.get_status_display }}</span></td>
+                                <td><span class="badge bg-secondary">{{ db.user_count }}</span></td>
+                                <td>
+                                    {% if db.is_migrated %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                    {% endif %}
+                                </td>
+                                <td><small class="text-muted">{{ db.created_at|date:"M d, Y" }}</small></td>
+                                <td>
+                                    <a href="{% url 'tenants:pa_database_detail' db.pk %}" class="btn btn-sm btn-outline-primary action-btn">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-database"></i>
+                    <p>{% trans "No databases on this server" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Server Logs -->
+        <div class="pa-card">
+            <div class="pa-card-header"><h5><i class="bi bi-journal-text me-2"></i>{% trans "Server Logs" %}</h5></div>
+            <div class="pa-card-body p-0">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table pa-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Level" %}</th>
+                                <th>{% trans "Action" %}</th>
+                                <th>{% trans "Message" %}</th>
+                                <th>{% trans "Time" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td><span class="badge badge-status badge-{{ log.level }}">{{ log.get_level_display }}</span></td>
+                                <td><small class="fw-semibold">{{ log.get_action_display }}</small></td>
+                                <td><small>{{ log.message|truncatechars:80 }}</small></td>
+                                <td><small class="text-muted">{{ log.created_at|timesince }} {% trans "ago" %}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-journal-text"></i>
+                    <p>{% trans "No logs for this server" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

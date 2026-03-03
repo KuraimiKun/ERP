@@ -1,0 +1,239 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "System Health" %}{% endblock %}
+{% block page_title %}{% trans "System Health" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h3>{% trans "System Health Overview" %}</h3>
+    <p>{% trans "Real-time status of all platform components" %}</p>
+</div>
+
+<!-- Overall Health Score -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="pa-card text-center">
+            <div class="pa-card-body py-4">
+                <div class="position-relative d-inline-block mb-3">
+                    <svg width="140" height="140" viewBox="0 0 140 140">
+                        <circle cx="70" cy="70" r="60" fill="none" stroke="#e2e8f0" stroke-width="12"/>
+                        <circle cx="70" cy="70" r="60" fill="none"
+                                stroke="{% if health_status == 'healthy' %}#22c55e{% elif health_status == 'warning' %}#f59e0b{% else %}#ef4444{% endif %}"
+                                stroke-width="12" stroke-linecap="round"
+                                stroke-dasharray="{{ health_score|floatformat:0 }} {% widthratio 100 1 1 %}"
+                                stroke-dashoffset="0"
+                                transform="rotate(-90 70 70)"
+                                style="stroke-dasharray: {% widthratio health_score 100 377 %} 377"/>
+                    </svg>
+                    <div class="position-absolute top-50 start-50 translate-middle">
+                        <div style="font-size: 2rem; font-weight: 800; color: {% if health_status == 'healthy' %}#22c55e{% elif health_status == 'warning' %}#f59e0b{% else %}#ef4444{% endif %}">
+                            {{ health_score }}
+                        </div>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-1">
+                    {% if health_status == 'healthy' %}
+                    <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>{% trans "Healthy" %}</span>
+                    {% elif health_status == 'warning' %}
+                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill me-1"></i>{% trans "Warning" %}</span>
+                    {% else %}
+                    <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>{% trans "Critical" %}</span>
+                    {% endif %}
+                </h5>
+                <p class="text-muted small mb-0">{% trans "Overall Health Score" %}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Issues List -->
+        <div class="pa-card h-100">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-flag me-2"></i>{% trans "Issues & Warnings" %}</h5>
+                <span class="badge bg-{% if issues %}danger{% else %}success{% endif %}">{{ issues|length }}</span>
+            </div>
+            <div class="pa-card-body">
+                {% if issues %}
+                {% for issue in issues %}
+                <div class="d-flex align-items-center gap-3 {% if not forloop.last %}mb-3 pb-3 border-bottom{% endif %}">
+                    {% if issue.severity == 'error' %}
+                    <div class="text-danger"><i class="bi bi-x-circle-fill fs-5"></i></div>
+                    {% elif issue.severity == 'warning' %}
+                    <div class="text-warning"><i class="bi bi-exclamation-triangle-fill fs-5"></i></div>
+                    {% else %}
+                    <div class="text-info"><i class="bi bi-info-circle-fill fs-5"></i></div>
+                    {% endif %}
+                    <div>
+                        <strong class="{% if issue.severity == 'error' %}text-danger{% elif issue.severity == 'warning' %}text-warning{% else %}text-info{% endif %}">
+                            {{ issue.severity|upper }}
+                        </strong>
+                        <span class="ms-2">{{ issue.message }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center text-success py-3">
+                    <i class="bi bi-check-circle-fill fs-2 mb-2 d-block"></i>
+                    <strong>{% trans "All systems operational!" %}</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Component Status -->
+<div class="row g-4 mb-4">
+    <!-- Servers -->
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-hdd-rack"></i></div>
+                <div>
+                    <div class="stat-value">{{ healthy_servers }}/{{ total_servers }}</div>
+                    <div class="stat-label">{% trans "Servers Healthy" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Databases -->
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-database"></i></div>
+                <div>
+                    <div class="stat-value">{{ active_databases }}/{{ total_databases }}</div>
+                    <div class="stat-label">{% trans "Databases Active" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Errors -->
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-bug"></i></div>
+                <div>
+                    <div class="stat-value">{{ errors_last_day }}</div>
+                    <div class="stat-label">{% trans "Errors (24h)" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Disk -->
+    <div class="col-md-3">
+        <div class="pa-stat">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon {% if disk_used_pct > 90 %}bg-danger{% elif disk_used_pct > 70 %}bg-warning{% else %}bg-info{% endif %} bg-opacity-10 {% if disk_used_pct > 90 %}text-danger{% elif disk_used_pct > 70 %}text-warning{% else %}text-info{% endif %}">
+                    <i class="bi bi-hdd"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ disk_used_pct }}%</div>
+                    <div class="stat-label">{% trans "Disk Used" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Server Details -->
+<div class="pa-card mb-4">
+    <div class="pa-card-header">
+        <h5><i class="bi bi-hdd-rack me-2"></i>{% trans "Server Status" %}</h5>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if servers %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Server" %}</th>
+                        <th>{% trans "Type" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Databases" %}</th>
+                        <th>{% trans "Capacity" %}</th>
+                        <th>{% trans "Last Health Check" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for server in servers %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'tenants:pa_server_detail' pk=server.pk %}" class="fw-semibold text-decoration-none">
+                                {{ server.name }}
+                            </a>
+                        </td>
+                        <td><span class="badge badge-status badge-{{ server.server_type }}">{{ server.get_server_type_display }}</span></td>
+                        <td><span class="badge badge-status badge-{{ server.status }}">{{ server.get_status_display }}</span></td>
+                        <td>{{ server.active_db_count }} / {{ server.db_count }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height: 6px;">
+                                    {% widthratio server.db_count server.max_databases 100 as pct %}
+                                    <div class="progress-bar {% if pct > 90 %}bg-danger{% elif pct > 70 %}bg-warning{% else %}bg-primary{% endif %}"
+                                         style="width: {{ pct }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ server.db_count }}/{{ server.max_databases }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            {% if server.last_health_check %}
+                            <small>{{ server.last_health_check|timesince }} {% trans "ago" %}</small>
+                            {% else %}
+                            <small class="text-muted">{% trans "Never" %}</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-hdd-rack"></i>
+            <p>{% trans "No servers configured." %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Errors -->
+<div class="pa-card">
+    <div class="pa-card-header">
+        <h5><i class="bi bi-exclamation-triangle me-2"></i>{% trans "Recent Errors" %}</h5>
+        <a href="{% url 'tenants:pa_logs' %}?level=error" class="btn btn-sm btn-outline-danger">{% trans "View All" %}</a>
+    </div>
+    <div class="pa-card-body p-0">
+        {% if recent_errors %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Time" %}</th>
+                        <th>{% trans "Action" %}</th>
+                        <th>{% trans "Server" %}</th>
+                        <th>{% trans "Message" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_errors %}
+                    <tr>
+                        <td><small>{{ log.created_at|timesince }} {% trans "ago" %}</small></td>
+                        <td><span class="badge badge-status badge-error">{{ log.get_action_display }}</span></td>
+                        <td>{{ log.server.name|default:"—" }}</td>
+                        <td><small>{{ log.message|truncatechars:80 }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-4">
+            <i class="bi bi-check-circle text-success"></i>
+            <p>{% trans "No errors in the last 24 hours." %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

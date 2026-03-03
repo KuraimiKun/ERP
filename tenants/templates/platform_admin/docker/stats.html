@@ -1,0 +1,217 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ server.name }} - {% trans "Container Stats" %}{% endblock %}
+{% block page_title %}{% trans "Container Stats" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.85rem">
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_docker_dashboard' %}">{% trans "Docker" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tenants:pa_server_detail' pk=server.pk %}">{{ server.name }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Stats" %}</li>
+    </ol>
+</nav>
+
+<!-- Quick Actions -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'tenants:pa_docker_inspect' pk=server.pk %}" class="btn btn-outline-info btn-sm">
+        <i class="bi bi-search me-1"></i>{% trans "Inspect" %}
+    </a>
+    <a href="{% url 'tenants:pa_docker_logs' pk=server.pk %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-journal-text me-1"></i>{% trans "Logs" %}
+    </a>
+    <a href="{% url 'tenants:pa_docker_terminal' pk=server.pk %}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-terminal me-1"></i>{% trans "Terminal" %}
+    </a>
+    <form method="post" action="{% url 'tenants:pa_docker_restart' pk=server.pk %}" class="d-inline" onsubmit="return confirm('{% trans "Restart this container?" %}')">
+        {% csrf_token %}
+        <button class="btn btn-outline-warning btn-sm"><i class="bi bi-arrow-clockwise me-1"></i>{% trans "Restart" %}</button>
+    </form>
+    <button class="btn btn-outline-primary btn-sm" id="refreshStats"><i class="bi bi-arrow-repeat me-1"></i>{% trans "Refresh" %}</button>
+</div>
+
+{% if stats %}
+<!-- Resource Usage Cards -->
+<div class="row g-3 mb-4" id="statsCards">
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(59,130,246,.1);color:#3b82f6">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h3 class="fw-bold mb-0" id="cpuVal">{{ stats.cpu_percent }}%</h3>
+                <small class="text-muted">{% trans "CPU Usage" %}</small>
+                <div class="progress mt-2" style="height:6px">
+                    <div class="progress-bar bg-primary" id="cpuBar" style="width:{{ stats.cpu_percent }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(168,85,247,.1);color:#a855f7">
+                    <i class="bi bi-memory"></i>
+                </div>
+                <h3 class="fw-bold mb-0" id="memVal">{{ stats.memory_percent }}%</h3>
+                <small class="text-muted" id="memDetail">{{ stats.memory_used }} / {{ stats.memory_limit }}</small>
+                <div class="progress mt-2" style="height:6px">
+                    <div class="progress-bar bg-purple" id="memBar" style="width:{{ stats.memory_percent }}%;background:#a855f7"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(34,197,94,.1);color:#22c55e">
+                    <i class="bi bi-ethernet"></i>
+                </div>
+                <h4 class="fw-bold mb-0" id="netIn">{{ stats.net_io_in }}</h4>
+                <small class="text-muted">{% trans "Network In" %}</small>
+                <h4 class="fw-bold mb-0 mt-1" id="netOut">{{ stats.net_io_out }}</h4>
+                <small class="text-muted">{% trans "Network Out" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="pa-card h-100">
+            <div class="pa-card-body text-center">
+                <div class="stat-icon mx-auto mb-2" style="width:48px;height:48px;font-size:1.25rem;border-radius:.75rem;background:rgba(249,115,22,.1);color:#f97316">
+                    <i class="bi bi-hdd"></i>
+                </div>
+                <h4 class="fw-bold mb-0" id="blkRead">{{ stats.block_read }}</h4>
+                <small class="text-muted">{% trans "Block Read" %}</small>
+                <h4 class="fw-bold mb-0 mt-1" id="blkWrite">{{ stats.block_write }}</h4>
+                <small class="text-muted">{% trans "Block Write" %}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>{% trans "No stats available. Container may not be running." %}
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Uptime Info -->
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-clock-history me-2"></i>{% trans "Container Info" %}</h5></div>
+            <div class="pa-card-body">
+                {% if uptime %}
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="detail-label">{% trans "Status" %}</td><td>
+                        {% if uptime.running %}<span class="badge bg-success">{% trans "Running" %}</span>{% else %}<span class="badge bg-danger">{% trans "Stopped" %}</span>{% endif %}
+                    </td></tr>
+                    <tr><td class="detail-label">{% trans "Image" %}</td><td><code>{{ uptime.image }}</code></td></tr>
+                    <tr><td class="detail-label">{% trans "Created" %}</td><td>{{ uptime.created|truncatechars:19 }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Started At" %}</td><td>{{ uptime.started_at|truncatechars:19 }}</td></tr>
+                    <tr><td class="detail-label">{% trans "Restart Count" %}</td><td>{{ uptime.restart_count }}</td></tr>
+                    <tr><td class="detail-label">{% trans "PIDs" %}</td><td>{{ stats.pids|default:"N/A" }}</td></tr>
+                </table>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "No uptime info available." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Limits Form -->
+    <div class="col-md-6">
+        <div class="pa-card h-100">
+            <div class="pa-card-header"><h5><i class="bi bi-sliders me-2"></i>{% trans "Resource Limits" %}</h5></div>
+            <div class="pa-card-body">
+                <form method="post" action="{% url 'tenants:pa_docker_resources' pk=server.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Memory Limit" %}</label>
+                        <input type="text" name="memory_limit" class="form-control" placeholder="e.g. 512m, 1g, 2g">
+                        <div class="form-text">{% trans "Leave empty to keep current limit." %}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "CPU Limit" %}</label>
+                        <input type="text" name="cpus" class="form-control" placeholder="e.g. 0.5, 1, 2">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "CPU Shares" %}</label>
+                        <input type="number" name="cpu_shares" class="form-control" placeholder="1024 (default)">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-lg me-1"></i>{% trans "Update Resources" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processes -->
+{% if processes %}
+<div class="pa-card mt-4">
+    <div class="pa-card-header"><h5><i class="bi bi-list-task me-2"></i>{% trans "Running Processes" %}</h5></div>
+    <div class="pa-card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>{% trans "User" %}</th>
+                        <th>%CPU</th>
+                        <th>%MEM</th>
+                        <th>VSZ</th>
+                        <th>RSS</th>
+                        <th>{% trans "Command" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in processes %}
+                    <tr>
+                        <td>{{ p.pid }}</td>
+                        <td>{{ p.user }}</td>
+                        <td>{{ p.pct_cpu|default:"–" }}</td>
+                        <td>{{ p.pct_mem|default:"–" }}</td>
+                        <td>{{ p.vsz|default:"–" }}</td>
+                        <td>{{ p.rss|default:"–" }}</td>
+                        <td><code style="font-size:.8rem">{{ p.command|truncatechars:80 }}</code></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh stats every 10 seconds
+const statsUrl = "{% url 'tenants:pa_docker_stats_api' pk=server.pk %}";
+let refreshInterval;
+
+function updateStats() {
+    fetch(statsUrl)
+        .then(r => r.json())
+        .then(data => {
+            const s = data.stats;
+            if (!s || !s.cpu_percent) return;
+            document.getElementById('cpuVal').textContent = s.cpu_percent + '%';
+            document.getElementById('cpuBar').style.width = s.cpu_percent + '%';
+            document.getElementById('memVal').textContent = s.memory_percent + '%';
+            document.getElementById('memBar').style.width = s.memory_percent + '%';
+            document.getElementById('memDetail').textContent = s.memory_used + ' / ' + s.memory_limit;
+            document.getElementById('netIn').textContent = s.net_io_in;
+            document.getElementById('netOut').textContent = s.net_io_out;
+            document.getElementById('blkRead').textContent = s.block_read;
+            document.getElementById('blkWrite').textContent = s.block_write;
+        })
+        .catch(() => {});
+}
+
+refreshInterval = setInterval(updateStats, 10000);
+document.getElementById('refreshStats')?.addEventListener('click', updateStats);
+</script>
+{% endblock %}
+{% endblock %}

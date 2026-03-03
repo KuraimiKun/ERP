@@ -1,0 +1,145 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Invite Link Details" %}{% endblock %}
+{% block page_title %}{% trans "Invite Link Details" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h3>{{ invite.company_name|default:"Invite Link" }}</h3>
+        <p>{% trans "Created" %} {{ invite.created_at|date:"M d, Y H:i" }} {% trans "by" %} {{ invite.created_by.get_full_name|default:invite.created_by.email }}</p>
+    </div>
+    <a href="{% url 'tenants:pa_invite_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> {% trans "Back to List" %}
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Main Info -->
+    <div class="col-lg-8">
+        <div class="pa-card mb-4">
+            <div class="pa-card-header">
+                <h5><i class="bi bi-info-circle me-2"></i>{% trans "Link Information" %}</h5>
+                <span class="badge badge-status {% if invite.is_valid %}badge-active{% elif not invite.is_active %}badge-inactive{% else %}badge-error{% endif %}">
+                    {% if invite.is_valid %}{% trans "Active" %}{% elif not invite.is_active %}{% trans "Disabled" %}{% else %}{% trans "Expired" %}{% endif %}
+                </span>
+            </div>
+            <div class="pa-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="detail-label">{% trans "Company Name (EN)" %}</div>
+                        <div class="detail-value">{{ invite.company_name|default:"—" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">{% trans "Company Name (AR)" %}</div>
+                        <div class="detail-value">{{ invite.company_name_ar|default:"—" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">{% trans "Database" %}</div>
+                        <div class="detail-value">
+                            <a href="{% url 'tenants:pa_database_detail' pk=invite.database.pk %}">
+                                {{ invite.database.display_name|default:invite.database.name }}
+                            </a>
+                            <small class="text-muted ms-1">on {{ invite.database.server.name }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">{% trans "Registrations" %}</div>
+                        <div class="detail-value">
+                            {{ invite.registration_count }}
+                            {% if invite.max_registrations %} / {{ invite.max_registrations }}{% else %} <small class="text-muted">({% trans "unlimited" %})</small>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">{% trans "Expires" %}</div>
+                        <div class="detail-value">
+                            {% if invite.expires_at %}
+                            {{ invite.expires_at|date:"M d, Y H:i" }}
+                            {% if invite.expires_at < now %}
+                            <span class="badge bg-danger ms-1">{% trans "Expired" %}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted">{% trans "Never" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">{% trans "Created By" %}</div>
+                        <div class="detail-value">{{ invite.created_by.get_full_name|default:invite.created_by.email }}</div>
+                    </div>
+                </div>
+
+                <!-- Full URL -->
+                <div class="mt-4 p-3 bg-light rounded">
+                    <div class="detail-label mb-2">{% trans "Registration URL" %}</div>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" readonly
+                               value="{{ request.scheme }}://{{ request.get_host }}{{ invite.get_absolute_url }}" id="inviteUrl">
+                        <button class="btn btn-outline-primary btn-sm" type="button"
+                                onclick="navigator.clipboard.writeText(document.getElementById('inviteUrl').value); this.innerHTML='<i class=\'bi bi-check\'></i> Copied!'; setTimeout(()=>this.innerHTML='<i class=\'bi bi-clipboard\'></i> Copy',2000)">
+                            <i class="bi bi-clipboard"></i> {% trans "Copy" %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Sidebar -->
+    <div class="col-lg-4">
+        <div class="pa-card mb-3">
+            <div class="pa-card-header"><h5><i class="bi bi-gear me-2"></i>{% trans "Actions" %}</h5></div>
+            <div class="pa-card-body">
+                <div class="d-grid gap-2">
+                    <form method="post" action="{% url 'tenants:pa_invite_toggle' pk=invite.pk %}">
+                        {% csrf_token %}
+                        {% if invite.is_active %}
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="bi bi-pause-circle me-1"></i> {% trans "Deactivate Link" %}
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-play-circle me-1"></i> {% trans "Activate Link" %}
+                        </button>
+                        {% endif %}
+                    </form>
+
+                    <form method="post" action="{% url 'tenants:pa_invite_reset_count' pk=invite.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-secondary w-100"
+                                onclick="return confirm('{% trans "Reset registration count to 0?" %}')">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> {% trans "Reset Count" %}
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <form method="post" action="{% url 'tenants:pa_invite_delete' pk=invite.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger w-100"
+                                onclick="return confirm('{% trans "Permanently delete this invite link?" %}')">
+                            <i class="bi bi-trash me-1"></i> {% trans "Delete Link" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Placeholder -->
+        <div class="pa-card">
+            <div class="pa-card-header"><h5><i class="bi bi-qr-code me-2"></i>{% trans "Quick Share" %}</h5></div>
+            <div class="pa-card-body text-center">
+                <div class="p-3 bg-light rounded mb-3">
+                    <i class="bi bi-qr-code" style="font-size: 4rem; color: #94a3b8;"></i>
+                    <p class="text-muted small mt-2 mb-0">{% trans "QR Code generation available" %}</p>
+                </div>
+                <button class="btn btn-outline-primary btn-sm w-100"
+                        onclick="navigator.clipboard.writeText('{{ request.scheme }}://{{ request.get_host }}{{ invite.get_absolute_url }}'); alert('{% trans "Link copied to clipboard!" %}')">
+                    <i class="bi bi-share me-1"></i> {% trans "Copy Link" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

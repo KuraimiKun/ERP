@@ -69,4 +69,24 @@ app.conf.beat_schedule = {
         'task': 'erp.ai.tasks.retrain_attrition_model',
         'schedule': crontab(hour=1, minute=0, day_of_month='1'),
     },
-}
+    # ── Platform Admin Automation ───────────────────────────────────────
+    'collect-metric-snapshots': {
+        'task': 'tenants.collect_metric_snapshots',
+        'schedule': crontab(minute='*/30'),          # every 30 min
+    },
+    'evaluate-alert-rules': {
+        'task': 'tenants.evaluate_alert_rules',
+        'schedule': crontab(minute='*/5'),            # every 5 min
+    },
+    'refresh-quota-usage': {
+        'task': 'tenants.refresh_quota_usage',
+        'schedule': crontab(minute=15),               # hourly at :15
+    },
+    'dispatch-scheduled-tasks': {
+        'task': 'tenants.dispatch_scheduled_tasks',
+        'schedule': crontab(minute='*/1'),             # every minute
+    },
+    'cleanup-old-metrics': {
+        'task': 'tenants.cleanup_old_metrics',
+        'schedule': crontab(hour=4, minute=0, day_of_week='sunday'),
+    },}

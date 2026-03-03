@@ -1,0 +1,230 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Monitoring Dashboard" %}{% endblock %}
+{% block page_title %}{% trans "Monitoring" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start">
+    <div>
+        <h3><i class="bi bi-graph-up-arrow me-2"></i>{% trans "Monitoring Dashboard" %}</h3>
+        <p>{% trans "Historical metrics and performance trends" %}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <form method="get" class="d-flex gap-2">
+            <select name="server" class="form-select form-select-sm" style="width:200px" onchange="this.form.submit()">
+                {% for srv in servers %}
+                <option value="{{ srv.pk }}" {% if selected_server.pk == srv.pk %}selected{% endif %}>{{ srv.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="hours" class="form-select form-select-sm" style="width:120px" onchange="this.form.submit()">
+                <option value="1" {% if hours == 1 %}selected{% endif %}>{% trans "1 Hour" %}</option>
+                <option value="6" {% if hours == 6 %}selected{% endif %}>{% trans "6 Hours" %}</option>
+                <option value="24" {% if hours == 24 %}selected{% endif %}>{% trans "24 Hours" %}</option>
+                <option value="72" {% if hours == 72 %}selected{% endif %}>{% trans "3 Days" %}</option>
+                <option value="168" {% if hours == 168 %}selected{% endif %}>{% trans "7 Days" %}</option>
+                <option value="720" {% if hours == 720 %}selected{% endif %}>{% trans "30 Days" %}</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+{% if selected_server %}
+<!-- Current Status Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center {% if latest and latest.cpu_percent > 90 %}border-danger{% elif latest and latest.cpu_percent > 70 %}border-warning{% endif %}">
+            <div class="card-body py-3">
+                <div class="fs-3 fw-bold {% if latest and latest.cpu_percent > 90 %}text-danger{% elif latest and latest.cpu_percent > 70 %}text-warning{% else %}text-primary{% endif %}">
+                    {% if latest %}{{ latest.cpu_percent|floatformat:1 }}%{% else %}—{% endif %}
+                </div>
+                <small class="text-muted">{% trans "CPU Usage" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center {% if latest and latest.memory_percent > 90 %}border-danger{% elif latest and latest.memory_percent > 80 %}border-warning{% endif %}">
+            <div class="card-body py-3">
+                <div class="fs-3 fw-bold {% if latest and latest.memory_percent > 90 %}text-danger{% elif latest and latest.memory_percent > 80 %}text-warning{% else %}text-success{% endif %}">
+                    {% if latest %}{{ latest.memory_percent|floatformat:1 }}%{% else %}—{% endif %}
+                </div>
+                <small class="text-muted">{% trans "Memory Usage" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body py-3">
+                <div class="fs-3 fw-bold text-info">
+                    {% if latest %}{{ latest.total_connections }}{% else %}—{% endif %}
+                </div>
+                <small class="text-muted">{% trans "Connections" %}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body py-3">
+                <div class="fs-3 fw-bold text-success">
+                    {% if latest %}{{ latest.cache_hit_ratio|floatformat:1 }}%{% else %}—{% endif %}
+                </div>
+                <small class="text-muted">{% trans "Cache Hit Ratio" %}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1: CPU + Memory -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-cpu me-1"></i>{% trans "CPU Usage" %}</div>
+            <div class="card-body"><canvas id="cpuChart" height="180"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-memory me-1"></i>{% trans "Memory Usage" %}</div>
+            <div class="card-body"><canvas id="memChart" height="180"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2: Connections + TPS -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-plug me-1"></i>{% trans "Connections" %}</div>
+            <div class="card-body"><canvas id="connChart" height="180"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-lightning me-1"></i>{% trans "Transactions / sec" %}</div>
+            <div class="card-body"><canvas id="tpsChart" height="180"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3: Network + Cache -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-arrow-left-right me-1"></i>{% trans "Network I/O" %}</div>
+            <div class="card-body"><canvas id="netChart" height="180"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-hdd me-1"></i>{% trans "Database Size" %}</div>
+            <div class="card-body"><canvas id="sizeChart" height="180"></canvas></div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Server Comparison -->
+{% if comparison %}
+<div class="card">
+    <div class="card-header fw-semibold"><i class="bi bi-bar-chart me-1"></i>{% trans "Server Comparison (24h avg)" %}</div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>{% trans "Server" %}</th>
+                    <th>{% trans "Avg CPU %" %}</th>
+                    <th>{% trans "Avg Memory %" %}</th>
+                    <th>{% trans "Avg Connections" %}</th>
+                    <th>{% trans "Avg Cache Hit %" %}</th>
+                    <th class="text-end">{% trans "Details" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in comparison %}
+                <tr>
+                    <td class="fw-semibold">{{ c.server.name }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height:6px;max-width:100px;">
+                                <div class="progress-bar {% if c.avg_cpu > 90 %}bg-danger{% elif c.avg_cpu > 70 %}bg-warning{% else %}bg-success{% endif %}"
+                                     style="width:{{ c.avg_cpu }}%"></div>
+                            </div>
+                            <small>{{ c.avg_cpu }}%</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height:6px;max-width:100px;">
+                                <div class="progress-bar {% if c.avg_mem > 90 %}bg-danger{% elif c.avg_mem > 80 %}bg-warning{% else %}bg-info{% endif %}"
+                                     style="width:{{ c.avg_mem }}%"></div>
+                            </div>
+                            <small>{{ c.avg_mem }}%</small>
+                        </div>
+                    </td>
+                    <td>{{ c.avg_conn }}</td>
+                    <td>{{ c.avg_cache }}%</td>
+                    <td class="text-end">
+                        <a href="{% url 'tenants:pa_monitoring_server' pk=c.server.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-graph-up"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const data = {{ chart_data|safe }};
+if (data.labels && data.labels.length) {
+    const opts = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { maxTicksLimit: 12, font: { size: 10 } } }, y: { beginAtZero: true } },
+        elements: { point: { radius: 0, hoverRadius: 4 }, line: { borderWidth: 2, tension: 0.3 } },
+    };
+
+    new Chart(document.getElementById('cpuChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [{
+            label: 'CPU %', data: data.cpu, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.1)', fill: true
+        }] }, options: { ...opts, scales: { ...opts.scales, y: { beginAtZero: true, max: 100 } } }
+    });
+
+    new Chart(document.getElementById('memChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [{
+            label: 'Memory %', data: data.memory, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.1)', fill: true
+        }] }, options: { ...opts, scales: { ...opts.scales, y: { beginAtZero: true, max: 100 } } }
+    });
+
+    new Chart(document.getElementById('connChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [
+            { label: 'Total', data: data.connections, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true },
+            { label: 'Active', data: data.active_connections, borderColor: '#f59e0b', borderDash: [5,5] },
+        ] }, options: { ...opts, plugins: { legend: { display: true, position: 'top' } } }
+    });
+
+    new Chart(document.getElementById('tpsChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [{
+            label: 'TPS', data: data.tps, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)', fill: true
+        }] }, options: opts
+    });
+
+    new Chart(document.getElementById('netChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [
+            { label: 'RX (MB)', data: data.net_rx, borderColor: '#06b6d4' },
+            { label: 'TX (MB)', data: data.net_tx, borderColor: '#f43f5e', borderDash: [5,5] },
+        ] }, options: { ...opts, plugins: { legend: { display: true, position: 'top' } } }
+    });
+
+    new Chart(document.getElementById('sizeChart'), {
+        type: 'line', data: { labels: data.labels, datasets: [{
+            label: 'DB Size (MB)', data: data.db_size, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,.1)', fill: true
+        }] }, options: opts
+    });
+}
+</script>
+{% endblock %}
