@@ -320,6 +320,14 @@
                 <i class="bi bi-megaphone"></i> {% trans "Announcements" %}
             </a>
 
+            <div class="pa-nav-section mt-3">{% trans "Support" %}</div>
+            <a href="{% url 'tenants:pa_ticket_list' %}" class="pa-nav-link {% if 'pa_ticket_list' == request.resolver_match.url_name or 'pa_ticket_detail' == request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-ticket-detailed"></i> {% trans "Tickets" %}
+            </a>
+            <a href="{% url 'tenants:pa_ticket_categories' %}" class="pa-nav-link {% if 'pa_ticket_categor' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-tags"></i> {% trans "Categories" %}
+            </a>
+
             <div class="pa-nav-section mt-3">{% trans "Monitoring" %}</div>
             <a href="{% url 'tenants:pa_health' %}" class="pa-nav-link {% if 'pa_health' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-heart-pulse"></i> {% trans "System Health" %}

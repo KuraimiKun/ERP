@@ -1,0 +1,141 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Support Tickets" %}{% endblock %}
+{% block page_title %}{% trans "Support Tickets" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ticket-card {
+        border: none; border-radius: .75rem; background: #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,.05); transition: all .2s; cursor: pointer;
+    }
+    .ticket-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+    .ticket-card .priority-strip { width: 4px; border-radius: 4px; }
+    .stat-pill {
+        padding: .65rem 1rem; border-radius: .75rem; background: #fff;
+        border: 1px solid #e2e8f0; text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .status-tab {
+        padding: .35rem 1rem; border-radius: 2rem; font-size: .85rem; cursor: pointer;
+        border: none; background: #f1f5f9; color: #475569;
+        transition: all .2s; text-decoration: none;
+    }
+    .status-tab:hover, .status-tab.active { background: var(--bs-primary); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h5 class="mb-1"><i class="bi bi-headset me-2"></i>{% trans "Support Tickets" %}</h5>
+        <small class="text-muted">{% trans "Get help from our support team" %}</small>
+    </div>
+    <a href="{% url 'erp:support_ticket_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>{% trans "New Ticket" %}
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-pill">
+            <div class="fw-bold fs-4 text-primary">{{ stats.open }}</div>
+            <small class="text-muted">{% trans "Open" %}</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-pill">
+            <div class="fw-bold fs-4 text-info">{{ stats.in_progress }}</div>
+            <small class="text-muted">{% trans "In Progress" %}</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-pill">
+            <div class="fw-bold fs-4 text-warning">{{ stats.waiting }}</div>
+            <small class="text-muted">{% trans "Awaiting Reply" %}</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-pill">
+            <div class="fw-bold fs-4 text-success">{{ stats.resolved }}</div>
+            <small class="text-muted">{% trans "Resolved" %}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Status Filter Tabs -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'erp:support_ticket_list' %}" class="status-tab {% if not current_status %}active{% endif %}">{% trans "All" %}</a>
+    <a href="?status=open" class="status-tab {% if current_status == 'open' %}active{% endif %}">{% trans "Open" %}</a>
+    <a href="?status=in_progress" class="status-tab {% if current_status == 'in_progress' %}active{% endif %}">{% trans "In Progress" %}</a>
+    <a href="?status=waiting_customer" class="status-tab {% if current_status == 'waiting_customer' %}active{% endif %}">{% trans "Awaiting Your Reply" %}</a>
+    <a href="?status=resolved" class="status-tab {% if current_status == 'resolved' %}active{% endif %}">{% trans "Resolved" %}</a>
+    <a href="?status=closed" class="status-tab {% if current_status == 'closed' %}active{% endif %}">{% trans "Closed" %}</a>
+</div>
+
+<!-- Ticket Cards -->
+{% for ticket in page_obj %}
+<div class="ticket-card card mb-3" onclick="window.location='{% url 'erp:support_ticket_detail' pk=ticket.pk %}'">
+    <div class="card-body d-flex align-items-start gap-3">
+        <div class="priority-strip bg-{{ ticket.priority_color }}" style="align-self:stretch"></div>
+        <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <div>
+                    <code class="text-muted small">{{ ticket.ticket_number }}</code>
+                    {% if ticket.is_escalated %}<i class="bi bi-exclamation-triangle-fill text-danger ms-1"></i>{% endif %}
+                </div>
+                <span class="badge bg-{{ ticket.status_color }}">{{ ticket.get_status_display }}</span>
+            </div>
+            <h6 class="fw-bold mb-1">{{ ticket.subject }}</h6>
+            <div class="d-flex flex-wrap gap-3 text-muted small">
+                {% if ticket.category %}
+                <span><i class="{{ ticket.category.icon }} me-1"></i>{{ ticket.category.name }}</span>
+                {% endif %}
+                <span><i class="bi bi-flag me-1"></i>{{ ticket.get_priority_display }}</span>
+                <span><i class="bi bi-clock me-1"></i>{{ ticket.updated_at|timesince }} {% trans "ago" %}</span>
+                <span><i class="bi bi-chat-dots me-1"></i>{{ ticket.msg_count }} {% trans "messages" %}</span>
+            </div>
+        </div>
+        {% if ticket.status == 'waiting_customer' %}
+        <span class="badge bg-warning text-dark p-2" title="{% trans 'Needs your reply' %}">
+            <i class="bi bi-reply"></i>
+        </span>
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="text-center py-5">
+    <i class="bi bi-headset" style="font-size: 3rem; color: #d1d5db;"></i>
+    <h5 class="text-muted mt-3">{% trans "No support tickets yet" %}</h5>
+    <p class="text-muted">{% trans "Create a ticket whenever you need help" %}</p>
+    <a href="{% url 'erp:support_ticket_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>{% trans "New Ticket" %}
+    </a>
+</div>
+{% endfor %}
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="d-flex justify-content-center mt-4">
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}{% if query_string %}&{{ query_string }}{% endif %}">«</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}&status={{ current_status }}{% if query_string %}&{{ query_string }}{% endif %}">{{ num }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ current_status }}{% if query_string %}&{{ query_string }}{% endif %}">»</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

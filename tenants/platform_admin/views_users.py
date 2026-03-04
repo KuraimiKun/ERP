@@ -104,7 +104,7 @@ def pa_user_approve(request, pk):
                 db_name = f"erp_{user_obj.company_name.lower().replace(' ', '_')[:20]}_{str(user_obj.pk)[:8]}"
                 tenant_db = db_service.create_tenant_database(
                     server=server,
-                    db_name=db_name,
+                    name=db_name,
                     display_name=user_obj.company_name or user_obj.email,
                     created_by=request.user,
                 )

@@ -70,6 +70,13 @@ from .views_announcements import (
 from .views_monitoring import (
     pa_monitoring, pa_monitoring_server, pa_monitoring_api,
 )
+from .views_tickets import (
+    pa_ticket_list, pa_ticket_detail, pa_ticket_reply,
+    pa_ticket_assign, pa_ticket_status, pa_ticket_priority,
+    pa_ticket_escalate, pa_ticket_close,
+    pa_ticket_categories, pa_ticket_category_delete,
+    pa_ticket_stats_api,
+)
 
 
 urlpatterns = [
@@ -206,4 +213,17 @@ urlpatterns = [
     path('monitoring/', pa_monitoring, name='pa_monitoring'),
     path('monitoring/<uuid:pk>/', pa_monitoring_server, name='pa_monitoring_server'),
     path('monitoring/<uuid:pk>/api/', pa_monitoring_api, name='pa_monitoring_api'),
+
+    # ── Support Tickets ──
+    path('tickets/', pa_ticket_list, name='pa_ticket_list'),
+    path('tickets/categories/', pa_ticket_categories, name='pa_ticket_categories'),
+    path('tickets/categories/<uuid:pk>/delete/', pa_ticket_category_delete, name='pa_ticket_category_delete'),
+    path('tickets/stats-api/', pa_ticket_stats_api, name='pa_ticket_stats_api'),
+    path('tickets/<uuid:pk>/', pa_ticket_detail, name='pa_ticket_detail'),
+    path('tickets/<uuid:pk>/reply/', pa_ticket_reply, name='pa_ticket_reply'),
+    path('tickets/<uuid:pk>/assign/', pa_ticket_assign, name='pa_ticket_assign'),
+    path('tickets/<uuid:pk>/status/', pa_ticket_status, name='pa_ticket_status'),
+    path('tickets/<uuid:pk>/priority/', pa_ticket_priority, name='pa_ticket_priority'),
+    path('tickets/<uuid:pk>/escalate/', pa_ticket_escalate, name='pa_ticket_escalate'),
+    path('tickets/<uuid:pk>/close/', pa_ticket_close, name='pa_ticket_close'),
 ]

@@ -11,6 +11,7 @@ from tenants.models import (
     PostgresServer, TenantDatabase, TenantUser,
     DatabaseAssignment, EmployeeInviteLink,
     ScheduledTask, AlertRule, TenantQuota, Announcement,
+    TicketCategory, Ticket,
 )
 
 
@@ -445,4 +446,108 @@ class AnnouncementForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['starts_at'].input_formats = ['%Y-%m-%dT%H:%M']
         self.fields['expires_at'].input_formats = ['%Y-%m-%dT%H:%M']
+
+
+class TicketCategoryForm(forms.ModelForm):
+    """Form for creating/editing ticket categories."""
+
+    class Meta:
+        model = TicketCategory
+        fields = ['name', 'name_ar', 'icon', 'description', 'sort_order', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category name'}),
+            'name_ar': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Arabic name (optional)'}),
+            'icon': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'bi-tag'}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Short description'}),
+            'sort_order': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width:100px'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class AdminTicketReplyForm(forms.Form):
+    """Form for admin to reply to a ticket."""
+    body = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control', 'rows': 4,
+            'placeholder': 'Type your reply...',
+        }),
+    )
+    is_internal_note = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label='Internal note (not visible to tenant)',
+    )
+    attachment = forms.FileField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control'}),
+    )
+
+
+class TicketAssignForm(forms.Form):
+    """Form for assigning a ticket to an admin."""
+    assigned_to = forms.ModelChoiceField(
+        queryset=TenantUser.objects.filter(is_superuser=True),
+        required=False,
+        empty_label='-- Unassigned --',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
+
+class TenantTicketForm(forms.ModelForm):
+    """Form for tenant users to create a support ticket."""
+
+    attachment = forms.FileField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control'}),
+    )
+
+    class Meta:
+        model = Ticket
+        fields = ['subject', 'category', 'priority', 'description']
+        widgets = {
+            'subject': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Brief summary of your issue',
+            }),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'priority': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control', 'rows': 6,
+                'placeholder': 'Please describe your issue in detail...',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = TicketCategory.objects.filter(is_active=True)
+        self.fields['category'].required = False
+
+
+class TenantTicketReplyForm(forms.Form):
+    """Form for tenant users to reply to their ticket."""
+    body = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control', 'rows': 3,
+            'placeholder': 'Type your reply...',
+        }),
+    )
+    attachment = forms.FileField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control'}),
+    )
+
+
+class TicketRatingForm(forms.Form):
+    """Form for tenant to rate a resolved ticket."""
+    satisfaction_rating = forms.IntegerField(
+        min_value=1, max_value=5,
+        widget=forms.HiddenInput(),
+    )
+    satisfaction_feedback = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control', 'rows': 2,
+            'placeholder': 'Optional feedback...',
+        }),
+    )
 

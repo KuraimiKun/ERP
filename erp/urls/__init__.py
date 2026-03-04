@@ -443,6 +443,17 @@ _ai_patterns = [
     path('ai/api/', include('erp.ai.api.urls')),
 ]
 
+# ── Support Tickets ─────────────────────────────────────────────────────────
+_support_patterns = [
+    path('support/', views.support_ticket_list, name='support_ticket_list'),
+    path('support/create/', views.support_ticket_create, name='support_ticket_create'),
+    path('support/<uuid:pk>/', views.support_ticket_detail, name='support_ticket_detail'),
+    path('support/<uuid:pk>/reply/', views.support_ticket_reply, name='support_ticket_reply'),
+    path('support/<uuid:pk>/close/', views.support_ticket_close, name='support_ticket_close'),
+    path('support/<uuid:pk>/rate/', views.support_ticket_rate, name='support_ticket_rate'),
+    path('support/<uuid:pk>/reopen/', views.support_ticket_reopen, name='support_ticket_reopen'),
+]
+
 # ── Combined ────────────────────────────────────────────────────────────────
 urlpatterns = (
     _setup_patterns
@@ -468,4 +479,5 @@ urlpatterns = (
     + _invite_approval_patterns
     + _api_patterns
     + _ai_patterns
+    + _support_patterns
 )

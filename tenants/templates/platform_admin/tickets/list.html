@@ -1,0 +1,178 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Support Tickets" %}{% endblock %}
+{% block page_title %}{% trans "Support Tickets" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h3><i class="bi bi-ticket-detailed me-2"></i>{% trans "Support Tickets" %}</h3>
+        <p>{% trans "Manage tenant support requests" %}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'tenants:pa_ticket_categories' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-tags me-1"></i>{% trans "Categories" %}
+        </a>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-2">
+        <div class="pa-stat text-center">
+            <div class="stat-value text-primary">{{ open_count }}</div>
+            <div class="stat-label">{% trans "Open" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="pa-stat text-center">
+            <div class="stat-value text-info">{{ progress_count }}</div>
+            <div class="stat-label">{% trans "In Progress" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="pa-stat text-center">
+            <div class="stat-value text-warning">{{ waiting_count }}</div>
+            <div class="stat-label">{% trans "Waiting" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="pa-stat text-center">
+            <div class="stat-value text-success">{{ resolved_count }}</div>
+            <div class="stat-label">{% trans "Resolved" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="pa-stat text-center">
+            <div class="stat-value text-dark">{{ my_count }}</div>
+            <div class="stat-label">{% trans "My Tickets" %}</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-2">
+        <div class="pa-stat text-center">
+            <div class="stat-value text-secondary">{{ all_count }}</div>
+            <div class="stat-label">{% trans "Total" %}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+            <div class="search-box flex-grow-1" style="max-width:300px">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="{% trans 'Search tickets...' %}">
+            </div>
+            <select name="status" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                <option value="">{% trans "All Statuses" %}</option>
+                {% for val, label in statuses %}
+                <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="priority" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                <option value="">{% trans "All Priorities" %}</option>
+                {% for val, label in priorities %}
+                <option value="{{ val }}" {% if current_priority == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="assigned" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                <option value="">{% trans "All Agents" %}</option>
+                <option value="me" {% if current_assigned == 'me' %}selected{% endif %}>{% trans "Assigned to me" %}</option>
+                <option value="unassigned" {% if current_assigned == 'unassigned' %}selected{% endif %}>{% trans "Unassigned" %}</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel"></i></button>
+            {% if q or current_status or current_priority or current_assigned %}
+            <a href="{% url 'tenants:pa_ticket_list' %}" class="btn btn-sm btn-outline-secondary">{% trans "Clear" %}</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table pa-table mb-0">
+            <thead>
+                <tr>
+                    <th style="width:120px">{% trans "Ticket #" %}</th>
+                    <th>{% trans "Subject" %}</th>
+                    <th>{% trans "Requester" %}</th>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Priority" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Assigned" %}</th>
+                    <th>{% trans "Updated" %}</th>
+                    <th class="text-center" style="width:60px"><i class="bi bi-chat-dots"></i></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in page %}
+                <tr class="{% if ticket.is_escalated %}table-warning{% endif %}" style="cursor:pointer" onclick="window.location='{% url 'tenants:pa_ticket_detail' pk=ticket.pk %}'">
+                    <td>
+                        <code class="text-primary fw-bold">{{ ticket.ticket_number }}</code>
+                        {% if ticket.is_escalated %}<i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="Escalated"></i>{% endif %}
+                    </td>
+                    <td class="fw-semibold">{{ ticket.subject|truncatechars:50 }}</td>
+                    <td>
+                        <small>{{ ticket.created_by.get_full_name|default:ticket.created_by.email }}</small>
+                        {% if ticket.created_by.company_name %}
+                        <br><small class="text-muted">{{ ticket.created_by.company_name }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ticket.category %}
+                        <span class="badge bg-light text-dark"><i class="{{ ticket.category.icon }} me-1"></i>{{ ticket.category.name }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-{{ ticket.priority_color }}">{{ ticket.get_priority_display }}</span></td>
+                    <td><span class="badge bg-{{ ticket.status_color }}">{{ ticket.get_status_display }}</span></td>
+                    <td>
+                        {% if ticket.assigned_to %}
+                        <small>{{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.email }}</small>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ ticket.updated_at|timesince }} {% trans "ago" %}</small></td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark">{{ ticket.msg_count }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty-state">
+                        <i class="bi bi-ticket-detailed"></i>
+                        <p>{% trans "No tickets found" %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page.has_other_pages %}
+    <div class="card-footer d-flex justify-content-center">
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page.previous_page_number }}&status={{ current_status }}&priority={{ current_priority }}&assigned={{ current_assigned }}&q={{ q }}">«</a></li>
+                {% endif %}
+                {% for num in page.paginator.page_range %}
+                {% if num == page.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page.number|add:"-3" and num < page.number|add:"3" %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&status={{ current_status }}&priority={{ current_priority }}&assigned={{ current_assigned }}&q={{ q }}">{{ num }}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if page.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page.next_page_number }}&status={{ current_status }}&priority={{ current_priority }}&assigned={{ current_assigned }}&q={{ q }}">»</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

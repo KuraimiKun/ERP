@@ -130,6 +130,14 @@ def audit_post_delete(sender, instance, **kwargs):
 def audit_user_login(sender, request, user, **kwargs):
     """Log when a user logs in."""
     try:
+        from django.db import connection
+        # Skip audit logging when ERP tables don't exist (e.g. tenant databases)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM information_schema.tables WHERE table_name = 'erp_auditlog'"
+            )
+            if not cursor.fetchone():
+                return
         ip = _get_client_ip(request) if request else None
         ua = request.META.get('HTTP_USER_AGENT', '')[:500] if request else ''
         AuditService.log_login(user=user, ip_address=ip, user_agent=ua)
@@ -143,6 +151,13 @@ def audit_user_logout(sender, request, user, **kwargs):
     if user is None:
         return
     try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM information_schema.tables WHERE table_name = 'erp_auditlog'"
+            )
+            if not cursor.fetchone():
+                return
         ip = _get_client_ip(request) if request else None
         ua = request.META.get('HTTP_USER_AGENT', '')[:500] if request else ''
         AuditService.log_logout(user=user, ip_address=ip, user_agent=ua)

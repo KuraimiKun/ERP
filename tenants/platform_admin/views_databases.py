@@ -156,7 +156,7 @@ def pa_database_create(request):
             db_service = DatabaseService()
             tenant_db = db_service.create_tenant_database(
                 server=server,
-                db_name=db_name or None,
+                name=db_name or None,
                 display_name=display_name,
                 created_by=request.user,
             )

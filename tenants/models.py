@@ -1039,3 +1039,196 @@ class MetricSnapshot(models.Model):
 
     def __str__(self):
         return f"{self.server.name} @ {self.recorded_at:%Y-%m-%d %H:%M}"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Support Ticket System
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TicketCategory(models.Model):
+    """Categories for support tickets (e.g. Billing, Technical, General)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    name_ar = models.CharField(max_length=100, blank=True, default='')
+    icon = models.CharField(
+        max_length=50, default='bi-tag',
+        help_text='Bootstrap icon class, e.g. bi-database',
+    )
+    description = models.CharField(max_length=300, blank=True, default='')
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+        verbose_name_plural = 'Ticket Categories'
+
+    def __str__(self):
+        return self.name
+
+
+class Ticket(models.Model):
+    """Support ticket raised by a tenant user to platform admins."""
+
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('in_progress', 'In Progress'),
+        ('waiting_customer', 'Waiting on Customer'),
+        ('waiting_admin', 'Waiting on Admin'),
+        ('resolved', 'Resolved'),
+        ('closed', 'Closed'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ticket_number = models.CharField(
+        max_length=20, unique=True, editable=False,
+        help_text='Auto-generated ticket reference (e.g. TKT-000001)',
+    )
+    subject = models.CharField(max_length=300)
+    description = models.TextField(help_text='Detailed description of the issue')
+
+    category = models.ForeignKey(
+        TicketCategory, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='tickets',
+    )
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+
+    # Who opened the ticket
+    created_by = models.ForeignKey(
+        TenantUser, on_delete=models.CASCADE, related_name='tickets_created',
+    )
+    # Admin assigned to handle the ticket
+    assigned_to = models.ForeignKey(
+        TenantUser, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='tickets_assigned',
+        limit_choices_to={'is_superuser': True},
+    )
+
+    # Resolution
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    # Satisfaction rating (1-5) + optional feedback text
+    satisfaction_rating = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    satisfaction_feedback = models.TextField(blank=True, default='')
+
+    # Metadata
+    is_escalated = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['created_by', '-created_at']),
+            models.Index(fields=['assigned_to', '-created_at']),
+            models.Index(fields=['ticket_number']),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.ticket_number:
+            last = Ticket.objects.order_by('-created_at').first()
+            if last and last.ticket_number.startswith('TKT-'):
+                try:
+                    num = int(last.ticket_number.split('-')[1]) + 1
+                except (ValueError, IndexError):
+                    num = 1
+            else:
+                num = 1
+            self.ticket_number = f'TKT-{num:06d}'
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.ticket_number}: {self.subject}'
+
+    @property
+    def is_open(self):
+        return self.status not in ('resolved', 'closed')
+
+    @property
+    def priority_color(self):
+        return {
+            'low': 'secondary', 'medium': 'info',
+            'high': 'warning', 'urgent': 'danger',
+        }.get(self.priority, 'secondary')
+
+    @property
+    def status_color(self):
+        return {
+            'open': 'primary', 'in_progress': 'info',
+            'waiting_customer': 'warning', 'waiting_admin': 'warning',
+            'resolved': 'success', 'closed': 'secondary',
+        }.get(self.status, 'secondary')
+
+
+class TicketMessage(models.Model):
+    """A single message/reply in a ticket conversation thread."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ticket = models.ForeignKey(
+        Ticket, on_delete=models.CASCADE, related_name='messages',
+    )
+    sender = models.ForeignKey(
+        TenantUser, on_delete=models.SET_NULL, null=True, related_name='+',
+    )
+    body = models.TextField()
+    is_internal_note = models.BooleanField(
+        default=False,
+        help_text='Internal admin notes (not visible to tenant)',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Message on {self.ticket.ticket_number} by {self.sender}'
+
+
+class TicketAttachment(models.Model):
+    """File attachment on a ticket or message."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ticket = models.ForeignKey(
+        Ticket, on_delete=models.CASCADE, related_name='attachments',
+    )
+    message = models.ForeignKey(
+        TicketMessage, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='attachments',
+    )
+    uploaded_by = models.ForeignKey(
+        TenantUser, on_delete=models.SET_NULL, null=True, related_name='+',
+    )
+    file = models.FileField(upload_to='ticket_attachments/%Y/%m/')
+    original_filename = models.CharField(max_length=255)
+    file_size = models.PositiveIntegerField(default=0, help_text='Size in bytes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return self.original_filename
+
+    @property
+    def size_display(self):
+        """Human-readable file size."""
+        if self.file_size < 1024:
+            return f'{self.file_size} B'
+        elif self.file_size < 1024 * 1024:
+            return f'{self.file_size / 1024:.1f} KB'
+        else:
+            return f'{self.file_size / (1024 * 1024):.1f} MB'
+

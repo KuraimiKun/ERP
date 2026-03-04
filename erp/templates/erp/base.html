@@ -557,6 +557,12 @@
                 {% trans "Fiscal Years" %}
             </a>
             
+            <div class="erp-nav-section mt-3">{% trans "Support" %}</div>
+            <a href="{% url 'erp:support_ticket_list' %}" class="erp-nav-link {% if 'support_ticket' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-headset"></i>
+                {% trans "Support Tickets" %}
+            </a>
+
             <div class="erp-nav-section mt-3">{% trans "Administration" %}</div>
             <a href="{% url 'erp:notification_list' %}" class="erp-nav-link {% if 'notification' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-bell"></i>

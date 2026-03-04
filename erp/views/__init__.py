@@ -132,6 +132,13 @@ from .notifications import (
 # ── Audit Log ───────────────────────────────────────────────────────────────
 from .audit_log import audit_log_list
 
+# ── Support Tickets ─────────────────────────────────────────────────────────
+from .support import (
+    support_ticket_list, support_ticket_create, support_ticket_detail,
+    support_ticket_reply, support_ticket_close, support_ticket_rate,
+    support_ticket_reopen,
+)
+
 # ── Fixed Assets ────────────────────────────────────────────────────────────
 from .fixed_assets import (
     asset_category_list, asset_category_create, asset_category_edit, asset_category_delete,

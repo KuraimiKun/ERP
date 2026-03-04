@@ -1,0 +1,298 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ ticket.ticket_number }} — {% trans "Ticket Detail" %}{% endblock %}
+{% block page_title %}{{ ticket.ticket_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-thread { max-height: 600px; overflow-y: auto; }
+    .chat-bubble {
+        max-width: 80%; padding: 1rem 1.25rem;
+        border-radius: 1rem; position: relative;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .chat-bubble.admin {
+        background: #eef2ff; border-bottom-right-radius: .25rem;
+        margin-left: auto;
+    }
+    .chat-bubble.tenant {
+        background: #f8fafc; border-bottom-left-radius: .25rem;
+    }
+    .chat-bubble.internal {
+        background: #fef3c7; border: 1px dashed #f59e0b;
+        border-bottom-right-radius: .25rem;
+        margin-left: auto;
+    }
+    .chat-bubble .bubble-meta {
+        font-size: .72rem; color: #64748b;
+        margin-bottom: .35rem;
+    }
+    .chat-bubble .bubble-body { font-size: .9rem; white-space: pre-wrap; }
+    .ticket-sidebar .info-row {
+        display: flex; justify-content: space-between;
+        padding: .5rem 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .ticket-sidebar .info-label {
+        font-size: .78rem; color: #64748b; font-weight: 600;
+        text-transform: uppercase; letter-spacing: .03em;
+    }
+    .rating-stars i { font-size: 1.25rem; cursor: pointer; color: #d1d5db; transition: color .15s; }
+    .rating-stars i.active, .rating-stars i:hover { color: #f59e0b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="{% url 'tenants:pa_ticket_list' %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left me-1"></i>{% trans "Back to Tickets" %}
+        </a>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        {% if ticket.is_open %}
+        <!-- Priority -->
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-{{ ticket.priority_color }} dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-flag me-1"></i>{{ ticket.get_priority_display }}
+            </button>
+            <ul class="dropdown-menu">
+                {% for val, label in ticket.PRIORITY_CHOICES %}
+                <li>
+                    <form method="post" action="{% url 'tenants:pa_ticket_priority' pk=ticket.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="priority" value="{{ val }}">
+                        <button class="dropdown-item {% if val == ticket.priority %}active{% endif %}">{{ label }}</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <!-- Status -->
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-{{ ticket.status_color }} dropdown-toggle" data-bs-toggle="dropdown">
+                {{ ticket.get_status_display }}
+            </button>
+            <ul class="dropdown-menu">
+                {% for val, label in ticket.STATUS_CHOICES %}
+                <li>
+                    <form method="post" action="{% url 'tenants:pa_ticket_status' pk=ticket.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="{{ val }}">
+                        <button class="dropdown-item {% if val == ticket.status %}active{% endif %}">{{ label }}</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <!-- Escalate -->
+        <form method="post" action="{% url 'tenants:pa_ticket_escalate' pk=ticket.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-sm {% if ticket.is_escalated %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                <i class="bi bi-exclamation-triangle me-1"></i>{% if ticket.is_escalated %}{% trans "De-escalate" %}{% else %}{% trans "Escalate" %}{% endif %}
+            </button>
+        </form>
+        <!-- Close -->
+        <form method="post" action="{% url 'tenants:pa_ticket_close' pk=ticket.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-secondary" onclick="return confirm('Close this ticket?')">
+                <i class="bi bi-x-circle me-1"></i>{% trans "Close" %}
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Column: Conversation -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-chat-left-text me-2"></i>{{ ticket.subject }}
+                </h6>
+                {% if ticket.is_escalated %}
+                <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>{% trans "ESCALATED" %}</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-3">
+                <div class="chat-thread" id="chatThread">
+                    {% for msg in conversation %}
+                    <div class="d-flex mb-3 {% if msg.sender.is_superuser %}justify-content-end{% endif %}">
+                        <div class="chat-bubble {% if msg.is_internal_note %}internal{% elif msg.sender.is_superuser %}admin{% else %}tenant{% endif %}">
+                            <div class="bubble-meta">
+                                <strong>
+                                    {% if msg.sender %}
+                                    {{ msg.sender.get_full_name|default:msg.sender.email }}
+                                    {% else %}System{% endif %}
+                                </strong>
+                                {% if msg.sender.is_superuser %}<span class="badge bg-primary" style="font-size:.6rem">{% trans "Admin" %}</span>{% endif %}
+                                {% if msg.is_internal_note %}<span class="badge bg-warning text-dark" style="font-size:.6rem"><i class="bi bi-eye-slash"></i> {% trans "Internal" %}</span>{% endif %}
+                                · {{ msg.created_at|timesince }} {% trans "ago" %}
+                            </div>
+                            <div class="bubble-body">{{ msg.body }}</div>
+                            {% for att in msg.attachments.all %}
+                            <div class="mt-2">
+                                <a href="{{ att.file.url }}" target="_blank" class="badge bg-light text-dark text-decoration-none">
+                                    <i class="bi bi-paperclip me-1"></i>{{ att.original_filename }} ({{ att.size_display }})
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if ticket.is_open %}
+            <!-- Reply form -->
+            <div class="card-footer bg-white">
+                <form method="post" action="{% url 'tenants:pa_ticket_reply' pk=ticket.pk %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        {{ reply_form.body }}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="d-flex gap-3 align-items-center">
+                            <div class="form-check">
+                                {{ reply_form.is_internal_note }}
+                                <label class="form-check-label small" for="id_is_internal_note">
+                                    <i class="bi bi-eye-slash me-1"></i>{% trans "Internal note" %}
+                                </label>
+                            </div>
+                            <div style="max-width:250px">
+                                {{ reply_form.attachment }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-send me-1"></i>{% trans "Send Reply" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sidebar: Ticket Info -->
+    <div class="col-lg-4">
+        <!-- Ticket Info -->
+        <div class="card ticket-sidebar mb-3">
+            <div class="card-header"><h6 class="mb-0 fw-bold"><i class="bi bi-info-circle me-1"></i>{% trans "Ticket Info" %}</h6></div>
+            <div class="card-body py-2">
+                <div class="info-row">
+                    <span class="info-label">{% trans "Number" %}</span>
+                    <code>{{ ticket.ticket_number }}</code>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">{% trans "Status" %}</span>
+                    <span class="badge bg-{{ ticket.status_color }}">{{ ticket.get_status_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">{% trans "Priority" %}</span>
+                    <span class="badge bg-{{ ticket.priority_color }}">{{ ticket.get_priority_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">{% trans "Category" %}</span>
+                    {% if ticket.category %}<i class="{{ ticket.category.icon }} me-1"></i>{{ ticket.category.name }}{% else %}—{% endif %}
+                </div>
+                <div class="info-row">
+                    <span class="info-label">{% trans "Created" %}</span>
+                    <span>{{ ticket.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                {% if ticket.resolved_at %}
+                <div class="info-row">
+                    <span class="info-label">{% trans "Resolved" %}</span>
+                    <span>{{ ticket.resolved_at|date:"M d, Y H:i" }}</span>
+                </div>
+                {% endif %}
+                {% if ticket.satisfaction_rating %}
+                <div class="info-row">
+                    <span class="info-label">{% trans "Rating" %}</span>
+                    <span>
+                        {% for i in "12345" %}
+                        <i class="bi bi-star{% if forloop.counter <= ticket.satisfaction_rating %}-fill text-warning{% endif %}"></i>
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Requester Info -->
+        <div class="card ticket-sidebar mb-3">
+            <div class="card-header"><h6 class="mb-0 fw-bold"><i class="bi bi-person me-1"></i>{% trans "Requester" %}</h6></div>
+            <div class="card-body py-2">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="user-avatar" style="background:linear-gradient(135deg,#667eea,#764ba2);width:42px;height:42px;">
+                        {{ ticket.created_by.email|first|upper }}
+                    </div>
+                    <div>
+                        <div class="fw-semibold">{{ ticket.created_by.get_full_name|default:ticket.created_by.email }}</div>
+                        <small class="text-muted">{{ ticket.created_by.email }}</small>
+                    </div>
+                </div>
+                {% if ticket.created_by.company_name %}
+                <div class="info-row">
+                    <span class="info-label">{% trans "Company" %}</span>
+                    <span>{{ ticket.created_by.company_name }}</span>
+                </div>
+                {% endif %}
+                {% if ticket.created_by.phone %}
+                <div class="info-row">
+                    <span class="info-label">{% trans "Phone" %}</span>
+                    <span>{{ ticket.created_by.phone }}</span>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                    <span class="info-label">{% trans "Total Tickets" %}</span>
+                    <span>{{ ticket.created_by.tickets_created.count }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assign -->
+        <div class="card ticket-sidebar mb-3">
+            <div class="card-header"><h6 class="mb-0 fw-bold"><i class="bi bi-person-badge me-1"></i>{% trans "Assignment" %}</h6></div>
+            <div class="card-body py-2">
+                <form method="post" action="{% url 'tenants:pa_ticket_assign' pk=ticket.pk %}">
+                    {% csrf_token %}
+                    <select name="assigned_to" class="form-select form-select-sm mb-2" onchange="this.form.submit()">
+                        <option value="">— {% trans "Unassigned" %} —</option>
+                        {% for admin in admins %}
+                        <option value="{{ admin.pk }}" {% if ticket.assigned_to_id == admin.pk %}selected{% endif %}>
+                            {{ admin.get_full_name|default:admin.email }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- Attachments -->
+        {% if attachments %}
+        <div class="card ticket-sidebar">
+            <div class="card-header"><h6 class="mb-0 fw-bold"><i class="bi bi-paperclip me-1"></i>{% trans "Attachments" %} ({{ attachments.count }})</h6></div>
+            <div class="card-body py-2">
+                {% for att in attachments %}
+                <div class="d-flex justify-content-between align-items-center py-1 {% if not forloop.last %}border-bottom{% endif %}">
+                    <a href="{{ att.file.url }}" target="_blank" class="text-decoration-none small">
+                        <i class="bi bi-file-earmark me-1"></i>{{ att.original_filename }}
+                    </a>
+                    <small class="text-muted">{{ att.size_display }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-scroll to bottom of chat
+const ct = document.getElementById('chatThread');
+if (ct) ct.scrollTop = ct.scrollHeight;
+</script>
+{% endblock %}

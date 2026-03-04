@@ -8,6 +8,7 @@ and included under the 'platform-admin/' prefix.
 
 from django.urls import path, include
 from . import views
+from . import views_tickets
 
 app_name = 'tenants'
 
@@ -30,6 +31,15 @@ urlpatterns = [
 
     # Employee Self-Registration (public)
     path('register/<str:token>/', views.employee_register_view, name='employee_register'),
+
+    # ── Support Tickets (Tenant Side) ──────────────────────────────────────
+    path('support/', views_tickets.tenant_ticket_list, name='tenant_ticket_list'),
+    path('support/create/', views_tickets.tenant_ticket_create, name='tenant_ticket_create'),
+    path('support/<uuid:pk>/', views_tickets.tenant_ticket_detail, name='tenant_ticket_detail'),
+    path('support/<uuid:pk>/reply/', views_tickets.tenant_ticket_reply, name='tenant_ticket_reply'),
+    path('support/<uuid:pk>/close/', views_tickets.tenant_ticket_close, name='tenant_ticket_close'),
+    path('support/<uuid:pk>/rate/', views_tickets.tenant_ticket_rate, name='tenant_ticket_rate'),
+    path('support/<uuid:pk>/reopen/', views_tickets.tenant_ticket_reopen, name='tenant_ticket_reopen'),
 
     # ── Platform Admin (separated package) ─────────────────────────────────
     path('platform-admin/', include('tenants.platform_admin.urls')),

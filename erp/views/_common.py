@@ -18,8 +18,11 @@ DEFAULT_PAGE_SIZE = 25
 
 def get_user_company(user):
     """Get the company associated with the current user."""
-    if hasattr(user, 'employee_profile') and user.employee_profile:
-        return user.employee_profile.company
+    try:
+        if hasattr(user, 'employee_profile') and user.employee_profile:
+            return user.employee_profile.company
+    except Exception:
+        pass
     return Company.objects.first()
 
 
