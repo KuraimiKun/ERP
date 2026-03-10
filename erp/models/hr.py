@@ -177,6 +177,11 @@ class Employee(ERPBaseModel):
         verbose_name='Can View Tasks',
         help_text='Allow the employee to see tasks assigned to them.',
     )
+    portal_can_use_pos = models.BooleanField(
+        default=False,
+        verbose_name='Can Use POS',
+        help_text='Allow the employee to access the Point of Sale terminal.',
+    )
 
     class Meta:
         verbose_name = 'Employee'

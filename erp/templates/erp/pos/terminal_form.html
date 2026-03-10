@@ -1,0 +1,126 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title|default:_('New POS Terminal') }}{% endblock %}
+{% block page_title %}{{ title|default:_('New POS Terminal') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'erp:pos_terminal_list' %}">{% trans "Terminals" %}</a></li>
+            <li class="breadcrumb-item active">{{ title|default:_("New") }}</li>
+        </ol>
+    </nav>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger mb-4">
+            <h6 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle ms-1"></i> {% trans "Please correct the following errors:" %}</h6>
+            <ul class="mb-0">
+                {% for field, errors in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="erp-card mb-4">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0"><i class="bi bi-shop ms-2"></i> {% trans "Terminal Data" %}</h6>
+                    </div>
+                    <div class="erp-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">{% trans "Code" %} <span class="text-danger">*</span></label>
+                                {{ form.code }}
+                                {% if form.code.errors %}<div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{% trans "Name (Arabic)" %}</label>
+                                {{ form.name_ar }}
+                                {% if form.name_ar.errors %}<div class="invalid-feedback d-block">{{ form.name_ar.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">{% trans "Location" %}</label>
+                                {{ form.location }}
+                                {% if form.location.errors %}<div class="invalid-feedback d-block">{{ form.location.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Warehouse" %} <span class="text-danger">*</span></label>
+                                {{ form.warehouse }}
+                                {% if form.warehouse.errors %}<div class="invalid-feedback d-block">{{ form.warehouse.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Default Customer" %}</label>
+                                {{ form.default_customer }}
+                                {% if form.default_customer.errors %}<div class="invalid-feedback d-block">{{ form.default_customer.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check mt-4">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{% trans "Active" %}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="erp-card mb-4">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0"><i class="bi bi-receipt ms-2"></i> {% trans "Receipt Settings" %}</h6>
+                    </div>
+                    <div class="erp-card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">{% trans "Receipt Header" %}</label>
+                                {{ form.receipt_header }}
+                                <div class="form-text">{% trans "Text printed at the top of receipts" %}</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">{% trans "Receipt Footer" %}</label>
+                                {{ form.receipt_footer }}
+                                <div class="form-text">{% trans "Text printed at the bottom of receipts" %}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="erp-card mb-4">
+                    <div class="erp-card-header">
+                        <h6 class="mb-0"><i class="bi bi-people ms-2"></i> {% trans "Allowed Employees" %}</h6>
+                    </div>
+                    <div class="erp-card-body">
+                        {{ form.allowed_employees }}
+                        <div class="form-text mt-2">{% trans "Leave empty to allow all POS-permitted employees" %}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="erp-card position-sticky" style="top: 1rem;">
+                    <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
+                    <div class="erp-card-body d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg ms-1"></i> {{ submit_text|default:_("Save") }}
+                        </button>
+                        <a href="{% url 'erp:pos_terminal_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg ms-1"></i> {% trans "Cancel" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

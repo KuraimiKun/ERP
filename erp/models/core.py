@@ -231,6 +231,9 @@ class Sequence(TimeStampedModel):
         CYCLE_COUNT = 'cycle_count', 'Cycle Count'
         PICK_LIST = 'pick_list', 'Pick List'
         SHIPMENT = 'shipment', 'Shipment Note'
+        # POS
+        POS_ORDER = 'pos_order', 'POS Order'
+        POS_SESSION = 'pos_session', 'POS Session'
 
     company = models.ForeignKey(
         Company,

@@ -1,0 +1,122 @@
+{% extends "erp/employee_portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "POS - Select Terminal" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .terminal-card {
+        border: 2px solid #e2e8f0;
+        border-radius: .75rem;
+        transition: all .2s;
+        cursor: pointer;
+    }
+    .terminal-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(13,110,253,.15);
+    }
+    .terminal-card.has-session {
+        border-color: #198754;
+    }
+    .terminal-icon {
+        width: 64px; height: 64px;
+        border-radius: .75rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.75rem;
+        background: #e8f4fd;
+        color: var(--primary-color);
+    }
+    .terminal-card.has-session .terminal-icon {
+        background: #d1e7dd;
+        color: #198754;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-shop"></i> {% trans "Point of Sale" %}</h4>
+</div>
+
+{% if terminals %}
+<div class="row g-4">
+    {% for terminal in terminals %}
+    <div class="col-md-4 col-lg-3">
+        <div class="terminal-card p-4 bg-white {% if terminal.open_session %}has-session{% endif %}">
+            <div class="d-flex align-items-center mb-3">
+                <div class="terminal-icon">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-0">{{ terminal.name }}</h5>
+                    <small class="text-muted">{{ terminal.code }}</small>
+                </div>
+            </div>
+
+            {% if terminal.location %}
+            <p class="text-muted mb-2"><i class="bi bi-geo-alt"></i> {{ terminal.location }}</p>
+            {% endif %}
+            <p class="text-muted mb-3"><i class="bi bi-box-seam"></i> {{ terminal.warehouse.name }}</p>
+
+            {% if terminal.open_session %}
+                <div class="alert alert-success py-2 px-3 mb-3">
+                    <small>
+                        <i class="bi bi-circle-fill text-success"></i>
+                        {% trans "Active Session" %}: {{ terminal.open_session.session_number }}
+                    </small>
+                </div>
+                <a href="{% url 'erp:pos_main' session_id=terminal.open_session.pk %}"
+                   class="btn btn-success w-100">
+                    <i class="bi bi-arrow-right-circle"></i> {% trans "Resume Session" %}
+                </a>
+            {% else %}
+                <button type="button" class="btn btn-primary w-100"
+                        data-bs-toggle="modal" data-bs-target="#openModal{{ terminal.pk }}">
+                    <i class="bi bi-play-circle"></i> {% trans "Open Session" %}
+                </button>
+
+                <!-- Open Session Modal -->
+                <div class="modal fade" id="openModal{{ terminal.pk }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'erp:pos_session_open' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="terminal_id" value="{{ terminal.pk }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">{% trans "Open Session" %} - {{ terminal.name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">{% trans "Opening Cash Balance" %}</label>
+                                        <div class="input-group">
+                                            <input type="number" name="opening_balance" class="form-control form-control-lg"
+                                                   value="0" min="0" step="0.01">
+                                        </div>
+                                        <div class="form-text">{% trans "Count the cash in the drawer before starting." %}</div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        {% trans "Cancel" %}
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-play-circle"></i> {% trans "Start Session" %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-shop" style="font-size: 3rem; color: #94a3b8;"></i>
+    <p class="text-muted mt-3">{% trans "No POS terminals available. Contact your administrator." %}</p>
+</div>
+{% endif %}
+{% endblock %}

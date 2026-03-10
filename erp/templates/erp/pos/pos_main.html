@@ -1,0 +1,1252 @@
+{% extends "erp/pos/pos_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "POS" %} - {{ terminal.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Variables ─────────────────────────────────────────────── */
+    :root {
+        --pos-header: 56px;
+        --cart-width: 380px;
+        --primary-color: #0d6efd;
+    }
+
+    /* ── Header ────────────────────────────────────────────────── */
+    .pos-header {
+        background: #1e293b; color: #fff; height: var(--pos-header);
+        display: flex; align-items: center; padding: 0 .75rem;
+        gap: .5rem; flex-shrink: 0;
+    }
+    .pos-header .header-item { display: flex; align-items: center; gap: .35rem; font-size: .85rem; white-space: nowrap; }
+    .pos-header .separator { width: 1px; height: 24px; background: #475569; }
+    .pos-header .ms-auto { display: flex; gap: .35rem; }
+
+    /* ── Body Layout ───────────────────────────────────────────── */
+    .pos-body {
+        display: flex; flex: 1; min-height: 0;
+        overflow: hidden;
+    }
+
+    /* ── Left: Products Panel ──────────────────────────────────── */
+    .pos-products {
+        flex: 1; min-width: 0;
+        display: flex; flex-direction: column;
+        background: #f8fafc;
+    }
+    .pos-search {
+        padding: .6rem .75rem; background: #fff;
+        border-bottom: 1px solid #e2e8f0; flex-shrink: 0;
+    }
+    .pos-categories {
+        padding: .5rem .75rem; background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex; gap: .35rem; flex-shrink: 0;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    .pos-categories::-webkit-scrollbar { height: 4px; }
+    .pos-categories::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .pos-categories .btn {
+        font-size: .8rem; white-space: nowrap; flex-shrink: 0;
+        border-radius: 1rem; padding: .25rem .75rem;
+    }
+
+    /* ── Product Grid ──────────────────────────────────────────── */
+    .pos-grid {
+        flex: 1; overflow-y: auto; padding: .75rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: .6rem; align-content: start;
+    }
+    .product-card {
+        background: #fff; border: 1px solid #e2e8f0; border-radius: .5rem;
+        cursor: pointer; transition: all .15s ease;
+        text-align: center; padding: .6rem;
+        display: flex; flex-direction: column; align-items: center;
+        position: relative; user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .product-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 12px rgba(13,110,253,.15);
+        transform: translateY(-1px);
+    }
+    .product-card:active {
+        transform: scale(.97);
+        box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    }
+    .product-card .add-badge {
+        position: absolute; top: .35rem; right: .35rem;
+        background: var(--primary-color); color: #fff;
+        width: 24px; height: 24px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .75rem; opacity: 0; transition: opacity .15s;
+    }
+    .product-card:hover .add-badge { opacity: 1; }
+    .product-card img {
+        width: 56px; height: 56px; object-fit: cover;
+        border-radius: .375rem; margin-bottom: .4rem;
+    }
+    .no-image {
+        width: 56px; height: 56px; background: #f1f5f9; border-radius: .375rem;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: .4rem; color: #94a3b8; font-size: 1.25rem;
+    }
+    .product-card .product-name {
+        font-size: .8rem; font-weight: 500; line-height: 1.2;
+        margin-bottom: .2rem; word-break: break-word;
+        overflow: hidden; text-overflow: ellipsis;
+        display: -webkit-box; -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .product-card .product-price { font-weight: 700; color: var(--primary-color); font-size: .85rem; }
+    .product-card .product-stock { font-size: .7rem; color: #64748b; }
+
+    .pos-grid-empty {
+        grid-column: 1 / -1;
+        text-align: center; color: #94a3b8; padding: 3rem 1rem;
+    }
+
+    /* Add-to-cart feedback flash */
+    .product-card.just-added {
+        border-color: #198754; background: #f0fdf4;
+    }
+
+    /* ── Right: Cart Panel ─────────────────────────────────────── */
+    .pos-cart {
+        width: var(--cart-width); flex-shrink: 0;
+        display: flex; flex-direction: column;
+        background: #fff; border-left: 1px solid #e2e8f0;
+    }
+
+    /* Customer selector */
+    .customer-selector {
+        padding: .5rem .75rem; border-bottom: 1px solid #e2e8f0;
+        position: relative; flex-shrink: 0;
+    }
+    .customer-badge {
+        background: #e8f4fd; color: var(--primary-color);
+        padding: .15rem .6rem; border-radius: 1rem; font-size: .8rem;
+    }
+    .customer-dropdown {
+        position: absolute; top: 100%; left: .75rem; right: .75rem;
+        z-index: 1050; max-height: 200px; overflow-y: auto;
+    }
+
+    /* Cart header */
+    .cart-header {
+        padding: .6rem .75rem; border-bottom: 1px solid #e2e8f0;
+        font-weight: 600; display: flex; justify-content: space-between;
+        align-items: center; flex-shrink: 0; font-size: .9rem;
+    }
+
+    /* Cart items */
+    .cart-items { flex: 1; overflow-y: auto; min-height: 0; }
+    .cart-item {
+        padding: .6rem .75rem; border-bottom: 1px solid #f1f5f9;
+    }
+    .cart-item .item-name { font-weight: 500; font-size: .85rem; }
+    .cart-item .item-details {
+        display: flex; justify-content: space-between;
+        align-items: center; margin-top: .2rem;
+    }
+    .cart-item .qty-controls { display: flex; align-items: center; gap: .2rem; }
+    .cart-item .qty-controls button {
+        width: 28px; height: 28px; padding: 0; font-size: .75rem;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .cart-item .qty-controls input {
+        width: 42px; text-align: center; height: 28px; font-size: .8rem;
+        -moz-appearance: textfield;
+    }
+    .cart-item .qty-controls input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .cart-item .item-total { font-weight: 600; font-size: .85rem; }
+    .cart-item .remove-btn { color: #dc3545; cursor: pointer; font-size: .8rem; }
+
+    .cart-empty { text-align: center; color: #94a3b8; padding: 2.5rem .75rem; }
+
+    /* Cart footer */
+    .cart-footer {
+        border-top: 2px solid #e2e8f0; padding: .75rem; flex-shrink: 0;
+    }
+    .cart-totals .total-line {
+        display: flex; justify-content: space-between;
+        margin-bottom: .3rem; font-size: .85rem;
+    }
+    .cart-totals .grand-total {
+        font-size: 1.15rem; font-weight: 700;
+        border-top: 1px solid #e2e8f0;
+        padding-top: .4rem; margin-top: .4rem;
+    }
+    .cart-actions { margin-top: .6rem; }
+    .cart-actions .btn { width: 100%; }
+
+    /* ── Mobile Toggle (products/cart) ─────────────────────────── */
+    .pos-mobile-toggle {
+        display: none;
+        background: #fff; border-bottom: 1px solid #e2e8f0;
+        padding: .4rem .75rem; flex-shrink: 0;
+    }
+    .pos-mobile-toggle .btn { flex: 1; }
+
+    /* ── Payment Modal ─────────────────────────────────────────── */
+    .payment-methods { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .payment-methods .btn { flex: 1 1 auto; min-width: 100px; }
+    .payment-split-table th { font-size: .8rem; }
+    .payment-remaining { font-size: 1.25rem; font-weight: 700; }
+    .change-display { font-size: 1.5rem; font-weight: 700; color: #198754; }
+    .discount-input { font-size: 1.5rem; text-align: center; }
+
+    /* Receipt modal */
+    .receipt-content {
+        font-family: monospace; font-size: .85rem;
+        max-width: 300px; margin: 0 auto;
+    }
+    .receipt-content .receipt-line { display: flex; justify-content: space-between; }
+    .receipt-content hr { border-style: dashed; }
+
+    @media print {
+        body * { visibility: hidden; }
+        .receipt-content, .receipt-content * { visibility: visible; }
+        .receipt-content { position: absolute; left: 0; top: 0; }
+    }
+
+    /* ── Responsive: Tablet ────────────────────────────────────── */
+    @media (max-width: 992px) {
+        :root { --cart-width: 320px; }
+        .pos-header .hide-tablet { display: none; }
+        .product-card img, .no-image { width: 48px; height: 48px; }
+        .product-card .product-name { font-size: .75rem; }
+    }
+
+    /* ── Responsive: Mobile ────────────────────────────────────── */
+    @media (max-width: 768px) {
+        .pos-body { flex-direction: column; }
+
+        .pos-products { flex: 1; min-height: 0; }
+        .pos-products.hidden-panel { display: none; }
+
+        .pos-cart {
+            width: 100%; flex: 1; min-height: 0;
+            border-left: none; border-top: 1px solid #e2e8f0;
+        }
+        .pos-cart.hidden-panel { display: none; }
+
+        .pos-mobile-toggle { display: flex; gap: .35rem; }
+
+        .pos-grid {
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: .5rem; padding: .5rem;
+        }
+        .product-card { padding: .5rem; }
+        .product-card .add-badge { opacity: .85; }
+        .product-card img, .no-image { width: 44px; height: 44px; }
+
+        .pos-header { padding: 0 .5rem; gap: .35rem; font-size: .8rem; }
+        .pos-header .separator { display: none; }
+        .pos-header .hide-mobile { display: none; }
+
+        .customer-dropdown { left: .5rem; right: .5rem; }
+
+        /* Payment modal responsive */
+        #paymentModal .modal-dialog { margin: .5rem; max-width: none; }
+    }
+
+    /* ── Responsive: Small Phone ───────────────────────────────── */
+    @media (max-width: 480px) {
+        .pos-grid {
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: .4rem; padding: .4rem;
+        }
+        .product-card img, .no-image { width: 40px; height: 40px; }
+        .product-card .product-name { font-size: .7rem; -webkit-line-clamp: 1; }
+        .product-card .product-price { font-size: .75rem; }
+        .pos-categories .btn { font-size: .7rem; padding: .2rem .5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ====== HEADER ====== -->
+<div class="pos-header">
+    <div class="header-item">
+        <i class="bi bi-shop"></i>
+        <strong>{{ terminal.name }}</strong>
+    </div>
+    <div class="separator"></div>
+    <div class="header-item hide-mobile">
+        <i class="bi bi-hash"></i>
+        <span>{{ session.session_number }}</span>
+    </div>
+    <div class="separator hide-mobile"></div>
+    <div class="header-item hide-tablet">
+        <i class="bi bi-person"></i>
+        <span>{{ employee.first_name }} {{ employee.last_name }}</span>
+    </div>
+    <div class="separator hide-tablet"></div>
+    <div class="header-item hide-mobile">
+        <i class="bi bi-clock"></i>
+        <span id="posClock"></span>
+    </div>
+    <div class="ms-auto">
+        <a href="{% url 'erp:pos_order_history' session_id=session.pk %}"
+           class="btn btn-sm btn-outline-light">
+            <i class="bi bi-clock-history"></i> <span class="hide-mobile">{% trans "Orders" %}</span>
+        </a>
+        <a href="{% url 'erp:pos_session_close' session_id=session.pk %}"
+           class="btn btn-sm btn-outline-warning">
+            <i class="bi bi-box-arrow-right"></i> <span class="hide-mobile">{% trans "Close" %}</span>
+        </a>
+        <a href="{% url 'erp:pos_terminal_select' %}"
+           class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-x-lg"></i>
+        </a>
+    </div>
+</div>
+
+<!-- ====== MOBILE TOGGLE ====== -->
+<div class="pos-mobile-toggle" id="mobileToggle">
+    <button class="btn btn-primary btn-sm" id="showProductsBtn">
+        <i class="bi bi-grid"></i> {% trans "Products" %}
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" id="showCartBtn">
+        <i class="bi bi-cart3"></i> {% trans "Cart" %} (<span id="mobileCartCount">0</span>)
+    </button>
+</div>
+
+<!-- ====== BODY ====== -->
+<div class="pos-body">
+    <!-- ====== LEFT: Products ====== -->
+    <div class="pos-products" id="productsPanel">
+        <div class="pos-search">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="productSearch" class="form-control"
+                       placeholder="{% trans 'Search products or scan barcode...' %}" autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button" id="cameraScanBtn"
+                        title="{% trans 'Camera Scan' %}">
+                    <i class="bi bi-upc-scan"></i>
+                </button>
+            </div>
+        </div>
+        <div class="pos-categories" id="categoryTabs">
+            <button class="btn btn-sm btn-primary category-btn active" data-category="">
+                {% trans "All" %}
+            </button>
+        </div>
+        <div class="pos-grid" id="productGrid">
+            <div class="pos-grid-empty">
+                <i class="bi bi-search" style="font-size: 2rem;"></i>
+                <p class="mt-2">{% trans "Search for products or select a category" %}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== RIGHT: Cart ====== -->
+    <div class="pos-cart hidden-panel" id="cartPanel">
+        <!-- Customer Selector -->
+        <div class="customer-selector">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" id="customerSearch" class="form-control"
+                       placeholder="{% trans 'Walk-in Customer' %}" autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button" id="clearCustomerBtn"
+                        style="display:none;">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div id="customerDropdown" class="list-group customer-dropdown shadow" style="display:none;"></div>
+        </div>
+
+        <div class="cart-header">
+            <span><i class="bi bi-cart3"></i> {% trans "Cart" %} (<span id="cartCount">0</span>)</span>
+            <button class="btn btn-sm btn-outline-danger" id="clearCartBtn" title="{% trans 'Clear Cart' %}">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty" id="cartEmpty">
+                <i class="bi bi-cart" style="font-size: 2rem;"></i>
+                <p class="mt-2">{% trans "Cart is empty" %}</p>
+            </div>
+        </div>
+
+        <div class="cart-footer">
+            <!-- Discount -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <button class="btn btn-sm btn-outline-secondary" id="discountBtn">
+                    <i class="bi bi-percent"></i> {% trans "Discount" %}
+                </button>
+                <span id="discountDisplay" style="display:none;" class="text-danger">
+                    -<span id="discountValue">0</span>
+                </span>
+            </div>
+            <div class="cart-totals">
+                <div class="total-line">
+                    <span>{% trans "Subtotal" %}</span>
+                    <span id="cartSubtotal">0.00</span>
+                </div>
+                <div class="total-line">
+                    <span>{% trans "Tax" %}</span>
+                    <span id="cartTax">0.00</span>
+                </div>
+                <div class="total-line" id="discountLine" style="display:none;">
+                    <span>{% trans "Discount" %}</span>
+                    <span class="text-danger" id="cartDiscount">-0.00</span>
+                </div>
+                <div class="total-line grand-total">
+                    <span>{% trans "Total" %}</span>
+                    <span id="cartTotal">0.00</span>
+                </div>
+            </div>
+            <div class="cart-actions">
+                <button class="btn btn-lg btn-primary" id="payBtn" disabled>
+                    <i class="bi bi-credit-card"></i> {% trans "Pay" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== PAYMENT MODAL ====== -->
+<div class="modal fade" id="paymentModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-credit-card"></i> {% trans "Payment" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>{% trans "Payment Methods" %}</h6>
+                        <div class="payment-methods" id="paymentMethods"></div>
+                        <hr>
+                        <div id="paymentInputArea" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label" id="paymentInputLabel">{% trans "Amount" %}</label>
+                                <input type="number" id="paymentAmount" class="form-control form-control-lg"
+                                       step="0.01" min="0">
+                            </div>
+                            <div class="mb-3" id="tenderedGroup" style="display:none;">
+                                <label class="form-label">{% trans "Tendered" %}</label>
+                                <input type="number" id="tenderedAmount" class="form-control form-control-lg"
+                                       step="0.01" min="0">
+                            </div>
+                            <div class="mb-3" id="referenceGroup" style="display:none;">
+                                <label class="form-label">{% trans "Reference" %}</label>
+                                <input type="text" id="paymentReference" class="form-control"
+                                       placeholder="{% trans 'Card auth / reference #' %}">
+                            </div>
+                            <button class="btn btn-success w-100" id="addPaymentBtn">
+                                <i class="bi bi-plus-circle"></i> {% trans "Add Payment" %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>{% trans "Payment Summary" %}</h6>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>{% trans "Order Total" %}:</span>
+                                <strong id="payOrderTotal">0.00</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>{% trans "Paid" %}:</span>
+                                <strong id="payPaid" class="text-success">0.00</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>{% trans "Remaining" %}:</span>
+                                <strong id="payRemaining" class="payment-remaining text-danger">0.00</strong>
+                            </div>
+                        </div>
+                        <table class="table table-sm" id="paymentSplitTable">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Method" %}</th>
+                                    <th>{% trans "Amount" %}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentSplitBody"></tbody>
+                        </table>
+                        <div id="changeArea" style="display:none;" class="text-center p-3 bg-light rounded">
+                            <small>{% trans "Change" %}</small>
+                            <div class="change-display" id="changeDisplay">0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-success btn-lg" id="completePaymentBtn" disabled>
+                    <i class="bi bi-check-circle"></i> {% trans "Complete Payment" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== DISCOUNT MODAL ====== -->
+<div class="modal fade" id="discountModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Apply Discount" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">{% trans "Discount %" %}</label>
+                    <input type="number" id="discountPercent" class="form-control discount-input"
+                           min="0" max="100" step="0.01" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger btn-sm" id="removeDiscountBtn">{% trans "Remove" %}</button>
+                <button class="btn btn-primary" id="applyDiscountBtn">{% trans "Apply" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== RECEIPT MODAL ====== -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Receipt" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="receipt-content" id="receiptContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" id="generateInvoiceBtn">
+                    <i class="bi bi-file-earmark-text"></i> {% trans "Generate Invoice" %}
+                </button>
+                <button class="btn btn-primary" onclick="window.print();">
+                    <i class="bi bi-printer"></i> {% trans "Print" %}
+                </button>
+                <button class="btn btn-success" id="newOrderBtn">
+                    <i class="bi bi-plus-circle"></i> {% trans "New Order" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+
+    // ── Config & State ──────────────────────────────────────────────
+    const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+    const SESSION_ID = {{ session.id }};
+    const PAYMENT_METHODS = {{ payment_methods_json|safe }};
+    const CATEGORIES = {{ categories_json|safe }};
+
+    const URLS = {
+        products: '{% url "erp:pos_api_products" %}',
+        categories: '{% url "erp:pos_api_categories" %}',
+        customers: '{% url "erp:pos_api_customers" %}',
+        createOrder: '{% url "erp:pos_api_create_order" %}',
+        completeOrder: '{% url "erp:pos_api_complete_order" %}',
+        receipt: '{% url "erp:pos_order_receipt" order_id=0 %}'.replace('/0/', '/{id}/'),
+        generateInvoice: '{% url "erp:pos_generate_invoice" order_id=0 %}'.replace('/0/', '/{id}/'),
+    };
+
+    const POS = {
+        cart: [],
+        customer: null,
+        discountPercent: 0,
+        currentOrderId: null,
+        currentOrderNumber: null,
+        barcodeBuffer: '',
+        barcodeTimer: null,
+        searchTimer: null,
+        selectedPaymentMethod: null,
+        payments: [],
+        mobileView: 'products',
+    };
+
+    // ── Utility ─────────────────────────────────────────────────────
+    function fmt(n) { return parseFloat(n).toFixed(2); }
+
+    function api(url, opts = {}) {
+        const defaults = {
+            headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+        };
+        return fetch(url, { ...defaults, ...opts }).then(r => r.json());
+    }
+
+    function isMobile() { return window.innerWidth <= 768; }
+
+    // ── Mobile Panel Toggle ─────────────────────────────────────────
+    const productsPanel = document.getElementById('productsPanel');
+    const cartPanel = document.getElementById('cartPanel');
+    const showProductsBtn = document.getElementById('showProductsBtn');
+    const showCartBtn = document.getElementById('showCartBtn');
+    const mobileCartCount = document.getElementById('mobileCartCount');
+
+    function setMobileView(view) {
+        POS.mobileView = view;
+        if (view === 'products') {
+            productsPanel.classList.remove('hidden-panel');
+            cartPanel.classList.add('hidden-panel');
+            showProductsBtn.className = 'btn btn-primary btn-sm';
+            showCartBtn.className = 'btn btn-outline-secondary btn-sm';
+        } else {
+            productsPanel.classList.add('hidden-panel');
+            cartPanel.classList.remove('hidden-panel');
+            showProductsBtn.className = 'btn btn-outline-secondary btn-sm';
+            showCartBtn.className = 'btn btn-primary btn-sm';
+        }
+    }
+
+    showProductsBtn.addEventListener('click', () => setMobileView('products'));
+    showCartBtn.addEventListener('click', () => setMobileView('cart'));
+
+    function handleResize() {
+        if (!isMobile()) {
+            productsPanel.classList.remove('hidden-panel');
+            cartPanel.classList.remove('hidden-panel');
+        } else {
+            setMobileView(POS.mobileView);
+        }
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    // ── Clock ───────────────────────────────────────────────────────
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('posClock').textContent =
+            now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+
+    // ── Categories ──────────────────────────────────────────────────
+    function renderCategories() {
+        const container = document.getElementById('categoryTabs');
+        CATEGORIES.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-outline-secondary category-btn';
+            btn.dataset.category = cat.id;
+            btn.textContent = cat.name;
+            btn.addEventListener('click', () => {
+                container.querySelectorAll('.category-btn').forEach(b => {
+                    b.classList.remove('active', 'btn-primary');
+                    b.classList.add('btn-outline-secondary');
+                });
+                btn.classList.add('active', 'btn-primary');
+                btn.classList.remove('btn-outline-secondary');
+                loadProducts('', cat.id);
+            });
+            container.appendChild(btn);
+        });
+        // "All" button handler
+        container.querySelector('.category-btn[data-category=""]').addEventListener('click', function() {
+            container.querySelectorAll('.category-btn').forEach(b => {
+                b.classList.remove('active', 'btn-primary');
+                b.classList.add('btn-outline-secondary');
+            });
+            this.classList.add('active', 'btn-primary');
+            this.classList.remove('btn-outline-secondary');
+            loadProducts('');
+        });
+    }
+    renderCategories();
+
+    // ── Products ────────────────────────────────────────────────────
+    function loadProducts(query, categoryId) {
+        let url = URLS.products + '?';
+        if (query) url += 'q=' + encodeURIComponent(query) + '&';
+        if (categoryId) url += 'category=' + categoryId + '&';
+
+        api(url).then(data => renderProducts(data.products));
+    }
+
+    function lookupBarcode(barcode) {
+        api(URLS.products + '?barcode=' + encodeURIComponent(barcode)).then(data => {
+            if (data.products.length === 1) {
+                addToCart(data.products[0]);
+            } else if (data.products.length === 0) {
+                document.getElementById('productSearch').value = barcode;
+                loadProducts(barcode);
+            } else {
+                renderProducts(data.products);
+            }
+        });
+    }
+
+    function renderProducts(products) {
+        const grid = document.getElementById('productGrid');
+        if (!products.length) {
+            grid.innerHTML = '<div class="pos-grid-empty"><i class="bi bi-search" style="font-size:2rem"></i><p class="mt-2">{% trans "No products found" %}</p></div>';
+            return;
+        }
+        grid.innerHTML = '';
+        products.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
+            card.innerHTML = `
+                <span class="add-badge"><i class="bi bi-plus"></i></span>
+                ${p.image_url
+                    ? '<img src="' + p.image_url + '" alt="" loading="lazy">'
+                    : '<div class="no-image"><i class="bi bi-box"></i></div>'}
+                <div class="product-name">${p.name}</div>
+                <div class="product-price">${fmt(p.selling_price)}</div>
+                ${p.track_inventory ? '<div class="product-stock">{% trans "Stock" %}: ' + p.quantity_on_hand + '</div>' : ''}
+            `;
+            card.addEventListener('click', () => {
+                addToCart(p);
+                card.classList.add('just-added');
+                setTimeout(() => card.classList.remove('just-added'), 300);
+            });
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+            });
+            grid.appendChild(card);
+        });
+    }
+
+    // Load initial products
+    loadProducts('');
+
+    // Search with debounce
+    const searchInput = document.getElementById('productSearch');
+    searchInput.addEventListener('input', () => {
+        clearTimeout(POS.searchTimer);
+        POS.searchTimer = setTimeout(() => {
+            loadProducts(searchInput.value.trim());
+        }, 300);
+    });
+
+    // ── Barcode Scanner (USB) ───────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+        const tag = e.target.tagName;
+        const id = e.target.id;
+        if ((tag === 'INPUT' || tag === 'TEXTAREA') && id !== 'productSearch') return;
+
+        if (e.key === 'Enter' && POS.barcodeBuffer.length > 3) {
+            e.preventDefault();
+            lookupBarcode(POS.barcodeBuffer.trim());
+            POS.barcodeBuffer = '';
+            return;
+        }
+        if (e.key.length === 1) {
+            POS.barcodeBuffer += e.key;
+            clearTimeout(POS.barcodeTimer);
+            POS.barcodeTimer = setTimeout(() => { POS.barcodeBuffer = ''; }, 100);
+        }
+    });
+
+    // ── Cart ────────────────────────────────────────────────────────
+    function addToCart(product) {
+        const existing = POS.cart.find(item => item.product_id === product.id);
+        if (existing) {
+            existing.qty += 1;
+        } else {
+            POS.cart.push({
+                product_id: product.id,
+                name: product.name,
+                sku: product.sku,
+                price: parseFloat(product.selling_price),
+                cost_price: parseFloat(product.cost_price || 0),
+                qty: 1,
+                discount: 0,
+                tax_rate_id: product.tax_rate_id,
+                tax_percent: parseFloat(product.tax_rate_percent || 0),
+                image_url: product.image_url,
+                track_inventory: product.track_inventory,
+                stock: parseFloat(product.quantity_on_hand || 0),
+            });
+        }
+        renderCart();
+    }
+
+    function removeFromCart(index) {
+        POS.cart.splice(index, 1);
+        renderCart();
+    }
+
+    function updateQty(index, delta) {
+        POS.cart[index].qty += delta;
+        if (POS.cart[index].qty <= 0) POS.cart.splice(index, 1);
+        renderCart();
+    }
+
+    function setQty(index, val) {
+        const qty = parseInt(val);
+        if (qty <= 0 || isNaN(qty)) {
+            POS.cart.splice(index, 1);
+        } else {
+            POS.cart[index].qty = qty;
+        }
+        renderCart();
+    }
+
+    function clearCart() {
+        POS.cart = [];
+        POS.discountPercent = 0;
+        renderCart();
+    }
+
+    function getCartTotals() {
+        let subtotal = 0, tax = 0;
+        POS.cart.forEach(item => {
+            const lineTotal = item.qty * item.price;
+            subtotal += lineTotal;
+            tax += lineTotal * (item.tax_percent / 100);
+        });
+        const discountAmt = subtotal * (POS.discountPercent / 100);
+        const total = subtotal + tax - discountAmt;
+        return { subtotal, tax, discountAmt, total };
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cartItems');
+        const countEl = document.getElementById('cartCount');
+        const totalItems = POS.cart.reduce((s, i) => s + i.qty, 0);
+
+        // Update mobile toggle badge
+        mobileCartCount.textContent = totalItems;
+
+        if (!POS.cart.length) {
+            container.innerHTML = '<div class="cart-empty"><i class="bi bi-cart" style="font-size:2rem"></i><p class="mt-2">{% trans "Cart is empty" %}</p></div>';
+            countEl.textContent = '0';
+            document.getElementById('payBtn').disabled = true;
+        } else {
+            container.innerHTML = '';
+            POS.cart.forEach((item, i) => {
+                const lineTotal = item.qty * item.price;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <div class="item-name">${item.name}</div>
+                        <span class="remove-btn" data-index="${i}"><i class="bi bi-x-circle"></i></span>
+                    </div>
+                    <div class="item-details">
+                        <div class="qty-controls">
+                            <button class="btn btn-sm btn-outline-secondary qty-minus" data-index="${i}">-</button>
+                            <input type="number" class="form-control form-control-sm qty-input" value="${item.qty}" data-index="${i}" min="1">
+                            <button class="btn btn-sm btn-outline-secondary qty-plus" data-index="${i}">+</button>
+                            <span class="text-muted mx-1">&times; ${fmt(item.price)}</span>
+                        </div>
+                        <span class="item-total">${fmt(lineTotal)}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            countEl.textContent = totalItems;
+            document.getElementById('payBtn').disabled = false;
+        }
+
+        // Update totals
+        const t = getCartTotals();
+        document.getElementById('cartSubtotal').textContent = fmt(t.subtotal);
+        document.getElementById('cartTax').textContent = fmt(t.tax);
+        document.getElementById('cartTotal').textContent = fmt(t.total);
+
+        if (POS.discountPercent > 0) {
+            document.getElementById('discountLine').style.display = 'flex';
+            document.getElementById('cartDiscount').textContent = '-' + fmt(t.discountAmt);
+            document.getElementById('discountDisplay').style.display = '';
+            document.getElementById('discountValue').textContent = POS.discountPercent + '%';
+        } else {
+            document.getElementById('discountLine').style.display = 'none';
+            document.getElementById('discountDisplay').style.display = 'none';
+        }
+    }
+
+    // Cart event delegation
+    document.getElementById('cartItems').addEventListener('click', (e) => {
+        const target = e.target.closest('[data-index]');
+        if (!target) return;
+        const idx = parseInt(target.dataset.index);
+        if (target.classList.contains('qty-minus')) updateQty(idx, -1);
+        else if (target.classList.contains('qty-plus')) updateQty(idx, 1);
+        else if (target.classList.contains('remove-btn') || target.closest('.remove-btn')) removeFromCart(idx);
+    });
+    document.getElementById('cartItems').addEventListener('change', (e) => {
+        if (e.target.classList.contains('qty-input')) {
+            setQty(parseInt(e.target.dataset.index), e.target.value);
+        }
+    });
+
+    document.getElementById('clearCartBtn').addEventListener('click', clearCart);
+
+    // ── Customer Search ─────────────────────────────────────────────
+    const custInput = document.getElementById('customerSearch');
+    const custDropdown = document.getElementById('customerDropdown');
+    const clearCustBtn = document.getElementById('clearCustomerBtn');
+    let custTimer;
+
+    custInput.addEventListener('input', () => {
+        clearTimeout(custTimer);
+        const q = custInput.value.trim();
+        if (q.length < 2) { custDropdown.style.display = 'none'; return; }
+        custTimer = setTimeout(() => {
+            api(URLS.customers + '?q=' + encodeURIComponent(q)).then(data => {
+                if (!data.customers.length) {
+                    custDropdown.style.display = 'none';
+                    return;
+                }
+                custDropdown.innerHTML = '';
+                data.customers.forEach(c => {
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'list-group-item list-group-item-action';
+                    a.textContent = c.name + (c.phone ? ' (' + c.phone + ')' : '');
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        POS.customer = c;
+                        custInput.value = c.name;
+                        custDropdown.style.display = 'none';
+                        clearCustBtn.style.display = '';
+                    });
+                    custDropdown.appendChild(a);
+                });
+                custDropdown.style.display = '';
+            });
+        }, 300);
+    });
+
+    clearCustBtn.addEventListener('click', () => {
+        POS.customer = null;
+        custInput.value = '';
+        clearCustBtn.style.display = 'none';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!custDropdown.contains(e.target) && e.target !== custInput) {
+            custDropdown.style.display = 'none';
+        }
+    });
+
+    // ── Discount ────────────────────────────────────────────────────
+    document.getElementById('discountBtn').addEventListener('click', () => {
+        document.getElementById('discountPercent').value = POS.discountPercent;
+        new bootstrap.Modal(document.getElementById('discountModal')).show();
+    });
+    document.getElementById('applyDiscountBtn').addEventListener('click', () => {
+        POS.discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+        renderCart();
+        bootstrap.Modal.getInstance(document.getElementById('discountModal')).hide();
+    });
+    document.getElementById('removeDiscountBtn').addEventListener('click', () => {
+        POS.discountPercent = 0;
+        renderCart();
+        bootstrap.Modal.getInstance(document.getElementById('discountModal')).hide();
+    });
+
+    // ── Payment Modal ───────────────────────────────────────────────
+    function openPaymentModal() {
+        POS.payments = [];
+        POS.selectedPaymentMethod = null;
+        const t = getCartTotals();
+
+        document.getElementById('payOrderTotal').textContent = fmt(t.total);
+        document.getElementById('payPaid').textContent = '0.00';
+        document.getElementById('payRemaining').textContent = fmt(t.total);
+        document.getElementById('paymentSplitBody').innerHTML = '';
+        document.getElementById('paymentInputArea').style.display = 'none';
+        document.getElementById('changeArea').style.display = 'none';
+        document.getElementById('completePaymentBtn').disabled = true;
+
+        // Render method buttons
+        const methodsDiv = document.getElementById('paymentMethods');
+        methodsDiv.innerHTML = '';
+        PAYMENT_METHODS.forEach(m => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-outline-primary';
+            btn.innerHTML = '<i class="bi bi-' + (m.code.toLowerCase() === 'cash' ? 'cash-coin' : 'credit-card') + '"></i> ' + m.name;
+            btn.addEventListener('click', () => selectPaymentMethod(m));
+            methodsDiv.appendChild(btn);
+        });
+
+        new bootstrap.Modal(document.getElementById('paymentModal')).show();
+    }
+
+    function selectPaymentMethod(method) {
+        POS.selectedPaymentMethod = method;
+        const remaining = getPaymentRemaining();
+        document.getElementById('paymentAmount').value = fmt(remaining);
+        document.getElementById('paymentInputLabel').textContent = method.name;
+        document.getElementById('paymentInputArea').style.display = '';
+
+        if (method.code.toLowerCase() === 'cash') {
+            document.getElementById('tenderedGroup').style.display = '';
+            document.getElementById('tenderedAmount').value = '';
+        } else {
+            document.getElementById('tenderedGroup').style.display = 'none';
+        }
+
+        if (method.requires_reference) {
+            document.getElementById('referenceGroup').style.display = '';
+            document.getElementById('paymentReference').value = '';
+        } else {
+            document.getElementById('referenceGroup').style.display = 'none';
+        }
+    }
+
+    function getPaymentRemaining() {
+        const t = getCartTotals();
+        const paid = POS.payments.reduce((s, p) => s + p.amount, 0);
+        return Math.max(t.total - paid, 0);
+    }
+
+    function updatePaymentSummary() {
+        const t = getCartTotals();
+        const paid = POS.payments.reduce((s, p) => s + p.amount, 0);
+        const remaining = Math.max(t.total - paid, 0);
+
+        document.getElementById('payPaid').textContent = fmt(paid);
+        document.getElementById('payRemaining').textContent = fmt(remaining);
+
+        if (remaining <= 0.001) {
+            document.getElementById('payRemaining').classList.remove('text-danger');
+            document.getElementById('payRemaining').classList.add('text-success');
+            document.getElementById('completePaymentBtn').disabled = false;
+        } else {
+            document.getElementById('payRemaining').classList.remove('text-success');
+            document.getElementById('payRemaining').classList.add('text-danger');
+            document.getElementById('completePaymentBtn').disabled = true;
+        }
+
+        const tbody = document.getElementById('paymentSplitBody');
+        tbody.innerHTML = '';
+        POS.payments.forEach((p, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${p.method_name}</td>
+                <td>${fmt(p.amount)}</td>
+                <td><button class="btn btn-sm btn-outline-danger remove-payment" data-index="${i}"><i class="bi bi-x"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const totalTendered = POS.payments
+            .filter(p => p.method_code.toLowerCase() === 'cash')
+            .reduce((s, p) => s + (p.tendered || p.amount), 0);
+        const totalCashAmount = POS.payments
+            .filter(p => p.method_code.toLowerCase() === 'cash')
+            .reduce((s, p) => s + p.amount, 0);
+        const change = Math.max(totalTendered - totalCashAmount, 0);
+        if (change > 0) {
+            document.getElementById('changeArea').style.display = '';
+            document.getElementById('changeDisplay').textContent = fmt(change);
+        } else {
+            document.getElementById('changeArea').style.display = 'none';
+        }
+    }
+
+    document.getElementById('addPaymentBtn').addEventListener('click', () => {
+        const method = POS.selectedPaymentMethod;
+        if (!method) return;
+
+        const amount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+        if (amount <= 0) return;
+
+        const tendered = method.code.toLowerCase() === 'cash'
+            ? (parseFloat(document.getElementById('tenderedAmount').value) || amount)
+            : amount;
+        const reference = document.getElementById('paymentReference').value || '';
+
+        POS.payments.push({
+            payment_method_id: method.id,
+            method_name: method.name,
+            method_code: method.code,
+            amount: amount,
+            tendered: tendered,
+            reference: reference,
+        });
+
+        document.getElementById('paymentInputArea').style.display = 'none';
+        POS.selectedPaymentMethod = null;
+        updatePaymentSummary();
+    });
+
+    // Remove payment
+    document.getElementById('paymentSplitBody').addEventListener('click', (e) => {
+        const btn = e.target.closest('.remove-payment');
+        if (btn) {
+            POS.payments.splice(parseInt(btn.dataset.index), 1);
+            updatePaymentSummary();
+        }
+    });
+
+    document.getElementById('payBtn').addEventListener('click', openPaymentModal);
+
+    // ── Complete Payment ────────────────────────────────────────────
+    document.getElementById('completePaymentBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('completePaymentBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> {% trans "Processing..." %}';
+
+        try {
+            // Step 1: Create order
+            const t = getCartTotals();
+            const orderData = await api(URLS.createOrder, {
+                method: 'POST',
+                body: JSON.stringify({
+                    session_id: SESSION_ID,
+                    items: POS.cart.map(item => ({
+                        product_id: item.product_id,
+                        quantity: item.qty,
+                        unit_price: item.price,
+                        discount_percent: item.discount,
+                        tax_rate_id: item.tax_rate_id,
+                    })),
+                    customer_id: POS.customer ? POS.customer.id : null,
+                    discount_percent: POS.discountPercent,
+                    discount_amount: 0,
+                    notes: '',
+                }),
+            });
+
+            if (!orderData.success) {
+                alert(orderData.error || '{% trans "Failed to create order" %}');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> {% trans "Complete Payment" %}';
+                return;
+            }
+
+            // Step 2: Complete with payments
+            const completeData = await api(URLS.completeOrder, {
+                method: 'POST',
+                body: JSON.stringify({
+                    order_id: orderData.order_id,
+                    payments: POS.payments.map(p => ({
+                        payment_method_id: p.payment_method_id,
+                        amount: p.amount,
+                        tendered: p.tendered,
+                        reference: p.reference,
+                    })),
+                }),
+            });
+
+            if (!completeData.success) {
+                alert(completeData.error || '{% trans "Failed to process payment" %}');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> {% trans "Complete Payment" %}';
+                return;
+            }
+
+            // Success
+            POS.currentOrderId = completeData.order_id;
+            POS.currentOrderNumber = completeData.order_number;
+            bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+            showReceipt(completeData, t);
+
+        } catch (err) {
+            alert('{% trans "An error occurred. Please try again." %}');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> {% trans "Complete Payment" %}';
+        }
+    });
+
+    // ── Receipt ─────────────────────────────────────────────────────
+    function showReceipt(orderData, totals) {
+        const content = document.getElementById('receiptContent');
+        let html = `
+            <div class="text-center mb-2">
+                <strong>{{ company.name }}</strong><br>
+                {% if terminal.receipt_header %}<small>{{ terminal.receipt_header|linebreaksbr }}</small><br>{% endif %}
+                <hr>
+            </div>
+            <div class="receipt-line"><span>{% trans "Order" %}:</span><span>${orderData.order_number}</span></div>
+            <div class="receipt-line"><span>{% trans "Date" %}:</span><span>${new Date().toLocaleString()}</span></div>
+            <div class="receipt-line"><span>{% trans "Cashier" %}:</span><span>{{ employee.first_name }}</span></div>
+            ${POS.customer ? '<div class="receipt-line"><span>{% trans "Customer" %}:</span><span>' + POS.customer.name + '</span></div>' : ''}
+            <hr>
+        `;
+
+        POS.cart.forEach(item => {
+            html += `<div class="receipt-line"><span>${item.qty} x ${item.name}</span><span>${fmt(item.qty * item.price)}</span></div>`;
+        });
+
+        html += `
+            <hr>
+            <div class="receipt-line"><span>{% trans "Subtotal" %}</span><span>${fmt(totals.subtotal)}</span></div>
+            <div class="receipt-line"><span>{% trans "Tax" %}</span><span>${fmt(totals.tax)}</span></div>
+        `;
+        if (totals.discountAmt > 0) {
+            html += `<div class="receipt-line"><span>{% trans "Discount" %}</span><span>-${fmt(totals.discountAmt)}</span></div>`;
+        }
+        html += `<div class="receipt-line"><strong>{% trans "Total" %}</strong><strong>${fmt(totals.total)}</strong></div><hr>`;
+
+        orderData.payments.forEach(p => {
+            html += `<div class="receipt-line"><span>${p.method}</span><span>${fmt(p.amount)}</span></div>`;
+            if (parseFloat(p.change) > 0) {
+                html += `<div class="receipt-line"><span>{% trans "Change" %}</span><span>${fmt(p.change)}</span></div>`;
+            }
+        });
+
+        html += `
+            <hr>
+            <div class="text-center">
+                {% if terminal.receipt_footer %}<small>{{ terminal.receipt_footer|linebreaksbr }}</small>{% endif %}
+            </div>
+        `;
+
+        content.innerHTML = html;
+
+        const invBtn = document.getElementById('generateInvoiceBtn');
+        invBtn.style.display = POS.customer ? '' : 'none';
+        invBtn.onclick = () => generateInvoice(POS.currentOrderId);
+
+        new bootstrap.Modal(document.getElementById('receiptModal')).show();
+    }
+
+    // ── Generate Invoice ────────────────────────────────────────────
+    async function generateInvoice(orderId) {
+        const btn = document.getElementById('generateInvoiceBtn');
+        btn.disabled = true;
+        try {
+            const url = URLS.generateInvoice.replace('{id}', orderId);
+            const data = await api(url, { method: 'POST' });
+            if (data.success) {
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> ' + data.invoice_number;
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-success');
+            } else {
+                alert(data.error);
+                btn.disabled = false;
+            }
+        } catch (err) {
+            alert('{% trans "Failed to generate invoice" %}');
+            btn.disabled = false;
+        }
+    }
+
+    // ── New Order ───────────────────────────────────────────────────
+    document.getElementById('newOrderBtn').addEventListener('click', () => {
+        bootstrap.Modal.getInstance(document.getElementById('receiptModal')).hide();
+        clearCart();
+        POS.currentOrderId = null;
+        POS.currentOrderNumber = null;
+        POS.payments = [];
+        loadProducts('');
+        if (isMobile()) setMobileView('products');
+    });
+
+    // ── Camera Scan ─────────────────────────────────────────────────
+    document.getElementById('cameraScanBtn').addEventListener('click', () => {
+        searchInput.focus();
+        searchInput.value = '';
+        searchInput.placeholder = '{% trans "Type or scan barcode and press Enter..." %}';
+    });
+
+})();
+</script>
+{% endblock %}

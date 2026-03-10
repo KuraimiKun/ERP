@@ -112,6 +112,9 @@ from .fixed_assets import (
     GenerateDepreciationForm,
 )
 
+# ── POS ────────────────────────────────────────────────────────
+from .pos import POSTerminalForm
+
 __all__ = [
     # Mixins
     'CompanyFilterMixin', 'BootstrapFormMixin',
@@ -156,4 +159,6 @@ __all__ = [
     'AssetCategoryForm', 'FixedAssetForm', 'DepreciationScheduleForm',
     'AssetDisposalForm', 'AssetTransferForm', 'AssetRevaluationForm',
     'AssetMaintenanceLogForm', 'GenerateDepreciationForm',
+    # POS
+    'POSTerminalForm',
 ]

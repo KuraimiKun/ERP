@@ -1,0 +1,163 @@
+{% extends "erp/employee_portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Close Session" %} - {{ session.session_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">
+        <i class="bi bi-box-arrow-right"></i> {% trans "Close Session" %}
+        <small class="text-muted">{{ session.session_number }}</small>
+    </h4>
+    <a href="{% url 'erp:pos_main' session_id=session.pk %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> {% trans "Back to POS" %}
+    </a>
+</div>
+
+<!-- Session Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">{{ order_count }}</div>
+                    <div class="stat-label">{% trans "Orders" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">{{ session.opening_balance }}</div>
+                    <div class="stat-label">{% trans "Opening Balance" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-calculator"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">{{ session.expected_cash }}</div>
+                    <div class="stat-label">{% trans "Expected Cash" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-secondary bg-opacity-10 text-secondary">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="stat-value">{{ session.terminal.name }}</div>
+                    <div class="stat-label">{% trans "Terminal" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close Session Form -->
+<div class="erp-card">
+    <div class="erp-card-header">
+        <h5 class="mb-0">{% trans "Cash Count" %}</h5>
+    </div>
+    <div class="erp-card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Cash Counted in Drawer" %}</label>
+                        <input type="number" name="closing_balance" id="closingBalance"
+                               class="form-control form-control-lg" step="0.01" min="0" value="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Difference" %}</label>
+                        <div id="differenceDisplay" class="form-control form-control-lg bg-light" readonly>
+                            0.00
+                        </div>
+                        <div class="form-text" id="differenceText"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Notes" %}</label>
+                        <textarea name="notes" class="form-control" rows="3"
+                                  placeholder="{% trans 'Optional closing notes...' %}"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="alert alert-info">
+                        <h6>{% trans "Session Details" %}</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex justify-content-between py-1 border-bottom">
+                                <span>{% trans "Opened" %}</span>
+                                <span>{{ session.opened_at|date:"d/m/Y H:i" }}</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1 border-bottom">
+                                <span>{% trans "Opening Balance" %}</span>
+                                <span>{{ session.opening_balance }}</span>
+                            </li>
+                            <li class="d-flex justify-content-between py-1 border-bottom">
+                                <span>{% trans "Expected Cash" %}</span>
+                                <strong>{{ session.expected_cash }}</strong>
+                            </li>
+                            <li class="d-flex justify-content-between py-1">
+                                <span>{% trans "Total Orders" %}</span>
+                                <span>{{ order_count }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'erp:pos_main' session_id=session.pk %}" class="btn btn-secondary">
+                    {% trans "Cancel" %}
+                </a>
+                <button type="submit" class="btn btn-warning btn-lg"
+                        onclick="return confirm('{% trans "Are you sure you want to close this session?" %}');">
+                    <i class="bi bi-box-arrow-right"></i> {% trans "Close Session" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const expectedCash = {{ session.expected_cash }};
+    const closingInput = document.getElementById('closingBalance');
+    const diffDisplay = document.getElementById('differenceDisplay');
+    const diffText = document.getElementById('differenceText');
+
+    closingInput.addEventListener('input', () => {
+        const counted = parseFloat(closingInput.value) || 0;
+        const diff = counted - expectedCash;
+        diffDisplay.textContent = diff.toFixed(2);
+        if (diff > 0) {
+            diffDisplay.style.color = '#198754';
+            diffText.textContent = '{% trans "Over by" %} ' + diff.toFixed(2);
+        } else if (diff < 0) {
+            diffDisplay.style.color = '#dc3545';
+            diffText.textContent = '{% trans "Short by" %} ' + Math.abs(diff).toFixed(2);
+        } else {
+            diffDisplay.style.color = '#198754';
+            diffText.textContent = '{% trans "Balanced" %}';
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Receipt" %} - {{ order.order_number }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; font-size: 12px; width: 80mm; margin: 0 auto; padding: 5mm; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .line { display: flex; justify-content: space-between; }
+        hr { border: none; border-top: 1px dashed #000; margin: 4px 0; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+        .items-table td { padding: 2px 0; vertical-align: top; }
+        .items-table .qty { width: 30px; }
+        .items-table .price { text-align: right; white-space: nowrap; }
+        .total-section .line { margin: 2px 0; }
+        .grand-total { font-size: 14px; font-weight: bold; }
+        .footer { margin-top: 8px; text-align: center; font-size: 10px; }
+
+        @media screen {
+            body { border: 1px solid #ccc; margin: 20px auto; padding: 10mm; background: #fff; }
+            .no-print { margin: 20px auto; text-align: center; width: 80mm; }
+            .no-print button { padding: 8px 24px; font-size: 14px; cursor: pointer; }
+        }
+        @media print {
+            .no-print { display: none; }
+            body { border: none; margin: 0; padding: 2mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button onclick="window.print();">{% trans "Print Receipt" %}</button>
+        <button onclick="window.close();">{% trans "Close" %}</button>
+    </div>
+
+    <div class="center bold" style="font-size: 14px;">{{ company.name }}</div>
+    {% if terminal.receipt_header %}
+    <div class="center" style="font-size: 10px;">{{ terminal.receipt_header|linebreaksbr }}</div>
+    {% endif %}
+    <hr>
+
+    <div class="line"><span>{% trans "Order" %}:</span><span>{{ order.order_number }}</span></div>
+    <div class="line"><span>{% trans "Date" %}:</span><span>{{ order.order_date|date:"d/m/Y H:i" }}</span></div>
+    <div class="line"><span>{% trans "Cashier" %}:</span><span>{{ order.employee.first_name }} {{ order.employee.last_name }}</span></div>
+    {% if order.customer %}
+    <div class="line"><span>{% trans "Customer" %}:</span><span>{{ order.customer.name }}</span></div>
+    {% endif %}
+    <hr>
+
+    <table class="items-table">
+        {% for line in lines %}
+        <tr>
+            <td class="qty">{{ line.quantity|floatformat:0 }}x</td>
+            <td>{{ line.product_name }}</td>
+            <td class="price">{{ line.line_total|floatformat:2 }}</td>
+        </tr>
+        {% if line.discount_percent > 0 %}
+        <tr>
+            <td></td>
+            <td style="font-size: 10px;">&nbsp; {% trans "Disc." %} {{ line.discount_percent }}%</td>
+            <td></td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+    <hr>
+
+    <div class="total-section">
+        <div class="line"><span>{% trans "Subtotal" %}</span><span>{{ order.subtotal|floatformat:2 }}</span></div>
+        {% if order.tax_amount > 0 %}
+        <div class="line"><span>{% trans "Tax" %}</span><span>{{ order.tax_amount|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if order.discount_amount > 0 %}
+        <div class="line"><span>{% trans "Discount" %}</span><span>-{{ order.discount_amount|floatformat:2 }}</span></div>
+        {% endif %}
+        <hr>
+        <div class="line grand-total"><span>{% trans "TOTAL" %}</span><span>{{ order.total_amount|floatformat:2 }}</span></div>
+    </div>
+    <hr>
+
+    {% for payment in payments %}
+    <div class="line">
+        <span>{{ payment.payment_method.name }}</span>
+        <span>{{ payment.amount|floatformat:2 }}</span>
+    </div>
+    {% if payment.change_amount > 0 %}
+    <div class="line">
+        <span>{% trans "Change" %}</span>
+        <span>{{ payment.change_amount|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    {% if terminal.receipt_footer %}
+    <hr>
+    <div class="footer">{{ terminal.receipt_footer|linebreaksbr }}</div>
+    {% endif %}
+
+    <div class="footer" style="margin-top: 12px;">
+        {% trans "Thank you!" %}
+    </div>
+</body>
+</html>

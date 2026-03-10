@@ -377,6 +377,18 @@
                                         <div class="text-muted small mt-1">{% trans "Allow employee to view tasks assigned to them" %}</div>
                                     </div>
                                 </div>
+
+                                <!-- POS Permission -->
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch p-3 border rounded">
+                                        <input class="form-check-input" type="checkbox" id="perm_pos"
+                                               name="portal_can_use_pos" {% if employee.portal_can_use_pos %}checked{% endif %}>
+                                        <label class="form-check-label fw-medium" for="perm_pos">
+                                            <i class="bi bi-shop me-1"></i> {% trans "Use POS" %}
+                                        </label>
+                                        <div class="text-muted small mt-1">{% trans "Allow employee to access the Point of Sale terminal" %}</div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary">

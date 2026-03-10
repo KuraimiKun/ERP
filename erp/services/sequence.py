@@ -29,6 +29,8 @@ _SEQUENCE_TYPE_MAP = {
     'supplier_invoice': Sequence.SequenceType.SUPPLIER_INVOICE,
     'supplier_payment': Sequence.SequenceType.SUPPLIER_PAYMENT,
     'lead': Sequence.SequenceType.LEAD,
+    'pos_order': Sequence.SequenceType.POS_ORDER,
+    'pos_session': Sequence.SequenceType.POS_SESSION,
 }
 
 # Default prefixes when auto-creating a missing sequence
@@ -45,6 +47,8 @@ _DEFAULT_PREFIXES = {
     'supplier_invoice': 'SINV-',
     'supplier_payment': 'SPAY-',
     'lead': 'LD-',
+    'pos_order': 'POS-',
+    'pos_session': 'SESS-',
 }
 
 
@@ -171,3 +175,13 @@ def get_supplier_payment_number(company):
 def get_employee_id(company):
     """Get next employee ID."""
     return SequenceService.get_next_number(company, 'employee')
+
+
+def get_pos_order_number(company):
+    """Get next POS order number."""
+    return SequenceService.get_next_number(company, 'pos_order')
+
+
+def get_pos_session_number(company):
+    """Get next POS session number."""
+    return SequenceService.get_next_number(company, 'pos_session')

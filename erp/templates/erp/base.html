@@ -464,7 +464,21 @@
                 <i class="bi bi-sliders"></i>
                 {% trans "Valuation Config" %}
             </a>
-            
+
+            <div class="erp-nav-section mt-3">{% trans "Point of Sale" %}</div>
+            <a href="{% url 'erp:pos_terminal_list' %}" class="erp-nav-link {% if 'pos_terminal' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-shop"></i>
+                {% trans "Terminals" %}
+            </a>
+            <a href="{% url 'erp:pos_session_list' %}" class="erp-nav-link {% if 'pos_session' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clock-history"></i>
+                {% trans "Sessions" %}
+            </a>
+            <a href="{% url 'erp:pos_order_list' %}" class="erp-nav-link {% if 'pos_order' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-receipt"></i>
+                {% trans "POS Orders" %}
+            </a>
+
             <div class="erp-nav-section mt-3">{% trans "Fixed Assets" %}</div>
             <a href="{% url 'erp:asset_list' %}" class="erp-nav-link {% if 'asset_list' == request.resolver_match.url_name or 'asset_detail' == request.resolver_match.url_name or 'asset_create' == request.resolver_match.url_name or 'asset_edit' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-building-gear"></i>

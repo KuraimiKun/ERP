@@ -139,6 +139,15 @@ from .reporting import (
     KPIValue,
 )
 
+# POS models
+from .pos import (
+    POSTerminal,
+    POSSession,
+    POSOrder,
+    POSOrderLine,
+    POSPayment,
+)
+
 # Audit and System models
 from .audit import (
     AuditLog,
@@ -266,6 +275,13 @@ __all__ = [
     'KPI',
     'KPIValue',
     
+    # POS
+    'POSTerminal',
+    'POSSession',
+    'POSOrder',
+    'POSOrderLine',
+    'POSPayment',
+
     # Audit
     'AuditLog',
     'SystemSetting',

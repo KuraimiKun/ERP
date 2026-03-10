@@ -1,0 +1,122 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "POS Terminals" %}{% endblock %}
+{% block page_title %}{% trans "POS Terminals" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">{% trans "Manage POS terminals and cash registers" %}</p>
+    </div>
+    <a href="{% url 'erp:pos_terminal_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg ms-1"></i> {% trans "New Terminal" %}
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary ms-3">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ total_count }}</div>
+                    <div class="stat-label">{% trans "Total Terminals" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success bg-opacity-10 text-success ms-3">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ active_count }}</div>
+                    <div class="stat-label">{% trans "Active" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <form method="get" class="d-flex gap-2">
+            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="{% trans 'Search by name or code...' %}">
+            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group btn-group-sm">
+            <a href="?{% if search %}search={{ search }}{% endif %}" class="btn {% if not status_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">{% trans "All" %}</a>
+            <a href="?status=active{% if search %}&search={{ search }}{% endif %}" class="btn {% if status_filter == 'active' %}btn-primary{% else %}btn-outline-primary{% endif %}">{% trans "Active" %}</a>
+            <a href="?status=inactive{% if search %}&search={{ search }}{% endif %}" class="btn {% if status_filter == 'inactive' %}btn-primary{% else %}btn-outline-primary{% endif %}">{% trans "Inactive" %}</a>
+        </div>
+    </div>
+</div>
+
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Code" %}</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Location" %}</th>
+                    <th>{% trans "Warehouse" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for terminal in terminals %}
+                <tr>
+                    <td>
+                        <a href="{% url 'erp:pos_terminal_detail' terminal.pk %}" class="fw-medium text-decoration-none">
+                            {{ terminal.code }}
+                        </a>
+                    </td>
+                    <td>{{ terminal.name }}</td>
+                    <td>{{ terminal.location|default:"-" }}</td>
+                    <td>{{ terminal.warehouse.name }}</td>
+                    <td>
+                        {% if terminal.is_active %}
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'erp:pos_terminal_detail' terminal.pk %}" class="btn btn-outline-primary" title="{% trans 'View' %}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'erp:pos_terminal_edit' terminal.pk %}" class="btn btn-outline-secondary" title="{% trans 'Edit' %}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'erp:pos_terminal_delete' terminal.pk %}" class="btn btn-outline-danger" title="{% trans 'Delete' %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-shop fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No terminals found" %}</p>
+                        <a href="{% url 'erp:pos_terminal_create' %}" class="btn btn-primary mt-3">{% trans "Add First Terminal" %}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include 'erp/includes/pagination.html' %}
+{% endblock %}

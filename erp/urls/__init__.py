@@ -250,6 +250,37 @@ _employee_portal_patterns = [
     path('attendance/scan/', views.attendance_scan_result, name='attendance_scan_result'),
 ]
 
+# ── POS (Point of Sale) ───────────────────────────────────────────────────
+_pos_patterns = [
+    # Page views
+    path('portal/pos/', views.pos_terminal_select, name='pos_terminal_select'),
+    path('portal/pos/session/open/', views.pos_session_open, name='pos_session_open'),
+    path('portal/pos/session/<int:session_id>/', views.pos_main, name='pos_main'),
+    path('portal/pos/session/<int:session_id>/close/', views.pos_session_close, name='pos_session_close'),
+    path('portal/pos/session/<int:session_id>/orders/', views.pos_order_history, name='pos_order_history'),
+    path('portal/pos/order/<int:order_id>/receipt/', views.pos_order_receipt, name='pos_order_receipt'),
+    path('portal/pos/order/<int:order_id>/invoice/', views.pos_generate_invoice, name='pos_generate_invoice'),
+    # API endpoints (JSON)
+    path('portal/pos/api/products/', views.pos_api_products, name='pos_api_products'),
+    path('portal/pos/api/categories/', views.pos_api_categories, name='pos_api_categories'),
+    path('portal/pos/api/customers/', views.pos_api_customers, name='pos_api_customers'),
+    path('portal/pos/api/order/create/', views.pos_api_create_order, name='pos_api_create_order'),
+    path('portal/pos/api/order/complete/', views.pos_api_complete_order, name='pos_api_complete_order'),
+]
+
+# ── POS Admin (staff management) ──────────────────────────────────────────
+_pos_admin_patterns = [
+    path('pos/terminals/', views.pos_terminal_list, name='pos_terminal_list'),
+    path('pos/terminals/add/', views.pos_terminal_create, name='pos_terminal_create'),
+    path('pos/terminals/<int:pk>/', views.pos_terminal_detail, name='pos_terminal_detail'),
+    path('pos/terminals/<int:pk>/edit/', views.pos_terminal_edit, name='pos_terminal_edit'),
+    path('pos/terminals/<int:pk>/delete/', views.pos_terminal_delete, name='pos_terminal_delete'),
+    path('pos/sessions/', views.pos_session_list, name='pos_session_list'),
+    path('pos/sessions/<int:pk>/', views.pos_session_detail_admin, name='pos_session_detail_admin'),
+    path('pos/orders/', views.pos_order_list, name='pos_order_list'),
+    path('pos/orders/<int:pk>/', views.pos_order_detail_admin, name='pos_order_detail_admin'),
+]
+
 # ── Attendance Devices & Kiosk (owner/admin) ────────────────────────────────
 _device_patterns = [
     path('devices/', views.device_list, name='device_list'),
@@ -475,6 +506,8 @@ urlpatterns = (
     + _inventory_patterns
     + _fixed_assets_patterns
     + _employee_portal_patterns
+    + _pos_patterns
+    + _pos_admin_patterns
     + _device_patterns
     + _invite_approval_patterns
     + _api_patterns

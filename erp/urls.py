@@ -216,7 +216,25 @@ urlpatterns = [
     path('portal/attendance/', views.employee_portal_attendance, name='employee_portal_attendance'),
     path('portal/profile/', views.employee_portal_profile, name='employee_portal_profile'),
     path('attendance/scan/', views.attendance_scan_result, name='attendance_scan_result'),
-    
+
+    # =========================================================================
+    # POS (Point of Sale)
+    # =========================================================================
+    # Page views
+    path('portal/pos/', views.pos_terminal_select, name='pos_terminal_select'),
+    path('portal/pos/session/open/', views.pos_session_open, name='pos_session_open'),
+    path('portal/pos/session/<int:session_id>/', views.pos_main, name='pos_main'),
+    path('portal/pos/session/<int:session_id>/close/', views.pos_session_close, name='pos_session_close'),
+    path('portal/pos/session/<int:session_id>/orders/', views.pos_order_history, name='pos_order_history'),
+    path('portal/pos/order/<int:order_id>/receipt/', views.pos_order_receipt, name='pos_order_receipt'),
+    path('portal/pos/order/<int:order_id>/invoice/', views.pos_generate_invoice, name='pos_generate_invoice'),
+    # API endpoints (JSON)
+    path('portal/pos/api/products/', views.pos_api_products, name='pos_api_products'),
+    path('portal/pos/api/categories/', views.pos_api_categories, name='pos_api_categories'),
+    path('portal/pos/api/customers/', views.pos_api_customers, name='pos_api_customers'),
+    path('portal/pos/api/order/create/', views.pos_api_create_order, name='pos_api_create_order'),
+    path('portal/pos/api/order/complete/', views.pos_api_complete_order, name='pos_api_complete_order'),
+
     # =========================================================================
     # ATTENDANCE DEVICES & KIOSK (owner/admin)
     # =========================================================================

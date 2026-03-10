@@ -94,6 +94,14 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if employee.portal_can_use_pos %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'pos' in request.resolver_match.url_name %}active{% endif %}"
+                           href="{% url 'erp:pos_terminal_select' %}">
+                            <i class="bi bi-shop"></i> {% trans "POS" %}
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}"
                            href="{% url 'erp:employee_portal_profile' %}">

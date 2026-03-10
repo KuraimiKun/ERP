@@ -1,0 +1,181 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Order" %} - {{ order.order_number }}{% endblock %}
+{% block page_title %}{% trans "POS Order Details" %}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:pos_order_list' %}">{% trans "POS Orders" %}</a></li>
+        <li class="breadcrumb-item active">{{ order.order_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- Left Column - Order Info -->
+    <div class="col-lg-4">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">{% trans "Order Info" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <span class="text-muted d-block">{% trans "Order #" %}</span>
+                    <strong>{{ order.order_number }}</strong>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">{% trans "Date" %}</span>
+                    <strong>{{ order.order_date|date:"Y-m-d H:i" }}</strong>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">{% trans "Status" %}</span>
+                    {% if order.status == 'completed' %}
+                        <span class="badge bg-success">{{ order.get_status_display }}</span>
+                    {% elif order.status == 'voided' %}
+                        <span class="badge bg-danger">{{ order.get_status_display }}</span>
+                    {% elif order.status == 'draft' %}
+                        <span class="badge bg-warning">{{ order.get_status_display }}</span>
+                    {% elif order.status == 'refunded' %}
+                        <span class="badge bg-info">{{ order.get_status_display }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">{% trans "Terminal" %}</span>
+                    <strong>{{ order.session.terminal }}</strong>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">{% trans "Session #" %}</span>
+                    <a href="{% url 'erp:pos_session_detail_admin' order.session.pk %}">{{ order.session.session_number }}</a>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">{% trans "Employee" %}</span>
+                    <strong>{{ order.employee }}</strong>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">{% trans "Customer" %}</span>
+                    {% if order.customer %}
+                        <strong>{{ order.customer.name }}</strong>
+                    {% else %}
+                        <span class="text-muted">{% trans "Walk-in" %}</span>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'erp:pos_order_receipt' order.pk %}" class="btn btn-outline-primary" target="_blank">
+                        <i class="bi bi-receipt ms-1"></i> {% trans "View Receipt" %}
+                    </a>
+                    {% if order.invoice %}
+                    <a href="{% url 'erp:invoice_detail' order.invoice.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-earmark-text ms-1"></i> {% trans "View Invoice" %}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Line Items & Payments -->
+    <div class="col-lg-8">
+        <!-- Line Items -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0">{% trans "Line Items" %}</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Product" %}</th>
+                            <th>{% trans "SKU" %}</th>
+                            <th class="text-center">{% trans "Qty" %}</th>
+                            <th class="text-start">{% trans "Unit Price" %}</th>
+                            <th class="text-center">{% trans "Discount %" %}</th>
+                            <th class="text-start">{% trans "Tax" %}</th>
+                            <th class="text-start">{% trans "Line Total" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td><strong>{{ line.product_name }}</strong></td>
+                            <td><code>{{ line.product_sku }}</code></td>
+                            <td class="text-center">{{ line.quantity|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.unit_price|floatformat:2 }}</td>
+                            <td class="text-center">{{ line.discount_percent|floatformat:2 }}%</td>
+                            <td class="text-start">{{ line.tax_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.line_total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">{% trans "No line items" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="6" class="text-start"><strong>{% trans "Subtotal" %}</strong></td>
+                            <td class="text-start">{{ order.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% if order.discount_amount > 0 %}
+                        <tr>
+                            <td colspan="6" class="text-start">{% trans "Discount" %}</td>
+                            <td class="text-start text-danger">-{{ order.discount_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td colspan="6" class="text-start">{% trans "Tax" %}</td>
+                            <td class="text-start">{{ order.tax_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td colspan="6" class="text-start">{% trans "Total" %}</td>
+                            <td class="text-start">{{ order.total_amount|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payments -->
+        <div class="erp-card">
+            <div class="erp-card-header">
+                <h6 class="mb-0">{% trans "Payments" %}</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Payment Method" %}</th>
+                            <th class="text-start">{% trans "Amount" %}</th>
+                            <th class="text-start">{% trans "Tendered" %}</th>
+                            <th class="text-start">{% trans "Change" %}</th>
+                            <th>{% trans "Reference" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.payment_method.name }}</td>
+                            <td class="text-start">{{ payment.amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ payment.tendered|floatformat:2 }}</td>
+                            <td class="text-start">{{ payment.change_amount|floatformat:2 }}</td>
+                            <td>{{ payment.reference|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">{% trans "No payments recorded" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

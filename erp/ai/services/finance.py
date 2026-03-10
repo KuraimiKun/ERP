@@ -170,8 +170,8 @@ class LatePaymentPredictor:
         )
 
         clf = GradientBoostingClassifier(
-            n_estimators=200, max_depth=4, learning_rate=0.1,
-            subsample=0.8, random_state=42,
+            n_estimators=300, max_depth=5, learning_rate=0.08,
+            subsample=0.8, min_samples_leaf=10, random_state=42,
         )
         clf.fit(X_train, y_train)
 
@@ -409,7 +409,8 @@ class ExpenseAnomalyDetector:
         features = df[['amount', 'month', 'day_of_week', 'category_code']].values
 
         iso = IsolationForest(
-            contamination=0.05, random_state=42, n_estimators=200,
+            contamination=0.03, random_state=42, n_estimators=300,
+            max_features=1.0,
         )
         predictions = iso.fit_predict(features)
         scores = iso.decision_function(features)
@@ -570,9 +571,9 @@ class CashFlowForecaster:
         po_qs = PurchaseOrder.objects.filter(
             company=self.company,
             status__in=['approved', 'sent'],
-        ).values('order_date', 'total_amount')
+        ).values('po_date', 'total_amount')
         for row in po_qs:
-            est_date = row['order_date'] + timedelta(days=14)  # default lead
+            est_date = row['po_date'] + timedelta(days=14)  # default lead
             if today <= est_date <= end:
                 items.append({
                     'date': est_date,

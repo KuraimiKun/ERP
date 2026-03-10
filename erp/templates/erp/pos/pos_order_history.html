@@ -1,0 +1,117 @@
+{% extends "erp/employee_portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Order History" %} - {{ session.session_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">
+        <i class="bi bi-clock-history"></i> {% trans "Order History" %}
+        <small class="text-muted">{{ session.session_number }} - {{ session.terminal.name }}</small>
+    </h4>
+    <div>
+        {% if session.status == 'open' %}
+        <a href="{% url 'erp:pos_main' session_id=session.pk %}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> {% trans "Back to POS" %}
+        </a>
+        {% endif %}
+        <a href="{% url 'erp:pos_terminal_select' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-shop"></i> {% trans "Terminals" %}
+        </a>
+    </div>
+</div>
+
+<div class="erp-card">
+    <div class="erp-card-body">
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table erp-table">
+                <thead>
+                    <tr>
+                        <th>{% trans "Order #" %}</th>
+                        <th>{% trans "Time" %}</th>
+                        <th>{% trans "Customer" %}</th>
+                        <th>{% trans "Items" %}</th>
+                        <th>{% trans "Total" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><strong>{{ order.order_number }}</strong></td>
+                        <td>{{ order.order_date|date:"H:i" }}</td>
+                        <td>{{ order.customer.name|default:"-" }}</td>
+                        <td>{{ order.lines.count }}</td>
+                        <td><strong>{{ order.total_amount }}</strong></td>
+                        <td>
+                            {% if order.status == 'completed' %}
+                                <span class="badge bg-success">{% trans "Completed" %}</span>
+                            {% elif order.status == 'draft' %}
+                                <span class="badge bg-secondary">{% trans "Draft" %}</span>
+                            {% elif order.status == 'voided' %}
+                                <span class="badge bg-danger">{% trans "Voided" %}</span>
+                            {% elif order.status == 'refunded' %}
+                                <span class="badge bg-warning text-dark">{% trans "Refunded" %}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'erp:pos_order_receipt' order_id=order.pk %}"
+                               class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="bi bi-receipt"></i>
+                            </a>
+                            {% if order.status == 'completed' and not order.invoice %}
+                            <button class="btn btn-sm btn-outline-success generate-invoice-btn"
+                                    data-order-id="{{ order.pk }}">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </button>
+                            {% elif order.invoice %}
+                            <span class="badge bg-info">{{ order.invoice.invoice_number }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-receipt" style="font-size: 3rem; color: #94a3b8;"></i>
+            <p class="text-muted mt-3">{% trans "No orders in this session yet." %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.generate-invoice-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const orderId = this.dataset.orderId;
+            this.disabled = true;
+            try {
+                const resp = await fetch('{% url "erp:pos_generate_invoice" order_id=0 %}'.replace('/0/', '/' + orderId + '/'), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    this.outerHTML = '<span class="badge bg-info">' + data.invoice_number + '</span>';
+                } else {
+                    alert(data.error);
+                    this.disabled = false;
+                }
+            } catch (err) {
+                alert('{% trans "Failed to generate invoice" %}');
+                this.disabled = false;
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -6,6 +6,7 @@ and dynamically updates ReorderRule safety_stock / reorder_point.
 """
 
 import logging
+import os
 from decimal import Decimal
 from datetime import timedelta
 
@@ -26,7 +27,12 @@ from .base import (
 logger = logging.getLogger('erp.ai.demand')
 
 # Movement types that represent outbound demand
-DEMAND_MOVEMENT_TYPES = ['sale', 'transfer_out', 'pick', 'shipment']
+DEMAND_MOVEMENT_TYPES = [
+    StockMovement.MovementType.SALES_ISSUE,
+    StockMovement.MovementType.TRANSFER_OUT,
+    StockMovement.MovementType.RETURN_OUT,
+    StockMovement.MovementType.WRITE_OFF,
+]
 
 
 class DemandForecaster:
@@ -36,6 +42,9 @@ class DemandForecaster:
         self.company = company
         self.min_samples = getattr(settings, 'ML_MIN_TRAINING_SAMPLES', 30)
         self.z_score = getattr(settings, 'ML_SAFETY_STOCK_Z', 1.65)
+        # Suppress Prophet / cmdstanpy verbose stdout
+        logging.getLogger('cmdstanpy').setLevel(logging.WARNING)
+        logging.getLogger('prophet').setLevel(logging.WARNING)
 
     # ── Data preparation ────────────────────────────────────────────────
 
@@ -47,7 +56,7 @@ class DemandForecaster:
             warehouse=warehouse,
             movement_type__in=DEMAND_MOVEMENT_TYPES,
         ).annotate(
-            day=TruncDate('created_at'),
+            day=TruncDate('movement_date'),
         ).values('day').annotate(
             qty=Sum('quantity'),
         ).order_by('day')
@@ -88,13 +97,25 @@ class DemandForecaster:
             return None
 
         m = Prophet(
-            seasonality_mode='multiplicative',
+            seasonality_mode='additive',
             daily_seasonality=False,
             weekly_seasonality=True,
-            yearly_seasonality=True,
-            changepoint_prior_scale=0.05,
+            yearly_seasonality=False,
+            changepoint_prior_scale=0.15,
+            seasonality_prior_scale=5.0,
+            n_changepoints=min(20, max(5, len(df) // 10)),
+            interval_width=0.80,
         )
-        m.fit(df)
+        # Add monthly seasonality for sub-annual patterns
+        m.add_seasonality(name='monthly', period=30.5, fourier_order=3)
+        with open(os.devnull, 'w') as devnull:
+            import sys
+            old_stdout = sys.stdout
+            sys.stdout = devnull
+            try:
+                m.fit(df)
+            finally:
+                sys.stdout = old_stdout
 
         future = m.make_future_dataframe(periods=periods)
         forecast = m.predict(future)
@@ -109,19 +130,48 @@ class DemandForecaster:
         save_model_artefact(registry, m)
 
         result = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods)
+        # Floor negative forecasts at 0 (demand can't be negative)
+        result = result.copy()
+        result['yhat'] = result['yhat'].clip(lower=0)
+        result['yhat_lower'] = result['yhat_lower'].clip(lower=0)
         return result
 
     def _evaluate(self, df: pd.DataFrame, model) -> float:
-        """Simple MAE-based accuracy on the last 20 % of history."""
+        """Accuracy using cross-validation when data is large enough,
+        otherwise falling back to a simple holdout split."""
+        # Cross-validation for datasets with enough history
+        if len(df) >= 90:
+            try:
+                from prophet.diagnostics import cross_validation, performance_metrics
+                import sys, os
+                with open(os.devnull, 'w') as devnull:
+                    old_stdout = sys.stdout
+                    sys.stdout = devnull
+                    try:
+                        cv = cross_validation(
+                            model,
+                            initial=f'{max(30, len(df) // 3)} days',
+                            period=f'{max(7, len(df) // 15)} days',
+                            horizon='14 days',
+                        )
+                    finally:
+                        sys.stdout = old_stdout
+                pm = performance_metrics(cv)
+                mae = pm['mae'].mean()
+                mean_demand = cv['y'].mean() or 1
+                return max(0.0, min(1.0, 1 - mae / mean_demand))
+            except Exception:
+                pass  # fall through to simple holdout
+
+        # Simple holdout evaluation
         split = int(len(df) * 0.8)
         if split < 5:
             return 0.0
         test = df.iloc[split:]
         pred = model.predict(test[['ds']])
         mae = np.mean(np.abs(pred['yhat'].values - test['y'].values))
-        # Normalise as 1 – (MAE / mean) capped at 0
         mean_demand = test['y'].mean() or 1
-        return max(0.0, 1 - mae / mean_demand)
+        return max(0.0, min(1.0, 1 - mae / mean_demand))
 
     # ── Reorder-point optimisation ──────────────────────────────────────
 

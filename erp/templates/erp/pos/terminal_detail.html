@@ -1,0 +1,148 @@
+{% extends 'erp/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Terminal" %} - {{ terminal.code }}{% endblock %}
+{% block page_title %}{% trans "Terminal Details" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'erp:pos_terminal_list' %}">{% trans "Terminals" %}</a></li>
+        <li class="breadcrumb-item active">{{ terminal.code }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-shop ms-2"></i> {% trans "Terminal Information" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Code" %}</label>
+                    <div class="fw-medium">{{ terminal.code }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Name" %}</label>
+                    <div>{{ terminal.name }}</div>
+                </div>
+                {% if terminal.name_ar %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Name (Arabic)" %}</label>
+                    <div>{{ terminal.name_ar }}</div>
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Location" %}</label>
+                    <div>{{ terminal.location|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Warehouse" %}</label>
+                    <div>{{ terminal.warehouse.name }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Default Customer" %}</label>
+                    <div>{{ terminal.default_customer|default:"-" }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Status" %}</label>
+                    <div>
+                        {% if terminal.is_active %}
+                        <span class="badge bg-success">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if terminal.receipt_header %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Receipt Header" %}</label>
+                    <div>{{ terminal.receipt_header|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+                {% if terminal.receipt_footer %}
+                <div class="mb-3">
+                    <label class="text-muted small">{% trans "Receipt Footer" %}</label>
+                    <div>{{ terminal.receipt_footer|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="erp-card-body border-top d-grid gap-2">
+                <a href="{% url 'erp:pos_terminal_edit' terminal.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil ms-1"></i> {% trans "Edit Terminal" %}
+                </a>
+                <a href="{% url 'erp:pos_terminal_delete' terminal.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash ms-1"></i> {% trans "Delete Terminal" %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="erp-card mb-4">
+            <div class="erp-card-header">
+                <h6 class="mb-0"><i class="bi bi-people ms-2"></i> {% trans "Allowed Employees" %}</h6>
+            </div>
+            <div class="erp-card-body">
+                {% if allowed_employees %}
+                <ul class="list-unstyled mb-0">
+                    {% for emp in allowed_employees %}
+                    <li class="mb-1"><i class="bi bi-person ms-1"></i> {{ emp.full_name }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted mb-0">{% trans "All POS-permitted employees can access this terminal" %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="erp-card mb-4">
+            <div class="erp-card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-clock-history ms-2"></i> {% trans "Recent Sessions" %}</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table erp-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Session #" %}</th>
+                            <th>{% trans "Opened By" %}</th>
+                            <th>{% trans "Opened At" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th class="text-start">{% trans "Total Sales" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions %}
+                        <tr>
+                            <td class="fw-medium">{{ session.session_number }}</td>
+                            <td>{{ session.opened_by.full_name }}</td>
+                            <td>{{ session.opened_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                {% if session.status == 'open' %}
+                                <span class="badge bg-success">{% trans "Open" %}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{% trans "Closed" %}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-start">{{ session.total_sales|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'erp:pos_session_detail_admin' session.pk %}" class="btn btn-sm btn-outline-primary" title="{% trans 'View' %}">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted">{% trans "No sessions yet" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

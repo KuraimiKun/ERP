@@ -89,6 +89,7 @@ def employee_permissions_update(request, pk):
         'portal_can_scan_qr', 'portal_can_view_attendance',
         'portal_can_manage_leaves', 'portal_can_view_payslips',
         'portal_can_edit_profile', 'portal_can_view_tasks',
+        'portal_can_use_pos',
     ]
     for field in perm_fields:
         setattr(employee, field, field in request.POST)

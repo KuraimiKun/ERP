@@ -182,15 +182,15 @@ class KPIAnomalyDetector:
         daily = list(
             StockMovement.objects.filter(
                 company=self.company,
-                created_at__date__gte=since,
-                created_at__date__lt=yesterday,
-            ).annotate(day=TruncDate('created_at')).values('day').annotate(
+                movement_date__date__gte=since,
+                movement_date__date__lt=yesterday,
+            ).annotate(day=TruncDate('movement_date')).values('day').annotate(
                 cnt=Count('id'),
             ).order_by('day').values_list('cnt', flat=True)
         )
         yesterday_moves = StockMovement.objects.filter(
             company=self.company,
-            created_at__date=yesterday,
+            movement_date__date=yesterday,
         ).count()
 
         return self._z_check(
@@ -227,7 +227,21 @@ class KPIAnomalyDetector:
 
         ref_label = f' on {ref_date}' if ref_date else ''
         title = f'{metric_name} anomaly: {abs(z):.1f}σ {direction} average'
-
+        # Direction-specific recommendations
+        recommendations = {
+            ('Daily Revenue', 'above'): 'Investigate the revenue spike -- verify it is not a data entry error and identify which customers or products drove the increase.',
+            ('Daily Revenue', 'below'): 'Revenue dropped significantly. Check for lost deals, billing delays, or seasonal effects. Consider outreach to key accounts.',
+            ('Daily Expenses', 'above'): 'Unusual expense spike detected. Review recent purchase approvals and look for duplicate or unauthorized charges.',
+            ('Daily Expenses', 'below'): 'Expenses are unusually low. Verify no pending invoices are missing or delayed.',
+            ('New Leads', 'above'): 'Lead volume surged. Ensure the sales team has capacity and follow up quickly while interest is high.',
+            ('New Leads', 'below'): 'Fewer leads than normal. Review marketing campaigns and lead sources for issues.',
+            ('Inventory Movements', 'above'): 'Unusual inventory activity detected. Verify no stock discrepancies, bulk orders, or warehouse errors.',
+            ('Inventory Movements', 'below'): 'Inventory movements are unusually low. Check for warehouse operation issues or blocked orders.',
+        }
+        recommendation = recommendations.get(
+            (metric_name, direction),
+            f'Investigate the cause of the unusual {metric_name.lower()}.'
+        )
         create_or_update_insight(
             company=self.company,
             category=category,
@@ -238,7 +252,7 @@ class KPIAnomalyDetector:
                 f'{abs(z):.1f} standard deviations {direction} the '
                 f'{self.lookback_days}-day average ({mean:,.2f}).'
             ),
-            recommendation=f'Investigate the cause of the unusual {metric_name.lower()}.',
+            recommendation=recommendation,
         )
 
         return {

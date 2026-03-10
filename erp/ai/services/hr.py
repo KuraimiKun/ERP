@@ -192,7 +192,8 @@ class AttritionPredictor:
         )
 
         clf = RandomForestClassifier(
-            n_estimators=200, max_depth=6, random_state=42,
+            n_estimators=300, max_depth=8, min_samples_leaf=5,
+            class_weight='balanced', random_state=42,
         )
         clf.fit(X_train, y_train)
 
@@ -395,24 +396,21 @@ class AttendanceAnomalyDetector:
             date__gte=since.date(),
         ).values('employee_id', 'employee__first_name',
                  'employee__last_name', 'employee__employee_id',
-                 'check_in', 'check_out')
+                 'check_in', 'check_out', 'hours_worked', 'is_late')
 
         df = pd.DataFrame(list(records))
         if df.empty:
             return []
 
-        # Calculate hours worked per day
-        df['check_in'] = pd.to_datetime(df['check_in'], utc=True)
-        df['check_out'] = pd.to_datetime(df['check_out'], utc=True)
-        df['hours'] = (df['check_out'] - df['check_in']).dt.total_seconds() / 3600
-        df['hours'] = df['hours'].clip(0, 24).fillna(0)
+        # Use pre-calculated hours_worked; fall back to 0
+        df['hours'] = pd.to_numeric(df['hours_worked'], errors='coerce').fillna(0).clip(0, 24)
 
         # Per-employee statistics
         emp_stats = df.groupby('employee_id').agg(
             avg_hours=('hours', 'mean'),
             std_hours=('hours', 'std'),
             total_days=('hours', 'count'),
-            late_arrivals=('check_in', lambda x: (x.dt.hour >= 10).sum()),
+            late_arrivals=('is_late', 'sum'),
         ).reset_index()
 
         # Company-wide baseline

@@ -172,3 +172,17 @@ from .inventory import (
     reorder_suggestions,
     stock_movement_list, stock_levels, valuation_config,
 )
+
+# ── POS ────────────────────────────────────────────────────────────────────
+from .pos import (
+    pos_terminal_select, pos_session_open, pos_main,
+    pos_session_close, pos_order_history, pos_order_receipt,
+    pos_generate_invoice,
+    pos_api_products, pos_api_categories, pos_api_customers,
+    pos_api_create_order, pos_api_complete_order,
+    # Admin views
+    pos_terminal_list, pos_terminal_create, pos_terminal_detail,
+    pos_terminal_edit, pos_terminal_delete,
+    pos_session_list, pos_session_detail_admin,
+    pos_order_list, pos_order_detail_admin,
+)
