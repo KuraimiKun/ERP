@@ -130,6 +130,8 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
         'DISABLE_SERVER_SIDE_CURSORS': True,
+        'CONN_MAX_AGE': int(os.getenv('CONN_MAX_AGE', '600')),
+        'CONN_HEALTH_CHECKS': True,
     }
 }
 
