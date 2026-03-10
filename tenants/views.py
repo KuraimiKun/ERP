@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 
+from erp.ratelimit import ratelimit
 from .forms import SignUpForm, LoginForm
 from .models import TenantUser
 
@@ -31,6 +32,7 @@ def home(request):
 
 
 @require_http_methods(["GET", "POST"])
+@ratelimit(group="signup", rate="5/h")
 def signup_view(request):
     """User registration view."""
     if request.user.is_authenticated:
@@ -60,6 +62,7 @@ def signup_view(request):
 
 
 @require_http_methods(["GET", "POST"])
+@ratelimit(group="login", rate="5/m")
 def login_view(request):
     """User login view."""
     if request.user.is_authenticated:
