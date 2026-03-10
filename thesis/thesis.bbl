@@ -1,0 +1,132 @@
+\begin{thebibliography}{}
+
+\bibitem[Al-Kraiji and Al-Saedi, 2020]{alkraiji2020}
+Al-Kraiji, A. and Al-Saedi, K. (2020).
+\newblock Challenges of {ERP} localization in {Arabic}-speaking countries: A
+  systematic review.
+\newblock In {\em Proceedings of the International Conference on Information
+  Systems}, pages 1--15.
+
+\bibitem[Al-Majali, 2016]{almajali2016antecedents}
+Al-Majali, D. (2016).
+\newblock Antecedents of {IT}-business strategic alignment factors and its
+  impact on organizational performance.
+\newblock {\em International Review of Management and Business Research},
+  5(4):1290--1301.
+
+\bibitem[Bezemer and Zaidman, 2010]{bezemer2010multi}
+Bezemer, C.-P. and Zaidman, A. (2010).
+\newblock Multi-tenant {SaaS} applications: Maintenance dream or nightmare?
+\newblock {\em Proceedings of the Joint ERCIM Workshop on Software Evolution
+  and International Workshop on Principles of Software Evolution}, pages
+  88--92.
+
+\bibitem[Breiman, 2001]{breiman2001random}
+Breiman, L. (2001).
+\newblock Random forests.
+\newblock {\em Machine Learning}, 45(1):5--32.
+
+\bibitem[Chen and Guestrin, 2016]{chen2016xgboost}
+Chen, T. and Guestrin, C. (2016).
+\newblock {XGBoost}: A scalable tree boosting system.
+\newblock In {\em Proceedings of the 22nd ACM SIGKDD International Conference
+  on Knowledge Discovery and Data Mining}, pages 785--794.
+
+\bibitem[Chong and Carraro, 2006]{chong2006multi}
+Chong, F. and Carraro, G. (2006).
+\newblock Architecture strategies for catching the long tail.
+\newblock {\em Microsoft Developer Network (MSDN)}.
+
+\bibitem[Davenport and Ronanki, 2018]{davenport2018ai}
+Davenport, T.~H. and Ronanki, R. (2018).
+\newblock {\em Artificial Intelligence for the Real World}, volume~96.
+
+\bibitem[Fildes et~al., 2022]{fildes2022forecasting}
+Fildes, R., Ma, S., and Kolassa, S. (2022).
+\newblock Retail forecasting: Research and practice.
+\newblock {\em International Journal of Forecasting}, 38(4):1283--1318.
+
+\bibitem[{Grand View Research}, 2023]{grandviewresearch2023}
+{Grand View Research} (2023).
+\newblock {Enterprise Resource Planning Market Size, Share \& Trends Analysis
+  Report}.
+\newblock Technical report, Grand View Research.
+\newblock Report ID: GVR-1-68038-955-0.
+
+\bibitem[{IBM}, 2017]{ibm2017hr}
+{IBM} (2017).
+\newblock {IBM HR Analytics Employee Attrition \& Performance Dataset}.
+\newblock Kaggle.
+\newblock
+  \url{https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset}.
+
+\bibitem[Jacobs and Weston, 2007]{jacobs2007enterprise}
+Jacobs, F.~R. and Weston, F.~C. (2007).
+\newblock Enterprise resource planning ({ERP}) --- a brief history.
+\newblock {\em Journal of Operations Management}, 25(2):357--363.
+
+\bibitem[Krafzig et~al., 2005]{krafzig2005enterprise}
+Krafzig, D., Banke, K., and Slama, D. (2005).
+\newblock {\em Enterprise SOA: Service-Oriented Architecture Best Practices}.
+\newblock Prentice Hall, Upper Saddle River, NJ.
+
+\bibitem[Lee et~al., 2003]{lee2020erp}
+Lee, J., Siau, K., and Hong, S. (2003).
+\newblock Enterprise integration with {ERP} and {EAI}.
+\newblock {\em Communications of the ACM}, 46(2):54--60.
+
+\bibitem[Liu et~al., 2008]{liu2008isolation}
+Liu, F.~T., Ting, K.~M., and Zhou, Z.-H. (2008).
+\newblock Isolation forest.
+\newblock In {\em Proceedings of the 8th IEEE International Conference on Data
+  Mining (ICDM)}, pages 413--422.
+
+\bibitem[Monk and Wagner, 2013]{monk2013concepts}
+Monk, E. and Wagner, B. (2013).
+\newblock {\em Concepts in Enterprise Resource Planning}.
+\newblock Cengage Learning, Boston, MA, 4th edition.
+
+\bibitem[Newman, 2015]{newman2015building}
+Newman, S. (2015).
+\newblock {\em Building Microservices: Designing Fine-Grained Systems}.
+\newblock O'Reilly Media, Sebastopol, CA.
+
+\bibitem[{Olist}, 2018]{olist2018}
+{Olist} (2018).
+\newblock Brazilian e-commerce public dataset by olist.
+\newblock Kaggle.
+\newblock \url{https://www.kaggle.com/olistbr/brazilian-ecommerce}.
+
+\bibitem[{Panorama Consulting Group}, 2023]{panorama2023}
+{Panorama Consulting Group} (2023).
+\newblock {2023 ERP Report: Clash of the Titans}.
+\newblock Technical report, Panorama Consulting Group, Denver, CO.
+
+\bibitem[Provost and Fawcett, 2013]{provost2013data}
+Provost, F. and Fawcett, T. (2013).
+\newblock {\em Data Science for Business: What You Need to Know about Data
+  Mining and Data-Analytic Thinking}.
+\newblock O'Reilly Media, Sebastopol, CA.
+
+\bibitem[Schwaber and Sutherland, 2020]{schwaber2020scrum}
+Schwaber, K. and Sutherland, J. (2020).
+\newblock {\em The Scrum Guide: The Definitive Guide to Scrum --- The Rules of
+  the Game}.
+\newblock Scrum.org.
+
+\bibitem[Shewhart, 1931]{shewhart1931economic}
+Shewhart, W.~A. (1931).
+\newblock {\em Economic Control of Quality of Manufactured Product}.
+\newblock D. Van Nostrand Company, New York.
+
+\bibitem[{Society for Human Resource Management}, 2022]{shrm2022}
+{Society for Human Resource Management} (2022).
+\newblock {2022 Employee Benefits Survey}.
+\newblock Technical report, SHRM, Alexandria, VA.
+
+\bibitem[Taylor and Letham, 2018]{taylor2018forecasting}
+Taylor, S.~J. and Letham, B. (2018).
+\newblock Forecasting at scale.
+\newblock {\em The American Statistician}, 72(1):37--45.
+
+\end{thebibliography}

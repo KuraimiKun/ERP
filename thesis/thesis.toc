@@ -1,0 +1,57 @@
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{List of Abbreviations}{v}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Overview}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Problem Statement}{2}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Project Objectives}{2}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Project Scope}{3}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}In Scope}{4}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Out of Scope}{4}{subsection.1.4.2}%
+\contentsline {section}{\numberline {1.5}Project Significance}{4}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Project Questions}{5}{section.1.6}%
+\contentsline {section}{\numberline {1.7}Report Organization}{6}{section.1.7}%
+\contentsline {chapter}{\numberline {2}Literature Review}{7}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Introduction}{7}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Enterprise Resource Planning (ERP) Systems}{7}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Definition and Evolution}{7}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}ERP Architecture Models}{8}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}ERP Adoption in SMEs}{8}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Open-Source ERP Systems}{9}{subsection.2.2.4}%
+\contentsline {section}{\numberline {2.3}Multi-Tenant Software Architecture}{9}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Definition and Models}{9}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Multi-Tenancy in Django}{10}{subsection.2.3.2}%
+\contentsline {section}{\numberline {2.4}Machine Learning in Enterprise Systems}{11}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Overview of ML in Business Applications}{11}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Lead Scoring with Logistic Regression}{11}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Payment Risk Prediction with Gradient Boosting}{12}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Employee Attrition Prediction with Random Forest}{12}{subsection.2.4.4}%
+\contentsline {subsection}{\numberline {2.4.5}Anomaly Detection with Isolation Forest}{12}{subsection.2.4.5}%
+\contentsline {subsection}{\numberline {2.4.6}Time-Series Forecasting with Prophet}{12}{subsection.2.4.6}%
+\contentsline {subsection}{\numberline {2.4.7}Statistical Process Control for KPI Monitoring}{13}{subsection.2.4.7}%
+\contentsline {section}{\numberline {2.5}Related Work}{13}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}AI-Enhanced ERP Systems}{13}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Multi-Tenant Django Applications}{13}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}ML for Demand Forecasting in Supply Chain}{14}{subsection.2.5.3}%
+\contentsline {section}{\numberline {2.6}Gap Analysis}{14}{section.2.6}%
+\contentsline {section}{\numberline {2.7}Summary}{15}{section.2.7}%
+\contentsline {chapter}{\numberline {3}Methodology}{16}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Introduction}{16}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Development Methodology: Sprint (Agile)}{16}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Overview of Sprint Methodology}{16}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Sprint Plan for This Project}{17}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Sprint Roles}{19}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Justification for Sprint Methodology}{19}{subsection.3.2.4}%
+\contentsline {section}{\numberline {3.3}System Architecture}{20}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}High-Level Architecture}{20}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Multi-Tenant Database Architecture}{21}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}AI/ML Pipeline Architecture}{22}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Technology Stack}{23}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Data Collection and Preparation}{25}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Open-Source Datasets}{25}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Synthetic Data Generation}{26}{subsection.3.5.2}%
+\contentsline {section}{\numberline {3.6}Machine Learning Model Design}{26}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Model Selection Criteria}{26}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Model Specifications}{27}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Model Evaluation Strategy}{28}{subsection.3.6.3}%
+\contentsline {section}{\numberline {3.7}Development Tools and Environment}{29}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Summary}{29}{section.3.8}%

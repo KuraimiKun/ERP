@@ -1,0 +1,11 @@
+\babel@toc {english}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Evolution of ERP systems from MRP (1970s) to Cloud AI-ERP (2020s)}}{8}{figure.caption.2}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Three levels of multi-tenant data isolation}}{10}{figure.caption.4}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Sprint (Agile) methodology lifecycle}}{17}{figure.caption.6}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Gantt chart showing Sprint timeline and dependencies}}{19}{figure.caption.8}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces High-level system architecture showing the three-tier design with multi-tenant database routing}}{21}{figure.caption.10}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Database-per-tenant architecture with dynamic PostgreSQL provisioning}}{22}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces AI/ML pipeline architecture showing the flow from raw data to actionable insights}}{23}{figure.caption.12}%

@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: thesis.aux
+Reallocating 'name_of_file' (item size: 1) to 8 items.
+The style file: apalike.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Database file #1: references.bib
+Warning--can't use both volume and number fields in davenport2018ai
+Warning--empty publisher in davenport2018ai
+You've used 23 entries,
+            1935 wiz_defined-function locations,
+            604 strings with 7043 characters,
+and the built_in function-call counts, 8184 in all, are:
+= -- 825
+> -- 265
+< -- 24
++ -- 84
+- -- 82
+* -- 625
+:= -- 1430
+add.period$ -- 71
+call.type$ -- 23
+change.case$ -- 153
+chr.to.int$ -- 23
+cite$ -- 25
+duplicate$ -- 346
+empty$ -- 596
+format.name$ -- 125
+if$ -- 1625
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 25
+newline$ -- 120
+num.names$ -- 69
+pop$ -- 139
+preamble$ -- 1
+purify$ -- 156
+quote$ -- 0
+skip$ -- 270
+stack$ -- 0
+substring$ -- 526
+swap$ -- 50
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 124
+warning$ -- 2
+while$ -- 70
+width$ -- 0
+write$ -- 304
+(There were 2 warnings)
