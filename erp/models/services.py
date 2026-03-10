@@ -389,11 +389,11 @@ class QuoteLine(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         subtotal = self.quantity * self.unit_price
-        discount = subtotal * (self.discount_percent / 100)
+        discount = subtotal * (self.discount_percent / Decimal('100'))
         self.line_total = subtotal - discount
         
         if self.tax_rate:
-            self.tax_amount = self.line_total * (self.tax_rate.rate / 100)
+            self.tax_amount = self.line_total * (self.tax_rate.rate / Decimal('100'))
         else:
             self.tax_amount = 0
         
