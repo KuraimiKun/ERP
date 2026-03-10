@@ -1,5 +1,7 @@
 """Quick audit of tenant database contents."""
-import os, django
+import os
+
+import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erpproject.settings')
 django.setup()
 
