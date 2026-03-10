@@ -7,7 +7,7 @@ from erp.models import (
     Supplier, SupplierContact, SupplierDocument,
     PurchaseOrder, PurchaseOrderLine,
     SupplierInvoice, SupplierInvoiceLine,
-    SupplierPayment, SupplierPaymentAllocation,
+    SupplierPayment,
 )
 
 

@@ -9,7 +9,6 @@ import re
 
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.contrib import messages
 
 from .setup_views import is_setup_complete
 

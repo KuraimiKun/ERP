@@ -22,9 +22,7 @@ Usage:
 """
 
 import argparse
-import os
-import sys
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -410,7 +408,7 @@ def generate_procurement(rng: np.random.Generator, n_suppliers: int = 80,
             if status == 'received':
                 # Payment timing
                 actual_pay_delay = int(rng.normal(terms, terms * 0.3))
-                paid_on_time = actual_pay_delay <= terms
+                _paid_on_time = actual_pay_delay <= terms
                 paid_amount = total if rng.random() < 0.85 else round(total * rng.uniform(0.3, 0.9), 2)
             elif status == 'partial':
                 paid_amount = round(total * rng.uniform(0.2, 0.7), 2)
@@ -650,7 +648,7 @@ def main():
 
     # Summary
     print(f"{'='*60}")
-    print(f"  ALL DATASETS GENERATED SUCCESSFULLY")
+    print("  ALL DATASETS GENERATED SUCCESSFULLY")
     print(f"{'='*60}")
     print(f"  crm_leads_dataset.csv          : {len(leads_df):>8,} rows")
     print(f"  expense_claims_dataset.csv     : {len(expenses_df):>8,} rows")

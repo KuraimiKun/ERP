@@ -5,7 +5,7 @@ ERP Admin – Audit & System models
 from django.contrib import admin
 from erp.models import (
     AuditLog, SystemSetting, Notification, EmailTemplate,
-    FileAttachment, ScheduledTask, IntegrationLog,
+    ScheduledTask, IntegrationLog,
 )
 
 

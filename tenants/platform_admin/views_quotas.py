@@ -4,15 +4,13 @@ Platform Admin - Tenant Quotas & Usage Tracking Views
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.db.models import Avg, Sum
 import json
 
 from tenants.models import (
-    TenantDatabase, TenantQuota, UsageSnapshot, PostgresServer,
+    TenantDatabase, TenantQuota, UsageSnapshot,
 )
 from .forms import TenantQuotaForm
 from . import platform_admin_required, pa_context, paginate

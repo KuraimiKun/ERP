@@ -6,7 +6,7 @@ Page views return HTML templates; API views return JsonResponse.
 """
 
 import json
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
@@ -461,7 +461,6 @@ def pos_api_complete_order(request):
 
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.db.models import Sum, Count
 from erp.forms import POSTerminalForm
 
 

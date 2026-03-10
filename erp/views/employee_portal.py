@@ -12,7 +12,6 @@ from decimal import Decimal
 from django import forms as django_forms
 from django.contrib.auth import update_session_auth_hash
 from django.db.models import Count, Q, Sum
-from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -22,7 +21,7 @@ from erp.models import (
     Task, TaskComment,
 )
 from erp.decorators import employee_or_owner_required, portal_permission_required
-from ._common import render, redirect, messages, reverse, get_user_company
+from ._common import render, redirect, messages
 
 
 # ═══════════════════════════════════════════════════════════════════════════

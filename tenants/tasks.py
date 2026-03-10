@@ -228,7 +228,6 @@ def dispatch_scheduled_tasks():
     Check every active ScheduledTask and run it if it's due.
     """
     from tenants.models import ScheduledTask, TaskExecution
-    from tenants.platform_admin.database_service import DatabaseService
 
     now = timezone.now()
     tasks = ScheduledTask.objects.filter(is_active=True)

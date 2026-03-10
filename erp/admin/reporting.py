@@ -4,7 +4,7 @@ ERP Admin – Reporting models
 
 from django.contrib import admin
 from erp.models import (
-    ReportTemplate, GeneratedReport, Dashboard, DashboardWidget, KPI, KPIValue,
+    ReportTemplate, GeneratedReport, Dashboard, KPI,
 )
 
 

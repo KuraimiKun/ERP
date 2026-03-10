@@ -4,15 +4,12 @@ Platform Admin - System Health Overview Views
 
 from django.shortcuts import render
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Count, Q, Avg
-from django.views.decorators.http import require_POST
+from django.db.models import Count, Q
 from datetime import timedelta
 import os
 
 from tenants.models import (
     PostgresServer, TenantDatabase, ServerLog, TenantUser,
-    DatabaseAssignment,
 )
 from . import platform_admin_required, pa_context
 

@@ -11,7 +11,6 @@ Provides enterprise-grade fixed asset tracking with:
   - Full journal entry integration for every financial event
 """
 
-from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
 from django.conf import settings
@@ -565,7 +564,6 @@ class AssetDisposal(ERPBaseModel):
     def process(self, user):
         """Calculate gain/loss, create journal entry, mark asset disposed."""
         from erp.models import JournalEntry, JournalEntryLine, FiscalYear
-        from django.utils import timezone
 
         asset = self.asset
         self.book_value_at_disposal = asset.current_book_value

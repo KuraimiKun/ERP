@@ -9,7 +9,6 @@ from django.conf.urls.static import static
 from tenants import views as tenant_views
 
 from django.conf.urls.i18n import i18n_patterns
-from django.utils.translation import gettext_lazy as _
 
 urlpatterns = [
     # Admin site - keep outside i18n if desired, or inside. Usually admin is fine outside.

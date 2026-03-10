@@ -46,7 +46,6 @@ def tenant_required(view_func):
         # Check role – employees (role='user') go to their portal
         assignment = user.database_assignments.filter(is_active=True).first()
         if assignment and assignment.role == 'user':
-            from django.urls import resolve
             # Avoid redirect loop: if we're already on a portal URL, proceed
             if hasattr(request, 'resolver_match') and request.resolver_match:
                 url_name = request.resolver_match.url_name or ''

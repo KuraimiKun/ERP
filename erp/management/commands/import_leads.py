@@ -21,7 +21,6 @@ from pathlib import Path
 
 import pandas as pd
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
 from django.utils import timezone
 
 from tenants.models import TenantDatabase
@@ -29,7 +28,6 @@ from tenants.routers import add_tenant_database, TenantDatabaseContext
 
 from erp.models import (
     Company,
-    Currency,
     Department,
     Employee,
     Lead,
@@ -293,7 +291,7 @@ class Command(BaseCommand):
                     lead=lead,
                     activity_type=act_type,
                     subject=subject,
-                    description=f"Auto-generated activity for ML testing.",
+                    description="Auto-generated activity for ML testing.",
                     activity_date=act_date,
                     is_completed=True,
                     completed_date=act_date,
@@ -315,7 +313,7 @@ class Command(BaseCommand):
             lead__company=self.company, lead__lead_number__startswith="LD-"
         ).count()
 
-        self.stdout.write(f"\n  Summary:")
+        self.stdout.write("\n  Summary:")
         self.stdout.write(f"    Leads:      {total}")
         self.stdout.write(f"    Won:        {won} ({won/max(total,1):.1%})")
         self.stdout.write(f"    Lost:       {lost} ({lost/max(total,1):.1%})")

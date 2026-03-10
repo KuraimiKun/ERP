@@ -18,14 +18,12 @@ Device-binding flow
     different browser, they get a "device not authorised" page.
 """
 
-import json
 
 from django.http import JsonResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
-from erp.models import AttendanceDevice, Employee, Company
+from erp.models import AttendanceDevice, Employee
 from erp.models.hr import _generate_device_token
 from erp.forms import AttendanceDeviceForm
 from ._common import (

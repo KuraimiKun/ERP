@@ -16,7 +16,6 @@ from django.urls import path, reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
-from django.http import JsonResponse
 from django import forms as forms
 
 from .models import (
@@ -260,7 +259,7 @@ class TenantUserAdmin(UserAdmin):
         """Bulk approve users (without database assignment)."""
         for user in queryset.filter(approval_status='pending'):
             user.approve(request.user)
-        messages.success(request, f'Users approved. Remember to assign databases.')
+        messages.success(request, 'Users approved. Remember to assign databases.')
     
     @admin.action(description='Reject selected users')
     def reject_users(self, request, queryset):
@@ -301,7 +300,8 @@ class PostgresServerAdminForm(forms.ModelForm):
         # When adding a new server, provide smart Docker defaults
         if not self.instance.pk:
             # Auto-generate a secure password
-            import secrets, string
+            import secrets
+            import string
             auto_pass = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(20))
             self.fields['admin_password'].initial = auto_pass
 
@@ -516,8 +516,8 @@ class PostgresServerAdmin(admin.ModelAdmin):
             # If we get here the server started but isn't healthy yet
             messages.warning(
                 request,
-                f'Docker container created but PostgreSQL is not responding yet. '
-                f'Check the server health in a moment.'
+                'Docker container created but PostgreSQL is not responding yet. '
+                'Check the server health in a moment.'
             )
             return  # Already saved
 
@@ -1033,7 +1033,7 @@ class DatabaseAssignmentAdmin(admin.ModelAdmin):
         ).update(is_active=False, deactivated_at=timezone.now())
 
         # Create the assignment
-        assignment = DatabaseAssignment.objects.create(
+        DatabaseAssignment.objects.create(
             user=user,
             database=tenant_db,
             role=role,

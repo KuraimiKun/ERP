@@ -15,14 +15,11 @@ Usage:
 """
 
 import random
-from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 
 import pandas as pd
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-from django.utils import timezone
 
 from tenants.models import TenantDatabase
 from tenants.routers import add_tenant_database, TenantDatabaseContext
@@ -255,7 +252,7 @@ class Command(BaseCommand):
         total_amount = sum(float(e.total_amount) for e in expenses.only('total_amount')[:10000])
         approved = expenses.filter(status='approved').count()
 
-        self.stdout.write(f"\n  Summary:")
+        self.stdout.write("\n  Summary:")
         self.stdout.write(f"    Expenses:     {total}")
         self.stdout.write(f"    Approved:     {approved}")
         self.stdout.write(f"    Total value:  ${total_amount:,.2f}")

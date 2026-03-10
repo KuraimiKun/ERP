@@ -7,24 +7,17 @@ Django REST Framework serializers for the ERP models.
 from rest_framework import serializers
 from ..models import (
     # Core
-    Currency, Company, Department, Branch, FiscalYear, Sequence,
-    # HR
-    Employee, EmployeeDocument, LeaveType, LeaveRequest, Attendance, Payroll,
+    Currency, Company, Department, Branch, FiscalYear, Employee, LeaveType, LeaveRequest, Attendance, Payroll,
     # Finance
     Account, TaxRate, PaymentMethod, Customer, Invoice, InvoiceLine, 
-    Payment, PaymentAllocation, Expense, ExpenseCategory, ExpenseAttachment,
-    # Supplier
-    Supplier, SupplierContact, SupplierDocument, PurchaseOrder, 
-    PurchaseOrderLine, SupplierInvoice, SupplierInvoiceLine,
-    SupplierPayment, SupplierPaymentAllocation,
-    # CRM
-    Lead, LeadActivity, CustomerInteraction, Campaign, CampaignLead, Task, TaskComment,
+    Payment, Expense, ExpenseCategory, Supplier, SupplierContact, PurchaseOrder, 
+    PurchaseOrderLine, Lead, LeadActivity, CustomerInteraction, Campaign, Task, TaskComment,
     # Services
-    ServiceCategory, ServicePricing, PriceTier, ServicePackage, PackageItem, Quote, QuoteLine,
+    ServiceCategory, ServicePricing, PriceTier, Quote, QuoteLine,
     # Reporting
-    ReportTemplate, GeneratedReport, Dashboard, DashboardWidget, KPI, KPIValue,
+    Dashboard, DashboardWidget, KPI, KPIValue,
     # Audit
-    AuditLog, SystemSetting, Notification, EmailTemplate,
+    AuditLog, Notification,
 )
 
 

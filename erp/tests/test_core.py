@@ -3,9 +3,7 @@ Tests for Core models: Currency, Company, Department, Branch, FiscalYear, Sequen
 """
 
 from datetime import date
-from decimal import Decimal
 
-from django.test import TestCase
 from django.db import IntegrityError
 
 from erp.models import Currency, Company, Department, Branch, FiscalYear, Sequence
@@ -104,7 +102,7 @@ class BranchModelTest(ERPTestCase):
 
     def test_ordering(self):
         """HQ should come before non-HQ branches."""
-        b2 = Branch.objects.create(
+        Branch.objects.create(
             company=self.company, name='Branch B',
             address='addr', city='Jeddah', country='SA',
             created_by=self.user,

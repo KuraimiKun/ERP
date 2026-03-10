@@ -4,7 +4,7 @@ ERP Admin – CRM models
 
 from django.contrib import admin
 from erp.models import (
-    Lead, LeadActivity, CustomerInteraction, Campaign, CampaignLead, Task, TaskComment,
+    Lead, LeadActivity, CustomerInteraction, Campaign, Task,
 )
 
 

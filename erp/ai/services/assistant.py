@@ -7,7 +7,6 @@ validates them, and returns formatted results.
 """
 
 import ast
-import json
 import logging
 import re
 import textwrap

@@ -11,18 +11,13 @@ import random
 from datetime import timedelta
 from decimal import Decimal
 
-import factory
-from factory import LazyFunction, LazyAttribute, SubFactory, Faker
+from factory import LazyFunction, LazyAttribute, Faker
 from factory.django import DjangoModelFactory
 from django.utils import timezone
 
 from erp.models import (
-    Currency,
-    Company,
     Department,
     TaxRate,
-    PaymentMethod,
-    Account,
     Customer,
     Supplier,
     Employee,

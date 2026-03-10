@@ -11,8 +11,7 @@ from erp.models import (
 )
 from erp.services import get_invoice_number, get_customer_id
 from ._common import (
-    render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    render, get_object_or_404, redirect, messages, get_user_company, staff_member_required,
 )
 
 

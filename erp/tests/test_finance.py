@@ -6,7 +6,6 @@ JournalEntry, and related business logic.
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.test import TestCase
 from django.db import IntegrityError
 
 from erp.models import (

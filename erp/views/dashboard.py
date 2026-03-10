@@ -6,7 +6,7 @@ from decimal import Decimal
 from datetime import timedelta
 
 from django.http import JsonResponse
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 

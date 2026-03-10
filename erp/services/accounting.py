@@ -67,7 +67,6 @@ def _get_or_create_account(company, code, name, name_ar, account_type, db_alias)
 
 def _get_current_fiscal_year(company, db_alias):
     """Get the current active fiscal year, or None."""
-    today = timezone.now().date()
     return FiscalYear.objects.using(db_alias).filter(
         company=company,
         is_current=True,

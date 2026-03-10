@@ -4,7 +4,7 @@ Platform Admin - Dashboard Views
 
 from django.shortcuts import render
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.db.models.functions import TruncDate, TruncMonth
 from datetime import timedelta
 import json

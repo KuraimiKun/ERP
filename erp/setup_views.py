@@ -14,12 +14,10 @@ import logging
 from decimal import Decimal
 
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import get_language, gettext as _
-from django.http import JsonResponse
 
 from .models import (
     Currency, Company, FiscalYear, TaxRate, PaymentMethod,
@@ -495,7 +493,6 @@ def execute_setup(request, progress):
     # -------------------------------------------------------------------------
     # Step 6: Create Payment Methods
     # -------------------------------------------------------------------------
-    cash_account = accounts.get('1010')
     bank_account_obj = accounts.get('1020')
 
     # Map form field names → PAYMENT_METHODS codes

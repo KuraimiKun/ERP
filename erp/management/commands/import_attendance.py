@@ -247,7 +247,7 @@ class Command(BaseCommand):
         emp = Employee(
             company=self.company,
             employee_id=emp_id,
-            first_name=f"Employee",
+            first_name="Employee",
             last_name=f"{idx:04d}",
             gender='male' if idx % 2 == 0 else 'female',
             date_of_birth='1990-01-01',
@@ -287,7 +287,7 @@ class Command(BaseCommand):
             employee__company=self.company, is_late=True,
         ).count()
 
-        self.stdout.write(f"\n  Summary:")
+        self.stdout.write("\n  Summary:")
         self.stdout.write(f"    Total records:  {total}")
         self.stdout.write(f"    Present:        {present}")
         self.stdout.write(f"    Late:           {late}")

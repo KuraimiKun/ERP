@@ -7,9 +7,8 @@ from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
 
-from tenants.models import ScheduledTask, TaskExecution, PostgresServer, TenantDatabase
+from tenants.models import ScheduledTask, TaskExecution
 from .forms import ScheduledTaskForm
 from . import platform_admin_required, pa_context, paginate
 

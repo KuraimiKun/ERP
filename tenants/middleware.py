@@ -8,7 +8,6 @@ This middleware:
 """
 
 from django.shortcuts import redirect
-from django.urls import reverse
 from django.contrib import messages
 from django.conf import settings
 

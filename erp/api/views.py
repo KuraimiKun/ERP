@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count
 from django.utils import timezone
 
 from ..models import (
@@ -42,7 +42,7 @@ from .serializers import (
     # Finance
     AccountSerializer, TaxRateSerializer, PaymentMethodSerializer,
     CustomerSerializer, CustomerListSerializer, InvoiceSerializer,
-    InvoiceListSerializer, InvoiceLineSerializer, PaymentSerializer,
+    InvoiceListSerializer, PaymentSerializer,
     ExpenseSerializer, ExpenseCategorySerializer,
     # Supplier
     SupplierSerializer, SupplierListSerializer, SupplierContactSerializer,

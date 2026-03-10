@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from datetime import timedelta
 
 from tenants.models import (
-    TenantUser, TenantDatabase, EmployeeInviteLink, ServerLog,
+    TenantDatabase, EmployeeInviteLink,
 )
 from . import platform_admin_required, pa_context, paginate
 

@@ -12,7 +12,6 @@ import logging
 import time
 import uuid
 from django.conf import settings
-from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +183,7 @@ class DockerService:
         )
         
         # Wait for PostgreSQL to be ready
-        logger.info(f"Waiting for PostgreSQL to be ready...")
+        logger.info("Waiting for PostgreSQL to be ready...")
         time.sleep(5)  # Give PostgreSQL time to start
         
         # Perform health check

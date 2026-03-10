@@ -5,25 +5,21 @@ All endpoints expect Token authentication and X-Tenant-DB header
 (except login which resolves tenant from the user's DatabaseAssignment).
 """
 
-import json
 from datetime import date, datetime, timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from django.contrib.auth import authenticate
-from django.db.models import Count, Q, Sum, Avg, F
+from django.db.models import Count, Q, Sum, Avg
 from django.db.models.functions import Coalesce, ExtractHour
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
     permission_classes,
 )
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from tenants.routers import get_tenant_db_alias, set_current_db_alias

@@ -6,7 +6,6 @@ transfers, revaluations, and maintenance logs.
 """
 
 from django import forms
-from django.forms import inlineformset_factory
 
 from erp.models.fixed_assets import (
     AssetCategory, FixedAsset, DepreciationSchedule,

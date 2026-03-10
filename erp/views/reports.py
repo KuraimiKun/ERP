@@ -4,22 +4,19 @@ ERP Views – Financial Reports & Aging
 Profit & Loss, Balance Sheet, Trial Balance, Cash Flow, AR/AP Aging.
 """
 
-from collections import OrderedDict
-from datetime import timedelta
 from decimal import Decimal
 
-from django.db.models import Sum, Q, F, Value, CharField
+from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from erp.models import (
-    Account, JournalEntry, JournalEntryLine,
+    Account, JournalEntryLine,
     Invoice, Expense, Payment,
     FiscalYear,
 )
 from ._common import (
-    render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required,
+    render, get_object_or_404, get_user_company, staff_member_required,
 )
 
 
@@ -190,7 +187,7 @@ def cash_flow(request):
     start_date, end_date = _parse_date_range(request, company)
 
     # Cash accounts (code starts with 1100 or type is asset with cash-like codes)
-    cash_account_codes = ['1100', '1000']  # typical cash/bank account codes
+    _cash_account_codes = ['1100', '1000']  # typical cash/bank account codes
 
     # Operating: payments received, payments made, expenses paid
     payments_received = Payment.objects.filter(

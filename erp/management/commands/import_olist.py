@@ -20,16 +20,13 @@ Usage:
     python manage.py import_olist --clear              # wipe existing imported data first
 """
 
-import os
 import random
 from datetime import timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from pathlib import Path
 
 import pandas as pd
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-from django.utils import timezone
 
 from tenants.models import TenantDatabase
 from tenants.routers import add_tenant_database, TenantDatabaseContext
@@ -38,7 +35,6 @@ from erp.models import (
     Company,
     Currency,
     Customer,
-    Department,
     FiscalYear,
     Invoice,
     InvoiceLine,

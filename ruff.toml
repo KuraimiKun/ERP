@@ -1,0 +1,16 @@
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = ["E", "F"]
+ignore = [
+    "E501",   # line too long (existing code has many)
+    "E741",   # ambiguous variable name (common in math/plotting code)
+]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401", "E402"]  # re-exports and late imports
+"audit_tenant.py" = ["E402"]  # django.setup() must run before model imports
+"erp/management/commands/*.py" = ["E402"]
+"erp/views/pos.py" = ["E402"]  # mid-file imports in existing code
+"erpproject/settings.py" = ["E402"]  # gettext_lazy import after config

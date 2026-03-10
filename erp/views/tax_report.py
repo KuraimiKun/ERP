@@ -6,10 +6,10 @@ Aggregates VAT collected vs VAT paid and produces a summary.
 
 from datetime import date
 
-from django.db.models import Sum, F, Q, DecimalField
+from django.db.models import Sum, F, DecimalField
 from django.db.models.functions import Coalesce, TruncMonth
 
-from erp.models import InvoiceLine, SupplierInvoiceLine, TaxRate
+from erp.models import InvoiceLine, SupplierInvoiceLine
 from ._common import (
     render, get_user_company, staff_member_required,
 )

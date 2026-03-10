@@ -3,7 +3,7 @@ AI API Views – REST endpoints for the AI / ML module.
 """
 
 import logging
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,8 +12,7 @@ from erp.views._common import get_user_company
 from erp.ai.models import MLModel, PredictionLog, AIInsight
 from erp.ai.api import (
     MLModelSerializer, PredictionLogSerializer, AIInsightSerializer,
-    AssistantQuerySerializer, AssistantResponseSerializer,
-    TriggerResultSerializer,
+    AssistantQuerySerializer,
 )
 
 logger = logging.getLogger('erp.ai.api')

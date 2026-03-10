@@ -7,15 +7,14 @@ significantly from their historical norms (z-score > 2).
 
 import logging
 from datetime import timedelta, date as dt_date
-from decimal import Decimal
 
 import numpy as np
-from django.db.models import Sum, Count, Avg
+from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
 from erp.models import (
-    Invoice, Payment, Expense, Lead, StockMovement, Customer,
+    Invoice, Expense, Lead, StockMovement,
 )
 from erp.ai.models import AIInsight
 from .base import create_or_update_insight

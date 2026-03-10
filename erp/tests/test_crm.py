@@ -5,7 +5,6 @@ Tests for CRM models: Lead, LeadActivity, CustomerInteraction, Campaign, Campaig
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.test import TestCase
 from django.db import IntegrityError
 from django.utils import timezone
 
@@ -114,7 +113,7 @@ class LeadActivityModelTest(ERPTestCase):
 
     def test_activities_ordering(self):
         now = timezone.now()
-        a1 = LeadActivity.objects.create(
+        LeadActivity.objects.create(
             lead=self.lead, activity_type='call',
             subject='First', activity_date=now - timedelta(hours=2),
         )

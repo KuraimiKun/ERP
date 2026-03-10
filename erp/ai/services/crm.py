@@ -6,7 +6,6 @@ Uses Logistic Regression on historical won/lost leads.
 """
 
 import logging
-from datetime import timedelta
 
 import numpy as np
 import pandas as pd
@@ -15,14 +14,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from django.conf import settings
-from django.db.models import Count, Avg, Min, Max
+from django.db.models import Count, Min, Max
 from django.utils import timezone
 
-from erp.models import Lead, LeadActivity, Customer
+from erp.models import Lead, LeadActivity
 from erp.ai.models import MLModel, AIInsight
 from .base import (
     get_or_create_registry, save_model_artefact, load_model_artefact,
-    log_prediction, create_or_update_insight, logger,
+    log_prediction, create_or_update_insight,
 )
 
 logger = logging.getLogger('erp.ai.crm')

@@ -12,15 +12,15 @@ Core business logic for Point of Sale operations:
 
 from decimal import Decimal
 
-from django.db import models, transaction
+from django.db import transaction
 from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from tenants.routers import get_current_db_alias
 from erp.models import (
-    POSTerminal, POSSession, POSOrder, POSOrderLine, POSPayment,
-    Product, Customer, PaymentMethod, TaxRate,
+    POSSession, POSOrder, POSOrderLine, POSPayment,
+    Product, PaymentMethod, TaxRate,
     StockMovement, Invoice, InvoiceLine,
 )
 from erp.services.sequence import SequenceService

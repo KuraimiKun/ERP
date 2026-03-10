@@ -6,12 +6,8 @@ used by every view module in this package.
 """
 
 from django.core.paginator import Paginator
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.urls import reverse
 
 from erp.models import Company
-from erp.decorators import tenant_required as staff_member_required
 
 DEFAULT_PAGE_SIZE = 25
 

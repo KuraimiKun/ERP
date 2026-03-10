@@ -7,24 +7,17 @@ supplier, etc.) so every downstream test module can focus on the logic
 under test rather than repeating boilerplate data creation.
 """
 
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 
 from erp.models import (
-    Currency, Company, Department, Branch, FiscalYear, Sequence,
-    Account, TaxRate, PaymentMethod,
-    Customer, Invoice, InvoiceLine, Payment, PaymentAllocation,
-    Expense, ExpenseCategory, JournalEntry, JournalEntryLine,
-    Employee, LeaveType, LeaveRequest, Attendance, Payroll,
-    Supplier,
-    Lead, Campaign, Task,
-    ServiceCategory, ServicePricing, ProductCategory, Product,
-    Warehouse, WarehouseZone, WarehouseBin,
-    POSTerminal,
+    Currency, Company, Department, Branch, FiscalYear, Account, TaxRate, PaymentMethod,
+    Customer, ExpenseCategory, Employee, Supplier,
+    ProductCategory, Product,
+    Warehouse,
 )
 
 User = get_user_model()

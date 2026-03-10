@@ -296,7 +296,6 @@ def pa_ticket_category_delete(request, pk):
 @platform_admin_required
 def pa_ticket_stats_api(request):
     """JSON endpoint for ticket stats (live badge updates)."""
-    from django.db.models.functions import TruncDate
     data = {
         'open': Ticket.objects.filter(status='open').count(),
         'in_progress': Ticket.objects.filter(status='in_progress').count(),

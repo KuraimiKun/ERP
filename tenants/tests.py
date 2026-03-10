@@ -4,7 +4,6 @@ Tests for Tenant models: TenantUser, PostgresServer, TenantDatabase, DatabaseAss
 
 from django.test import TestCase
 from django.db import IntegrityError
-from django.utils import timezone
 
 from tenants.models import (
     TenantUser, PostgresServer, TenantDatabase, DatabaseAssignment,

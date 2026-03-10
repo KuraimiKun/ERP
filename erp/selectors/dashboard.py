@@ -7,7 +7,7 @@ Aggregate metrics and chart-data queries used by the dashboard views.
 from datetime import timedelta
 from decimal import Decimal
 
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 

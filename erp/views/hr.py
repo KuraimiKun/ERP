@@ -337,7 +337,7 @@ def leave_request_create(request):
     if request.method == 'POST':
         form = LeaveRequestForm(request.POST, company=company)
         if form.is_valid():
-            leave_request = form.save()
+            form.save()
             messages.success(request, 'Leave request submitted successfully.')
             return redirect('erp:leave_request_list')
     else:
@@ -652,7 +652,6 @@ def payroll_delete(request, pk):
 @staff_member_required
 def payroll_get_employee_salary(request):
     """AJAX endpoint: return employee basic_salary and currency_id."""
-    import json
     from django.http import JsonResponse
 
     company = get_user_company(request.user)

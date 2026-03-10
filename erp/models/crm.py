@@ -6,7 +6,6 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from .base import ERPBaseModel, TimeStampedModel
-import uuid
 
 
 class Lead(ERPBaseModel):

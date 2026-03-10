@@ -16,7 +16,7 @@ from django.db.models import Count
 
 from tenants.models import (
     Ticket, TicketMessage, TicketAttachment, TicketCategory,
-    Announcement, AnnouncementDismissal,
+    Announcement,
 )
 from tenants.platform_admin.forms import (
     TenantTicketForm, TenantTicketReplyForm, TicketRatingForm,

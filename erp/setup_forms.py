@@ -11,7 +11,6 @@ from django.core.validators import MinValueValidator
 from django.utils.translation import gettext_lazy as _, get_language
 from decimal import Decimal
 
-from .models import Currency, Company, FiscalYear, TaxRate, PaymentMethod, Account
 from .setup_defaults import (
     get_currency_choices,
     get_tax_preset_choices,

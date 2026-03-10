@@ -15,14 +15,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from django.conf import settings
-from django.db.models import Count, Avg, Sum, Q
+from django.db.models import Count, Avg, Q
 from django.utils import timezone
 
 from erp.models import Employee, LeaveRequest, Attendance, Payroll
 from erp.ai.models import MLModel, AIInsight
 from .base import (
     get_or_create_registry, save_model_artefact, load_model_artefact,
-    log_prediction, create_or_update_insight, logger,
+    log_prediction, create_or_update_insight,
 )
 
 logger = logging.getLogger('erp.ai.hr')

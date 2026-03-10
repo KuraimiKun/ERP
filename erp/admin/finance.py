@@ -5,8 +5,7 @@ ERP Admin – Finance models
 from django.contrib import admin
 from erp.models import (
     Account, TaxRate, PaymentMethod, Customer,
-    Invoice, InvoiceLine, Payment, PaymentAllocation,
-    Expense, ExpenseCategory, ExpenseAttachment,
+    Invoice, InvoiceLine, Payment, Expense, ExpenseCategory,
 )
 
 

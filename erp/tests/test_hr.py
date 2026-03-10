@@ -5,12 +5,11 @@ Tests for HR models: Employee, LeaveType, LeaveRequest, Attendance, Payroll.
 from datetime import date, time, timedelta
 from decimal import Decimal
 
-from django.test import TestCase
 from django.db import IntegrityError
 
 from erp.models import (
     Employee, LeaveType, LeaveRequest, Attendance, Payroll,
-    PayrollEarning, PayrollDeduction, EmployeeDocument,
+    PayrollEarning, PayrollDeduction,
 )
 from erp.tests.helpers import ERPTestCase
 

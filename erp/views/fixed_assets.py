@@ -5,12 +5,9 @@ Asset Register, Categories, Depreciation, Disposal,
 Transfers, Revaluation, and Maintenance Logs.
 """
 
-from datetime import date, timedelta
-from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
-from django.db.models import Q, Sum, Count
-from django.utils import timezone
+from django.db.models import Q, Sum
 
 from erp.models.fixed_assets import (
     AssetCategory, FixedAsset, DepreciationSchedule,
@@ -18,8 +15,7 @@ from erp.models.fixed_assets import (
     AssetMaintenanceLog,
 )
 from erp.forms.fixed_assets import (
-    AssetCategoryForm, FixedAssetForm, DepreciationScheduleForm,
-    AssetDisposalForm, AssetTransferForm, AssetRevaluationForm,
+    AssetCategoryForm, FixedAssetForm, AssetDisposalForm, AssetTransferForm, AssetRevaluationForm,
     AssetMaintenanceLogForm, GenerateDepreciationForm,
 )
 from django.utils.translation import gettext as _

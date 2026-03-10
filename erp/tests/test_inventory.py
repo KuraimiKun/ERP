@@ -6,9 +6,7 @@ LotBatch, SerialNumber, StockItem, StockMovement.
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.test import TestCase
 from django.db import IntegrityError
-from django.utils import timezone
 
 from erp.models import (
     UnitOfMeasure, UnitOfMeasureConversion,

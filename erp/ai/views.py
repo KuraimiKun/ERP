@@ -92,7 +92,6 @@ class AISettingsForm:
 @tenant_required
 def ai_settings(request):
     """Allow each tenant to configure their own OpenAI key and AI toggle."""
-    from erp.forms import CompanyForm  # avoid circular imports
 
     company = get_user_company(request.user)
 

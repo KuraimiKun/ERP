@@ -5,8 +5,7 @@ Run: python thesis/generate_diagrams.py
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.patches import FancyBboxPatch
 import numpy as np
 import os
 
@@ -72,10 +71,10 @@ def fig_erp_evolution():
         # Alternating above/below
         if i % 2 == 0:
             y_box, y_line = 1.4, 0.35
-            va = 'bottom'
+            _va = 'bottom'
         else:
             y_box, y_line = -1.4, -0.35
-            va = 'top'
+            _va = 'top'
 
         # Connector line
         ax.plot([i, i], [y_line, y_box - (0.4 if i % 2 == 0 else -0.4)],
@@ -202,7 +201,6 @@ def fig_sprint_lifecycle():
     ]
 
     radius = 4.0
-    box_w = 2.2
     for angle_deg, title, desc, color, bg in phases:
         angle = np.radians(angle_deg)
         x = radius * np.cos(angle)
@@ -227,9 +225,8 @@ def fig_sprint_lifecycle():
         a1 = np.radians(phases[i][0])
         a2 = np.radians(phases[(i + 1) % len(phases)][0])
         # Draw arc
-        mid_angle = (a1 + a2) / 2
         if i == len(phases) - 1:
-            mid_angle = (a1 + a2 + 2 * np.pi) / 2
+            pass
         arc_r = 2.5
         ax.annotate('', xy=(arc_r * np.cos(a2 + 0.15), arc_r * np.sin(a2 + 0.15)),
                     xytext=(arc_r * np.cos(a1 - 0.15), arc_r * np.sin(a1 - 0.15)),

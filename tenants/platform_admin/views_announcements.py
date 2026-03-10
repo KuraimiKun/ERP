@@ -5,10 +5,9 @@ Platform Admin - System Announcements Views
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from tenants.models import Announcement, AnnouncementDismissal
+from tenants.models import Announcement
 from .forms import AnnouncementForm
 from . import platform_admin_required, pa_context, paginate
 

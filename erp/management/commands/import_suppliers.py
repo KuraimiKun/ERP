@@ -33,7 +33,6 @@ from erp.models import (
     PurchaseOrder,
     PurchaseOrderLine,
     Supplier,
-    SupplierInvoice,
 )
 
 DATASET_DIR = Path(__file__).resolve().parents[3] / "datasets"
@@ -299,7 +298,7 @@ class Command(BaseCommand):
             purchase_order__po_number__startswith="PO-"
         ).count()
 
-        self.stdout.write(f"\n  Summary:")
+        self.stdout.write("\n  Summary:")
         self.stdout.write(f"    Suppliers:         {suppliers}")
         self.stdout.write(f"    Purchase Orders:   {pos}")
         self.stdout.write(f"    PO Lines:          {lines}")

@@ -5,18 +5,16 @@ Platform Admin - Analytics & Reporting Views
 import csv
 import json
 from datetime import timedelta
-from io import StringIO
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Count, Q, Avg, F
-from django.db.models.functions import TruncDate, TruncMonth, TruncWeek
+from django.db.models import Count, Q
+from django.db.models.functions import TruncDate, TruncMonth
 
 from tenants.models import (
     TenantUser, PostgresServer, TenantDatabase,
-    DatabaseAssignment, ServerLog,
+    ServerLog,
 )
 from . import platform_admin_required, pa_context
 

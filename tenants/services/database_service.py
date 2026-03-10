@@ -19,7 +19,7 @@ from django.core.management import call_command
 from django.utils import timezone
 from io import StringIO
 
-from ..routers import add_tenant_database, TenantDatabaseContext
+from ..routers import add_tenant_database
 
 logger = logging.getLogger(__name__)
 

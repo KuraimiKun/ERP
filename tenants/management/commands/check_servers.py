@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 is_healthy, message = db_service.check_server_health(server)
                 
                 if is_healthy:
-                    self.stdout.write(self.style.SUCCESS(f'  ✓ Healthy'))
+                    self.stdout.write(self.style.SUCCESS('  ✓ Healthy'))
                     self.stdout.write(f'    Databases: {server.database_count}/{server.max_databases}')
                     healthy += 1
                 else:

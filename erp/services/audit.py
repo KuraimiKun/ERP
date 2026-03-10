@@ -7,8 +7,6 @@ Provides automatic audit logging for model changes.
 import threading
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models.signals import post_save, post_delete, pre_save
-from django.dispatch import receiver
 from ..models import AuditLog
 
 # Module-level thread-local storage for audit context
@@ -22,7 +20,6 @@ def get_audit_context():
         'ip_address': getattr(_audit_thread_locals, 'ip_address', None),
         'user_agent': getattr(_audit_thread_locals, 'user_agent', ''),
     }
-import json
 
 
 class AuditService:

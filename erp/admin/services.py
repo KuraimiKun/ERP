@@ -4,7 +4,7 @@ ERP Admin – Services models
 
 from django.contrib import admin
 from erp.models import (
-    ServiceCategory, ServicePricing, PriceTier, ServicePackage, PackageItem,
+    ServiceCategory, ServicePricing, ServicePackage, PackageItem,
     Quote, QuoteLine,
 )
 

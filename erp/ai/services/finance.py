@@ -7,7 +7,6 @@ Financial ML Services
 """
 
 import logging
-from decimal import Decimal
 from datetime import timedelta, date as dt_date
 
 import numpy as np
@@ -17,18 +16,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, classification_report
 from sklearn.preprocessing import LabelEncoder
 from django.conf import settings
-from django.db.models import Sum, Avg, Count, F, Q, ExpressionWrapper, fields
-from django.db.models.functions import TruncDate, Coalesce
-from django.utils import timezone
+from django.db.models import Avg
 
 from erp.models import (
-    Invoice, Payment, PaymentAllocation, Expense, Customer,
-    PurchaseOrder, SupplierInvoice,
+    Invoice, PaymentAllocation, Expense, PurchaseOrder, SupplierInvoice,
 )
 from erp.ai.models import MLModel, AIInsight
 from .base import (
     get_or_create_registry, save_model_artefact, load_model_artefact,
-    log_prediction, bump_version, create_or_update_insight, logger,
+    log_prediction, create_or_update_insight,
 )
 
 logger = logging.getLogger('erp.ai.finance')
@@ -298,7 +294,7 @@ class LatePaymentPredictor:
         cust_avg_amount = float(
             past_invoices.aggregate(avg=Avg('total_amount'))['avg'] or 0
         )
-        cust_avg_days = float(
+        _cust_avg_days = float(
             past_invoices.filter(due_date__isnull=False).extra(
                 select={'dtd': "due_date - invoice_date"}
             ).aggregate(avg=Avg('total_amount'))['avg'] or 0

@@ -9,9 +9,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.db.models import Count, Q
-from datetime import timedelta
 
-from tenants.models import AlertRule, Alert, PostgresServer, TenantDatabase
+from tenants.models import AlertRule, Alert
 from .forms import AlertRuleForm
 from . import platform_admin_required, pa_context, paginate
 

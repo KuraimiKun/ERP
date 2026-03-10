@@ -30,7 +30,6 @@ from erp.models import (
     Attendance,
     Campaign,
     Company,
-    Currency,
     Customer,
     Department,
     Employee,
@@ -225,7 +224,6 @@ def _chunked(iterable, size: int):
 
 def _bulk(model, objs, batch_size: int = 2000, msg_prefix: str = ""):
     """Bulk-create a list of unsaved model instances in batches."""
-    total = len(objs)
     created = 0
     for chunk in _chunked(objs, batch_size):
         model.objects.bulk_create(chunk, ignore_conflicts=True)
@@ -504,14 +502,12 @@ class Command(BaseCommand):
             ServiceCategoryFactory,
             ServicePricingFactory,
             SupplierFactory,
-            TaskFactory,
         )
 
         tax_rate = tax_rates[0]
 
         # Departments
         depts = DepartmentFactory.create_batch(cfg["depts"], company=company)
-        dept_ids = [d.id for d in depts]
         self.stdout.write(f"   [OK] {len(depts):>6,}  Departments")
 
         # Expense categories
@@ -766,7 +762,7 @@ class Command(BaseCommand):
                     )
                 )
 
-        count_lines = _bulk(InvoiceLine, line_objs)
+        _bulk(InvoiceLine, line_objs)
         self.stdout.write(f"   [OK] {len(line_objs):>6,}  Invoice Lines")
 
     # -- Payments --------------------------------------------------------------
@@ -886,7 +882,6 @@ class Command(BaseCommand):
         created_quotes = Quote.objects.bulk_create(quote_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created_quotes):>6,}  Quotes")
 
-        item_pool = product_ids + service_ids
         for quote in created_quotes:
             n_lines  = random.randint(1, 4)
             line_total = round(quote.subtotal / n_lines, 2)
@@ -1193,7 +1188,7 @@ class Command(BaseCommand):
                 "write_off_account": acct_map.get("6300"),
             },
         )
-        self.stdout.write(f"   [OK]      1  Inventory Valuation Config")
+        self.stdout.write("   [OK]      1  Inventory Valuation Config")
 
         return {
             "warehouse_ids": [w.id for w in warehouses],
@@ -1207,7 +1202,6 @@ class Command(BaseCommand):
         prod_ids = ctx.get("product_ids", [])
         sup_ids  = ctx.get("supplier_ids", [])
         cust_ids = ctx.get("customer_ids", [])
-        emp_ids  = ctx.get("employee_ids", [])
 
         if not wh_ids or not prod_ids:
             self.stdout.write(self.style.WARNING("   [!] No warehouses/products; skipping inventory txns."))
@@ -1755,7 +1749,7 @@ class Command(BaseCommand):
                 idx += 1
 
         if not je_objs:
-            self.stdout.write(f"   [OK]      0  Asset Journal Entries")
+            self.stdout.write("   [OK]      0  Asset Journal Entries")
             return
 
         created_jes = JournalEntry.objects.bulk_create(je_objs, batch_size=2000)

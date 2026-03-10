@@ -35,7 +35,7 @@ class AuditLogModelTest(ERPTestCase):
 
     def test_ordering_newest_first(self):
         ct = ContentType.objects.get_for_model(self.company)
-        l1 = AuditLog.objects.create(
+        AuditLog.objects.create(
             user=self.user, action='create',
             content_type=ct, object_repr='First',
         )

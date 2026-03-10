@@ -276,7 +276,6 @@ class Command(BaseCommand):
         anomalies = detector.detect()
 
         # Cross-reference with ground truth from dataset
-        from erp.models import Expense
         import pandas as pd
         csv_path = Path(__file__).resolve().parents[3] / "datasets" / "expense_claims_dataset.csv"
         gt_anomalies = set()

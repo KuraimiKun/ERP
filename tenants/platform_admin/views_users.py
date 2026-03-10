@@ -114,7 +114,7 @@ def pa_user_approve(request, pk):
                     role='owner',
                     assigned_by=request.user,
                 )
-                messages.success(request, _(f'User approved and new database created.'))
+                messages.success(request, _('User approved and new database created.'))
             except Exception as e:
                 messages.error(request, _(f'User approved but database creation failed: {e}'))
         else:

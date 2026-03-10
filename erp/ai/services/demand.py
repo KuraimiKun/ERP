@@ -8,20 +8,17 @@ and dynamically updates ReorderRule safety_stock / reorder_point.
 import logging
 import os
 from decimal import Decimal
-from datetime import timedelta
 
 import pandas as pd
 import numpy as np
 from django.conf import settings
-from django.utils import timezone
 from django.db.models import Sum
 from django.db.models.functions import TruncDate
 
-from erp.models import StockMovement, ReorderRule, Product
+from erp.models import StockMovement, ReorderRule
 from erp.ai.models import MLModel, AIInsight
 from .base import (
-    get_or_create_registry, save_model_artefact, load_model_artefact,
-    log_prediction, bump_version, logger,
+    get_or_create_registry, save_model_artefact, log_prediction,
 )
 
 logger = logging.getLogger('erp.ai.demand')
@@ -143,7 +140,8 @@ class DemandForecaster:
         if len(df) >= 90:
             try:
                 from prophet.diagnostics import cross_validation, performance_metrics
-                import sys, os
+                import sys
+                import os
                 with open(os.devnull, 'w') as devnull:
                     old_stdout = sys.stdout
                     sys.stdout = devnull

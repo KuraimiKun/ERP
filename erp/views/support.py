@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Count
 
 from tenants.models import (
-    Ticket, TicketMessage, TicketAttachment, TicketCategory,
+    Ticket, TicketMessage, TicketAttachment,
 )
 from tenants.platform_admin.forms import (
     TenantTicketForm, TenantTicketReplyForm, TicketRatingForm,
