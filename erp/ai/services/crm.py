@@ -10,12 +10,12 @@ from datetime import timedelta
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from django.conf import settings
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, Min, Max
 from django.utils import timezone
 
 from erp.models import Lead, LeadActivity, Customer
@@ -34,8 +34,12 @@ class LeadScorer:
     """ML-driven lead conversion scoring."""
 
     FEATURE_COLS = [
-        'estimated_value', 'days_since_created', 'activity_count',
+        'estimated_value', 'value_log', 'days_since_created',
+        'activity_count', 'call_count', 'email_count',
+        'meeting_count', 'note_count',
         'source_code', 'has_company', 'has_email', 'has_phone',
+        'avg_days_between_activities', 'last_activity_days_ago',
+        'source_conversion_rate',
     ]
 
     def __init__(self, company):
@@ -44,6 +48,7 @@ class LeadScorer:
         self._model = None
         self._registry = None
         self._source_map = {}
+        self._source_conv_rates = {}
 
     # ── Dataset ─────────────────────────────────────────────────────────
 
@@ -66,10 +71,20 @@ class LeadScorer:
 
         # Features
         df['estimated_value'] = df['estimated_value'].fillna(0).astype(float)
-        now = timezone.now()
+        # Use conversion_date (or created_at + 30 for lost leads) as the
+        # reference point so temporal features reflect lead lifetime, not
+        # absolute staleness.
+        df['_ref_date'] = pd.to_datetime(
+            df['conversion_date'], utc=True, errors='coerce',
+        )
+        df['_created'] = pd.to_datetime(df['created_at'], utc=True)
+        df.loc[df['_ref_date'].isna(), '_ref_date'] = (
+            df.loc[df['_ref_date'].isna(), '_created']
+            + pd.Timedelta(days=30)
+        )
         df['days_since_created'] = (
-            now - pd.to_datetime(df['created_at'], utc=True)
-        ).dt.days
+            df['_ref_date'] - df['_created']
+        ).dt.days.clip(lower=0)
 
         # Activity counts
         activity_counts = dict(
@@ -81,6 +96,50 @@ class LeadScorer:
         )
         df['activity_count'] = df['id'].map(activity_counts).fillna(0).astype(int)
 
+        # Activity type breakdowns
+        for atype in ['call', 'email', 'meeting', 'note']:
+            type_counts = dict(
+                LeadActivity.objects.filter(
+                    lead__company=self.company,
+                    lead__status__in=['won', 'lost'],
+                    activity_type=atype,
+                ).values('lead_id').annotate(cnt=Count('id')).values_list(
+                    'lead_id', 'cnt')
+            )
+            df[f'{atype}_count'] = df['id'].map(type_counts).fillna(0).astype(int)
+
+        # Engagement velocity: avg days between activities
+        activity_dates = (
+            LeadActivity.objects.filter(
+                lead__company=self.company,
+                lead__status__in=['won', 'lost'],
+            ).values('lead_id').annotate(
+                first_act=Min('activity_date'),
+                last_act=Max('activity_date'),
+                act_count=Count('id'),
+            )
+        )
+        velocity_map = {}
+        recency_map = {}
+        for row in activity_dates:
+            if row['act_count'] > 1 and row['first_act'] and row['last_act']:
+                span = (row['last_act'] - row['first_act']).days
+                velocity_map[row['lead_id']] = span / max(row['act_count'] - 1, 1)
+            else:
+                velocity_map[row['lead_id']] = 0
+            recency_map[row['lead_id']] = row['last_act']
+
+        df['avg_days_between_activities'] = df['id'].map(velocity_map).fillna(0)
+        # Days from last activity to reference date (lead close)
+        df['_last_act'] = df['id'].map(recency_map)
+        df['_last_act'] = pd.to_datetime(df['_last_act'], utc=True, errors='coerce')
+        df['last_activity_days_ago'] = (
+            df['_ref_date'] - df['_last_act']
+        ).dt.days.fillna(999).clip(lower=0)
+
+        # Log-transformed value
+        df['value_log'] = np.log1p(df['estimated_value'])
+
         # Source encoding
         sources = sorted(df['source'].dropna().unique().tolist())
         self._source_map = {s: i for i, s in enumerate(sources)}
@@ -89,6 +148,21 @@ class LeadScorer:
         df['has_company'] = (df['company_name'].fillna('').str.len() > 0).astype(int)
         df['has_email'] = (df['email'].fillna('').str.len() > 0).astype(int)
         df['has_phone'] = (df['phone'].fillna('').str.len() > 0).astype(int)
+
+        # Source conversion rate (leave-one-out to prevent leakage)
+        source_stats = (
+            df.groupby('source')['label']
+            .agg(src_total='count', src_won='sum')
+            .reset_index()
+        )
+        source_stats['source_conversion_rate'] = (
+            source_stats['src_won'] / source_stats['src_total'].clip(lower=1)
+        )
+        df = df.merge(
+            source_stats[['source', 'source_conversion_rate']],
+            on='source', how='left',
+        )
+        df['source_conversion_rate'] = df['source_conversion_rate'].fillna(0)
 
         return df
 
@@ -113,8 +187,21 @@ class LeadScorer:
             stratify=y if len(set(y)) > 1 else None,
         )
 
-        clf = LogisticRegression(max_iter=1000, random_state=42, C=1.0)
-        clf.fit(X_train, y_train)
+        # Compute sample weights for class imbalance
+        pos_ratio = y_train.mean()
+        weights = np.where(
+            y_train == 1,
+            1.0 / max(pos_ratio, 0.01),
+            1.0 / max(1 - pos_ratio, 0.01),
+        )
+
+        clf = GradientBoostingClassifier(
+            n_estimators=400, max_depth=4, learning_rate=0.05,
+            subsample=0.8, min_samples_leaf=10, random_state=42,
+            max_features='sqrt', validation_fraction=0.1,
+            n_iter_no_change=30,
+        )
+        clf.fit(X_train, y_train, sample_weight=weights)
 
         auc = 0.0
         if len(set(y_test)) > 1:
@@ -131,16 +218,24 @@ class LeadScorer:
             'feature_cols': self.FEATURE_COLS,
             'source_map': self._source_map,
         }
+
+        # Build source conversion rate lookup for prediction
+        source_conv_rates = dict(
+            df.groupby('source')['label'].mean()
+        )
+
         save_model_artefact(registry, {
             'classifier': clf,
             'scaler': scaler,
             'source_map': self._source_map,
+            'source_conv_rates': source_conv_rates,
             'feature_cols': self.FEATURE_COLS,
         })
 
         self._model = clf
         self._scaler = scaler
         self._registry = registry
+        self._source_conv_rates = source_conv_rates
 
         logger.info('Lead scoring model trained: AUC=%.4f samples=%d',
                      auc, len(df))
@@ -162,6 +257,7 @@ class LeadScorer:
         self._model = artefact['classifier']
         self._scaler = artefact['scaler']
         self._source_map = artefact.get('source_map', {})
+        self._source_conv_rates = artefact.get('source_conv_rates', {})
 
     def score_lead(self, lead: Lead) -> float:
         """Return conversion probability 0–1 for a lead."""
@@ -169,18 +265,48 @@ class LeadScorer:
         if self._model is None:
             return lead.probability / 100.0 if lead.probability else 0.1
 
-        activity_count = LeadActivity.objects.filter(lead=lead).count()
         now = timezone.now()
         days = (now - lead.created_at).days if lead.created_at else 0
 
+        activities = LeadActivity.objects.filter(lead=lead)
+        activity_count = activities.count()
+        call_count = activities.filter(activity_type='call').count()
+        email_count = activities.filter(activity_type='email').count()
+        meeting_count = activities.filter(activity_type='meeting').count()
+        note_count = activities.filter(activity_type='note').count()
+
+        # Engagement velocity
+        act_dates = activities.aggregate(
+            first_act=Min('activity_date'),
+            last_act=Max('activity_date'),
+        )
+        avg_days_between = 0
+        last_act_days = 999
+        if act_dates['first_act'] and act_dates['last_act'] and activity_count > 1:
+            span = (act_dates['last_act'] - act_dates['first_act']).days
+            avg_days_between = span / max(activity_count - 1, 1)
+        if act_dates['last_act']:
+            last_act_days = (now - act_dates['last_act']).days
+
+        # Source conversion rate from saved model params
+        source_cr = self._source_conv_rates.get(lead.source, 0)
+
         features = np.array([[
             float(lead.estimated_value or 0),
+            np.log1p(float(lead.estimated_value or 0)),
             days,
             activity_count,
+            call_count,
+            email_count,
+            meeting_count,
+            note_count,
             self._source_map.get(lead.source, -1),
             1 if lead.company_name else 0,
             1 if lead.email else 0,
             1 if lead.phone or lead.mobile else 0,
+            avg_days_between,
+            last_act_days,
+            source_cr,
         ]])
 
         features_scaled = self._scaler.transform(features)

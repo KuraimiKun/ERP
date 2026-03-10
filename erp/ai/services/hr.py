@@ -36,7 +36,8 @@ class AttritionPredictor:
         'employment_type_code', 'department_turnover_rate',
         'has_reports_to', 'leave_balance_ratio',
         'avg_overtime_hours', 'salary_vs_dept_avg',
-        'attendance_rate',
+        'attendance_rate', 'payroll_months',
+        'avg_gross_pay', 'comp_vs_dept_avg', 'absence_rate',
     ]
 
     def __init__(self, company):
@@ -171,6 +172,36 @@ class AttritionPredictor:
         else:
             df['attendance_rate'] = df['attendance_rate'].fillna(0.9)
 
+        # ── New features for richer signal ───────────────────────────
+        # Payroll months (proxy for data richness / tenure confirmation)
+        payroll_counts = dict(
+            Payroll.objects.filter(
+                employee__company=self.company,
+            ).values('employee_id').annotate(cnt=Count('id')).values_list(
+                'employee_id', 'cnt')
+        )
+        df['payroll_months'] = df['id'].map(payroll_counts).fillna(0).astype(int)
+
+        # Average gross pay from payroll records
+        payroll_avg = dict(
+            Payroll.objects.filter(
+                employee__company=self.company,
+            ).values('employee_id').annotate(
+                avg_gross=Avg('gross_salary'),
+            ).values_list('employee_id', 'avg_gross')
+        )
+        df['avg_gross_pay'] = df['id'].map(payroll_avg).fillna(df['salary']).astype(float)
+
+        # Total compensation vs department average
+        dept_comp = (
+            df.groupby('department_id')['avg_gross_pay']
+            .transform('mean')
+        ).clip(lower=1)
+        df['comp_vs_dept_avg'] = df['avg_gross_pay'] / dept_comp
+
+        # Absence rate (complement of attendance_rate, scaled)
+        df['absence_rate'] = (1 - df['attendance_rate']).clip(0, 1)
+
         return df
 
     # ── Training ────────────────────────────────────────────────────────
@@ -192,8 +223,9 @@ class AttritionPredictor:
         )
 
         clf = RandomForestClassifier(
-            n_estimators=300, max_depth=8, min_samples_leaf=5,
+            n_estimators=500, max_depth=10, min_samples_leaf=5,
             class_weight='balanced', random_state=42,
+            max_features='sqrt',
         )
         clf.fit(X_train, y_train)
 
@@ -297,6 +329,22 @@ class AttritionPredictor:
                 if co_att['total'] else 0.9
             )
 
+        # Payroll months + avg gross pay
+        payroll_agg = Payroll.objects.filter(
+            employee=employee,
+        ).aggregate(cnt=Count('id'), avg_gross=Avg('gross_salary'))
+        payroll_months = payroll_agg['cnt'] or 0
+        avg_gross_pay = float(payroll_agg['avg_gross'] or employee.basic_salary)
+
+        # Compensation vs department average
+        dept_avg_comp = Payroll.objects.filter(
+            employee__company=self.company,
+            employee__department=employee.department,
+        ).aggregate(avg_g=Avg('gross_salary'))['avg_g']
+        comp_vs_dept = avg_gross_pay / max(float(dept_avg_comp or avg_gross_pay), 1)
+
+        absence_rate = max(0.0, min(1.0, 1 - att_rate))
+
         features = np.array([[
             tenure,
             float(employee.basic_salary),
@@ -309,6 +357,10 @@ class AttritionPredictor:
             float(avg_ot),
             salary_vs_dept,
             att_rate,
+            payroll_months,
+            avg_gross_pay,
+            comp_vs_dept,
+            absence_rate,
         ]])
 
         features_scaled = self._scaler.transform(features)
@@ -420,7 +472,8 @@ class AttendanceAnomalyDetector:
         anomalies = []
         for _, row in emp_stats.iterrows():
             z_score = abs(row['avg_hours'] - company_avg) / company_std
-            if z_score > 2.0 or row['late_arrivals'] > row['total_days'] * 0.3:
+            late_ratio = row['late_arrivals'] / max(row['total_days'], 1)
+            if z_score > 1.5 or late_ratio > 0.25:
                 emp_info = df[df['employee_id'] == row['employee_id']].iloc[0]
                 anomalies.append({
                     'employee_id': int(row['employee_id']),

@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex thesis"] 1773034901.21096 "thesis.aux" "thesis.bbl" "thesis" 1773034908.54193 0
+["bibtex thesis"] 1773123515.85617 "thesis.aux" "thesis.bbl" "thesis" 1773123520.48831 0
   "./references.bib" 1773016478 6680 2ba27bb4810b57b0e11219af4052f3b5 ""
   "C:/Program Files/MiKTeX/bibtex/bst/bibtex/apalike.bst" 1291972791 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "thesis.aux" 1773034907 16428 034fbc2ea490e2dcdedcfadfad0b84cb "pdflatex"
+  "thesis.aux" 1773123519 16426 42c45fa704345d7bc6014f4163e5005c "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1773034901.62264 "f:/erpdjango/thesis/thesis.tex" "thesis.pdf" "thesis" 1773034908.54274 0
+["pdflatex"] 1773123516.11113 "f:/erpdjango/thesis/thesis.tex" "thesis.pdf" "thesis" 1773123520.48885 0
   "C:/Program Files/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrr8r.tfm" 1136765053 1292 bd42be2f344128bff6d35d98474adfe3 ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrr8t.tfm" 1136765053 1384 4632f5e54900a7dadbb83f555bc61e56 ""
@@ -206,7 +206,7 @@
   "C:/Program Files/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1750586519 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1750586599 13225209 1d52f8f13f365b1dcbc035b4ee098197 ""
-  "f:/erpdjango/thesis/thesis.tex" 1773034803 67160 c19652c7fda72d6245a973bec285de88 ""
+  "f:/erpdjango/thesis/thesis.tex" 1773123510 68760 532ff45a76ac7ba9b88ea6fb5de5e43b ""
   "figures/erp_evolution_timeline.png" 1773034774 184116 a890d052101e1834285df5da6736370b ""
   "figures/ml_pipeline_architecture.png" 1773034778 427474 515717e0a5e594957b01787ebdba7bcd ""
   "figures/multi_tenancy_models.png" 1773034775 273215 901311cf8393d561001407041e29f59c ""
@@ -214,13 +214,13 @@
   "figures/sprint_gantt_chart.png" 1773034776 252499 3a7c271bcab17d707e8419067bf7b890 ""
   "figures/sprint_lifecycle.png" 1773034776 294862 71138e9d2fb1de36d5e54960b7ca3cca ""
   "figures/system_architecture.png" 1773034777 345228 0d4419c92fbf345454bf9b5cbe221d5d ""
-  "thesis.aux" 1773034907 16428 034fbc2ea490e2dcdedcfadfad0b84cb "pdflatex"
-  "thesis.bbl" 1773034901 5289 538f92610a9003cf36da32dbe6d9f626 "bibtex thesis"
-  "thesis.lof" 1773034907 1100 52760dbaa60e4dc912dbb5c25ea5b810 "pdflatex"
-  "thesis.lot" 1773034907 869 458b5e85c689aad9f916ca141249a0f1 "pdflatex"
-  "thesis.out" 1773034907 10403 195b766467ed1d2b5af5f661000b0785 "pdflatex"
-  "thesis.tex" 1773034803 67160 c19652c7fda72d6245a973bec285de88 ""
-  "thesis.toc" 1773034907 5057 08094449c381fe5d905bf7fc27f74a13 "pdflatex"
+  "thesis.aux" 1773123519 16426 42c45fa704345d7bc6014f4163e5005c "pdflatex"
+  "thesis.bbl" 1773123516 5289 538f92610a9003cf36da32dbe6d9f626 "bibtex thesis"
+  "thesis.lof" 1773123519 1100 52760dbaa60e4dc912dbb5c25ea5b810 "pdflatex"
+  "thesis.lot" 1773123519 869 0bbb130450835c69897661cefa202b0f "pdflatex"
+  "thesis.out" 1773123519 10393 adc8df4b23aee4f7300a031b02b70eda "pdflatex"
+  "thesis.tex" 1773123510 68760 532ff45a76ac7ba9b88ea6fb5de5e43b ""
+  "thesis.toc" 1773123519 5055 66502a2c31db128cd65053c50892e3f5 "pdflatex"
   (generated)
   "thesis.aux"
   "thesis.lof"

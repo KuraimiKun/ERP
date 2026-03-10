@@ -206,11 +206,11 @@ Finally, I extend my heartfelt appreciation to my \textbf{family}, especially my
 
 Enterprise Resource Planning (ERP) systems serve as the backbone of modern organizational management by integrating core business processes into a unified platform. However, small and medium enterprises (SMEs) in the Middle East and North Africa (MENA) region face significant barriers to adopting commercial ERP solutions, including prohibitive licensing costs, lack of Arabic language support, and limited customization capabilities. Furthermore, traditional ERP systems largely function as passive record-keeping tools, lacking the predictive and prescriptive intelligence required for proactive business decision-making.
 
-This graduation project presents the design and implementation of an \textbf{AI-Enhanced Multi-Tenant ERP System} built on the Django web framework with PostgreSQL database isolation per tenant. The system integrates \textbf{eight machine learning models} spanning five business domains: (1)~Lead Scoring using Logistic Regression, (2)~Late Payment Prediction using Gradient Boosted Trees, (3)~Employee Attrition Risk using Random Forest, (4)~Expense Anomaly Detection using Isolation Forest, (5)~Attendance Pattern Analysis using Z-Score statistics, (6)~Demand Forecasting using Facebook Prophet, (7)~Cash Flow Projection using rule-based modeling, and (8)~KPI Anomaly Detection using statistical process control.
+This graduation project presents the design and implementation of an \textbf{AI-Enhanced Multi-Tenant ERP System} built on the Django web framework with PostgreSQL database isolation per tenant. The system integrates \textbf{eight machine learning models} spanning five business domains: (1)~Lead Scoring using Gradient Boosting, (2)~Late Payment Prediction using Gradient Boosted Trees, (3)~Employee Attrition Risk using Random Forest, (4)~Expense Anomaly Detection using Isolation Forest, (5)~Attendance Pattern Analysis using Z-Score statistics, (6)~Demand Forecasting using Facebook Prophet, (7)~Cash Flow Projection using rule-based modeling, and (8)~KPI Anomaly Detection using statistical process control.
 
 The system was developed following the \textbf{Sprint (Agile)} methodology with iterative development cycles. The architecture features over 80 domain models organized into nine functional modules (Finance, HR, CRM, Inventory/WMS, POS, Fixed Assets, Suppliers, Reporting, and AI), a complete REST API, and a real-time AI Insight notification engine. Multi-tenancy is achieved through dynamic PostgreSQL database provisioning via Docker containers or remote server connections, ensuring complete data isolation between organizations.
 
-Experimental evaluation demonstrates strong model performance: Late Payment Prediction achieves an AUC-ROC of \textbf{0.9867}, Employee Attrition Prediction achieves \textbf{0.9475}, Demand Forecasting achieves an average accuracy of \textbf{0.7249} across 80 products using Prophet cross-validation, and the KPI Anomaly Detector successfully identifies statistically significant business metric deviations with calibrated z-score thresholds.
+Experimental evaluation demonstrates strong model performance: Lead Scoring achieves an AUC-ROC of \textbf{0.9980} after temporal-leakage correction and feature engineering with 15 behavioural features, Employee Attrition Prediction achieves \textbf{1.0000} using 14 features including payroll-derived compensation signals, Demand Forecasting achieves an average accuracy of \textbf{0.7249} across 80 products using Prophet cross-validation, Late Payment Prediction achieves an honest AUC-ROC of \textbf{0.6366} after removing a data-leakage feature, and the KPI Anomaly Detector successfully identifies statistically significant business metric deviations with calibrated z-score thresholds.
 
 \vspace{0.5cm}
 \noindent\textbf{Keywords:} ERP System, Machine Learning, Multi-Tenant Architecture, Django, Business Intelligence, Demand Forecasting, Anomaly Detection, Prophet, Gradient Boosting, Agile Development.
@@ -324,7 +324,7 @@ This project aims to achieve the following objectives:
 
   \item Integrate eight machine learning models into the ERP workflow:
   \begin{itemize}
-    \item \textit{Lead Scoring} --- Logistic Regression for CRM conversion prediction
+    \item \textit{Lead Scoring} --- Gradient Boosting for CRM conversion prediction
     \item \textit{Late Payment Prediction} --- Gradient Boosted Trees for accounts receivable risk
     \item \textit{Employee Attrition Risk} --- Random Forest for HR retention planning
     \item \textit{Expense Anomaly Detection} --- Isolation Forest for fraud and policy violation identification
@@ -377,7 +377,7 @@ This project makes several contributions:
 
   \item \textbf{Technical Innovation:} To the best of our knowledge, this is among the first open-source ERP implementations that embeds eight ML models directly within the transactional workflow---not as an external BI layer, but as integral components that train on the organization's own data, generate predictions in real time, and write actionable insights back into the ERP.
 
-  \item \textbf{Academic Contribution:} The project demonstrates the practical application of multiple ML algorithms (Logistic Regression, Gradient Boosting, Random Forest, Isolation Forest, Prophet, Z-Score) to real-world ERP datasets, providing empirical performance metrics (AUC-ROC, MAE, F1-Score) that contribute to the body of knowledge on applied machine learning in business systems.
+  \item \textbf{Academic Contribution:} The project demonstrates the practical application of multiple ML algorithms (Gradient Boosting, Random Forest, Isolation Forest, Prophet, Z-Score) to real-world ERP datasets, providing empirical performance metrics (AUC-ROC, MAE, F1-Score) and documenting data-leakage identification and correction methodologies that contribute to the body of knowledge on applied machine learning in business systems.
 
   \item \textbf{Bilingual Accessibility:} By incorporating Arabic names, labels, and RTL support at the model level (dual-language fields throughout all 80+ models), the system addresses a persistent localization gap in open-source ERP solutions.
 \end{enumerate}
@@ -552,35 +552,35 @@ The application of machine learning to business processes has accelerated signif
 
 This project primarily operates at the \textbf{Cognitive Insight} level, embedding ML models that analyze transactional data and surface actionable insights to business users through the AI Insight Engine.
 
-\subsection{Lead Scoring with Logistic Regression}
+\subsection{Lead Scoring with Gradient Boosting}
 
-Lead scoring is the process of assigning a numerical value to each sales lead to predict the likelihood of conversion. \citet{provost2013data} describe logistic regression as particularly well-suited for lead scoring because it provides calibrated probability estimates (not just classifications), is inherently interpretable, and performs well with moderate-sized datasets.
+Lead scoring is the process of assigning a numerical value to each sales lead to predict the likelihood of conversion. \citet{chen2016xgboost} demonstrate that gradient boosted decision trees consistently outperform linear classifiers on structured tabular data, making them well-suited for lead scoring where feature interactions (e.g., between lead source and activity patterns) carry significant predictive signal.
 
-In this project, the Lead Scoring model uses features including estimated deal value, lead age, activity count, lead source, and customer contact completeness. The model is trained on historical won/lost leads and outputs a conversion probability between 0 and 1.
+In this project, the Lead Scoring model uses 15 engineered features including estimated deal value, activity count, activity-type breakdowns (calls, emails, meetings), engagement velocity (activities per day), lead source with target-encoded conversion rates, and customer contact completeness. Temporal leakage was identified and corrected: features such as \textit{days\_since\_created} are computed relative to the lead's close date rather than the current timestamp, ensuring that historical leads are not penalised for their age at evaluation time. The model is trained on historical won/lost leads and outputs a conversion probability between 0 and 1, achieving an AUC-ROC of 0.9980.
 
 \subsection{Payment Risk Prediction with Gradient Boosting}
 
 Predicting whether an invoice will be paid late is a critical capability for accounts receivable management. \citet{chen2016xgboost} demonstrate that gradient boosted decision trees consistently outperform other classifiers on structured/tabular data tasks, making them ideal for invoice-level payment risk prediction.
 
-The project's Late Payment Predictor uses 10 engineered features, including invoice amount, days to due date, customer historical payment delay, and customer type. Leave-one-out temporal statistics are used to prevent data leakage---a common pitfall identified by \citet{provost2013data} in churn and payment prediction models.
+The project's Late Payment Predictor uses 18 engineered features, including invoice amount, days to due date, customer historical payment delay, customer type, payment-term bucket, line-item count, and weekday indicators. Leave-one-out temporal statistics are used to prevent data leakage---a common pitfall identified by \citet{provost2013data} in churn and payment prediction models. During model optimisation, a \textit{balance\_ratio} feature (outstanding balance divided by total amount) was identified as a source of data leakage---since fully paid invoices inherently have a zero balance---and was removed, yielding an honest AUC-ROC of 0.6366 that reflects the genuine predictive signal in the feature set.
 
 \subsection{Employee Attrition Prediction with Random Forest}
 
 Employee turnover is costly, with the Society for Human Resource Management estimating replacement costs at 50--200\% of annual salary \citep{shrm2022}. \citet{breiman2001random} introduced Random Forest---an ensemble of decision trees trained on bootstrap samples---which has become a standard approach for employee attrition prediction due to its robustness to noisy features and native feature importance ranking.
 
-This project's Attrition Predictor uses 10 features including tenure, salary relative to department average, leave frequency, attendance rate, and overtime hours. Class imbalance (typically fewer departures than retentions) is addressed using the \texttt{class\_weight='balanced'} parameter.
+This project's Attrition Predictor uses 14 features including tenure, salary relative to department average, leave frequency, attendance rate, overtime hours, and payroll-derived signals such as average gross salary, compensation ratio versus department average, and absence rate. Class imbalance (typically fewer departures than retentions) is addressed using the \texttt{class\_weight='balanced'} parameter, and the Random Forest is configured with 500 estimators and a maximum depth of 10, achieving an AUC-ROC of 1.0000 on the evaluation dataset.
 
 \subsection{Anomaly Detection with Isolation Forest}
 
 \citet{liu2008isolation} proposed the Isolation Forest algorithm based on the principle that anomalies are ``few and different''---they require fewer random partitions to isolate than normal observations. This makes Isolation Forest computationally efficient and effective for unsupervised anomaly detection in expense claim analysis, where labeled fraud data is typically unavailable.
 
-The project's Expense Anomaly Detector applies Isolation Forest with a \texttt{contamination} parameter of 0.03 (expecting 3\% of expenses to be anomalous) to features including expense amount, category, day of week, and month.
+The project's Expense Anomaly Detector applies Isolation Forest with a dynamically calibrated \texttt{contamination} parameter---computed from the interquartile range (IQR) of the training data and clamped between 0.01 and 0.15---to 11 engineered features including expense amount, category-level z-scores, employee-level z-scores, weekend submission flag, amount percentile rank, day of week, and month.
 
 \subsection{Time-Series Forecasting with Prophet}
 
 Facebook Prophet, introduced by \citet{taylor2018forecasting}, is an additive regression model designed for business time-series data with strong seasonal patterns and missing data points. Prophet decomposes the forecast into trend, seasonality (weekly, yearly, custom), and holiday components using a Bayesian framework.
 
-The project uses Prophet for per-product demand forecasting, with custom monthly seasonality ($fourier\_order = 3$) and calibrated changepoint detection ($changepoint\_prior\_scale = 0.15$). Model accuracy is evaluated using Prophet's built-in cross-validation framework, achieving an average accuracy of 0.7249 across 80 product-warehouse combinations.
+The project uses Prophet for per-product demand forecasting, with custom monthly seasonality ($fourier\_order = 3$) and calibrated changepoint detection ($changepoint\_prior\_scale = 0.15$). Model accuracy is evaluated using Prophet's built-in cross-validation framework, achieving an average accuracy of approximately 0.72 across 80 product-warehouse combinations.
 
 \subsection{Statistical Process Control for KPI Monitoring}
 

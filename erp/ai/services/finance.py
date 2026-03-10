@@ -51,11 +51,14 @@ class LatePaymentPredictor:
     # ── Feature Engineering ─────────────────────────────────────────────
 
     FEATURE_COLS = [
-        'invoice_amount', 'days_to_due', 'invoice_month',
-        'invoice_day_of_week', 'cust_total_invoices',
-        'cust_avg_amount', 'cust_avg_days_to_due',
-        'cust_payment_delay_mean', 'customer_type_code',
-        'amount_vs_cust_avg',
+        'invoice_amount', 'amount_log', 'days_to_due',
+        'invoice_month', 'month_sin', 'month_cos',
+        'invoice_day_of_week', 'invoice_quarter',
+        'cust_total_invoices', 'cust_avg_amount', 'cust_avg_days_to_due',
+        'cust_payment_delay_mean', 'cust_late_ratio',
+        'customer_type_code', 'amount_vs_cust_avg',
+        'amount_percentile', 'is_large_invoice',
+        'payment_term_bucket',
     ]
 
     def _build_dataset(self) -> pd.DataFrame:
@@ -149,6 +152,42 @@ class LatePaymentPredictor:
         df['customer_type_code'] = df['customer__customer_type'].astype(
             'category').cat.codes
 
+        # ── New features for better generalisation ──────────────────────
+        # Log-transformed amount (reduces skew)
+        df['amount_log'] = np.log1p(df['invoice_amount'])
+
+        # Cyclical month encoding (captures Jan-Dec wrap-around)
+        df['month_sin'] = np.sin(2 * np.pi * df['invoice_month'] / 12)
+        df['month_cos'] = np.cos(2 * np.pi * df['invoice_month'] / 12)
+
+        # Quarter of year
+        df['invoice_quarter'] = df['invoice_date_dt'].dt.quarter
+
+        # Amount percentile (rank-based, robust to distribution shape)
+        df['amount_percentile'] = df['invoice_amount'].rank(pct=True)
+
+        # Is large invoice (top 25%)
+        q75 = df['invoice_amount'].quantile(0.75)
+        df['is_large_invoice'] = (df['invoice_amount'] >= q75).astype(int)
+
+        # Payment term bucket (short / medium / long / very_long)
+        df['payment_term_bucket'] = pd.cut(
+            df['days_to_due'],
+            bins=[-np.inf, 15, 30, 60, np.inf],
+            labels=[0, 1, 2, 3],
+        ).astype(int)
+
+        # Balance ratio (balance_due / total_amount) - captures partial pay
+        df['balance_ratio'] = (
+            df['balance_due'].astype(float) / df['total_amount'].astype(float).clip(lower=0.01)
+        ).clip(0, 1).fillna(1)
+
+        # Historical late-payment ratio per customer (expanding + shift)
+        df['cust_late_ratio'] = (
+            df.groupby('customer_id')['late']
+            .transform(lambda s: s.expanding().mean().shift(1))
+        ).fillna(0)
+
         df[self.FEATURE_COLS] = df[self.FEATURE_COLS].fillna(0)
         return df
 
@@ -169,11 +208,21 @@ class LatePaymentPredictor:
             X, y, test_size=0.2, random_state=42, stratify=y,
         )
 
-        clf = GradientBoostingClassifier(
-            n_estimators=300, max_depth=5, learning_rate=0.08,
-            subsample=0.8, min_samples_leaf=10, random_state=42,
+        # Compute sample weights to handle class imbalance
+        late_ratio = y_train.mean()
+        weights = np.where(
+            y_train == 1,
+            1.0 / max(late_ratio, 0.01),
+            1.0 / max(1 - late_ratio, 0.01),
         )
-        clf.fit(X_train, y_train)
+
+        clf = GradientBoostingClassifier(
+            n_estimators=500, max_depth=6, learning_rate=0.05,
+            subsample=0.8, min_samples_leaf=15, random_state=42,
+            max_features='sqrt', validation_fraction=0.1,
+            n_iter_no_change=30, tol=1e-4,
+        )
+        clf.fit(X_train, y_train, sample_weight=weights)
 
         y_proba = clf.predict_proba(X_test)[:, 1]
         auc = roc_auc_score(y_test, y_proba) if len(set(y_test)) > 1 else 0.0
@@ -293,18 +342,39 @@ class LatePaymentPredictor:
             if cust_avg_amount > 0 else 1.0
         )
 
+        inv_amount = float(invoice.total_amount)
+        month = invoice.invoice_date.month
+        # Compute late ratio from past invoices
+        if past_ids:
+            past_late_count = Invoice.objects.filter(
+                id__in=past_ids, status='overdue',
+            ).count()
+            cust_late_ratio = past_late_count / max(len(past_ids), 1)
+        else:
+            cust_late_ratio = 0.0
+
         features = np.array([[
-            float(invoice.total_amount),       # invoice_amount
-            days_to_due,                       # days_to_due
-            invoice.invoice_date.month,        # invoice_month
-            invoice.invoice_date.weekday(),    # invoice_day_of_week
-            cust_total,                        # cust_total_invoices
-            cust_avg_amount,                   # cust_avg_amount
-            avg_dtd,                           # cust_avg_days_to_due
-            cust_delay_mean,                   # cust_payment_delay_mean
+            inv_amount,                                  # invoice_amount
+            np.log1p(inv_amount),                        # amount_log
+            days_to_due,                                 # days_to_due
+            month,                                       # invoice_month
+            np.sin(2 * np.pi * month / 12),              # month_sin
+            np.cos(2 * np.pi * month / 12),              # month_cos
+            invoice.invoice_date.weekday(),               # invoice_day_of_week
+            (month - 1) // 3 + 1,                        # invoice_quarter
+            cust_total,                                  # cust_total_invoices
+            cust_avg_amount,                             # cust_avg_amount
+            avg_dtd,                                     # cust_avg_days_to_due
+            cust_delay_mean,                             # cust_payment_delay_mean
+            cust_late_ratio,                             # cust_late_ratio
             {'individual': 0, 'company': 1, 'government': 2}.get(
-                cust.customer_type, 0),        # customer_type_code
-            min(amount_vs_avg, 10.0),          # amount_vs_cust_avg
+                cust.customer_type, 0),                  # customer_type_code
+            min(amount_vs_avg, 10.0),                    # amount_vs_cust_avg
+            0.5,                                         # amount_percentile (approx)
+            1 if inv_amount > 500 else 0,                # is_large_invoice
+            (0 if days_to_due <= 15 else
+             1 if days_to_due <= 30 else
+             2 if days_to_due <= 60 else 3),             # payment_term_bucket
         ]])
 
         prob = float(self._model.predict_proba(features)[0][1])
@@ -393,24 +463,58 @@ class ExpenseAnomalyDetector:
         ).select_related('category').values(
             'id', 'expense_number', 'total_amount',
             'expense_date', 'category__name', 'status',
+            'employee_id',
         )
         df = pd.DataFrame(list(qs))
         if len(df) < self.min_samples:
             return []
 
         df['amount'] = df['total_amount'].astype(float)
+        df['amount_log'] = np.log1p(df['amount'])
         df['month'] = pd.to_datetime(df['expense_date']).dt.month
         df['day_of_week'] = pd.to_datetime(df['expense_date']).dt.dayofweek
+        df['is_weekend'] = (df['day_of_week'] >= 5).astype(int)
 
         le = LabelEncoder()
         df['category_code'] = le.fit_transform(
             df['category__name'].fillna('Unknown'))
 
-        features = df[['amount', 'month', 'day_of_week', 'category_code']].values
+        # Amount relative to category statistics (z-score within category)
+        cat_stats = df.groupby('category_code')['amount'].agg(
+            cat_mean='mean', cat_std='std').reset_index()
+        cat_stats['cat_std'] = cat_stats['cat_std'].clip(lower=1.0)
+        df = df.merge(cat_stats, on='category_code', how='left')
+        df['amount_vs_cat_z'] = (df['amount'] - df['cat_mean']) / df['cat_std']
+        df['amount_vs_cat_ratio'] = df['amount'] / df['cat_mean'].clip(lower=0.01)
+
+        # Employee-level history features
+        emp_stats = df.groupby('employee_id')['amount'].agg(
+            emp_mean='mean', emp_std='std', emp_count='count').reset_index()
+        emp_stats['emp_std'] = emp_stats['emp_std'].clip(lower=1.0)
+        df = df.merge(emp_stats, on='employee_id', how='left')
+        df['amount_vs_emp_z'] = (df['amount'] - df['emp_mean']) / df['emp_std']
+
+        # Amount percentile (global rank)
+        df['amount_percentile'] = df['amount'].rank(pct=True)
+
+        feature_cols = [
+            'amount', 'amount_log', 'month', 'day_of_week', 'is_weekend',
+            'category_code', 'amount_vs_cat_z', 'amount_vs_cat_ratio',
+            'amount_vs_emp_z', 'emp_count', 'amount_percentile',
+        ]
+        features = df[feature_cols].fillna(0).values
+
+        # Dynamic contamination: use IQR-based estimate
+        q1 = df['amount'].quantile(0.25)
+        q3 = df['amount'].quantile(0.75)
+        iqr = q3 - q1
+        upper_fence = q3 + 1.5 * iqr
+        iqr_outlier_ratio = (df['amount'] > upper_fence).mean()
+        contamination = float(np.clip(iqr_outlier_ratio, 0.01, 0.10))
 
         iso = IsolationForest(
-            contamination=0.03, random_state=42, n_estimators=300,
-            max_features=1.0,
+            contamination=contamination, random_state=42, n_estimators=500,
+            max_features=0.8, max_samples='auto',
         )
         predictions = iso.fit_predict(features)
         scores = iso.decision_function(features)

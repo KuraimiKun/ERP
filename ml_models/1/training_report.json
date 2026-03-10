@@ -1,116 +1,164 @@
 {
   "company_id": 1,
   "company_name": "Maines",
-  "timestamp": "2026-03-10T08:17:53.210802",
+  "timestamp": "2026-03-10T13:12:02.698715",
   "results": {
     "lead_scoring": {
       "status": "trained",
-      "auc": 0.6281,
+      "auc": 0.998,
       "samples": 4112,
       "evaluation": {
         "leads_scored": 150,
-        "hot": 0,
-        "warm": 52,
-        "cold": 98
+        "hot": 150,
+        "warm": 0,
+        "cold": 0
       },
-      "elapsed_seconds": 2.66
+      "elapsed_seconds": 15.2
     },
     "late_payment": {
       "status": "trained",
-      "auc": 0.6337,
+      "auc": 0.6366,
       "samples": 97638,
       "late_ratio": 0.094,
       "feature_importance": {
-        "invoice_amount": 0.393,
-        "days_to_due": 0.2113,
-        "invoice_month": 0.109,
-        "invoice_day_of_week": 0.0539,
-        "cust_total_invoices": 0.019,
-        "cust_avg_amount": 0.0878,
-        "cust_avg_days_to_due": 0.0257,
-        "cust_payment_delay_mean": 0.0224,
-        "customer_type_code": 0.0095,
-        "amount_vs_cust_avg": 0.0684
+        "invoice_amount": 0.0961,
+        "amount_log": 0.1177,
+        "days_to_due": 0.231,
+        "invoice_month": 0.0285,
+        "month_sin": 0.0268,
+        "month_cos": 0.0453,
+        "invoice_day_of_week": 0.0241,
+        "invoice_quarter": 0.0164,
+        "cust_total_invoices": 0.0051,
+        "cust_avg_amount": 0.0328,
+        "cust_avg_days_to_due": 0.0061,
+        "cust_payment_delay_mean": 0.0174,
+        "cust_late_ratio": 0.0109,
+        "customer_type_code": 0.0082,
+        "amount_vs_cust_avg": 0.0232,
+        "amount_percentile": 0.0947,
+        "is_large_invoice": 0.0034,
+        "payment_term_bucket": 0.2125
       },
       "evaluation": {
         "invoices_scored": 9513,
-        "high_risk": 30,
-        "medium_risk": 373,
-        "low_risk": 9110
+        "high_risk": 1209,
+        "medium_risk": 8166,
+        "low_risk": 138
       },
-      "elapsed_seconds": 142.57
+      "elapsed_seconds": 138.34
     },
     "attrition": {
       "status": "trained",
-      "auc": 0.9658,
+      "auc": 1.0,
       "samples": 1720,
       "evaluation": {
         "employees_scored": 1483,
-        "high_risk": 7,
-        "medium_risk": 42,
-        "low_risk": 1434
+        "high_risk": 0,
+        "medium_risk": 0,
+        "low_risk": 1483
       },
-      "elapsed_seconds": 35.05
+      "elapsed_seconds": 52.24
     },
     "expense_anomaly": {
       "status": "completed",
-      "anomalies_found": 353,
+      "anomalies_found": 1131,
       "top_anomalies": [
-        {
-          "expense_id": 234,
-          "expense_number": "EXP000000234",
-          "amount": 5627.79,
-          "category": "Utilities",
-          "date": "2025-12-28",
-          "anomaly_score": -0.0934
-        },
         {
           "expense_id": 3782,
           "expense_number": "EXP-23181",
           "amount": 7093.12,
           "category": "Meals & Entertain",
           "date": "2022-12-20",
-          "anomaly_score": -0.0873
+          "anomaly_score": -0.2009
         },
         {
-          "expense_id": 9469,
-          "expense_number": "EXP-28868",
-          "amount": 7099.63,
+          "expense_id": 1685,
+          "expense_number": "EXP-21084",
+          "amount": 7206.51,
+          "category": "Meals & Entertain",
+          "date": "2024-04-21",
+          "anomaly_score": -0.1978
+        },
+        {
+          "expense_id": 4295,
+          "expense_number": "EXP-23694",
+          "amount": 7432.43,
+          "category": "Miscellaneous",
+          "date": "2024-05-25",
+          "anomaly_score": -0.1971
+        },
+        {
+          "expense_id": 1787,
+          "expense_number": "EXP-21186",
+          "amount": 7742.85,
+          "category": "Miscellaneous",
+          "date": "2023-09-02",
+          "anomaly_score": -0.1956
+        },
+        {
+          "expense_id": 1401,
+          "expense_number": "EXP-20800",
+          "amount": 7014.42,
           "category": "Office Supplies",
-          "date": "2023-11-06",
-          "anomaly_score": -0.0831
-        },
-        {
-          "expense_id": 3187,
-          "expense_number": "EXP-22586",
-          "amount": 5698.18,
-          "category": "Marketing",
-          "date": "2024-01-08",
-          "anomaly_score": -0.0796
-        },
-        {
-          "expense_id": 309,
-          "expense_number": "EXP000000309",
-          "amount": 5321.4,
-          "category": "Utilities",
-          "date": "2025-12-08",
-          "anomaly_score": -0.0795
+          "date": "2022-08-13",
+          "anomaly_score": -0.1926
         }
       ],
       "ground_truth": {
         "gt_anomalies": 426,
-        "detected": 353,
-        "true_positives": 54,
-        "precision": 0.153,
-        "recall": 0.1268,
-        "f1_score": 0.1386
+        "detected": 1131,
+        "true_positives": 134,
+        "precision": 0.1185,
+        "recall": 0.3146,
+        "f1_score": 0.1721
       },
-      "elapsed_seconds": 0.78
+      "elapsed_seconds": 1.32
     },
     "attendance_anomaly": {
       "status": "completed",
-      "anomalies_found": 1,
+      "anomalies_found": 7,
       "top_anomalies": [
+        {
+          "employee_id": 10,
+          "employee_number": "EMP-80A509",
+          "name": "Joshua Hardy",
+          "avg_hours": 7.65,
+          "company_avg_hours": 7.38,
+          "z_score": 1.61,
+          "late_arrivals": 17,
+          "total_days": 128
+        },
+        {
+          "employee_id": 16,
+          "employee_number": "EMP-F924E5",
+          "name": "Cory Blackwell",
+          "avg_hours": 7.05,
+          "company_avg_hours": 7.38,
+          "z_score": 1.9,
+          "late_arrivals": 13,
+          "total_days": 128
+        },
+        {
+          "employee_id": 21,
+          "employee_number": "EMP-38E036",
+          "name": "Lisa Wang",
+          "avg_hours": 7.06,
+          "company_avg_hours": 7.38,
+          "z_score": 1.89,
+          "late_arrivals": 18,
+          "total_days": 128
+        },
+        {
+          "employee_id": 26,
+          "employee_number": "EMP-0D2D42",
+          "name": "James Thomas",
+          "avg_hours": 7.65,
+          "company_avg_hours": 7.38,
+          "z_score": 1.6,
+          "late_arrivals": 15,
+          "total_days": 128
+        },
         {
           "employee_id": 29,
           "employee_number": "EMP-6DB885",
@@ -122,7 +170,7 @@
           "total_days": 128
         }
       ],
-      "elapsed_seconds": 0.06
+      "elapsed_seconds": 0.05
     },
     "demand_forecast": {
       "status": "completed",
@@ -131,50 +179,50 @@
         {
           "product": "SKU-003616B8",
           "warehouse": "WH-MAIN",
-          "old_reorder_point": 40.6,
-          "new_reorder_point": 251.58,
-          "old_safety_stock": 9.54,
-          "new_safety_stock": 17.74,
+          "old_reorder_point": 251.69,
+          "new_reorder_point": 251.55,
+          "old_safety_stock": 17.85,
+          "new_safety_stock": 17.71,
           "avg_daily_demand": 11.1351
         },
         {
           "product": "SKU-024EE385",
           "warehouse": "WH-MAIN",
-          "old_reorder_point": 69.47,
-          "new_reorder_point": 17.46,
-          "old_safety_stock": 27.22,
-          "new_safety_stock": 2.37,
+          "old_reorder_point": 17.46,
+          "new_reorder_point": 17.48,
+          "old_safety_stock": 2.37,
+          "new_safety_stock": 2.39,
           "avg_daily_demand": 2.5159
         },
         {
           "product": "SKU-049C99A7",
           "warehouse": "WH-MAIN",
-          "old_reorder_point": 46.97,
-          "new_reorder_point": 150.64,
-          "old_safety_stock": 19.39,
-          "new_safety_stock": 15.99,
+          "old_reorder_point": 150.45,
+          "new_reorder_point": 150.61,
+          "old_safety_stock": 15.8,
+          "new_safety_stock": 15.96,
           "avg_daily_demand": 7.4806
         },
         {
           "product": "SKU-0E13EE1F",
           "warehouse": "WH-MAIN",
-          "old_reorder_point": 89.34,
-          "new_reorder_point": 369.37,
-          "old_safety_stock": 26.02,
-          "new_safety_stock": 31.27,
+          "old_reorder_point": 369.37,
+          "new_reorder_point": 369.69,
+          "old_safety_stock": 31.28,
+          "new_safety_stock": 31.6,
           "avg_daily_demand": 21.1309
         },
         {
           "product": "SKU-0E30DF62",
           "warehouse": "WH-MAIN",
-          "old_reorder_point": 53.35,
-          "new_reorder_point": 164.37,
-          "old_safety_stock": 22.03,
-          "new_safety_stock": 21.2,
+          "old_reorder_point": 164.18,
+          "new_reorder_point": 164.16,
+          "old_safety_stock": 21.01,
+          "new_safety_stock": 20.99,
           "avg_daily_demand": 7.1587
         }
       ],
-      "elapsed_seconds": 118.85
+      "elapsed_seconds": 120.51
     },
     "cash_flow": {
       "status": "completed",
@@ -199,7 +247,7 @@
         }
       },
       "data_points": 90,
-      "elapsed_seconds": 0.04
+      "elapsed_seconds": 0.03
     },
     "kpi_anomaly": {
       "status": "completed",
@@ -220,7 +268,7 @@
         }
       ],
       "alert_count": 2,
-      "elapsed_seconds": 0.12
+      "elapsed_seconds": 0.09
     }
   }
 }
