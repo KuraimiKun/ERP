@@ -3,6 +3,8 @@ ERP Views – Quotes, Service Categories & Services (ServicePricing)
 """
 
 from django.db.models import Q
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models import ServiceCategory, ServicePricing, Quote, Product, TaxRate
 from erp.forms import (
@@ -19,6 +21,8 @@ from ._common import (
 # ── Quotes ──────────────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def quote_list(request):
     company = get_user_company(request.user)
     quotes = Quote.objects.filter(company=company).select_related('customer', 'lead')
@@ -205,6 +209,8 @@ def service_category_delete(request, pk):
 # ── Services (ServicePricing) ──────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def service_list(request):
     company = get_user_company(request.user)
     services = ServicePricing.objects.filter(company=company).select_related('category', 'currency', 'tax_rate')

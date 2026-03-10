@@ -6,6 +6,8 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.db.models import Count
 from django.db.models.functions import TruncDate, TruncMonth
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from datetime import timedelta
 import json
 
@@ -17,6 +19,8 @@ from . import platform_admin_required, pa_context
 
 
 @platform_admin_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def pa_dashboard(request):
     """Platform admin dashboard with system-wide stats."""
     now = timezone.now()

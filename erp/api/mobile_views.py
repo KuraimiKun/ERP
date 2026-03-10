@@ -12,6 +12,8 @@ from django.contrib.auth import authenticate
 from django.db.models import Count, Q, Sum, Avg
 from django.db.models.functions import Coalesce, ExtractHour
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import (
@@ -147,6 +149,8 @@ def mobile_logout(request):
 # ═══════════════════════════════════════════════════════════════════════════
 
 @api_view(['GET'])
+@cache_page(60 * 5)   # 5 minutes
+@vary_on_cookie
 def mobile_dashboard(request):
     """Aggregated dashboard data."""
     employee = _get_employee(request.user)
@@ -1316,6 +1320,8 @@ def mobile_pos_order_history(request, session_id):
 # ═══════════════════════════════════════════════════════════════════════════
 
 @api_view(['GET'])
+@cache_page(60 * 5)   # 5 minutes
+@vary_on_cookie
 def mobile_pos_stats(request):
     """
     Employee POS performance statistics.

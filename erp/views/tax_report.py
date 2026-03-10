@@ -8,6 +8,8 @@ from datetime import date
 
 from django.db.models import Sum, F, DecimalField
 from django.db.models.functions import Coalesce, TruncMonth
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models import InvoiceLine, SupplierInvoiceLine
 from ._common import (
@@ -16,6 +18,8 @@ from ._common import (
 
 
 @staff_member_required
+@cache_page(60 * 60)  # 1 hour
+@vary_on_cookie
 def tax_report(request):
     """VAT / Tax report showing collected vs paid tax."""
     company = get_user_company(request.user)

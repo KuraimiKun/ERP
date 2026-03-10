@@ -11,6 +11,9 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum, Count
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from ..models import (
     # Core
@@ -336,6 +339,8 @@ class InvoiceViewSet(ERPBaseViewSet):
         return InvoiceSerializer
     
     @action(detail=False, methods=['get'])
+    @method_decorator(cache_page(60 * 5))   # 5 minutes
+    @method_decorator(vary_on_cookie)
     def overdue(self, request):
         """Get overdue invoices."""
         queryset = self.get_queryset().filter(status='overdue')
@@ -343,6 +348,8 @@ class InvoiceViewSet(ERPBaseViewSet):
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
+    @method_decorator(cache_page(60 * 5))   # 5 minutes
+    @method_decorator(vary_on_cookie)
     def summary(self, request):
         """Get invoice summary statistics."""
         queryset = self.get_queryset()

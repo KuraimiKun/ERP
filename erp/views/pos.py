@@ -10,6 +10,8 @@ from decimal import Decimal
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from django.db.models import Q
 
@@ -574,6 +576,8 @@ def pos_terminal_delete(request, pk):
 
 
 @staff_member_required
+@cache_page(60 * 5)   # 5 minutes
+@vary_on_cookie
 def pos_session_list(request):
     """List all POS sessions across terminals."""
     company = get_user_company(request.user)

@@ -11,6 +11,8 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.db.models import Count, Q
 from django.db.models.functions import TruncDate, TruncMonth
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from tenants.models import (
     TenantUser, PostgresServer, TenantDatabase,
@@ -20,6 +22,8 @@ from . import platform_admin_required, pa_context
 
 
 @platform_admin_required
+@cache_page(60 * 30)  # 30 minutes
+@vary_on_cookie
 def pa_analytics(request):
     """Analytics dashboard with charts and trends."""
     now = timezone.now()

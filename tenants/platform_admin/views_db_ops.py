@@ -10,7 +10,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, FileResponse
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_POST
+from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 
 from tenants.models import TenantDatabase, ServerLog
@@ -287,6 +289,8 @@ def pa_db_reset_password(request, pk):
 # ── Server Databases Overview ────────────────────────────────────────────────
 
 @platform_admin_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def pa_server_db_overview(request, pk):
     """All databases on a particular server, with sizes and connections."""
     from tenants.models import PostgresServer

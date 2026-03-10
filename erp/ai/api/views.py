@@ -7,6 +7,8 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.views._common import get_user_company
 from erp.ai.models import MLModel, PredictionLog, AIInsight
@@ -168,6 +170,8 @@ def trigger_attrition_scoring(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@cache_page(60 * 60)  # 1 hour
+@vary_on_cookie
 def cash_flow_forecast(request):
     """Get cash-flow forecast."""
     from erp.ai.services.finance import CashFlowForecaster
@@ -213,6 +217,8 @@ def ai_assistant_query(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def ai_dashboard_summary(request):
     """Return a summary for the AI dashboard widgets."""
     company = get_user_company(request.user)

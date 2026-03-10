@@ -9,6 +9,8 @@ from django.http import JsonResponse
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models import (
     Invoice, Expense, Customer, Lead, Quote, Employee, LeaveRequest,
@@ -18,6 +20,8 @@ from ._common import render, get_user_company, staff_member_required
 
 
 @staff_member_required
+@cache_page(60 * 5)   # 5 minutes
+@vary_on_cookie
 def dashboard(request):
     """Main ERP dashboard view."""
     company = get_user_company(request.user)
@@ -140,6 +144,8 @@ def dashboard(request):
 
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def dashboard_charts_data(request):
     """API endpoint for dashboard chart data."""
     company = get_user_company(request.user)

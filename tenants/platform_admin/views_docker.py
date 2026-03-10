@@ -11,7 +11,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_POST
+from django.views.decorators.vary import vary_on_cookie
 
 from tenants.models import PostgresServer, ServerLog
 from tenants.services.docker_service import DockerService
@@ -21,6 +23,8 @@ from . import platform_admin_required, pa_context
 # ── Docker Dashboard ─────────────────────────────────────────────────────────
 
 @platform_admin_required
+@cache_page(60 * 5)   # 5 minutes
+@vary_on_cookie
 def pa_docker_dashboard(request):
     """Docker overview: system info, images, all container servers."""
     docker_service = DockerService()
@@ -48,6 +52,8 @@ def pa_docker_dashboard(request):
 # ── Container Stats ──────────────────────────────────────────────────────────
 
 @platform_admin_required
+@cache_page(60 * 2)   # 2 minutes
+@vary_on_cookie
 def pa_docker_stats(request, pk):
     """Container resource usage stats page."""
     server = get_object_or_404(PostgresServer, pk=pk, server_type='docker')

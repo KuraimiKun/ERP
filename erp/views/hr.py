@@ -10,6 +10,8 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Q, Sum, Count
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models import (
     Employee, Department, Attendance, LeaveRequest,
@@ -242,6 +244,8 @@ def department_delete(request, pk):
 # ── Attendance ──────────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def attendance_list(request):
     company = get_user_company(request.user)
     today = date.today()
@@ -397,6 +401,8 @@ def leave_request_approve(request, pk):
 # ── Payroll ─────────────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def payroll_list(request):
     company = get_user_company(request.user)
     payrolls = Payroll.objects.filter(

@@ -8,6 +8,8 @@ pick lists, shipments, reorder rules, stock movements, and valuation config.
 
 from django.db.models import Q, Sum
 from django.utils.translation import gettext as _
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models import (
     Product, Warehouse, WarehouseZone, UnitOfMeasure, LotBatch, SerialNumber, StockItem, StockMovement,
@@ -37,6 +39,8 @@ from ._common import (
 # ═══════════════════════════════════════════════════════════════════════════
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def warehouse_list(request):
     company = get_user_company(request.user)
     warehouses = Warehouse.objects.filter(company=company).select_related('manager')
@@ -56,6 +60,8 @@ def warehouse_list(request):
 
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def warehouse_detail(request, pk):
     company = get_user_company(request.user)
     warehouse = get_object_or_404(Warehouse, pk=pk, company=company)

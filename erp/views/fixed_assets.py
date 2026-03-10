@@ -8,6 +8,8 @@ Transfers, Revaluation, and Maintenance Logs.
 from dateutil.relativedelta import relativedelta
 
 from django.db.models import Q, Sum
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models.fixed_assets import (
     AssetCategory, FixedAsset, DepreciationSchedule,
@@ -96,6 +98,8 @@ def asset_category_delete(request, pk):
 # ═══════════════════════════════════════════════════════════════════
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def asset_list(request):
     company = get_user_company(request.user)
     assets = FixedAsset.objects.filter(company=company).select_related(
@@ -244,6 +248,8 @@ def asset_activate(request, pk):
 # ═══════════════════════════════════════════════════════════════════
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def depreciation_list(request):
     """List all depreciation schedules across all assets."""
     company = get_user_company(request.user)

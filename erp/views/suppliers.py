@@ -4,6 +4,8 @@ ERP Views – Suppliers, Purchase Orders, Supplier Invoices & Payments
 
 from django.db.models import Q
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models import (
     Supplier, PurchaseOrder,
@@ -32,6 +34,8 @@ from ._common import (
 # ── Suppliers ───────────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def supplier_list(request):
     company = get_user_company(request.user)
     suppliers = Supplier.objects.filter(company=company).order_by('name')
@@ -152,6 +156,8 @@ def supplier_delete(request, pk):
 # ── Purchase Orders ─────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def purchase_order_list(request):
     company = get_user_company(request.user)
     orders = PurchaseOrder.objects.filter(company=company).select_related('supplier', 'currency')
@@ -385,6 +391,8 @@ def purchase_order_create_invoice(request, pk):
 # ── Supplier Invoices ───────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def supplier_invoice_list(request):
     company = get_user_company(request.user)
     invoices = SupplierInvoice.objects.filter(company=company).select_related('supplier', 'currency')
@@ -523,6 +531,8 @@ def supplier_invoice_delete(request, pk):
 # ── Supplier Payments ───────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 10)  # 10 minutes
+@vary_on_cookie
 def supplier_payment_list(request):
     company = get_user_company(request.user)
     payments = SupplierPayment.objects.filter(company=company).select_related('supplier', 'currency', 'payment_method')

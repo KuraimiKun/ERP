@@ -9,6 +9,8 @@ from decimal import Decimal
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from erp.models import (
     Account, JournalEntryLine,
@@ -98,6 +100,8 @@ def _get_account_balances(company, start_date, end_date, account_types=None):
 # ── Trial Balance ───────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 30)  # 30 minutes
+@vary_on_cookie
 def trial_balance(request):
     company = get_user_company(request.user)
     start_date, end_date = _parse_date_range(request, company)
@@ -120,6 +124,8 @@ def trial_balance(request):
 # ── Profit & Loss ──────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 30)  # 30 minutes
+@vary_on_cookie
 def profit_and_loss(request):
     company = get_user_company(request.user)
     start_date, end_date = _parse_date_range(request, company)
@@ -145,6 +151,8 @@ def profit_and_loss(request):
 # ── Balance Sheet ───────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 30)  # 30 minutes
+@vary_on_cookie
 def balance_sheet(request):
     company = get_user_company(request.user)
     start_date, end_date = _parse_date_range(request, company)
@@ -182,6 +190,8 @@ def balance_sheet(request):
 # ── Cash Flow ───────────────────────────────────────────────────────────────
 
 @staff_member_required
+@cache_page(60 * 15)  # 15 minutes
+@vary_on_cookie
 def cash_flow(request):
     company = get_user_company(request.user)
     start_date, end_date = _parse_date_range(request, company)
@@ -270,6 +280,8 @@ def _calculate_aging_buckets(queryset, date_field='due_date'):
 
 
 @staff_member_required
+@cache_page(60 * 15)  # 15 minutes
+@vary_on_cookie
 def aging_receivables(request):
     """Accounts Receivable Aging Report."""
     company = get_user_company(request.user)
@@ -301,6 +313,8 @@ def aging_receivables(request):
 
 
 @staff_member_required
+@cache_page(60 * 15)  # 15 minutes
+@vary_on_cookie
 def aging_payables(request):
     """Accounts Payable Aging Report."""
     company = get_user_company(request.user)
