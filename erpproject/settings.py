@@ -35,7 +35,7 @@ SECRET_KEY = _secret
 # expose debug pages.
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,10.0.2.2').split(',')
 
 # ── Production security settings (active when DEBUG=False) ──────────────────
 if not DEBUG:
@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     
     # Third party apps
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
     'corsheaders',
     'crispy_forms',

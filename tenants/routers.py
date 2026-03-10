@@ -51,7 +51,7 @@ ALWAYS_DEFAULT_APPS = {
 # Models/apps that exist in BOTH default and tenant DBs (shared apps).
 # When a tenant context is active these should be read/written on the
 # tenant DB so that FK subqueries against ERP tables work correctly.
-SHARED_APPS = {'auth', 'contenttypes', 'tenants'}
+SHARED_APPS = {'auth', 'contenttypes', 'tenants', 'authtoken'}
 
 
 class TenantDatabaseRouter:
@@ -134,7 +134,7 @@ class TenantDatabaseRouter:
         - sessions, admin: default only
         """
         # Apps whose tables are needed in tenant databases for FK support
-        SHARED_APPS = {'auth', 'contenttypes', 'tenants'}
+        SHARED_APPS = {'auth', 'contenttypes', 'tenants', 'authtoken'}
 
         if app_label in SHARED_APPS:
             # These apps migrate to both default and tenant databases

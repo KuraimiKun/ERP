@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.conf import settings
 
-from .routers import set_current_db_alias, clear_current_db_alias, get_tenant_db_alias
+from .routers import set_current_db_alias, clear_current_db_alias, get_tenant_db_alias, add_tenant_database
 
 
 # URLs that don't require tenant database access
@@ -47,10 +47,32 @@ class TenantMiddleware:
     def __call__(self, request):
         # Clear any previous tenant context
         clear_current_db_alias()
-        
+
         # Check if this is a public URL
         path = request.path
         is_public = any(path.startswith(url) for url in PUBLIC_URLS)
+
+        # Mobile API: use X-Tenant-DB header for tenant context.
+        # Login endpoint is excluded (it resolves tenant itself).
+        if '/api/mobile/' in path:
+            tenant_db = request.META.get('HTTP_X_TENANT_DB', '')
+            if tenant_db:
+                if tenant_db in settings.DATABASES:
+                    set_current_db_alias(tenant_db)
+                elif tenant_db.startswith('tenant_'):
+                    # After server restart, dynamically added DBs are lost.
+                    # Re-register from the TenantDatabase record.
+                    try:
+                        from .models import TenantDatabase
+                        db_id = tenant_db.replace('tenant_', '')
+                        tdb = TenantDatabase.objects.get(id=db_id, status='active')
+                        add_tenant_database(tdb)
+                        set_current_db_alias(tenant_db)
+                    except Exception:
+                        pass
+            response = self.get_response(request)
+            clear_current_db_alias()
+            return response
 
         # Kiosk pages are public (cookie-authenticated, not user-session)
         is_kiosk = any(fragment in path for fragment in KIOSK_URL_FRAGMENTS)

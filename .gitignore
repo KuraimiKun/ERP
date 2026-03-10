@@ -118,3 +118,4 @@ logs/
 
 # Deployment secrets (never commit real credentials)
 deploy/.env.production
+tmpclaude-*

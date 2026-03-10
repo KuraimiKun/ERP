@@ -19,7 +19,7 @@ from tenants.models import TenantDatabase
 from tenants.routers import add_tenant_database
 
 # The apps that must be migrated on every tenant DB, in dependency order.
-TENANT_MIGRATION_ORDER = ('contenttypes', 'auth', 'tenants', 'erp', 'erp_ai')
+TENANT_MIGRATION_ORDER = ('contenttypes', 'auth', 'authtoken', 'tenants', 'erp', 'erp_ai')
 
 
 class Command(BaseCommand):
@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 db_alias = add_tenant_database(tenant_db)
 
                 for app in apps_to_migrate:
-                    self.stdout.write(f'  Migrating {app} …')
+                    self.stdout.write(f'  Migrating {app} ...')
                     call_command(
                         'migrate',
                         app,
@@ -98,11 +98,11 @@ class Command(BaseCommand):
                 tenant_db.error_message = ''
                 tenant_db.save(update_fields=['is_migrated', 'migrated_at', 'error_message'])
 
-                self.stdout.write(self.style.SUCCESS(f'  ✓ {tenant_db.name} — all migrations applied'))
+                self.stdout.write(self.style.SUCCESS(f'  [OK] {tenant_db.name} - all migrations applied'))
                 success += 1
 
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f'  ✗ {tenant_db.name} — {e}'))
+                self.stdout.write(self.style.ERROR(f'  [FAIL] {tenant_db.name} - {e}'))
                 tenant_db.error_message = f'Migration error: {e}'
                 tenant_db.save(update_fields=['error_message'])
                 failed += 1

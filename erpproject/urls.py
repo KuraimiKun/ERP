@@ -16,6 +16,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Internationalization
     path('i18n/', include('django.conf.urls.i18n')),
+    # Mobile API - outside i18n_patterns (uses Accept-Language header instead)
+    path('api/mobile/', include('erp.api.mobile_urls')),
 ]
 
 urlpatterns += i18n_patterns(

@@ -1,0 +1,81 @@
+supplier_id,supplier_type,name,city,payment_terms,rating,avg_amount,avg_lead_time
+SUP-1000,visa,Star Airlines Ltd #0,Muscat,0,5,800,14
+SUP-1001,dmc,Shield Insurance LLC #1,Dubai,45,5,6000,14
+SUP-1002,transport,Star Airlines Inc #2,Doha,0,2,1500,5
+SUP-1003,insurance,Seaside Resorts Inc #3,Riyadh,30,3,2000,7
+SUP-1004,hotel,Adventure Tours LLC LLC #4,Doha,15,2,3000,3
+SUP-1005,other,TechParts Supply Co #5,Dubai,30,5,1200,10
+SUP-1006,dmc,Shield Insurance LLC #6,Jeddah,60,4,6000,14
+SUP-1007,dmc,TechParts Supply Ltd #7,Jeddah,30,3,6000,14
+SUP-1008,dmc,Gulf Hotels Group Ltd #8,Muscat,30,4,6000,14
+SUP-1009,airline,TechParts Supply Inc #9,Dubai,30,2,5000,7
+SUP-1010,visa,Fast Visa Agency Co #10,Doha,30,3,800,14
+SUP-1011,transport,TechParts Supply Co #11,Abu Dhabi,30,3,1500,5
+SUP-1012,visa,Gulf Hotels Group Ltd #12,Riyadh,30,2,800,14
+SUP-1013,airline,Global Air Services LLC #13,Dubai,15,3,5000,7
+SUP-1014,visa,Fast Visa Agency Ltd #14,Doha,30,5,800,14
+SUP-1015,transport,Oasis DMC Partners Ltd #15,Riyadh,0,2,1500,5
+SUP-1016,hotel,Star Airlines Ltd #16,Doha,45,3,3000,3
+SUP-1017,airline,Gulf Hotels Group Inc #17,Muscat,30,5,5000,7
+SUP-1018,dmc,TechParts Supply LLC #18,Jeddah,45,3,6000,14
+SUP-1019,dmc,City Cab Transit LLC #19,Muscat,30,4,6000,14
+SUP-1020,airline,Premium Logistics Ltd #20,Muscat,45,5,5000,7
+SUP-1021,other,Fast Visa Agency Co #21,Riyadh,45,5,1200,10
+SUP-1022,tour_operator,Fast Visa Agency Ltd #22,Jeddah,60,4,8000,21
+SUP-1023,tour_operator,Adventure Tours LLC LLC #23,Jeddah,60,2,8000,21
+SUP-1024,other,Fast Visa Agency Ltd #24,Riyadh,45,3,1200,10
+SUP-1025,hotel,TechParts Supply Inc #25,Jeddah,30,2,3000,3
+SUP-1026,tour_operator,TechParts Supply Ltd #26,Jeddah,75,2,8000,21
+SUP-1027,airline,TechParts Supply Co #27,Doha,30,5,5000,7
+SUP-1028,airline,TechParts Supply LLC #28,Riyadh,30,5,5000,7
+SUP-1029,tour_operator,Adventure Tours LLC Inc #29,Dubai,45,4,8000,21
+SUP-1030,transport,Shield Insurance LLC #30,Muscat,30,5,1500,5
+SUP-1031,dmc,Star Airlines Co #31,Doha,45,2,6000,14
+SUP-1032,airline,Star Airlines Inc #32,Riyadh,15,4,5000,7
+SUP-1033,airline,Global Air Services Co #33,Abu Dhabi,30,3,5000,7
+SUP-1034,visa,Seaside Resorts Ltd #34,Muscat,30,4,800,14
+SUP-1035,transport,Global Air Services LLC #35,Abu Dhabi,0,5,1500,5
+SUP-1036,airline,Adventure Tours LLC Co #36,Riyadh,45,5,5000,7
+SUP-1037,visa,Fast Visa Agency Inc #37,Riyadh,30,4,800,14
+SUP-1038,airline,Gulf Hotels Group Co #38,Dubai,30,2,5000,7
+SUP-1039,other,TechParts Supply Ltd #39,Doha,45,5,1200,10
+SUP-1040,dmc,Premium Logistics LLC #40,Jeddah,30,2,6000,14
+SUP-1041,visa,Premium Logistics Ltd #41,Riyadh,15,2,800,14
+SUP-1042,insurance,Seaside Resorts Co #42,Riyadh,45,3,2000,7
+SUP-1043,hotel,Desert Transport Co Inc #43,Dubai,45,4,3000,3
+SUP-1044,tour_operator,Oasis DMC Partners Inc #44,Riyadh,60,2,8000,21
+SUP-1045,hotel,Fast Visa Agency Ltd #45,Doha,30,2,3000,3
+SUP-1046,insurance,Premium Logistics Ltd #46,Dubai,60,4,2000,7
+SUP-1047,other,TechParts Supply Ltd #47,Jeddah,30,4,1200,10
+SUP-1048,insurance,Shield Insurance Inc #48,Jeddah,30,5,2000,7
+SUP-1049,dmc,Star Airlines Co #49,Doha,60,4,6000,14
+SUP-1050,tour_operator,Gulf Hotels Group Inc #50,Muscat,75,4,8000,21
+SUP-1051,dmc,Adventure Tours LLC Ltd #51,Riyadh,45,3,6000,14
+SUP-1052,visa,Star Airlines LLC #52,Dubai,30,5,800,14
+SUP-1053,insurance,City Cab Transit LLC #53,Riyadh,60,5,2000,7
+SUP-1054,hotel,Star Airlines Inc #54,Doha,30,4,3000,3
+SUP-1055,other,Premium Logistics LLC #55,Dubai,30,5,1200,10
+SUP-1056,tour_operator,Oasis DMC Partners Ltd #56,Riyadh,75,3,8000,21
+SUP-1057,dmc,Seaside Resorts Co #57,Jeddah,30,4,6000,14
+SUP-1058,hotel,Oasis DMC Partners Co #58,Dubai,30,5,3000,3
+SUP-1059,hotel,Shield Insurance Ltd #59,Doha,30,3,3000,3
+SUP-1060,visa,Desert Transport Co Ltd #60,Muscat,0,4,800,14
+SUP-1061,hotel,TechParts Supply Inc #61,Dubai,15,5,3000,3
+SUP-1062,tour_operator,Star Airlines Inc #62,Doha,45,3,8000,21
+SUP-1063,airline,Seaside Resorts Co #63,Doha,45,5,5000,7
+SUP-1064,tour_operator,City Cab Transit LLC #64,Dubai,60,4,8000,21
+SUP-1065,transport,Gulf Hotels Group Ltd #65,Muscat,15,5,1500,5
+SUP-1066,tour_operator,Fast Visa Agency Ltd #66,Riyadh,60,2,8000,21
+SUP-1067,transport,Shield Insurance Inc #67,Abu Dhabi,15,2,1500,5
+SUP-1068,transport,Shield Insurance Inc #68,Riyadh,30,4,1500,5
+SUP-1069,insurance,Fast Visa Agency LLC #69,Muscat,60,5,2000,7
+SUP-1070,transport,Global Air Services Ltd #70,Dubai,15,5,1500,5
+SUP-1071,tour_operator,Star Airlines Inc #71,Jeddah,60,2,8000,21
+SUP-1072,hotel,Oasis DMC Partners LLC #72,Riyadh,45,5,3000,3
+SUP-1073,tour_operator,Seaside Resorts Co #73,Doha,45,2,8000,21
+SUP-1074,hotel,Oasis DMC Partners Inc #74,Doha,45,4,3000,3
+SUP-1075,visa,Shield Insurance Inc #75,Muscat,30,3,800,14
+SUP-1076,hotel,TechParts Supply Inc #76,Jeddah,45,2,3000,3
+SUP-1077,visa,Star Airlines Inc #77,Abu Dhabi,30,5,800,14
+SUP-1078,transport,Premium Logistics Co #78,Muscat,0,5,1500,5
+SUP-1079,hotel,Global Air Services Ltd #79,Doha,30,5,3000,3
