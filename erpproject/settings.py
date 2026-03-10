@@ -203,12 +203,38 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 
 # ── Cache (used for rate-limiting and sessions) ────────────────────────────
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+_redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/1')
+
+# Probe Redis availability so the app can start without it during development.
+def _redis_available(url):
+    try:
+        import redis as _r
+        c = _r.Redis.from_url(url, socket_connect_timeout=1)
+        c.ping()
+        c.close()
+        return True
+    except Exception:
+        return False
+
+if _redis_available(_redis_url):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _redis_url,
+        }
     }
-}
+else:
+    import warnings
+    warnings.warn(
+        f'Redis not reachable at {_redis_url} – falling back to local-memory cache. '
+        'Run "docker compose up -d" to start Redis.',
+        stacklevel=1,
+    )
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 # REST Framework
 REST_FRAMEWORK = {

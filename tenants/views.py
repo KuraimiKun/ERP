@@ -75,8 +75,6 @@ def login_view(request):
             login(request, user)
             
             # Check user status
-            if user.is_staff:
-                return redirect('admin:index')
             if not user.is_approved:
                 if user.approval_status == 'pending':
                     return redirect('tenants:pending_approval')
