@@ -1,0 +1,221 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Report Builder" %}{% endblock %}
+{% block page_title %}{% trans "Report Builder" %}{% endblock %}
+
+{% block content %}
+<!-- Header & Filters -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Search" %}</label>
+                <input type="text" name="search" class="form-control" placeholder="{% trans "Report name..." %}" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Type" %}</label>
+                <select name="type" class="form-select">
+                    <option value="">{% trans "All Types" %}</option>
+                    {% for value, label in report_types %}
+                    <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i> {% trans "Search" %}
+                </button>
+                <a href="{% url 'erp:report_builder_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+            </div>
+            <div class="col-md-2 text-end">
+                <a href="{% url 'erp:report_builder_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "New Report" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <a href="{% url 'erp:generated_report_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-clock-history me-1"></i> {% trans "Generated Reports History" %}
+        </a>
+    </div>
+</div>
+
+<!-- Templates Grid -->
+<div class="row">
+    {% for tmpl in templates %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="erp-card h-100">
+            <div class="erp-card-body d-flex flex-column">
+                <div class="d-flex align-items-start justify-content-between mb-3">
+                    <div>
+                        <h6 class="mb-1 fw-semibold">{{ tmpl.name }}</h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary">{{ tmpl.get_report_type_display }}</span>
+                        {% if tmpl.is_public %}
+                        <span class="badge bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-globe2 me-1"></i>{% trans "Public" %}
+                        </span>
+                        {% endif %}
+                        {% if tmpl.is_system %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-lock me-1"></i>{% trans "System" %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'erp:report_builder_edit' tmpl.pk %}">
+                                    <i class="bi bi-pencil me-2"></i>{% trans "Edit" %}
+                                </a>
+                            </li>
+                            <li>
+                                <button class="dropdown-item btn-generate" data-id="{{ tmpl.pk }}" data-name="{{ tmpl.name }}">
+                                    <i class="bi bi-play-circle me-2"></i>{% trans "Generate" %}
+                                </button>
+                            </li>
+                            {% if not tmpl.is_system %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'erp:report_builder_delete' tmpl.pk %}" class="d-inline"
+                                      onsubmit="return confirm('{% trans "Delete this report template?" %}')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-trash me-2"></i>{% trans "Delete" %}
+                                    </button>
+                                </form>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                <p class="text-muted small mb-3 flex-grow-1">{{ tmpl.description|default_if_none:""|truncatechars:120 }}</p>
+                <div class="d-flex align-items-center justify-content-between text-muted small">
+                    <span><i class="bi bi-person me-1"></i>{{ tmpl.created_by.username|default:"—" }}</span>
+                    <span><i class="bi bi-calendar me-1"></i>{{ tmpl.updated_at|date:"Y/m/d" }}</span>
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary text-uppercase">{{ tmpl.default_format }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="erp-card">
+            <div class="erp-card-body text-center py-5">
+                <i class="bi bi-file-earmark-bar-graph fs-1 text-muted"></i>
+                <p class="mt-3 mb-1 fw-medium">{% trans "No report templates yet" %}</p>
+                <p class="text-muted small mb-3">{% trans "Create your first custom report to get started" %}</p>
+                <a href="{% url 'erp:report_builder_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> {% trans "Create Report" %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% include 'erp/includes/pagination.html' %}
+
+<!-- Generate Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Generate Report" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">{% trans "Report:" %} <strong id="genReportName"></strong></p>
+                <div class="mb-3">
+                    <label class="form-label">{% trans "Output Format" %}</label>
+                    <select id="genFormat" class="form-select">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans "Date From" %} <small class="text-muted">({% trans "optional" %})</small></label>
+                        <input type="date" id="genDateFrom" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{% trans "Date To" %} <small class="text-muted">({% trans "optional" %})</small></label>
+                        <input type="date" id="genDateTo" class="form-control">
+                    </div>
+                </div>
+                <div id="genError" class="alert alert-danger d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" id="btnGenerate" class="btn btn-primary">
+                    <i class="bi bi-play-circle me-1"></i> {% trans "Generate" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    const csrfToken = '{{ csrf_token }}';
+    let currentId = null;
+    const modal = new bootstrap.Modal(document.getElementById('generateModal'));
+
+    document.querySelectorAll('.btn-generate').forEach(btn => {
+        btn.addEventListener('click', function(){
+            currentId = this.dataset.id;
+            document.getElementById('genReportName').textContent = this.dataset.name;
+            document.getElementById('genError').classList.add('d-none');
+            modal.show();
+        });
+    });
+
+    document.getElementById('btnGenerate').addEventListener('click', function(){
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> {% trans "Starting..." %}';
+
+        const payload = {
+            output_format: document.getElementById('genFormat').value,
+            date_from: document.getElementById('genDateFrom').value || null,
+            date_to: document.getElementById('genDateTo').value || null,
+        };
+
+        fetch(`{% url 'erp:report_builder_list' %}${currentId}/generate/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+            body: JSON.stringify(payload),
+        })
+        .then(r => r.json().then(data => ({ok: r.ok, data})))
+        .then(({ok, data}) => {
+            if (!ok) {
+                document.getElementById('genError').textContent = data.error || '{% trans "An error occurred." %}';
+                document.getElementById('genError').classList.remove('d-none');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play-circle me-1"></i> {% trans "Generate" %}';
+                return;
+            }
+            modal.hide();
+            window.location.href = '{% url "erp:generated_report_list" %}';
+        })
+        .catch(() => {
+            document.getElementById('genError').textContent = '{% trans "Network error. Please try again." %}';
+            document.getElementById('genError').classList.remove('d-none');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-play-circle me-1"></i> {% trans "Generate" %}';
+        });
+    });
+})();
+</script>
+{% endblock %}

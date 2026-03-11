@@ -15,6 +15,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
+from django.db import models
 from ..models import (
     # Core
     Currency, Company, Department, Branch, FiscalYear,
@@ -31,6 +32,7 @@ from ..models import (
     ServiceCategory, ServicePricing, Quote,
     # Reporting
     Dashboard, DashboardWidget, KPI, KPIValue,
+    ReportTemplate, GeneratedReport,
     # Audit
     AuditLog, Notification,
 )
@@ -59,6 +61,7 @@ from .serializers import (
     QuoteSerializer, QuoteListSerializer,
     # Reporting
     DashboardSerializer, DashboardWidgetSerializer, KPISerializer,
+    ReportTemplateSerializer, ReportTemplateListSerializer, GeneratedReportSerializer,
     # Audit
     AuditLogSerializer, NotificationSerializer,
 )
@@ -806,3 +809,139 @@ class NotificationViewSet(viewsets.ModelViewSet):
             read_at=timezone.now()
         )
         return Response({'detail': 'All notifications marked as read.'})
+
+
+# =============================================================================
+# Report Builder ViewSets
+# =============================================================================
+
+class ReportTemplateViewSet(ERPBaseViewSet):
+    """CRUD for custom report templates + preview & generate actions."""
+    queryset = ReportTemplate.objects.all()
+    permission_classes = [IsAuthenticated]
+    filterset_fields = ['report_type', 'is_active', 'is_public']
+    search_fields = ['name', 'description']
+    ordering_fields = ['name', 'created_at', 'report_type']
+    ordering = ['-created_at']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ReportTemplateListSerializer
+        return ReportTemplateSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        # Show own templates + public ones
+        return qs.filter(
+            models.Q(created_by=user) | models.Q(is_public=True)
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            company=self.get_company(),
+            created_by=self.request.user,
+        )
+
+    def perform_destroy(self, instance):
+        if instance.is_system:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('System reports cannot be deleted.')
+        instance.delete()
+
+    @action(detail=True, methods=['post'])
+    def preview(self, request, pk=None):
+        """Quick preview: execute with limit=50 and return JSON rows."""
+        template = self.get_object()
+        config = template.configuration
+        if not config or not config.get('data_source'):
+            return Response({'error': 'Template has no configuration.'}, status=400)
+
+        from erp.services.report_engine import execute_to_list
+        try:
+            result = execute_to_list(config, template.company, limit=50)
+            return Response(result)
+        except Exception as exc:
+            return Response({'error': str(exc)}, status=400)
+
+    @action(detail=True, methods=['post'])
+    def generate(self, request, pk=None):
+        """Kick off async report generation via Celery."""
+        template = self.get_object()
+        config = template.configuration
+        if not config or not config.get('data_source'):
+            return Response({'error': 'Template has no configuration.'}, status=400)
+
+        from erp.tasks.report_tasks import user_has_running_report
+        if user_has_running_report(request.user.pk):
+            return Response(
+                {'error': 'You already have a report generating. Please wait for it to finish.'},
+                status=429,
+            )
+
+        output_format = request.data.get('output_format', template.default_format)
+        date_from = request.data.get('date_from')
+        date_to = request.data.get('date_to')
+
+        generated = GeneratedReport.objects.create(
+            template=template,
+            generated_by=request.user,
+            output_format=output_format,
+            date_from=date_from,
+            date_to=date_to,
+            parameters=request.data.get('parameters', {}),
+            status=GeneratedReport.Status.PENDING,
+        )
+
+        from erp.tasks.report_tasks import generate_report
+        generate_report.delay(generated.pk)
+
+        return Response(
+            GeneratedReportSerializer(generated, context={'request': request}).data,
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+
+class GeneratedReportViewSet(viewsets.ReadOnlyModelViewSet):
+    """List & retrieve generated reports for the current user."""
+    queryset = GeneratedReport.objects.select_related('template', 'generated_by')
+    serializer_class = GeneratedReportSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_fields = ['template', 'status', 'output_format']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return self.queryset.filter(generated_by=self.request.user)
+
+    @action(detail=True, methods=['get'])
+    def status_check(self, request, pk=None):
+        """Lightweight status poll endpoint."""
+        report = self.get_object()
+        return Response({
+            'id': report.pk,
+            'status': report.status,
+            'is_ready': report.is_ready,
+            'row_count': report.row_count,
+            'error_message': report.error_message,
+            'download_url': request.build_absolute_uri(report.file.url) if report.file and report.is_ready else None,
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        """Allow users to delete their own generated reports."""
+        instance = self.get_object()
+        if instance.file:
+            try:
+                instance.file.delete(save=False)
+            except Exception:
+                pass
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DataSourceViewSet(viewsets.ViewSet):
+    """Read-only endpoint returning available data sources + their fields."""
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        from erp.services.report_builder import get_all_data_sources_meta
+        return Response(get_all_data_sources_meta())

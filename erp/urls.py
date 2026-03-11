@@ -262,6 +262,19 @@ urlpatterns = [
     # =========================================================================
     path('export/<str:entity>/', views.export_data, name='export_data'),
 
+    # =========================================================================
+    # REPORT BUILDER
+    # =========================================================================
+    path('reports/builder/', views.report_builder_list, name='report_builder_list'),
+    path('reports/builder/add/', views.report_builder_create, name='report_builder_create'),
+    path('reports/builder/<int:pk>/edit/', views.report_builder_edit, name='report_builder_edit'),
+    path('reports/builder/save/', views.report_builder_save, name='report_builder_save'),
+    path('reports/builder/<int:pk>/delete/', views.report_builder_delete, name='report_builder_delete'),
+    path('reports/builder/<int:pk>/preview/', views.report_builder_preview, name='report_builder_preview'),
+    path('reports/builder/<int:pk>/generate/', views.report_builder_generate, name='report_builder_generate'),
+    path('reports/generated/', views.generated_report_list, name='generated_report_list'),
+    path('reports/generated/<int:pk>/status/', views.generated_report_status, name='generated_report_status'),
+
     # API endpoints
     path('api/', include('erp.api.urls')),
 ]

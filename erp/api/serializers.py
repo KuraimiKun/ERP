@@ -16,6 +16,7 @@ from ..models import (
     ServiceCategory, ServicePricing, PriceTier, Quote, QuoteLine,
     # Reporting
     Dashboard, DashboardWidget, KPI, KPIValue,
+    ReportTemplate, GeneratedReport,
     # Audit
     AuditLog, Notification,
 )
@@ -682,3 +683,91 @@ class NotificationSerializer(serializers.ModelSerializer):
             'is_read', 'read_at', 'link', 'created_at'
         ]
         read_only_fields = ['read_at', 'created_at']
+
+
+# =============================================================================
+# Report Builder Serializers
+# =============================================================================
+
+class ReportTemplateListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for list views."""
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True, default='')
+    last_generated = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReportTemplate
+        fields = [
+            'id', 'name', 'report_type', 'description', 'default_format',
+            'is_public', 'is_active', 'is_system', 'created_by', 'created_by_name',
+            'last_generated', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_last_generated(self, obj):
+        last = obj.generated_reports.order_by('-created_at').values('created_at', 'status').first()
+        if last:
+            return {
+                'date': last['created_at'].isoformat(),
+                'status': last['status'],
+            }
+        return None
+
+
+class ReportTemplateSerializer(serializers.ModelSerializer):
+    """Full serializer for create/update with configuration validation."""
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True, default='')
+
+    class Meta:
+        model = ReportTemplate
+        fields = [
+            'id', 'company', 'name', 'report_type', 'description',
+            'configuration', 'default_format', 'is_public', 'allowed_roles',
+            'is_active', 'is_system', 'created_by', 'created_by_name',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['company', 'created_by', 'created_at', 'updated_at']
+
+    def validate_configuration(self, value):
+        from erp.services.report_builder import validate_configuration
+        if not value:
+            return value
+        is_valid, errors = validate_configuration(value)
+        if not is_valid:
+            raise serializers.ValidationError(errors)
+        return value
+
+
+class GeneratedReportSerializer(serializers.ModelSerializer):
+    """Read-only serializer for generated report instances."""
+    template_name = serializers.CharField(source='template.name', read_only=True)
+    generated_by_name = serializers.CharField(source='generated_by.username', read_only=True, default='')
+    duration = serializers.SerializerMethodField()
+    download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GeneratedReport
+        fields = [
+            'id', 'template', 'template_name', 'generated_by', 'generated_by_name',
+            'parameters', 'date_from', 'date_to', 'output_format',
+            'status', 'is_ready', 'error_message', 'row_count',
+            'started_at', 'completed_at', 'duration',
+            'download_url', 'created_at',
+        ]
+        read_only_fields = [
+            'status', 'is_ready', 'error_message', 'row_count',
+            'started_at', 'completed_at', 'created_at',
+        ]
+
+    def get_duration(self, obj):
+        d = obj.duration_seconds
+        if d is not None:
+            return round(d, 1)
+        return None
+
+    def get_download_url(self, obj):
+        if obj.file and obj.is_ready:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None

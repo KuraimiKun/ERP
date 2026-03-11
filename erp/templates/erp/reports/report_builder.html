@@ -1,0 +1,783 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% if template %}{% trans "Edit Report" %} — {{ template.name }}{% else %}{% trans "New Report" %}{% endif %}{% endblock %}
+{% block page_title %}{% if template %}{% trans "Edit Report" %}{% else %}{% trans "New Report" %}{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .builder-steps { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .builder-step-btn {
+        padding: .45rem 1rem; border: 1px solid var(--bs-border-color); border-radius: .5rem;
+        background: #fff; cursor: pointer; font-size: .875rem; font-weight: 500;
+        transition: all .15s;
+    }
+    .builder-step-btn.active { background: var(--bs-primary); color: #fff; border-color: var(--bs-primary); }
+    .builder-step-btn:hover:not(.active) { border-color: var(--bs-primary); color: var(--bs-primary); }
+    .builder-panel { display: none; }
+    .builder-panel.active { display: block; }
+    .field-item {
+        display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem;
+        border: 1px solid var(--bs-border-color); border-radius: .375rem;
+        margin-bottom: .375rem; background: #fff; cursor: grab; font-size: .875rem;
+    }
+    .field-item:hover { border-color: var(--bs-primary); }
+    .field-item .drag-handle { color: var(--bs-secondary); cursor: grab; }
+    .field-item .field-name { flex: 1; }
+    .field-item .field-type { font-size: .75rem; color: var(--bs-secondary); }
+    .filter-row { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; flex-wrap: wrap; }
+    .filter-row > * { flex-shrink: 0; }
+    .preview-table-wrap { max-height: 400px; overflow: auto; }
+    .agg-badge { font-size: .7rem; padding: .15rem .4rem; }
+    #previewSpinner { display: none; }
+    #previewError { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left: Builder -->
+    <div class="col-lg-9">
+        <!-- Step Tabs -->
+        <div class="builder-steps">
+            <button class="builder-step-btn active" data-step="source">
+                <i class="bi bi-database me-1"></i> {% trans "1. Data Source" %}
+            </button>
+            <button class="builder-step-btn" data-step="columns">
+                <i class="bi bi-layout-three-columns me-1"></i> {% trans "2. Columns" %}
+            </button>
+            <button class="builder-step-btn" data-step="filters">
+                <i class="bi bi-funnel me-1"></i> {% trans "3. Filters" %}
+            </button>
+            <button class="builder-step-btn" data-step="grouping">
+                <i class="bi bi-collection me-1"></i> {% trans "4. Group & Aggregate" %}
+            </button>
+            <button class="builder-step-btn" data-step="sorting">
+                <i class="bi bi-sort-alpha-down me-1"></i> {% trans "5. Sorting" %}
+            </button>
+            <button class="builder-step-btn" data-step="preview">
+                <i class="bi bi-eye me-1"></i> {% trans "6. Preview" %}
+            </button>
+        </div>
+
+        <!-- Step 1: Data Source -->
+        <div class="builder-panel active" id="panel-source">
+            <div class="erp-card">
+                <div class="erp-card-body">
+                    <h6 class="fw-semibold mb-3">{% trans "Select Data Source" %}</h6>
+                    <p class="text-muted small mb-3">{% trans "Choose the type of data you want to report on." %}</p>
+                    <div class="row" id="sourceGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Columns -->
+        <div class="builder-panel" id="panel-columns">
+            <div class="erp-card">
+                <div class="erp-card-body">
+                    <h6 class="fw-semibold mb-1">{% trans "Select & Reorder Columns" %}</h6>
+                    <p class="text-muted small mb-3">{% trans "Check columns to include. Drag to reorder." %}</p>
+                    <div class="mb-3">
+                        <button class="btn btn-sm btn-outline-primary" id="btnSelectAll">{% trans "Select All" %}</button>
+                        <button class="btn btn-sm btn-outline-secondary" id="btnDeselectAll">{% trans "Deselect All" %}</button>
+                    </div>
+                    <div id="columnsList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Filters -->
+        <div class="builder-panel" id="panel-filters">
+            <div class="erp-card">
+                <div class="erp-card-body">
+                    <h6 class="fw-semibold mb-1">{% trans "Filter Conditions" %}</h6>
+                    <p class="text-muted small mb-3">{% trans "Add conditions to narrow down the data." %}</p>
+                    <div id="filterRows">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary mt-2" id="btnAddFilter">
+                        <i class="bi bi-plus me-1"></i> {% trans "Add Filter" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Grouping & Aggregation -->
+        <div class="builder-panel" id="panel-grouping">
+            <div class="erp-card">
+                <div class="erp-card-body">
+                    <h6 class="fw-semibold mb-1">{% trans "Group By & Aggregation" %}</h6>
+                    <p class="text-muted small mb-3">{% trans "Group rows and choose aggregate functions for numeric columns." %}</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">{% trans "Group By Fields" %}</label>
+                            <div id="groupByFields">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">{% trans "Aggregations" %}</label>
+                            <div id="aggregateFields">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Sorting -->
+        <div class="builder-panel" id="panel-sorting">
+            <div class="erp-card">
+                <div class="erp-card-body">
+                    <h6 class="fw-semibold mb-1">{% trans "Sort Order" %}</h6>
+                    <p class="text-muted small mb-3">{% trans "Choose how results should be ordered." %}</p>
+                    <div id="sortRows">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary mt-2" id="btnAddSort">
+                        <i class="bi bi-plus me-1"></i> {% trans "Add Sort Rule" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Preview -->
+        <div class="builder-panel" id="panel-preview">
+            <div class="erp-card">
+                <div class="erp-card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-semibold mb-0">{% trans "Preview" %} <small class="text-muted">({% trans "first 50 rows" %})</small></h6>
+                        <button class="btn btn-sm btn-primary" id="btnRunPreview">
+                            <i class="bi bi-play-fill me-1"></i> {% trans "Run Preview" %}
+                        </button>
+                    </div>
+                    <div id="previewSpinner" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="text-muted mt-2">{% trans "Executing query..." %}</p>
+                    </div>
+                    <div id="previewError" class="alert alert-danger"></div>
+                    <div class="preview-table-wrap" id="previewTableWrap">
+                        <p class="text-muted text-center py-4" id="previewPlaceholder">
+                            {% trans "Click 'Run Preview' to see results." %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Settings Sidebar -->
+    <div class="col-lg-3">
+        <div class="erp-card mb-3">
+            <div class="erp-card-body">
+                <h6 class="fw-semibold mb-3">{% trans "Report Settings" %}</h6>
+                <div class="mb-3">
+                    <label class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
+                    <input type="text" id="reportName" class="form-control" maxlength="255"
+                           value="{% if template %}{{ template.name }}{% endif %}"
+                           placeholder="{% trans "e.g. Monthly Sales by Customer" %}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{% trans "Type" %}</label>
+                    <select id="reportType" class="form-select">
+                        {% for value, label in report_types %}
+                        <option value="{{ value }}" {% if template and template.report_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{% trans "Description" %}</label>
+                    <textarea id="reportDescription" class="form-control" rows="2" maxlength="500">{% if template %}{{ template.description }}{% endif %}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{% trans "Default Format" %}</label>
+                    <select id="reportFormat" class="form-select">
+                        {% for value, label in output_formats %}
+                        <option value="{{ value }}" {% if template and template.default_format == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="reportPublic"
+                           {% if template and template.is_public %}checked{% endif %}>
+                    <label class="form-check-label" for="reportPublic">{% trans "Public (visible to all users)" %}</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button class="btn btn-primary" id="btnSave">
+                <i class="bi bi-check-lg me-1"></i> {% trans "Save Report" %}
+            </button>
+            <a href="{% url 'erp:report_builder_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> {% trans "Back to List" %}
+            </a>
+        </div>
+
+        <!-- Config Summary -->
+        <div class="erp-card mt-3">
+            <div class="erp-card-body">
+                <h6 class="fw-semibold mb-2"><i class="bi bi-info-circle me-1"></i> {% trans "Summary" %}</h6>
+                <ul class="list-unstyled small text-muted mb-0" id="configSummary">
+                    <li>{% trans "No data source selected" %}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    // ── State ──────────────────────────────────────────────────────
+    const csrfToken = '{{ csrf_token }}';
+    const SAVE_URL = '{% url "erp:report_builder_save" %}';
+    const PREVIEW_BASE = '{% url "erp:report_builder_list" %}';  // e.g. /en/erp/reports/builder/
+    const DATA_SOURCES = {{ data_sources_json|safe }};
+    const EXISTING = {{ template_json|default:"null"|safe }};
+
+    const OPERATORS = [
+        {value: 'eq',       label: '{% trans "Equals" %}'},
+        {value: 'neq',      label: '{% trans "Not Equals" %}'},
+        {value: 'gt',       label: '{% trans "Greater Than" %}'},
+        {value: 'gte',      label: '{% trans "Greater or Equal" %}'},
+        {value: 'lt',       label: '{% trans "Less Than" %}'},
+        {value: 'lte',      label: '{% trans "Less or Equal" %}'},
+        {value: 'contains', label: '{% trans "Contains" %}'},
+        {value: 'startswith', label: '{% trans "Starts With" %}'},
+        {value: 'isnull',   label: '{% trans "Is Empty" %}'},
+    ];
+    const AGGREGATES = ['sum', 'count', 'avg', 'min', 'max'];
+
+    let state = {
+        data_source: '',
+        columns: [],     // [{field, label, visible}]
+        filters: [],     // [{field, operator, value}]
+        grouping: [],    // [field, ...]
+        ordering: [],    // ['field' or '-field']
+    };
+
+    // ── Step Navigation ────────────────────────────────────────────
+    const stepBtns = document.querySelectorAll('.builder-step-btn');
+    const panels = document.querySelectorAll('.builder-panel');
+
+    stepBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            stepBtns.forEach(b => b.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('panel-' + btn.dataset.step).classList.add('active');
+        });
+    });
+
+    function goToStep(step) {
+        stepBtns.forEach(b => { b.classList.toggle('active', b.dataset.step === step); });
+        panels.forEach(p => { p.classList.toggle('active', p.id === 'panel-' + step); });
+    }
+
+    // ── Helper: get fields for current source ──────────────────────
+    function currentFields() {
+        const src = DATA_SOURCES.find(s => s.key === state.data_source);
+        return src ? src.fields : [];
+    }
+
+    function fieldLabel(key) {
+        const f = currentFields().find(f => f.key === key);
+        return f ? f.label : key;
+    }
+
+    // ── Step 1: Data Source ─────────────────────────────────────────
+    function renderSources() {
+        const grid = document.getElementById('sourceGrid');
+        const icons = {
+            invoice: 'bi-receipt', expense: 'bi-cash-stack', payment: 'bi-credit-card',
+            customer: 'bi-people', supplier: 'bi-truck', employee: 'bi-person-badge',
+            lead: 'bi-star', product: 'bi-box-seam', quote: 'bi-file-text',
+            purchase_order: 'bi-cart3', journal_entry: 'bi-journal-text',
+            payroll: 'bi-wallet2', attendance: 'bi-clock', leave_request: 'bi-calendar-check',
+        };
+        grid.innerHTML = DATA_SOURCES.map(src => `
+            <div class="col-md-4 col-sm-6 mb-3">
+                <div class="field-item source-card ${state.data_source === src.key ? 'border-primary bg-primary bg-opacity-10' : ''}"
+                     data-key="${src.key}" style="cursor:pointer; padding: .75rem">
+                    <i class="bi ${icons[src.key] || 'bi-database'} fs-5 me-2"></i>
+                    <div>
+                        <div class="fw-medium">${src.label}</div>
+                        <small class="text-muted">${src.fields.length} {% trans "fields" %}</small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        grid.querySelectorAll('.source-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const key = card.dataset.key;
+                if (state.data_source !== key) {
+                    state.data_source = key;
+                    const src = DATA_SOURCES.find(s => s.key === key);
+                    state.columns = src.fields.map(f => ({field: f.key, label: f.label, visible: true}));
+                    state.filters = [];
+                    state.grouping = [];
+                    state.ordering = [];
+                    renderSources();
+                    renderColumns();
+                    renderFilters();
+                    renderGrouping();
+                    renderSorting();
+                    updateSummary();
+                }
+                goToStep('columns');
+            });
+        });
+    }
+
+    // ── Step 2: Columns ────────────────────────────────────────────
+    function renderColumns() {
+        const list = document.getElementById('columnsList');
+        list.innerHTML = state.columns.map((col, i) => `
+            <div class="field-item" draggable="true" data-idx="${i}">
+                <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+                <input class="form-check-input col-check" type="checkbox" data-idx="${i}"
+                       ${col.visible ? 'checked' : ''}>
+                <span class="field-name">${col.label}</span>
+                <span class="field-type">${getFieldType(col.field)}</span>
+            </div>
+        `).join('');
+
+        // Checkbox toggle
+        list.querySelectorAll('.col-check').forEach(cb => {
+            cb.addEventListener('change', function() {
+                state.columns[+this.dataset.idx].visible = this.checked;
+                updateSummary();
+            });
+        });
+
+        // Drag-and-drop reorder
+        let dragIdx = null;
+        list.querySelectorAll('.field-item').forEach(el => {
+            el.addEventListener('dragstart', e => {
+                dragIdx = +el.dataset.idx;
+                el.style.opacity = '0.5';
+            });
+            el.addEventListener('dragend', () => { el.style.opacity = '1'; });
+            el.addEventListener('dragover', e => e.preventDefault());
+            el.addEventListener('drop', e => {
+                e.preventDefault();
+                const dropIdx = +el.dataset.idx;
+                if (dragIdx !== null && dragIdx !== dropIdx) {
+                    const [moved] = state.columns.splice(dragIdx, 1);
+                    state.columns.splice(dropIdx, 0, moved);
+                    renderColumns();
+                    updateSummary();
+                }
+            });
+        });
+    }
+
+    document.getElementById('btnSelectAll').addEventListener('click', () => {
+        state.columns.forEach(c => c.visible = true);
+        renderColumns();
+    });
+    document.getElementById('btnDeselectAll').addEventListener('click', () => {
+        state.columns.forEach(c => c.visible = false);
+        renderColumns();
+    });
+
+    function getFieldType(key) {
+        const f = currentFields().find(f => f.key === key);
+        return f ? f.type : '';
+    }
+
+    // ── Step 3: Filters ────────────────────────────────────────────
+    function renderFilters() {
+        const wrap = document.getElementById('filterRows');
+        const fields = currentFields();
+        if (!state.filters.length) {
+            wrap.innerHTML = '<p class="text-muted small">{% trans "No filters added yet." %}</p>';
+            return;
+        }
+        wrap.innerHTML = state.filters.map((f, i) => `
+            <div class="filter-row">
+                <select class="form-select form-select-sm filter-field" data-idx="${i}" style="width:180px">
+                    ${fields.map(fd => `<option value="${fd.key}" ${fd.key === f.field ? 'selected' : ''}>${fd.label}</option>`).join('')}
+                </select>
+                <select class="form-select form-select-sm filter-op" data-idx="${i}" style="width:140px">
+                    ${OPERATORS.map(op => `<option value="${op.value}" ${op.value === f.operator ? 'selected' : ''}>${op.label}</option>`).join('')}
+                </select>
+                <input type="text" class="form-control form-control-sm filter-val" data-idx="${i}"
+                       value="${f.value || ''}" placeholder="{% trans "Value" %}" style="width:160px">
+                <button class="btn btn-sm btn-outline-danger filter-remove" data-idx="${i}">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        `).join('');
+
+        wrap.querySelectorAll('.filter-field').forEach(el => {
+            el.addEventListener('change', () => { state.filters[+el.dataset.idx].field = el.value; updateSummary(); });
+        });
+        wrap.querySelectorAll('.filter-op').forEach(el => {
+            el.addEventListener('change', () => { state.filters[+el.dataset.idx].operator = el.value; updateSummary(); });
+        });
+        wrap.querySelectorAll('.filter-val').forEach(el => {
+            el.addEventListener('input', () => { state.filters[+el.dataset.idx].value = el.value; updateSummary(); });
+        });
+        wrap.querySelectorAll('.filter-remove').forEach(el => {
+            el.addEventListener('click', () => {
+                state.filters.splice(+el.dataset.idx, 1);
+                renderFilters();
+                updateSummary();
+            });
+        });
+    }
+
+    document.getElementById('btnAddFilter').addEventListener('click', () => {
+        const fields = currentFields();
+        if (!fields.length) return;
+        state.filters.push({field: fields[0].key, operator: 'eq', value: ''});
+        renderFilters();
+    });
+
+    // ── Step 4: Grouping & Aggregation ─────────────────────────────
+    function renderGrouping() {
+        const fields = currentFields();
+        const groupWrap = document.getElementById('groupByFields');
+        const aggWrap = document.getElementById('aggregateFields');
+
+        // Group By: checkboxes for non-numeric fields
+        const groupable = fields.filter(f => ['string', 'choice', 'date', 'datetime', 'boolean'].includes(f.type));
+        groupWrap.innerHTML = groupable.map(f => `
+            <div class="form-check mb-1">
+                <input class="form-check-input group-check" type="checkbox" value="${f.key}"
+                       ${state.grouping.includes(f.key) ? 'checked' : ''}>
+                <label class="form-check-label small">${f.label}</label>
+            </div>
+        `).join('') || '<p class="text-muted small">{% trans "No groupable fields." %}</p>';
+
+        groupWrap.querySelectorAll('.group-check').forEach(cb => {
+            cb.addEventListener('change', () => {
+                if (cb.checked) {
+                    state.grouping.push(cb.value);
+                } else {
+                    state.grouping = state.grouping.filter(g => g !== cb.value);
+                }
+                // Update column aggregates display
+                renderAggregates();
+                updateSummary();
+            });
+        });
+
+        renderAggregates();
+    }
+
+    function renderAggregates() {
+        const aggWrap = document.getElementById('aggregateFields');
+        const numericFields = currentFields().filter(f => ['decimal', 'integer'].includes(f.type));
+
+        if (!state.grouping.length) {
+            aggWrap.innerHTML = '<p class="text-muted small">{% trans "Select group-by fields first to enable aggregations." %}</p>';
+            return;
+        }
+
+        aggWrap.innerHTML = numericFields.map(f => {
+            const col = state.columns.find(c => c.field === f.key);
+            const currentAgg = col ? col.aggregate : '';
+            return `
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="small flex-grow-1">${f.label}</span>
+                    <select class="form-select form-select-sm agg-select" data-field="${f.key}" style="width:100px">
+                        <option value="">{% trans "None" %}</option>
+                        ${AGGREGATES.map(a => `<option value="${a}" ${a === currentAgg ? 'selected' : ''}>${a.toUpperCase()}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        }).join('') || '<p class="text-muted small">{% trans "No numeric fields available." %}</p>';
+
+        aggWrap.querySelectorAll('.agg-select').forEach(sel => {
+            sel.addEventListener('change', () => {
+                const col = state.columns.find(c => c.field === sel.dataset.field);
+                if (col) col.aggregate = sel.value || undefined;
+                updateSummary();
+            });
+        });
+    }
+
+    // ── Step 5: Sorting ────────────────────────────────────────────
+    function renderSorting() {
+        const wrap = document.getElementById('sortRows');
+        const fields = currentFields();
+        if (!state.ordering.length) {
+            wrap.innerHTML = '<p class="text-muted small">{% trans "No sort rules. Results will use default order." %}</p>';
+            return;
+        }
+        wrap.innerHTML = state.ordering.map((o, i) => {
+            const desc = o.startsWith('-');
+            const fieldKey = desc ? o.slice(1) : o;
+            return `
+                <div class="filter-row">
+                    <select class="form-select form-select-sm sort-field" data-idx="${i}" style="width:200px">
+                        ${fields.map(f => `<option value="${f.key}" ${f.key === fieldKey ? 'selected' : ''}>${f.label}</option>`).join('')}
+                    </select>
+                    <select class="form-select form-select-sm sort-dir" data-idx="${i}" style="width:140px">
+                        <option value="asc" ${!desc ? 'selected' : ''}>{% trans "Ascending" %}</option>
+                        <option value="desc" ${desc ? 'selected' : ''}>{% trans "Descending" %}</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-danger sort-remove" data-idx="${i}">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            `;
+        }).join('');
+
+        wrap.querySelectorAll('.sort-field').forEach(el => {
+            el.addEventListener('change', () => {
+                const dir = wrap.querySelector(`.sort-dir[data-idx="${el.dataset.idx}"]`).value;
+                state.ordering[+el.dataset.idx] = (dir === 'desc' ? '-' : '') + el.value;
+                updateSummary();
+            });
+        });
+        wrap.querySelectorAll('.sort-dir').forEach(el => {
+            el.addEventListener('change', () => {
+                const field = wrap.querySelector(`.sort-field[data-idx="${el.dataset.idx}"]`).value;
+                state.ordering[+el.dataset.idx] = (el.value === 'desc' ? '-' : '') + field;
+                updateSummary();
+            });
+        });
+        wrap.querySelectorAll('.sort-remove').forEach(el => {
+            el.addEventListener('click', () => {
+                state.ordering.splice(+el.dataset.idx, 1);
+                renderSorting();
+                updateSummary();
+            });
+        });
+    }
+
+    document.getElementById('btnAddSort').addEventListener('click', () => {
+        const fields = currentFields();
+        if (!fields.length) return;
+        state.ordering.push(fields[0].key);
+        renderSorting();
+    });
+
+    // ── Step 6: Preview ────────────────────────────────────────────
+    document.getElementById('btnRunPreview').addEventListener('click', runPreview);
+
+    function runPreview() {
+        const config = buildConfiguration();
+        if (!config.data_source) {
+            document.getElementById('previewError').textContent = '{% trans "Please select a data source first." %}';
+            document.getElementById('previewError').style.display = 'block';
+            return;
+        }
+        document.getElementById('previewError').style.display = 'none';
+        document.getElementById('previewPlaceholder')?.remove();
+        document.getElementById('previewSpinner').style.display = 'block';
+
+        // Need to save first to get an ID, then preview via that ID.
+        // OR we post config directly. Let's use the API preview.
+        const saveFirst = saveReport(true);
+        saveFirst.then(id => {
+            if (!id) {
+                document.getElementById('previewSpinner').style.display = 'none';
+                return;
+            }
+            return fetch(`${PREVIEW_BASE}${id}/preview/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+            });
+        })
+        .then(r => {
+            if (!r) return;
+            return r.json().then(data => ({ok: r.ok, data}));
+        })
+        .then(result => {
+            document.getElementById('previewSpinner').style.display = 'none';
+            if (!result) return;
+            if (!result.ok) {
+                document.getElementById('previewError').textContent = result.data.error || '{% trans "Preview failed." %}';
+                document.getElementById('previewError').style.display = 'block';
+                return;
+            }
+            renderPreviewTable(result.data);
+        })
+        .catch(() => {
+            document.getElementById('previewSpinner').style.display = 'none';
+            document.getElementById('previewError').textContent = '{% trans "Network error." %}';
+            document.getElementById('previewError').style.display = 'block';
+        });
+    }
+
+    function renderPreviewTable(data) {
+        const wrap = document.getElementById('previewTableWrap');
+        if (!data.rows || !data.rows.length) {
+            wrap.innerHTML = '<p class="text-muted text-center py-4">{% trans "No data returned." %}</p>';
+            return;
+        }
+        const columns = data.columns || Object.keys(data.rows[0]).map(k => ({key: k, label: k}));
+        let html = '<table class="table table-sm table-striped mb-0"><thead><tr>';
+        columns.forEach(c => { html += `<th class="small">${escapeHtml(c.label || c.key)}</th>`; });
+        html += '</tr></thead><tbody>';
+        data.rows.forEach(row => {
+            html += '<tr>';
+            columns.forEach(c => {
+                const val = row[c.key];
+                html += `<td class="small">${val !== null && val !== undefined ? escapeHtml(String(val)) : '—'}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        html += `<p class="text-muted small mt-2">${data.total_count != null ? data.total_count + ' {% trans "total rows" %}' : ''} ({% trans "showing first 50" %})</p>`;
+        wrap.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ── Summary ────────────────────────────────────────────────────
+    function updateSummary() {
+        const ul = document.getElementById('configSummary');
+        const items = [];
+        if (state.data_source) {
+            const src = DATA_SOURCES.find(s => s.key === state.data_source);
+            items.push(`<i class="bi bi-database me-1"></i> ${src ? src.label : state.data_source}`);
+        }
+        const vis = state.columns.filter(c => c.visible).length;
+        const total = state.columns.length;
+        if (total) items.push(`<i class="bi bi-layout-three-columns me-1"></i> ${vis}/${total} {% trans "columns" %}`);
+        if (state.filters.length) items.push(`<i class="bi bi-funnel me-1"></i> ${state.filters.length} {% trans "filter(s)" %}`);
+        if (state.grouping.length) items.push(`<i class="bi bi-collection me-1"></i> {% trans "Grouped by" %} ${state.grouping.length}`);
+        if (state.ordering.length) items.push(`<i class="bi bi-sort-alpha-down me-1"></i> ${state.ordering.length} {% trans "sort rule(s)" %}`);
+        ul.innerHTML = items.length ? items.map(i => `<li class="mb-1">${i}</li>`).join('') : '<li>{% trans "No data source selected" %}</li>';
+    }
+
+    // ── Build configuration JSON ───────────────────────────────────
+    function buildConfiguration() {
+        const columns = state.columns.filter(c => c.visible).map(c => {
+            const entry = {field: c.field, label: c.label};
+            if (c.aggregate) entry.aggregate = c.aggregate;
+            return entry;
+        });
+
+        const filters = state.filters.filter(f => f.field && f.operator).map(f => ({
+            field: f.field,
+            operator: f.operator,
+            value: f.value || '',
+        }));
+
+        return {
+            data_source: state.data_source,
+            columns: columns,
+            filters: filters,
+            grouping: [...state.grouping],
+            ordering: [...state.ordering],
+        };
+    }
+
+    // ── Save Report ────────────────────────────────────────────────
+    let savedId = EXISTING ? EXISTING.id : null;
+
+    function saveReport(silent) {
+        const name = document.getElementById('reportName').value.trim();
+        if (!name) {
+            if (!silent) alert('{% trans "Report name is required." %}');
+            return Promise.resolve(null);
+        }
+
+        const payload = {
+            id: savedId,
+            name: name,
+            report_type: document.getElementById('reportType').value,
+            description: document.getElementById('reportDescription').value.trim(),
+            configuration: buildConfiguration(),
+            default_format: document.getElementById('reportFormat').value,
+            is_public: document.getElementById('reportPublic').checked,
+        };
+
+        return fetch(SAVE_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+            body: JSON.stringify(payload),
+        })
+        .then(r => r.json().then(data => ({ok: r.ok, data})))
+        .then(({ok, data}) => {
+            if (!ok) {
+                if (!silent) alert(data.error || data.details?.join('\n') || '{% trans "Failed to save." %}');
+                return null;
+            }
+            savedId = data.id;
+            if (!silent) {
+                // Show success toast
+                showToast('{% trans "Report saved successfully." %}');
+            }
+            return data.id;
+        })
+        .catch(() => {
+            if (!silent) alert('{% trans "Network error." %}');
+            return null;
+        });
+    }
+
+    document.getElementById('btnSave').addEventListener('click', () => saveReport(false));
+
+    function showToast(msg) {
+        const el = document.createElement('div');
+        el.className = 'toast align-items-center text-bg-success border-0 show position-fixed bottom-0 end-0 m-3';
+        el.setAttribute('role', 'alert');
+        el.style.zIndex = '9999';
+        el.innerHTML = `<div class="d-flex"><div class="toast-body"><i class="bi bi-check-circle me-1"></i> ${msg}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+    }
+
+    // ── Load existing template ─────────────────────────────────────
+    function loadExisting() {
+        if (!EXISTING || !EXISTING.configuration) return;
+        const cfg = EXISTING.configuration;
+        state.data_source = cfg.data_source || '';
+        if (state.data_source) {
+            const src = DATA_SOURCES.find(s => s.key === state.data_source);
+            if (src) {
+                // Merge with available fields
+                if (cfg.columns && cfg.columns.length) {
+                    state.columns = cfg.columns.map(c => ({
+                        field: c.field,
+                        label: c.label || fieldLabel(c.field),
+                        visible: true,
+                        aggregate: c.aggregate,
+                    }));
+                    // Add missing fields as not-visible
+                    src.fields.forEach(f => {
+                        if (!state.columns.find(c => c.field === f.key)) {
+                            state.columns.push({field: f.key, label: f.label, visible: false});
+                        }
+                    });
+                } else {
+                    state.columns = src.fields.map(f => ({field: f.key, label: f.label, visible: true}));
+                }
+            }
+        }
+        state.filters = cfg.filters || [];
+        state.grouping = cfg.grouping || [];
+        state.ordering = cfg.ordering || [];
+    }
+
+    // ── Init ───────────────────────────────────────────────────────
+    loadExisting();
+    renderSources();
+    renderColumns();
+    renderFilters();
+    renderGrouping();
+    renderSorting();
+    updateSummary();
+})();
+</script>
+{% endblock %}

@@ -27,6 +27,7 @@ from .views import (
     ServiceCategoryViewSet, ServicePricingViewSet, QuoteViewSet,
     # Reporting
     DashboardViewSet, DashboardWidgetViewSet, KPIViewSet,
+    ReportTemplateViewSet, GeneratedReportViewSet, DataSourceViewSet,
     # Audit
     AuditLogViewSet, NotificationViewSet,
 )
@@ -91,6 +92,9 @@ router.register(r'quotes', QuoteViewSet, basename='quote')
 router.register(r'dashboards', DashboardViewSet, basename='dashboard')
 router.register(r'dashboard-widgets', DashboardWidgetViewSet, basename='dashboard-widget')
 router.register(r'kpis', KPIViewSet, basename='kpi')
+router.register(r'report-templates', ReportTemplateViewSet, basename='report-template')
+router.register(r'generated-reports', GeneratedReportViewSet, basename='generated-report')
+router.register(r'report-data-sources', DataSourceViewSet, basename='report-data-source')
 
 # Audit routes
 router.register(r'audit-logs', AuditLogViewSet, basename='audit-log')

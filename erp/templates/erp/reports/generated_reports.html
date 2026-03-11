@@ -1,0 +1,192 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Generated Reports" %}{% endblock %}
+{% block page_title %}{% trans "Generated Reports" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-pill { font-size: .75rem; padding: .25rem .6rem; border-radius: 1rem; font-weight: 500; }
+    .status-pending   { background: #fef3c7; color: #92400e; }
+    .status-processing { background: #dbeafe; color: #1e40af; }
+    .status-completed  { background: #d1fae5; color: #065f46; }
+    .status-failed     { background: #fee2e2; color: #991b1b; }
+    .progress-pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="erp-card mb-4">
+    <div class="erp-card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Status" %}</label>
+                <select name="status" class="form-select">
+                    <option value="">{% trans "All" %}</option>
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i> {% trans "Filter" %}
+                </button>
+                <a href="{% url 'erp:generated_report_list' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+            </div>
+            <div class="col-md-5 text-end">
+                <a href="{% url 'erp:report_builder_list' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-file-earmark-bar-graph me-1"></i> {% trans "Report Builder" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reports Table -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Report" %}</th>
+                    <th>{% trans "Format" %}</th>
+                    <th>{% trans "Date Range" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Rows" %}</th>
+                    <th>{% trans "Duration" %}</th>
+                    <th>{% trans "Generated" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody id="reportsBody">
+                {% for report in reports %}
+                <tr data-id="{{ report.pk }}" data-status="{{ report.status }}">
+                    <td class="fw-medium">{{ report.template.name }}</td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary text-uppercase">{{ report.output_format }}</span></td>
+                    <td class="small text-muted">
+                        {% if report.date_from and report.date_to %}
+                            {{ report.date_from|date:"Y/m/d" }} — {{ report.date_to|date:"Y/m/d" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-pill status-{{ report.status }}" id="status-{{ report.pk }}">
+                            {% if report.status == 'processing' %}<span class="spinner-border spinner-border-sm me-1 progress-pulse" style="width:.7rem;height:.7rem"></span>{% endif %}
+                            {{ report.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="small" id="rows-{{ report.pk }}">{{ report.row_count|default:"—" }}</td>
+                    <td class="small" id="dur-{{ report.pk }}">
+                        {% if report.duration_seconds %}
+                            {{ report.duration_seconds|floatformat:1 }}s
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ report.created_at|date:"Y/m/d H:i" }}</td>
+                    <td id="actions-{{ report.pk }}">
+                        {% if report.is_ready and report.file %}
+                        <a href="{{ report.file.url }}" class="btn btn-sm btn-primary" download>
+                            <i class="bi bi-download me-1"></i>{% trans "Download" %}
+                        </a>
+                        {% elif report.status == 'failed' %}
+                        <span class="text-danger small" title="{{ report.error_message }}">
+                            <i class="bi bi-exclamation-triangle me-1"></i>{% trans "Failed" %}
+                        </span>
+                        {% else %}
+                        <span class="text-muted small">{% trans "Pending..." %}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <i class="bi bi-clock-history fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">{% trans "No generated reports yet" %}</p>
+                        <a href="{% url 'erp:report_builder_list' %}" class="btn btn-primary mt-3">
+                            {% trans "Go to Report Builder" %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include 'erp/includes/pagination.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    // Auto-poll pending/processing reports
+    const pendingRows = document.querySelectorAll('tr[data-status="pending"], tr[data-status="processing"]');
+    if (!pendingRows.length) return;
+
+    const ids = Array.from(pendingRows).map(r => +r.dataset.id);
+    const statusLabels = {
+        pending: '{% trans "Pending" %}',
+        processing: '{% trans "Processing" %}',
+        completed: '{% trans "Completed" %}',
+        failed: '{% trans "Failed" %}',
+    };
+
+    function pollStatus() {
+        ids.forEach(id => {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            if (!row) return;
+            const currentStatus = row.dataset.status;
+            if (currentStatus === 'completed' || currentStatus === 'failed') return;
+
+            fetch(`{% url 'erp:generated_report_list' %}${id}/status/`)
+            .then(r => r.json())
+            .then(data => {
+                row.dataset.status = data.status;
+                // Update status pill
+                const pill = document.getElementById(`status-${id}`);
+                pill.className = `status-pill status-${data.status}`;
+                let pillHtml = '';
+                if (data.status === 'processing') pillHtml += '<span class="spinner-border spinner-border-sm me-1 progress-pulse" style="width:.7rem;height:.7rem"></span>';
+                pillHtml += statusLabels[data.status] || data.status;
+                pill.innerHTML = pillHtml;
+
+                // Update rows
+                document.getElementById(`rows-${id}`).textContent = data.row_count || '—';
+
+                // Update duration
+                document.getElementById(`dur-${id}`).textContent = data.duration ? data.duration + 's' : '—';
+
+                // Update actions
+                const actionsEl = document.getElementById(`actions-${id}`);
+                if (data.status === 'completed' && data.download_url) {
+                    actionsEl.innerHTML = `<a href="${data.download_url}" class="btn btn-sm btn-primary" download>
+                        <i class="bi bi-download me-1"></i>{% trans "Download" %}</a>`;
+                } else if (data.status === 'failed') {
+                    actionsEl.innerHTML = `<span class="text-danger small" title="${data.error_message || ''}">
+                        <i class="bi bi-exclamation-triangle me-1"></i>{% trans "Failed" %}</span>`;
+                }
+            })
+            .catch(() => {});
+        });
+    }
+
+    // Poll every 5 seconds
+    const interval = setInterval(() => {
+        const stillPending = document.querySelectorAll('tr[data-status="pending"], tr[data-status="processing"]');
+        if (!stillPending.length) {
+            clearInterval(interval);
+            return;
+        }
+        pollStatus();
+    }, 5000);
+
+    // Run immediately once
+    pollStatus();
+})();
+</script>
+{% endblock %}

@@ -59,6 +59,14 @@ class ReportTemplate(TimeStampedModel):
     is_active = models.BooleanField(default=True)
     is_system = models.BooleanField(default=False, help_text='System reports cannot be deleted')
 
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_report_templates',
+    )
+
     class Meta:
         verbose_name = 'Report Template'
         verbose_name_plural = 'Report Templates'
@@ -70,6 +78,12 @@ class ReportTemplate(TimeStampedModel):
 
 class GeneratedReport(TimeStampedModel):
     """Generated report instances."""
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        PROCESSING = 'processing', 'Processing'
+        COMPLETED = 'completed', 'Completed'
+        FAILED = 'failed', 'Failed'
+
     template = models.ForeignKey(
         ReportTemplate,
         on_delete=models.CASCADE,
@@ -95,16 +109,33 @@ class GeneratedReport(TimeStampedModel):
     file = models.FileField(upload_to=report_file_path, null=True, blank=True)
     
     # Status
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     is_ready = models.BooleanField(default=False)
     error_message = models.TextField(blank=True)
+
+    # Execution tracking
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    row_count = models.PositiveIntegerField(null=True, blank=True)
+    celery_task_id = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = 'Generated Report'
         verbose_name_plural = 'Generated Reports'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['generated_by', 'status']),
+            models.Index(fields=['status', 'created_at']),
+        ]
 
     def __str__(self):
         return f"{self.template.name} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+    @property
+    def duration_seconds(self):
+        if self.started_at and self.completed_at:
+            return (self.completed_at - self.started_at).total_seconds()
+        return None
 
 
 class Dashboard(TimeStampedModel):

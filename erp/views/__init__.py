@@ -192,3 +192,11 @@ from .pos import (
     pos_session_list, pos_session_detail_admin,
     pos_order_list, pos_order_detail_admin,
 )
+
+# ── Report Builder ──────────────────────────────────────────────────────────
+from .report_builder import (
+    report_builder_list, report_builder_create, report_builder_edit,
+    report_builder_save, report_builder_delete,
+    report_builder_preview, report_builder_generate,
+    generated_report_list, generated_report_status,
+)

@@ -89,4 +89,10 @@ app.conf.beat_schedule = {
     'cleanup-old-metrics': {
         'task': 'tenants.cleanup_old_metrics',
         'schedule': crontab(hour=4, minute=0, day_of_week='sunday'),
-    },}
+    },
+    # ── Report Builder ──────────────────────────────────────────────────
+    'cleanup-old-generated-reports': {
+        'task': 'erp.tasks.report.cleanup_old_reports',
+        'schedule': crontab(hour=4, minute=30),       # daily at 4:30 AM
+    },
+}

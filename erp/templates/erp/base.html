@@ -366,6 +366,14 @@
                 <i class="bi bi-file-earmark-ruled"></i>
                 {% trans "Tax Report" %}
             </a>
+            <a href="{% url 'erp:report_builder_list' %}" class="erp-nav-link {% if 'report_builder' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-tools"></i>
+                {% trans "Report Builder" %}
+            </a>
+            <a href="{% url 'erp:generated_report_list' %}" class="erp-nav-link {% if 'generated_report' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-file-earmark-arrow-down"></i>
+                {% trans "Generated Reports" %}
+            </a>
             
             <div class="erp-nav-section mt-3">{% trans "Purchases" %}</div>
             <a href="{% url 'erp:supplier_list' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_detail' or request.resolver_match.url_name == 'supplier_edit' or request.resolver_match.url_name == 'supplier_delete' %}active{% endif %}">
