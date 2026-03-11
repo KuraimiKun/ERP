@@ -514,4 +514,9 @@ urlpatterns = (
     + _ai_patterns
     + _support_patterns
     + [path('export/<str:entity>/', views.export_data, name='export_data')]
+    + [
+        path('import/', views.import_upload, name='import_upload'),
+        path('import/preview/', views.import_preview, name='import_preview'),
+        path('import/confirm/', views.import_confirm, name='import_confirm'),
+    ]
 )

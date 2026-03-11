@@ -1,0 +1,142 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Preview" %} – {{ entity_label }}{% endblock %}
+{% block page_title %}{% trans "Import Preview" %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Progress Steps -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-body">
+                <div class="d-flex justify-content-center">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success rounded-circle me-2" style="width:28px;height:28px;line-height:20px;"><i class="bi bi-check"></i></span>
+                        <span class="text-success">{% trans "Upload" %}</span>
+                        <i class="bi bi-chevron-right mx-3 text-muted"></i>
+                        <span class="badge bg-primary rounded-circle me-2" style="width:28px;height:28px;line-height:20px;">2</span>
+                        <span class="fw-semibold text-primary">{% trans "Preview" %}</span>
+                        <i class="bi bi-chevron-right mx-3 text-muted"></i>
+                        <span class="badge bg-secondary rounded-circle me-2" style="width:28px;height:28px;line-height:20px;">3</span>
+                        <span class="text-muted">{% trans "Results" %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="fs-3 fw-bold text-primary">{{ total_rows }}</div>
+                        <div class="text-muted small">{% trans "Total Rows" %}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="fs-3 fw-bold text-success">{{ new_rows }}</div>
+                        <div class="text-muted small">{% trans "New Records" %}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="fs-3 fw-bold text-info">{{ update_rows }}</div>
+                        <div class="text-muted small">{% trans "Updates" %}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="fs-3 fw-bold {% if error_count %}text-danger{% else %}text-success{% endif %}">{{ error_count }}</div>
+                        <div class="text-muted small">{% trans "Errors" %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if has_errors %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {% trans "Some rows have validation errors. Rows with errors will be skipped during import." %}
+        </div>
+        {% endif %}
+
+        <!-- File Info -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="mb-0">{{ entity_label }}</h5>
+                <span class="text-muted small">{{ filename }}</span>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'erp:import_upload' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> {% trans "Back" %}
+                </a>
+                <form method="post" action="{% url 'erp:import_confirm' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary" {% if error_count == total_rows %}disabled{% endif %}>
+                        <i class="bi bi-check-lg me-1"></i>
+                        {% trans "Confirm Import" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Data Preview Table -->
+        <div class="erp-card">
+            <div class="table-responsive">
+                <table class="table erp-table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:60px">{% trans "Row" %}</th>
+                            <th style="width:80px">{% trans "Status" %}</th>
+                            {% for header, field in mapped_headers %}
+                            <th>
+                                {{ header }}
+                                {% if not field %}
+                                <i class="bi bi-dash-circle text-muted small" title="{% trans 'Unmapped column – will be ignored' %}"></i>
+                                {% endif %}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in display_rows %}
+                        <tr class="{% if row.has_errors %}table-danger{% elif row.is_update %}table-info{% endif %}">
+                            <td class="text-muted">{{ row.row_num }}</td>
+                            <td>
+                                {% if row.has_errors %}
+                                <span class="badge bg-danger">{% trans "Error" %}</span>
+                                {% elif row.is_update %}
+                                <span class="badge bg-info">{% trans "Update" %}</span>
+                                {% else %}
+                                <span class="badge bg-success">{% trans "New" %}</span>
+                                {% endif %}
+                            </td>
+                            {% for cell in row.cells %}
+                            <td>
+                                {% if cell.error %}
+                                <span class="text-danger" title="{{ cell.error }}">
+                                    {{ cell.value }}
+                                    <i class="bi bi-exclamation-circle"></i>
+                                </span>
+                                {% else %}
+                                {{ cell.value }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% if row.has_errors %}
+                        <tr class="table-danger">
+                            <td></td>
+                            <td colspan="{{ mapped_headers|length|add:1 }}">
+                                <small>
+                                {% for field, error in row.errors.items %}
+                                <strong>{{ field }}:</strong> {{ error }}{% if not forloop.last %} | {% endif %}
+                                {% endfor %}
+                                </small>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

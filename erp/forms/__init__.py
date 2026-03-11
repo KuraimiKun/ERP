@@ -22,6 +22,9 @@ from .hr import (
 # ── Employee Registration (public) ──────────────────────────────
 from .employee_registration import EmployeeRegistrationForm
 
+# ── Import ──────────────────────────────────────────────────────
+from .import_data import ImportUploadForm
+
 # ── Finance ─────────────────────────────────────────────────────
 from .finance import (
     CustomerForm,

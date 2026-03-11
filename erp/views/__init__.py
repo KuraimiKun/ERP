@@ -11,6 +11,9 @@ from ._common import get_user_company
 # ── Export ──────────────────────────────────────────────────────────────────
 from .export import export_data
 
+# ── Import ──────────────────────────────────────────────────────────────────
+from .import_data import import_upload, import_preview, import_confirm
+
 # ── Dashboard ───────────────────────────────────────────────────────────────
 from .dashboard import dashboard, dashboard_charts_data
 

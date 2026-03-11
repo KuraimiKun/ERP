@@ -1,0 +1,126 @@
+{% extends "erp/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Results" %} – {{ entity_label }}{% endblock %}
+{% block page_title %}{% trans "Import Results" %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Progress Steps -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-body">
+                <div class="d-flex justify-content-center">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success rounded-circle me-2" style="width:28px;height:28px;line-height:20px;"><i class="bi bi-check"></i></span>
+                        <span class="text-success">{% trans "Upload" %}</span>
+                        <i class="bi bi-chevron-right mx-3 text-muted"></i>
+                        <span class="badge bg-success rounded-circle me-2" style="width:28px;height:28px;line-height:20px;"><i class="bi bi-check"></i></span>
+                        <span class="text-success">{% trans "Preview" %}</span>
+                        <i class="bi bi-chevron-right mx-3 text-muted"></i>
+                        <span class="badge bg-primary rounded-circle me-2" style="width:28px;height:28px;line-height:20px;">3</span>
+                        <span class="fw-semibold text-primary">{% trans "Results" %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="erp-card mb-4">
+            <div class="erp-card-body text-center py-4">
+                {% if created or updated %}
+                <i class="bi bi-check-circle text-success" style="font-size:3rem"></i>
+                <h4 class="mt-3">{% trans "Import Completed Successfully" %}</h4>
+                {% else %}
+                <i class="bi bi-exclamation-circle text-warning" style="font-size:3rem"></i>
+                <h4 class="mt-3">{% trans "Import Completed With Issues" %}</h4>
+                {% endif %}
+                <p class="text-muted">{{ entity_label }}</p>
+            </div>
+        </div>
+
+        <!-- Counts -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="erp-card text-center">
+                    <div class="erp-card-body py-3">
+                        <div class="fs-2 fw-bold text-success">{{ created }}</div>
+                        <div class="text-muted">{% trans "Created" %}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="erp-card text-center">
+                    <div class="erp-card-body py-3">
+                        <div class="fs-2 fw-bold text-info">{{ updated }}</div>
+                        <div class="text-muted">{% trans "Updated" %}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="erp-card text-center">
+                    <div class="erp-card-body py-3">
+                        <div class="fs-2 fw-bold {% if error_rows %}text-danger{% else %}text-success{% endif %}">{{ error_rows|length }}</div>
+                        <div class="text-muted">{% trans "Errors" %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Details -->
+        {% if error_rows %}
+        <div class="erp-card mb-4">
+            <div class="erp-card-body">
+                <h6 class="text-danger mb-3"><i class="bi bi-exclamation-triangle me-2"></i>{% trans "Failed Rows" %}</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Row" %}</th>
+                                <th>{% trans "Errors" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for err in error_rows %}
+                            <tr>
+                                <td>{{ err.row_num }}</td>
+                                <td>
+                                    {% for field, msg in err.errors.items %}
+                                    <strong>{{ field }}:</strong> {{ msg }}{% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'erp:import_upload' %}" class="btn btn-primary">
+                <i class="bi bi-upload me-1"></i> {% trans "Import More" %}
+            </a>
+            {% if entity == 'customers' %}
+            <a href="{% url 'erp:customer_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-list me-1"></i> {% trans "View Customers" %}
+            </a>
+            {% elif entity == 'products' %}
+            <a href="{% url 'erp:product_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-list me-1"></i> {% trans "View Products" %}
+            </a>
+            {% elif entity == 'suppliers' %}
+            <a href="{% url 'erp:supplier_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-list me-1"></i> {% trans "View Suppliers" %}
+            </a>
+            {% elif entity == 'employees' %}
+            <a href="{% url 'erp:employee_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-list me-1"></i> {% trans "View Employees" %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
