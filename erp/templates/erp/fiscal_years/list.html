@@ -14,8 +14,9 @@
     </a>
 </div>
 
+{% include "erp/includes/export_buttons.html" with export_entity="fiscal_years" %}
+
 <div class="row g-4">
-    {% for year in fiscal_years %}
     <div class="col-md-6 col-lg-4">
         <div class="erp-card h-100 {% if year.is_current %}border-primary{% endif %}">
             <div class="erp-card-body">

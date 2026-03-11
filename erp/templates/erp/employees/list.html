@@ -46,6 +46,8 @@
     </div>
 </div>
 
+{% include "erp/includes/export_buttons.html" with export_entity="employees" %}
+
 <!-- Employees Grid -->
 <div class="row g-3">
     {% for employee in employees %}

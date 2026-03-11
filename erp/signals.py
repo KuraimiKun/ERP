@@ -23,6 +23,44 @@ from erp.services.audit import AuditService, get_audit_context, get_field_change
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
+# Export cache invalidation
+# ---------------------------------------------------------------------------
+
+# Lazy-built reverse map: Model class → export entity name
+_model_to_entity: dict | None = None
+
+
+def _get_model_entity_map():
+    global _model_to_entity
+    if _model_to_entity is None:
+        from erp.services.export import EXPORT_REGISTRY
+        _model_to_entity = {
+            cfg['model']: name for name, cfg in EXPORT_REGISTRY.items()
+        }
+    return _model_to_entity
+
+
+def _invalidate_export_cache(instance):
+    """Bump the generation counter for the entity's export cache."""
+    mapping = _get_model_entity_map()
+    entity = mapping.get(type(instance))
+    if entity is None:
+        return
+    from erp.services.export import EXPORT_REGISTRY, invalidate_export_cache
+    config = EXPORT_REGISTRY[entity]
+    if config.get('company_filter', True) is False:
+        invalidate_export_cache(entity, 0)
+    else:
+        company_field = config.get('company_field', 'company')
+        # follow FK chain: 'employee__company' → instance.employee.company
+        obj = instance
+        for attr in company_field.split('__'):
+            obj = getattr(obj, attr, None)
+            if obj is None:
+                return
+        invalidate_export_cache(entity, obj.pk if hasattr(obj, 'pk') else obj)
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -71,6 +109,8 @@ def audit_post_save(sender, instance, created, **kwargs):
     if not _should_audit(instance):
         return
 
+    _invalidate_export_cache(instance)
+
     ctx = get_audit_context()
     user = ctx.get('user')
     if user is None or (hasattr(user, 'is_authenticated') and not user.is_authenticated):
@@ -105,6 +145,8 @@ def audit_post_delete(sender, instance, **kwargs):
     """Log a DELETE when an object is removed."""
     if not _should_audit(instance):
         return
+
+    _invalidate_export_cache(instance)
 
     ctx = get_audit_context()
     user = ctx.get('user')

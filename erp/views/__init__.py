@@ -8,6 +8,9 @@ Usage:  from erp.views import dashboard   (still works)
 # ── Shared ──────────────────────────────────────────────────────────────────
 from ._common import get_user_company
 
+# ── Export ──────────────────────────────────────────────────────────────────
+from .export import export_data
+
 # ── Dashboard ───────────────────────────────────────────────────────────────
 from .dashboard import dashboard, dashboard_charts_data
 

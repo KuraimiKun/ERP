@@ -513,4 +513,5 @@ urlpatterns = (
     + _api_patterns
     + _ai_patterns
     + _support_patterns
+    + [path('export/<str:entity>/', views.export_data, name='export_data')]
 )

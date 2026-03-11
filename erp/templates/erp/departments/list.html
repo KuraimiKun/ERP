@@ -31,6 +31,8 @@
     </div>
 </div>
 
+{% include "erp/includes/export_buttons.html" with export_entity="departments" %}
+
 <!-- Departments Grid -->
 <div class="row g-4">
     {% for department in departments %}

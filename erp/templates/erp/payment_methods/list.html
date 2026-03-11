@@ -14,8 +14,9 @@
     </a>
 </div>
 
+{% include "erp/includes/export_buttons.html" with export_entity="payment_methods" %}
+
 <div class="row g-4">
-    {% for method in payment_methods %}
     <div class="col-md-6 col-lg-4">
         <div class="erp-card h-100">
             <div class="erp-card-body">

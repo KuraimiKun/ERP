@@ -257,6 +257,11 @@ urlpatterns = [
     path('employees/pending/', views.pending_employees, name='pending_employees'),
     path('employees/pending/<int:pk>/approve/', views.approve_employee, name='approve_employee'),
     
+    # =========================================================================
+    # DATA EXPORT (CSV / Excel)
+    # =========================================================================
+    path('export/<str:entity>/', views.export_data, name='export_data'),
+
     # API endpoints
     path('api/', include('erp.api.urls')),
 ]
