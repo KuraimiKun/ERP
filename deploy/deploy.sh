@@ -335,7 +335,9 @@ Group=www-data
 UMask=0007
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
-ExecStart=${APP_DIR}/venv/bin/gunicorn erpproject.wsgi:application \\
+Environment=NEW_RELIC_CONFIG_FILE=${APP_DIR}/newrelic.ini
+ExecStart=${APP_DIR}/venv/bin/newrelic-admin run-program \\
+    ${APP_DIR}/venv/bin/gunicorn erpproject.wsgi:application \\
     --workers ${GUNICORN_WORKERS} \\
     --bind unix:${APP_DIR}/run/gunicorn.sock \\
     --timeout 120 \\

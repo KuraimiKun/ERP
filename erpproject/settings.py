@@ -355,3 +355,12 @@ ML_SAFETY_STOCK_Z = float(os.getenv('ML_SAFETY_STOCK_Z', '1.65'))
 
 # Lead scoring threshold (probability above which a lead is "hot")
 ML_LEAD_HOT_THRESHOLD = float(os.getenv('ML_LEAD_HOT_THRESHOLD', '0.70'))
+
+
+# ── New Relic APM ───────────────────────────────────────────────────────────
+NEW_RELIC_LICENSE_KEY = os.getenv('NEW_RELIC_LICENSE_KEY', '')
+NEW_RELIC_APP_NAME = os.getenv('NEW_RELIC_APP_NAME', 'ERP Django')
+NEW_RELIC_ENABLED = (
+    not DEBUG
+    and bool(NEW_RELIC_LICENSE_KEY)
+)
