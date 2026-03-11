@@ -429,11 +429,13 @@ server {
 
     client_max_body_size 20M;
 
-    # ── Static files ───────────────────────────────────────────────────────
+    # ── Static files (WhiteNoise pre-compresses; Nginx serves gzip/br) ──
     location /static/ {
         alias APP_DIR_PLACEHOLDER/staticfiles/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
+        expires max;
+        add_header Cache-Control "public, max-age=315360000, immutable";
+        gzip_static on;
+        brotli_static on;   # requires ngx_brotli; harmless if absent
     }
 
     # ── Media files ────────────────────────────────────────────────────────

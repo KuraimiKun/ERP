@@ -27,6 +27,9 @@ docker>=6.1.0
 # Production server
 gunicorn>=21.2.0
 
+# Static file serving with compression & cache-busting
+whitenoise[brotli]>=6.5.0
+
 # PDF generation
 xhtml2pdf>=0.2.11
 
