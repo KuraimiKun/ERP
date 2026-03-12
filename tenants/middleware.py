@@ -54,8 +54,23 @@ class TenantMiddleware:
         # Mobile API: use X-Tenant-DB header for tenant context.
         # Login endpoint is excluded (it resolves tenant itself).
         if '/api/mobile/' in path:
+            is_mobile_login = path.rstrip('/').endswith('/auth/login')
             tenant_db = request.META.get('HTTP_X_TENANT_DB', '')
-            if tenant_db:
+
+            if tenant_db and not is_mobile_login:
+                # Validate that the authenticated user is actually assigned
+                # to this tenant database.  Without this check a user could
+                # send X-Tenant-DB: tenant_5 to access another tenant.
+                user = getattr(request, 'user', None)
+                if user and getattr(user, 'is_authenticated', False):
+                    allowed_alias = get_tenant_db_alias(user)
+                    if tenant_db != allowed_alias:
+                        from django.http import JsonResponse
+                        return JsonResponse(
+                            {'error': 'Tenant mismatch. Access denied.'},
+                            status=403,
+                        )
+
                 if tenant_db in settings.DATABASES:
                     set_current_db_alias(tenant_db)
                 elif tenant_db.startswith('tenant_'):

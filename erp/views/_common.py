@@ -11,19 +11,28 @@ from django.shortcuts import get_object_or_404, redirect, render, reverse  # noq
 
 from erp.decorators import tenant_required as staff_member_required  # noqa: F401
 
+from django.core.exceptions import PermissionDenied
+
 from erp.models import Company
 
 DEFAULT_PAGE_SIZE = 25
 
 
 def get_user_company(user):
-    """Get the company associated with the current user."""
+    """Get the company associated with the current user.
+
+    Raises PermissionDenied if the user has no linked company — never
+    falls back to an arbitrary company.
+    """
     try:
         if hasattr(user, 'employee_profile') and user.employee_profile:
             return user.employee_profile.company
     except Exception:
         pass
-    return Company.objects.first()
+    raise PermissionDenied(
+        'No company is associated with your account. '
+        'Please contact your administrator.'
+    )
 
 
 def paginate_qs(request, queryset, per_page=DEFAULT_PAGE_SIZE):
