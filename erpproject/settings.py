@@ -285,6 +285,8 @@ REST_FRAMEWORK = {
         'sustained': '1000/day',
         'login': '3/min',
     },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 25,
 }
 
 # CORS settings
