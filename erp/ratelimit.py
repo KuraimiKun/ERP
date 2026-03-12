@@ -12,7 +12,6 @@ import hashlib
 import logging
 import time
 
-from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 from rest_framework.throttling import SimpleRateThrottle

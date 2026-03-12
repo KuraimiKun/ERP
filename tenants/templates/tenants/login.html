@@ -1,15 +1,16 @@
 {% extends 'tenants/base.html' %}
+{% load i18n %}
 
-{% block title %}Sign In - ERP System{% endblock %}
+{% block title %}{% trans "Sign In" %} - {% trans "ERP System" %}{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="card auth-card">
         <div class="brand-header">
             <h2 class="mb-0">
-                <i class="bi bi-briefcase-fill me-2"></i>ERP System
+                <i class="bi bi-briefcase-fill me-2"></i>{% trans "ERP System" %}
             </h2>
-            <p class="mb-0 mt-2">Sign in to your account</p>
+            <p class="mb-0 mt-2">{% trans "Sign in to your account" %}</p>
         </div>
         <div class="card-body p-4">
             <form method="post" novalidate>
@@ -24,7 +25,7 @@
                 {% endif %}
                 
                 <div class="mb-3">
-                    <label for="id_username" class="form-label">Email Address</label>
+                    <label for="id_username" class="form-label">{% trans "Email Address" %}</label>
                     {{ form.username }}
                     {% if form.username.errors %}
                     <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
@@ -32,7 +33,7 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label for="id_password" class="form-label">Password</label>
+                    <label for="id_password" class="form-label">{% trans "Password" %}</label>
                     {{ form.password }}
                     {% if form.password.errors %}
                     <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
@@ -41,13 +42,13 @@
                 
                 <div class="d-grid mb-3">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Sign In" %}
                     </button>
                 </div>
                 
                 <p class="text-center text-muted mb-0">
-                    Don't have an account? 
-                    <a href="{% url 'tenants:signup' %}">Sign up</a>
+                    {% trans "Don't have an account?" %}
+                    <a href="{% url 'tenants:signup' %}">{% trans "Sign up" %}</a>
                 </p>
             </form>
         </div>

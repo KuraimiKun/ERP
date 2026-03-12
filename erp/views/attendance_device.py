@@ -21,6 +21,7 @@ Device-binding flow
 
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from erp.models import AttendanceDevice, Employee
@@ -193,7 +194,7 @@ def attendance_kiosk(request, device_id):
     device = _setup_tenant_context_for_device(device_id)
     if not device:
         from django.http import Http404
-        raise Http404('Device not found')
+        raise Http404(_('Device not found'))
 
     cookie_token = request.COOKIES.get(DEVICE_COOKIE_NAME, '')
 
@@ -260,14 +261,14 @@ def attendance_qr_data(request, device_id):
     """
     device = _setup_tenant_context_for_device(device_id)
     if not device:
-        return JsonResponse({'error': 'Device not found'}, status=404)
+        return JsonResponse({'error': _('Device not found')}, status=404)
 
     # Verify cookie
     cookie_token = request.COOKIES.get(DEVICE_COOKIE_NAME, '')
     if not device.device_token or cookie_token != device.device_token:
-        return JsonResponse({'error': 'Not authorised'}, status=403)
+        return JsonResponse({'error': _('Not authorised')}, status=403)
     if not device.is_device_approved:
-        return JsonResponse({'error': 'Device pending approval'}, status=403)
+        return JsonResponse({'error': _('Device pending approval')}, status=403)
 
     payload = device.generate_qr_payload()
     scan_url = request.build_absolute_uri(

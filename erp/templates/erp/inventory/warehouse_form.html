@@ -1,8 +1,8 @@
 {% extends 'erp/base.html' %}
 {% load i18n %}
 
-{% block title %}{{ title|default:_('New Warehouse') }}{% endblock %}
-{% block page_title %}{{ title|default:_('New Warehouse') }}{% endblock %}
+{% block title %}{% if title %}{{ title }}{% else %}{% trans "New Warehouse" %}{% endif %}{% endblock %}
+{% block page_title %}{% if title %}{{ title }}{% else %}{% trans "New Warehouse" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -10,7 +10,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'erp:warehouse_list' %}">{% trans "Warehouses" %}</a></li>
-            <li class="breadcrumb-item active">{{ title|default:_("New") }}</li>
+            <li class="breadcrumb-item active">{% if title %}{{ title }}{% else %}{% trans "New" %}{% endif %}</li>
         </ol>
     </nav>
 
@@ -125,7 +125,7 @@
                                 </thead>
                                 <tbody id="lines-body">
                                     {% for line_form in zone_formset %}
-                                    <tr class="line-row {% if line_form.DELETE.value %}d-none{% endif %}" data-index="{{ forloop.counter0 }}">
+                                    <tr class="line-row {% if line_form.DELETE.value %}d-none{% endif %}" data-index="{% if forloop.counter0 }}">
                                         <td>
                                             {{ line_form.id }}
                                             {{ line_form.code }}
@@ -154,7 +154,36 @@
                     <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
                     <div class="erp-card-body d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-check-lg ms-1"></i> {{ submit_text|default:_("Save") }}
+                            <i class="bi bi-check-lg ms-1"></i> {{ submit_text %}{{ forloop.counter0 }}">
+                                        <td>
+                                            {{ line_form.id }}
+                                            {{ line_form.code }}
+                                        </td>
+                                        <td>{{ line_form.name }}</td>
+                                        <td>{{ line_form.name_ar }}</td>
+                                        <td>{{ line_form.zone_type }}</td>
+                                        <td class="text-center">
+                                            <span class="d-none">{{ line_form.DELETE }}</span>
+                                            <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-line-btn" title="{% trans 'Delete' %}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="erp-card position-sticky" style="top: 1rem;">
+                    <div class="erp-card-header"><h6 class="mb-0">{% trans "Actions" %}</h6></div>
+                    <div class="erp-card-body d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg ms-1"></i> {{ submit_text }}{% else %}{% trans "Save" %}{% endif %}
                         </button>
                         <a href="{% url 'erp:warehouse_list' %}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg ms-1"></i> {% trans "Cancel" %}

@@ -1,6 +1,7 @@
 {% extends 'tenants/base.html' %}
+{% load i18n %}
 
-{% block title %}Welcome - ERP System{% endblock %}
+{% block title %}{% trans "Welcome" %} - {% trans "ERP System" %}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -8,19 +9,18 @@
         <div class="col-md-8 text-center">
             <h1 class="display-4 mb-4">
                 <i class="bi bi-briefcase-fill text-primary"></i>
-                Welcome to ERP System
+                {% trans "Welcome to ERP System" %}
             </h1>
             <p class="lead mb-5">
-                A powerful multi-tenant Enterprise Resource Planning solution
-                for managing your business operations.
+                {% trans "A powerful multi-tenant Enterprise Resource Planning solution for managing your business operations." %}
             </p>
             
             <div class="d-grid gap-3 d-md-flex justify-content-center">
                 <a href="{% url 'tenants:login' %}" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Sign In" %}
                 </a>
                 <a href="{% url 'tenants:signup' %}" class="btn btn-outline-primary btn-lg px-5">
-                    <i class="bi bi-person-plus me-2"></i>Sign Up
+                    <i class="bi bi-person-plus me-2"></i>{% trans "Sign Up" %}
                 </a>
             </div>
             
@@ -31,11 +31,10 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-graph-up text-success"></i> Finance
+                                <i class="bi bi-graph-up text-success"></i> {% trans "Finance" %}
                             </h5>
                             <p class="card-text">
-                                Complete financial management including invoicing,
-                                payments, and accounting.
+                                {% trans "Complete financial management including invoicing, payments, and accounting." %}
                             </p>
                         </div>
                     </div>
@@ -44,11 +43,10 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-people text-primary"></i> HR Management
+                                <i class="bi bi-people text-primary"></i> {% trans "HR Management" %}
                             </h5>
                             <p class="card-text">
-                                Employee management, attendance tracking,
-                                and leave management.
+                                {% trans "Employee management, attendance tracking, and leave management." %}
                             </p>
                         </div>
                     </div>
@@ -57,11 +55,10 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-funnel text-info"></i> CRM
+                                <i class="bi bi-funnel text-info"></i> {% trans "CRM" %}
                             </h5>
                             <p class="card-text">
-                                Lead management, customer tracking,
-                                and campaign management.
+                                {% trans "Lead management, customer tracking, and campaign management." %}
                             </p>
                         </div>
                     </div>

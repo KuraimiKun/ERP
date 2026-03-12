@@ -4,7 +4,7 @@
 {% block page_title %}{% trans "Supplier Details" %}{% endblock %}
 
 {% block content %}
-<!-- شريط التنقل -->
+<!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
@@ -82,7 +82,7 @@
             </div>
         </div>
         
-        <!-- تفاصيل الدفع -->
+        <!-- Payment Details -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h6 class="mb-0">{% trans "Payment Details" %}</h6>
@@ -99,7 +99,7 @@
             </div>
         </div>
         
-        <!-- جهات الاتصال -->
+        <!-- Contacts -->
         <div class="erp-card mb-4">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">{% trans "Contacts" %}</h6>
@@ -130,7 +130,7 @@
     </div>
     
     <div class="col-lg-8">
-        <!-- التبويبات -->
+        <!-- Tabs -->
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#purchase-orders">
@@ -150,7 +150,7 @@
         </ul>
         
         <div class="tab-content">
-            <!-- تبويب أوامر الشراء -->
+            <!-- Purchase Orders Tab -->
             <div class="tab-pane fade show active" id="purchase-orders">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">
@@ -186,7 +186,7 @@
                 </div>
             </div>
             
-            <!-- تبويب الفواتير -->
+            <!-- Invoices Tab -->
             <div class="tab-pane fade" id="invoices">
                 <div class="erp-card">
                     <div class="erp-card-header">
@@ -221,7 +221,7 @@
                 </div>
             </div>
             
-            <!-- تبويب المستندات -->
+            <!-- Documents Tab -->
             <div class="tab-pane fade" id="documents">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">

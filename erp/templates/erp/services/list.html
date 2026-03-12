@@ -7,7 +7,7 @@
 
 {% block extra_actions %}
 <a href="{% url 'erp:service_create' %}" class="btn btn-primary btn-sm">
-    <i class="bi bi-plus-lg me-1"></i> إضافة خدمة
+    <i class="bi bi-plus-lg me-1"></i> {% trans "Add Service" %}
 </a>
 {% include 'erp/includes/pagination.html' %}
 {% endblock %}
@@ -17,7 +17,7 @@
 
 <div class="erp-card">
     <div class="erp-card-body">
-        <!-- البحث والفلاتر -->
+        <!-- Search & Filters -->
         <form method="get" class="row mb-4 g-2 align-items-end">
             <div class="col-md-5">
                 <input type="text" name="search" class="form-control" placeholder="{% trans 'Search by name or description...' %}" value="{{ request.GET.search }}">

@@ -222,12 +222,6 @@ msgstr ""
 msgid "Base Currency"
 msgstr ""
 
-#: .\erp\setup_forms.py:53
-msgid ""
-"Choose the base currency for the system. It will be used in all financial "
-"transactions."
-msgstr ""
-
 #: .\erp\setup_forms.py:59
 msgid "Currency Code"
 msgstr ""
@@ -1477,12 +1471,6 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: .\erp\templates\erp\attendance\device_detail.html:49
-msgid ""
-"This URL does not require login. Keep it private and only share with IT "
-"staff."
-msgstr ""
-
 #: .\erp\templates\erp\attendance\device_detail.html:57
 msgid "Configuration"
 msgstr ""
@@ -1554,21 +1542,8 @@ msgstr ""
 msgid "Approve Device"
 msgstr ""
 
-#: .\erp\templates\erp\attendance\device_detail.html:130
-#: .\erp\templates\erp\attendance\device_list.html:146
-msgid ""
-"Revoke this device? The physical device will need to reconnect and be re-"
-"approved."
-msgstr ""
-
 #: .\erp\templates\erp\attendance\device_detail.html:131
 msgid "Revoke Binding"
-msgstr ""
-
-#: .\erp\templates\erp\attendance\device_detail.html:138
-msgid ""
-"No physical device has connected yet. Open the Kiosk URL above on a TV or "
-"tablet to start the binding process."
 msgstr ""
 
 #: .\erp\templates\erp\attendance\device_detail.html:152
@@ -1628,12 +1603,6 @@ msgstr ""
 
 #: .\erp\templates\erp\attendance\device_list.html:22
 msgid "device(s) waiting for approval."
-msgstr ""
-
-#: .\erp\templates\erp\attendance\device_list.html:23
-msgid ""
-"A physical device has connected and needs your approval before it can "
-"display the attendance QR code."
 msgstr ""
 
 #: .\erp\templates\erp\attendance\device_list.html:47
@@ -1844,12 +1813,6 @@ msgstr ""
 msgid "Waiting for Approval"
 msgstr ""
 
-#: .\erp\templates\erp\attendance\kiosk_pending.html:108
-msgid ""
-"This device has been registered and is waiting for the administrator to "
-"approve it."
-msgstr ""
-
 #: .\erp\templates\erp\attendance\kiosk_pending.html:110
 msgid "Once approved, the attendance QR code will appear here automatically."
 msgstr ""
@@ -1865,13 +1828,6 @@ msgstr ""
 
 #: .\erp\templates\erp\attendance\kiosk_unauthorised.html:77
 msgid "Only the originally approved device can display the attendance QR code."
-msgstr ""
-
-#: .\erp\templates\erp\attendance\kiosk_unauthorised.html:82
-msgid ""
-"If this device needs to be re-assigned, ask the administrator to revoke the "
-"current device from the Attendance Devices page and then visit this URL "
-"again on the new device."
 msgstr ""
 
 #: .\erp\templates\erp\attendance\list.html:4
@@ -2740,11 +2696,6 @@ msgstr ""
 #: .\erp\templates\erp\tasks\detail.html:101
 #: .\erp\templates\erp\tasks\detail.html:230
 msgid "Last Updated"
-msgstr ""
-
-#: .\erp\templates\erp\campaigns\detail.html:159
-msgid ""
-"Are you sure you want to delete this campaign? This action cannot be undone."
 msgstr ""
 
 #: .\erp\templates\erp\campaigns\form.html:4
@@ -4011,24 +3962,12 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
-#: .\erp\templates\erp\employee_portal\qr_scanner.html:88
-msgid ""
-"Make sure you allow camera access when prompted. HTTPS is required for "
-"camera access."
-msgstr ""
-
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:138
 msgid "Camera access denied or not available. Please check permissions."
 msgstr ""
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:151
 msgid "Scanner stopped."
-msgstr ""
-
-#: .\erp\templates\erp\employee_portal\qr_scanner.html:177
-msgid ""
-"Your browser does not support camera access. Please use a modern browser "
-"with HTTPS."
 msgstr ""
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:5
@@ -4485,12 +4424,6 @@ msgstr ""
 
 #: .\erp\templates\erp\employees\invite_link_form.html:12
 msgid "Generate Employee Invite Link"
-msgstr ""
-
-#: .\erp\templates\erp\employees\invite_link_form.html:20
-msgid ""
-"This will generate a unique registration link. Share it with new employees "
-"so they can register their accounts."
 msgstr ""
 
 #: .\erp\templates\erp\employees\invite_link_form.html:27
@@ -4980,12 +4913,6 @@ msgstr ""
 
 #: .\erp\templates\erp\finance\cash_flow.html:128
 msgid "Note"
-msgstr ""
-
-#: .\erp\templates\erp\finance\cash_flow.html:129
-msgid ""
-"This report shows operating cash flows only (customer payments, supplier "
-"payments, expenses). Investing and financing activities are not included yet."
 msgstr ""
 
 #: .\erp\templates\erp\finance\profit_and_loss.html:5
@@ -6309,12 +6236,6 @@ msgstr ""
 msgid "Are you sure you want to delete the reorder rule for"
 msgstr ""
 
-#: .\erp\templates\erp\inventory\reorder_suggestions.html:20
-msgid ""
-"These suggestions are based on active reorder rules where current stock has "
-"fallen below the reorder point."
-msgstr ""
-
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:26
 msgid "Suggestions"
 msgstr ""
@@ -6718,12 +6639,6 @@ msgstr ""
 msgid "Save Configuration"
 msgstr ""
 
-#: .\erp\templates\erp\inventory\valuation_config.html:114
-msgid ""
-"These settings affect how inventory is valued in financial reports and "
-"journal entries."
-msgstr ""
-
 #: .\erp\templates\erp\inventory\warehouse_detail.html:5
 msgid "Warehouse Details"
 msgstr ""
@@ -6890,12 +6805,6 @@ msgstr ""
 
 #: .\erp\templates\erp\invoices\credit_debit_form.html:34
 msgid "Original Invoice Lines"
-msgstr ""
-
-#: .\erp\templates\erp\invoices\credit_debit_form.html:35
-msgid ""
-"Select lines to include and adjust quantity if needed. Leave unchecked to "
-"include all lines."
 msgstr ""
 
 #: .\erp\templates\erp\invoices\credit_debit_form.html:45
@@ -7134,12 +7043,6 @@ msgstr ""
 
 #: .\erp\templates\erp\leads\convert_confirm.html:4
 msgid "Convert Lead to Customer"
-msgstr ""
-
-#: .\erp\templates\erp\leads\convert_confirm.html:16
-msgid ""
-"A new customer account will be created from the lead data and its status "
-"will be changed to Won."
 msgstr ""
 
 #: .\erp\templates\erp\leads\convert_confirm.html:23
@@ -7501,11 +7404,6 @@ msgstr ""
 #: .\erp\templates\erp\payments\detail.html:116
 #: .\erp\templates\erp\supplier_payments\detail.html:108
 msgid "No invoices linked to this payment"
-msgstr ""
-
-#: .\erp\templates\erp\payments\detail.html:153
-msgid ""
-"Are you sure you want to delete this payment? This action cannot be undone."
 msgstr ""
 
 #: .\erp\templates\erp\payments\form.html:3
@@ -8063,12 +7961,6 @@ msgstr ""
 msgid "Manual Supplier Invoice"
 msgstr ""
 
-#: .\erp\templates\erp\purchase_orders\detail.html:217
-msgid ""
-"Are you sure you want to delete this purchase order? This action cannot be "
-"undone."
-msgstr ""
-
 #: .\erp\templates\erp\purchase_orders\form.html:4
 #: .\erp\templates\erp\purchase_orders\form.html:5
 #: .\erp\templates\erp\purchase_orders\list.html:13
@@ -8130,12 +8022,6 @@ msgstr ""
 #: .\erp\templates\erp\quotes\convert_confirm.html:11
 #: .\erp\templates\erp\quotes\detail.html:163
 msgid "Convert to Invoice"
-msgstr ""
-
-#: .\erp\templates\erp\quotes\convert_confirm.html:16
-msgid ""
-"A new invoice will be created with <strong>Draft</strong> status from the "
-"quote data. You can edit the invoice after creation."
 msgstr ""
 
 #: .\erp\templates\erp\quotes\convert_confirm.html:33
@@ -8328,20 +8214,8 @@ msgstr ""
 msgid "Please correct the following errors"
 msgstr ""
 
-#: .\erp\templates\erp\setup\step_chart.html:43
-msgid ""
-"Specialized accounting chart for travel and tourism agencies with accounts "
-"for tickets, hotels, and trips."
-msgstr ""
-
 #: .\erp\templates\erp\setup\step_chart.html:47
 msgid "Accounting chart for service companies and consultancies."
-msgstr ""
-
-#: .\erp\templates\erp\setup\step_chart.html:51
-msgid ""
-"Comprehensive accounting chart suitable for most types of business "
-"activities."
 msgstr ""
 
 #: .\erp\templates\erp\setup\step_chart.html:55
@@ -8356,12 +8230,6 @@ msgstr ""
 #: .\erp\templates\erp\setup\step_currency.html:62
 #: .\erp\templates\erp\setup\step_fiscal_year.html:54
 msgid "Note:"
-msgstr ""
-
-#: .\erp\templates\erp\setup\step_chart.html:80
-msgid ""
-"You can always add or modify accounts from the chart of accounts screen "
-"after completing the setup."
 msgstr ""
 
 #: .\erp\templates\erp\setup\step_company.html:4
@@ -8396,12 +8264,6 @@ msgstr ""
 msgid "Custom Currency Details"
 msgstr ""
 
-#: .\erp\templates\erp\setup\step_currency.html:62
-msgid ""
-"The base currency is the currency that will be used in all financial "
-"reports. You can add other currencies later from the system settings."
-msgstr ""
-
 #: .\erp\templates\erp\setup\step_currency.html:67
 msgid "Step 1 of 7"
 msgstr ""
@@ -8422,12 +8284,6 @@ msgstr ""
 msgid "Current Fiscal Year Period"
 msgstr ""
 
-#: .\erp\templates\erp\setup\step_fiscal_year.html:54
-msgid ""
-"The fiscal year defines the period for financial statement preparation. Most "
-"companies use the calendar year (January - December)."
-msgstr ""
-
 #: .\erp\templates\erp\setup\step_payment_methods.html:4
 msgid "Payment Methods Setup"
 msgstr ""
@@ -8446,12 +8302,6 @@ msgstr ""
 
 #: .\erp\templates\erp\setup\step_payment_methods.html:92
 msgid "Bank Account Information"
-msgstr ""
-
-#: .\erp\templates\erp\setup\step_payment_methods.html:112
-msgid ""
-"You can add additional payment methods or modify existing ones later from "
-"the payment methods settings."
 msgstr ""
 
 #: .\erp\templates\erp\setup\step_review.html:4
@@ -8530,12 +8380,6 @@ msgstr ""
 msgid "Ready to Launch!"
 msgstr ""
 
-#: .\erp\templates\erp\setup\step_review.html:234
-msgid ""
-"Review the settings above and make sure they are correct. You can go back to "
-"any step to modify the data."
-msgstr ""
-
 #: .\erp\templates\erp\setup\step_review.html:258
 msgid "Complete Setup and Start"
 msgstr ""
@@ -8558,12 +8402,6 @@ msgstr ""
 
 #: .\erp\templates\erp\setup\step_tax.html:81
 msgid "Warning:"
-msgstr ""
-
-#: .\erp\templates\erp\setup\step_tax.html:81
-msgid ""
-"Make sure to select the correct tax rate according to your country's laws. "
-"Tax rates can be modified later from settings."
 msgstr ""
 
 #: .\erp\templates\erp\supplier_invoices\detail.html:4
@@ -8639,12 +8477,6 @@ msgstr ""
 msgid "Linked Invoices"
 msgstr ""
 
-#: .\erp\templates\erp\supplier_payments\detail.html:143
-msgid ""
-"Are you sure you want to delete this payment? It will be unallocated from "
-"invoices."
-msgstr ""
-
 #: .\erp\templates\erp\supplier_payments\form.html:34
 msgid "Supplier & Invoice"
 msgstr ""
@@ -8687,13 +8519,6 @@ msgstr ""
 
 #: .\erp\templates\erp\supplier_payments\list.html:88
 msgid "Unallocated"
-msgstr ""
-
-#: .\erp\templates\erp\supplier_payments\list.html:133
-#, python-format
-msgid ""
-"Are you sure you want to delete payment <strong>%(num)s</strong>? It will be "
-"unallocated from linked invoices."
 msgstr ""
 
 #: .\erp\templates\erp\supplier_payments\list.html:154
@@ -9030,12 +8855,6 @@ msgstr ""
 msgid "Employee Registration"
 msgstr ""
 
-#: .\tenants\templates\tenants\employee_register.html:21
-msgid ""
-"Fill in your details to register. Your employer will review and approve your "
-"account."
-msgstr ""
-
 #: .\tenants\templates\tenants\employee_register.html:29
 msgid "Login Credentials"
 msgstr ""
@@ -9047,3 +8866,378 @@ msgstr ""
 #: .\tenants\templates\tenants\employee_register.html:187
 msgid "Already have an account? Login"
 msgstr ""
+
+msgid "Welcome to ERP System"
+msgstr "Welcome to ERP System"
+
+msgid "A powerful multi-tenant Enterprise Resource Planning solution for managing your business operations."
+msgstr "A powerful multi-tenant Enterprise Resource Planning solution for managing your business operations."
+
+msgid "Sign In"
+msgstr "Sign In"
+
+msgid "Sign Up"
+msgstr "Sign Up"
+
+msgid "Complete financial management including invoicing, payments, and accounting."
+msgstr "Complete financial management including invoicing, payments, and accounting."
+
+msgid "HR Management"
+msgstr "HR Management"
+
+msgid "Employee management, attendance tracking, and leave management."
+msgstr "Employee management, attendance tracking, and leave management."
+
+msgid "CRM"
+msgstr "CRM"
+
+msgid "Lead management, customer tracking, and campaign management."
+msgstr "Lead management, customer tracking, and campaign management."
+
+msgid "Sign in to your account"
+msgstr "Sign in to your account"
+
+msgid "Email Address"
+msgstr "Email Address"
+
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
+msgid "Create your account"
+msgstr "Create your account"
+
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+msgid "Application Rejected"
+msgstr "Application Rejected"
+
+msgid "Account Pending Approval"
+msgstr "Account Pending Approval"
+
+msgid "Your account is currently under review by our administrators. You will receive access to the ERP system once your account has been approved."
+msgstr "Your account is currently under review by our administrators. You will receive access to the ERP system once your account has been approved."
+
+msgid "Registered on"
+msgstr "Registered on"
+
+msgid "Sign Out"
+msgstr "Sign Out"
+
+msgid "If you believe this was a mistake or have questions, please contact our support team."
+msgstr "If you believe this was a mistake or have questions, please contact our support team."
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Database Information"
+msgstr "Database Information"
+
+msgid "Database Name"
+msgstr "Database Name"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Assigned"
+msgstr "Assigned"
+
+msgid "No database assigned yet."
+msgstr "No database assigned yet."
+
+msgid "Go to Dashboard"
+msgstr "Go to Dashboard"
+
+msgid "Support"
+msgstr "Support"
+
+msgid "POS"
+msgstr "POS"
+
+msgid "Orders"
+msgstr "Orders"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Cart"
+msgstr "Cart"
+
+msgid "Search products or scan barcode..."
+msgstr "Search products or scan barcode..."
+
+msgid "Camera Scan"
+msgstr "Camera Scan"
+
+msgid "Search for products or select a category"
+msgstr "Search for products or select a category"
+
+msgid "Walk-in Customer"
+msgstr "Walk-in Customer"
+
+msgid "Clear Cart"
+msgstr "Clear Cart"
+
+msgid "Cart is empty"
+msgstr "Cart is empty"
+
+msgid "Tendered"
+msgstr "Tendered"
+
+msgid "Add Payment"
+msgstr "Add Payment"
+
+msgid "Payment Summary"
+msgstr "Payment Summary"
+
+msgid "Order Total"
+msgstr "Order Total"
+
+msgid "Complete Payment"
+msgstr "Complete Payment"
+
+msgid "Apply Discount"
+msgstr "Apply Discount"
+
+msgid "Discount %"
+msgstr "Discount %"
+
+msgid "Apply"
+msgstr "Apply"
+
+msgid "Generate Invoice"
+msgstr "Generate Invoice"
+
+msgid "Print"
+msgstr "Print"
+
+msgid "New Order"
+msgstr "New Order"
+
+msgid "Processing..."
+msgstr "Processing..."
+
+msgid "Failed to create order"
+msgstr "Failed to create order"
+
+msgid "Failed to process payment"
+msgstr "Failed to process payment"
+
+msgid "An error occurred. Please try again."
+msgstr "An error occurred. Please try again."
+
+msgid "Cashier"
+msgstr "Cashier"
+
+msgid "Active Session"
+msgstr "Active Session"
+
+msgid "Resume Session"
+msgstr "Resume Session"
+
+msgid "Open Session"
+msgstr "Open Session"
+
+msgid "Opening Cash Balance"
+msgstr "Opening Cash Balance"
+
+msgid "Count the cash in the drawer before starting."
+msgstr "Count the cash in the drawer before starting."
+
+msgid "Start Session"
+msgstr "Start Session"
+
+msgid "Point of Sale"
+msgstr "Point of Sale"
+
+msgid "Terminals"
+msgstr "Terminals"
+
+msgid "Sessions"
+msgstr "Sessions"
+
+msgid "POS Orders"
+msgstr "POS Orders"
+
+msgid "Salvage %"
+msgstr "Salvage %"
+
+msgid "Use POS"
+msgstr "Use POS"
+
+msgid "Allow employee to access the Point of Sale terminal"
+msgstr "Allow employee to access the Point of Sale terminal"
+
+msgid "Pipeline"
+msgstr "Pipeline"
+
+msgid "Disqualified"
+msgstr "Disqualified"
+
+msgid "Confidence"
+msgstr "Confidence"
+
+msgid "Next Activity"
+msgstr "Next Activity"
+
+msgid "No activities planned"
+msgstr "No activities planned"
+
+msgid "Add Note"
+msgstr "Add Note"
+
+msgid "Campaign Name"
+msgstr "Campaign Name"
+
+msgid "Target"
+msgstr "Target"
+
+msgid "Lead Generation"
+msgstr "Lead Generation"
+
+msgid "Paused"
+msgstr "Paused"
+
+msgid "Tickets"
+msgstr "Tickets"
+
+msgid "New Ticket"
+msgstr "New Ticket"
+
+msgid "Ticket ID"
+msgstr "Ticket ID"
+
+msgid "Assignee"
+msgstr "Assignee"
+
+msgid "Last Update"
+msgstr "Last Update"
+
+msgid "Resolved"
+msgstr "Resolved"
+
+msgid "Ticket Details"
+msgstr "Ticket Details"
+
+msgid "Add Comment"
+msgstr "Add Comment"
+
+msgid "Internal"
+msgstr "Internal"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "Import Data"
+msgstr "Import Data"
+
+msgid "Export Data"
+msgstr "Export Data"
+
+msgid "Download Template"
+msgstr "Download Template"
+
+msgid "Upload File"
+msgstr "Upload File"
+
+msgid "Select Model"
+msgstr "Select Model"
+
+msgid "AI Insights"
+msgstr "AI Insights"
+
+msgid "Ask AI"
+msgstr "Ask AI"
+
+msgid "Generate Report"
+msgstr "Generate Report"
+
+msgid "Trends"
+msgstr "Trends"
+
+msgid "Forecast"
+msgstr "Forecast"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Appearance"
+msgstr "Appearance"
+
+msgid "Security"
+msgstr "Security"
+
+msgid "Integrations"
+msgstr "Integrations"
+
+msgid "Are you sure you want to delete this?"
+msgstr "Are you sure you want to delete this?"
+
+msgid "Submit"
+msgstr "Submit"
+
+msgid "Overview"
+msgstr "Overview"
+
+msgid "History"
+msgstr "History"
+
+msgid "Grand Total"
+msgstr "Grand Total"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "No data found"
+msgstr "No data found"
+
+msgid "Success"
+msgstr "Success"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Warning"
+msgstr "Warning"
+
+msgid "Select"
+msgstr "Select"
+
+msgid "Device not found"
+msgstr "Device not found"
+
+msgid "Not authorised"
+msgstr "Not authorised"
+
+msgid "Device pending approval"
+msgstr "Device pending approval"
+
+msgid "Terminal not found."
+msgstr "Terminal not found."
+
+msgid "Session not found or already closed."
+msgstr "Session not found or already closed."
+
+msgid "Session not found."
+msgstr "Session not found."
+
+msgid "No employee profile"
+msgstr "No employee profile"
+
+msgid "Invalid JSON"
+msgstr "Invalid JSON"
+
+msgid "Session not found or closed"
+msgstr "Session not found or closed"
+
+msgid "No payment data provided"
+msgstr "No payment data provided"
+
+msgid "Order not found or already completed"
+msgstr "Order not found or already completed"
+
+msgid "Missing id"
+msgstr "Missing id"
+
+msgid "Invalid type"
+msgstr "Invalid type"
