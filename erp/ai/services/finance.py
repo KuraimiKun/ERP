@@ -275,16 +275,15 @@ class LatePaymentPredictor:
         artefact = load_model_artefact(self._registry)
         self._model = artefact['classifier']
 
-    def predict(self, invoice: Invoice) -> float:
-        """Return the probability (0–1) that an invoice will be paid late."""
-        self._load()
-        if self._model is None:
-            return 0.0
+    def _build_single_feature_vector(self, invoice: Invoice) -> np.ndarray | None:
+        """Build the feature vector for a single invoice.
 
-        # Build feature vector matching FEATURE_COLS order
+        Returns a (1, n_features) numpy array matching FEATURE_COLS order,
+        or None if features cannot be built.
+        Used by both predict() and the XAI explainability service.
+        """
         cust = invoice.customer
 
-        # Historical stats: only invoices BEFORE this one
         past_invoices = Invoice.objects.filter(
             company=self.company,
             customer=cust,
@@ -294,21 +293,11 @@ class LatePaymentPredictor:
         cust_avg_amount = float(
             past_invoices.aggregate(avg=Avg('total_amount'))['avg'] or 0
         )
-        _cust_avg_days = float(
-            past_invoices.filter(due_date__isnull=False).extra(
-                select={'dtd': "due_date - invoice_date"}
-            ).aggregate(avg=Avg('total_amount'))['avg'] or 0
-        )
-        # Simpler approach for avg days_to_due
         past_vals = past_invoices.filter(due_date__isnull=False).values_list(
             'invoice_date', 'due_date'
         )
-        if past_vals:
-            avg_dtd = np.mean([(dd - id).days for id, dd in past_vals])
-        else:
-            avg_dtd = 0.0
+        avg_dtd = np.mean([(dd - id).days for id, dd in past_vals]) if past_vals else 0.0
 
-        # Average payment delay for past invoices
         from django.db.models import Min
         past_ids = list(past_invoices.values_list('id', flat=True)[:500])
         if past_ids:
@@ -333,14 +322,13 @@ class LatePaymentPredictor:
             (invoice.due_date - invoice.invoice_date).days
             if invoice.due_date else 30
         )
+        inv_amount = float(invoice.total_amount)
         amount_vs_avg = (
-            float(invoice.total_amount) / max(cust_avg_amount, 0.01)
+            inv_amount / max(cust_avg_amount, 0.01)
             if cust_avg_amount > 0 else 1.0
         )
-
-        inv_amount = float(invoice.total_amount)
         month = invoice.invoice_date.month
-        # Compute late ratio from past invoices
+
         if past_ids:
             past_late_count = Invoice.objects.filter(
                 id__in=past_ids, status='overdue',
@@ -349,29 +337,41 @@ class LatePaymentPredictor:
         else:
             cust_late_ratio = 0.0
 
-        features = np.array([[
-            inv_amount,                                  # invoice_amount
-            np.log1p(inv_amount),                        # amount_log
-            days_to_due,                                 # days_to_due
-            month,                                       # invoice_month
-            np.sin(2 * np.pi * month / 12),              # month_sin
-            np.cos(2 * np.pi * month / 12),              # month_cos
-            invoice.invoice_date.weekday(),               # invoice_day_of_week
-            (month - 1) // 3 + 1,                        # invoice_quarter
-            cust_total,                                  # cust_total_invoices
-            cust_avg_amount,                             # cust_avg_amount
-            avg_dtd,                                     # cust_avg_days_to_due
-            cust_delay_mean,                             # cust_payment_delay_mean
-            cust_late_ratio,                             # cust_late_ratio
+        return np.array([[
+            inv_amount,
+            np.log1p(inv_amount),
+            days_to_due,
+            month,
+            np.sin(2 * np.pi * month / 12),
+            np.cos(2 * np.pi * month / 12),
+            invoice.invoice_date.weekday(),
+            (month - 1) // 3 + 1,
+            cust_total,
+            cust_avg_amount,
+            avg_dtd,
+            cust_delay_mean,
+            cust_late_ratio,
             {'individual': 0, 'company': 1, 'government': 2}.get(
-                cust.customer_type, 0),                  # customer_type_code
-            min(amount_vs_avg, 10.0),                    # amount_vs_cust_avg
-            0.5,                                         # amount_percentile (approx)
-            1 if inv_amount > 500 else 0,                # is_large_invoice
+                cust.customer_type, 0),
+            min(amount_vs_avg, 10.0),
+            0.5,
+            1 if inv_amount > 500 else 0,
             (0 if days_to_due <= 15 else
              1 if days_to_due <= 30 else
-             2 if days_to_due <= 60 else 3),             # payment_term_bucket
+             2 if days_to_due <= 60 else 3),
         ]])
+
+    def predict(self, invoice: Invoice) -> float:
+        """Return the probability (0–1) that an invoice will be paid late."""
+        self._load()
+        if self._model is None:
+            return 0.0
+
+        features = self._build_single_feature_vector(invoice)
+        if features is None:
+            return 0.0
+
+        cust = invoice.customer
 
         prob = float(self._model.predict_proba(features)[0][1])
 

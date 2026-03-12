@@ -472,6 +472,12 @@ _ai_patterns = [
     path('ai/insights/', ai_views.ai_insights_list, name='ai_insights_list'),
     path('ai/settings/', ai_views.ai_settings, name='ai_settings'),
     path('ai/api/', include('erp.ai.api.urls')),
+    # XAI – Explainable AI
+    path('ai/xai/', ai_views.xai_dashboard, name='xai_dashboard'),
+    path('ai/xai/explain/', ai_views.xai_explain, name='xai_explain'),
+    path('ai/xai/global/<str:model_type>/', ai_views.xai_global,
+         name='xai_global'),
+    path('ai/xai/history/', ai_views.xai_history, name='xai_history'),
 ]
 
 # ── Support Tickets ─────────────────────────────────────────────────────────

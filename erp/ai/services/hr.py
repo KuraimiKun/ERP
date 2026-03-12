@@ -241,6 +241,7 @@ class AttritionPredictor:
         registry.accuracy_score = auc
         save_model_artefact(registry, {
             'classifier': clf, 'scaler': scaler,
+            'feature_cols': self.FEATURE_COLS,
         })
 
         self._model = clf
@@ -266,12 +267,13 @@ class AttritionPredictor:
         self._model = artefact['classifier']
         self._scaler = artefact['scaler']
 
-    def predict(self, employee: Employee) -> float:
-        """Return attrition probability 0–1 for an active employee."""
-        self._load()
-        if self._model is None:
-            return 0.0
+    def _build_single_feature_vector(self, employee: Employee) -> np.ndarray | None:
+        """Build the feature vector for a single employee.
 
+        Returns a (1, n_features) numpy array matching FEATURE_COLS order,
+        or None if features cannot be built.
+        Used by both predict() and the XAI explainability service.
+        """
         now = timezone.now().date()
         tenure = (now - employee.hire_date).days if employee.hire_date else 0
         leave_freq = LeaveRequest.objects.filter(
@@ -291,23 +293,19 @@ class AttritionPredictor:
         emp_types = {'full_time': 0, 'part_time': 1, 'contract': 2,
                      'intern': 3, 'freelance': 4}
 
-        # Avg overtime hours from attendance
         avg_ot_val = Attendance.objects.filter(
             employee=employee,
         ).aggregate(avg_ot=Avg('overtime_hours'))['avg_ot']
         if avg_ot_val is None:
-            # Use company-wide mean to avoid leakage
             avg_ot_val = Attendance.objects.filter(
                 employee__company=self.company,
             ).aggregate(avg_ot=Avg('overtime_hours'))['avg_ot'] or 0
         avg_ot = float(avg_ot_val)
 
-        # Salary vs department average
         dept_avg_salary = dept_employees.aggregate(
             avg_sal=Avg('basic_salary'))['avg_sal'] or 1
         salary_vs_dept = float(employee.basic_salary) / max(float(dept_avg_salary), 1)
 
-        # Attendance rate
         att_data = Attendance.objects.filter(
             employee=employee,
         ).aggregate(
@@ -317,7 +315,6 @@ class AttritionPredictor:
         if att_data['total']:
             att_rate = att_data['present'] / max(att_data['total'], 1)
         else:
-            # Use company-wide mean to avoid leakage
             co_att = Attendance.objects.filter(
                 employee__company=self.company,
             ).aggregate(
@@ -329,14 +326,12 @@ class AttritionPredictor:
                 if co_att['total'] else 0.9
             )
 
-        # Payroll months + avg gross pay
         payroll_agg = Payroll.objects.filter(
             employee=employee,
         ).aggregate(cnt=Count('id'), avg_gross=Avg('gross_salary'))
         payroll_months = payroll_agg['cnt'] or 0
         avg_gross_pay = float(payroll_agg['avg_gross'] or employee.basic_salary)
 
-        # Compensation vs department average
         dept_avg_comp = Payroll.objects.filter(
             employee__company=self.company,
             employee__department=employee.department,
@@ -345,7 +340,7 @@ class AttritionPredictor:
 
         absence_rate = max(0.0, min(1.0, 1 - att_rate))
 
-        features = np.array([[
+        return np.array([[
             tenure,
             float(employee.basic_salary),
             leave_freq,
@@ -362,6 +357,16 @@ class AttritionPredictor:
             comp_vs_dept,
             absence_rate,
         ]])
+
+    def predict(self, employee: Employee) -> float:
+        """Return attrition probability 0–1 for an active employee."""
+        self._load()
+        if self._model is None:
+            return 0.0
+
+        features = self._build_single_feature_vector(employee)
+        if features is None:
+            return 0.0
 
         features_scaled = self._scaler.transform(features)
         prob = float(self._model.predict_proba(features_scaled)[0][1])

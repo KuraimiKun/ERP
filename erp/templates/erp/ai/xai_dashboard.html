@@ -1,0 +1,126 @@
+{% extends "erp/base.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block title %}{% trans "Explainable AI" %}{% endblock %}
+{% block page_title %}{% trans "Explainable AI" %}{% endblock %}
+
+{% block content %}
+<!-- XAI Dashboard Header -->
+<div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-lightbulb"></i> {% trans "Explainable AI (XAI)" %}</h4>
+        <p class="text-muted mb-0">
+            {% trans "Understand why your AI models make specific predictions using SHAP and LIME explanations." %}
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'erp:xai_explain' %}" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i>{% trans "Explain a Prediction" %}
+        </a>
+        <a href="{% url 'erp:xai_history' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-clock-history me-1"></i>{% trans "History" %}
+        </a>
+    </div>
+</div>
+
+<!-- Model Cards -->
+<div class="row g-3 mb-4">
+    {% for card in model_cards %}
+    <div class="col-md-6 col-xl-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="bi bi-diagram-3 text-primary me-1"></i>
+                    {{ card.label }}
+                </h6>
+                <p class="text-muted small mb-2">
+                    {% trans "Entity:" %} <strong>{{ card.entity_type }}</strong>
+                </p>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">{% trans "Version" %}</span>
+                    <span class="badge bg-secondary">v{{ card.model.version }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">{% trans "Accuracy" %}</span>
+                    <span class="fw-semibold">
+                        {% if card.model.accuracy_score %}
+                            {{ card.model.accuracy_score|floatformat:1 }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small">{% trans "Explanations" %}</span>
+                    <span class="badge bg-info">{{ card.explanation_count }}</span>
+                </div>
+                <a href="{% url 'erp:xai_global' card.model.model_type %}"
+                   class="btn btn-sm btn-outline-primary w-100">
+                    <i class="bi bi-bar-chart me-1"></i>{% trans "Global Importance" %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-1"></i>
+            {% trans "No trained models available for XAI yet. Train your ML models first." %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Recent Explanations -->
+{% if recent_explanations %}
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-clock-history me-1"></i> {% trans "Recent Explanations" %}</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Model" %}</th>
+                    <th>{% trans "Entity" %}</th>
+                    <th>{% trans "Method" %}</th>
+                    <th>{% trans "Prediction" %}</th>
+                    <th>{% trans "Top Factor" %}</th>
+                    <th>{% trans "Date" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in recent_explanations %}
+                <tr>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary">
+                            {{ exp.model.get_model_type_display }}
+                        </span>
+                    </td>
+                    <td>{{ exp.entity_type }} #{{ exp.entity_id }}</td>
+                    <td>
+                        <span class="badge {% if exp.method == 'shap' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ exp.get_method_display }}
+                        </span>
+                    </td>
+                    <td>{{ exp.prediction_score|floatformat:4 }}</td>
+                    <td>
+                        {% with top=exp.top_features.0 %}
+                            {% if top %}
+                                <small>{{ top.feature }}: {{ top.impact }}</small>
+                            {% else %}
+                                —
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td><small class="text-muted">{{ exp.created_at|naturaltime }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

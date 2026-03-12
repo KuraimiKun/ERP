@@ -1,0 +1,157 @@
+{% extends "erp/base.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-bar-chart"></i> {{ model_label }}</h4>
+        <p class="text-muted mb-0">
+            {% trans "Global feature importance computed across all training data using SHAP values." %}
+        </p>
+    </div>
+    <a href="{% url 'erp:xai_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>{% trans "Back to XAI" %}
+    </a>
+</div>
+
+{% if has_error %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-1"></i> {{ result.error }}
+</div>
+{% else %}
+
+<!-- Summary Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card border-start border-primary border-4">
+            <div class="stat-value text-primary">{{ result.method|upper }}</div>
+            <div class="stat-label">{% trans "Method" %}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card border-start border-info border-4">
+            <div class="stat-value text-info">{{ result.total_samples }}</div>
+            <div class="stat-label">{% trans "Samples Analysed" %}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card border-start border-secondary border-4">
+            <div class="stat-value text-secondary">{{ result.base_value|floatformat:4|default:"—" }}</div>
+            <div class="stat-label">{% trans "Base Value" %}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Plot (SHAP bar chart) -->
+{% if result.summary_plot %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-bar-chart-line me-1"></i> {% trans "SHAP Summary Plot" %}</h6>
+    </div>
+    <div class="card-body text-center">
+        <img src="data:image/png;base64,{{ result.summary_plot }}"
+             alt="SHAP Summary Plot" class="img-fluid rounded"
+             style="max-height: 600px;">
+    </div>
+</div>
+{% endif %}
+
+<!-- Feature Importance Table -->
+{% if result.feature_importance %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-sort-numeric-down me-1"></i> {% trans "Feature Importance Ranking" %}</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width:50px">#</th>
+                    <th>{% trans "Feature" %}</th>
+                    <th>{% trans "Mean |SHAP Value|" %}</th>
+                    <th>{% trans "Relative Importance" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feat_name, importance in result.feature_importance.items %}
+                <tr>
+                    <td class="text-muted">{{ forloop.counter }}</td>
+                    <td><code>{{ feat_name }}</code></td>
+                    <td>{{ importance }}</td>
+                    <td style="width:40%">
+                        {% widthratio importance max_importance 100 as pct %}
+                        <div class="progress" style="height:20px;">
+                            <div class="progress-bar bg-primary" role="progressbar"
+                                 style="width:{{ pct|default:0 }}%">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Beeswarm Plot (interactive Plotly) -->
+{% if result.beeswarm_data %}
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-scatter-chart me-1"></i> {% trans "SHAP Beeswarm Plot" %}</h6>
+    </div>
+    <div class="card-body">
+        <div id="beeswarm-chart" style="width:100%; height:600px;"></div>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if result.beeswarm_data %}
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<script>
+(function() {
+    const features = {{ result.beeswarm_data|safe }};
+    const traces = [];
+
+    features.forEach(function(feat, idx) {
+        traces.push({
+            type: 'scatter',
+            mode: 'markers',
+            name: feat.feature,
+            x: feat.shap_values,
+            y: Array(feat.shap_values.length).fill(features.length - idx - 1),
+            marker: {
+                color: feat.feature_values,
+                colorscale: 'RdBu_r',
+                size: 5,
+                opacity: 0.6,
+            },
+            hovertemplate: feat.feature + '<br>SHAP: %{x:.4f}<br>Value: %{marker.color:.4f}<extra></extra>',
+        });
+    });
+
+    const yLabels = features.map(f => f.feature).reverse();
+
+    Plotly.newPlot('beeswarm-chart', traces, {
+        title: { text: 'SHAP Beeswarm – Feature Impact Distribution', font: { size: 14 } },
+        xaxis: { title: 'SHAP Value (impact on prediction)' },
+        yaxis: {
+            tickvals: [...Array(features.length).keys()],
+            ticktext: yLabels,
+        },
+        showlegend: false,
+        margin: { l: 200, t: 50 },
+    }, { responsive: true });
+})();
+</script>
+{% endif %}
+{% endblock %}

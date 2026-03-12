@@ -11,6 +11,8 @@ router.register('models', views.MLModelViewSet, basename='ai-models')
 router.register('predictions', views.PredictionLogViewSet,
                 basename='ai-predictions')
 router.register('insights', views.AIInsightViewSet, basename='ai-insights')
+router.register('explanations', views.ExplanationResultViewSet,
+                basename='ai-explanations')
 
 urlpatterns = [
     # ViewSet routes
@@ -38,4 +40,9 @@ urlpatterns = [
 
     # Dashboard summary
     path('dashboard/', views.ai_dashboard_summary, name='ai-dashboard-summary'),
+
+    # XAI – Explainable AI
+    path('xai/explain/', views.xai_explain, name='ai-xai-explain'),
+    path('xai/global/<str:model_type>/', views.xai_global_importance,
+         name='ai-xai-global'),
 ]

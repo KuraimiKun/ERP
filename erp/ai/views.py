@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 
 from erp.decorators import tenant_required
 from erp.views._common import get_user_company, paginate_qs
-from erp.ai.models import MLModel, PredictionLog, AIInsight
+from erp.ai.models import MLModel, PredictionLog, AIInsight, ExplanationResult
 
 
 @login_required
@@ -118,3 +118,148 @@ def ai_settings(request):
         'has_api_key': bool(company.openai_api_key),
     }
     return render(request, 'erp/ai/settings.html', context)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  Explainable AI (XAI) Views
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Models that support XAI explanations
+XAI_MODELS = {
+    'late_payment': {'entity_type': 'Invoice', 'label': 'Late Payment Prediction'},
+    'lead_scoring': {'entity_type': 'Lead', 'label': 'Lead Scoring'},
+    'attrition': {'entity_type': 'Employee', 'label': 'Employee Attrition'},
+    'expense_anomaly': {'entity_type': 'Expense', 'label': 'Expense Anomaly Detection'},
+}
+
+
+@login_required
+@tenant_required
+def xai_dashboard(request):
+    """Explainable AI overview – lists available models and recent explanations."""
+    company = get_user_company(request.user)
+
+    # Trained models that support XAI
+    models = MLModel.objects.filter(
+        company=company, is_active=True,
+        model_type__in=XAI_MODELS,
+    ).order_by('model_type')
+
+    model_cards = []
+    for m in models:
+        info = XAI_MODELS.get(m.model_type, {})
+        explanation_count = ExplanationResult.objects.filter(model=m).count()
+        model_cards.append({
+            'model': m,
+            'entity_type': info.get('entity_type', ''),
+            'label': info.get('label', m.name),
+            'explanation_count': explanation_count,
+        })
+
+    recent = ExplanationResult.objects.filter(
+        model__company=company,
+    ).select_related('model').order_by('-created_at')[:10]
+
+    context = {
+        'title': _('Explainable AI'),
+        'model_cards': model_cards,
+        'recent_explanations': recent,
+        'xai_models': XAI_MODELS,
+    }
+    return render(request, 'erp/ai/xai_dashboard.html', context)
+
+
+@login_required
+@tenant_required
+def xai_explain(request):
+    """Generate or view an individual XAI explanation."""
+    company = get_user_company(request.user)
+    result = None
+    error = None
+
+    if request.method == 'POST':
+        model_type = request.POST.get('model_type', '')
+        entity_id = request.POST.get('entity_id', '')
+        method = request.POST.get('method', 'shap')
+
+        if model_type not in XAI_MODELS:
+            error = _('Invalid model type selected.')
+        elif not entity_id or not entity_id.isdigit():
+            error = _('Please enter a valid entity ID.')
+        else:
+            from erp.ai.services.explainability import ExplainabilityService
+            svc = ExplainabilityService(company)
+            entity_type = XAI_MODELS[model_type]['entity_type']
+            result = svc.explain_prediction(
+                model_type=model_type,
+                entity_type=entity_type,
+                entity_id=int(entity_id),
+                method=method,
+            )
+            if 'error' in result:
+                error = result['error']
+                result = None
+
+    context = {
+        'title': _('Explain Prediction'),
+        'xai_models': XAI_MODELS,
+        'result': result,
+        'error': error,
+        'selected_model': request.POST.get('model_type', ''),
+        'selected_entity': request.POST.get('entity_id', ''),
+        'selected_method': request.POST.get('method', 'shap'),
+    }
+    return render(request, 'erp/ai/xai_explain.html', context)
+
+
+@login_required
+@tenant_required
+def xai_global(request, model_type):
+    """Global feature importance for a model type."""
+    company = get_user_company(request.user)
+
+    if model_type not in XAI_MODELS:
+        messages.error(request, _('Invalid model type.'))
+        return redirect('erp:xai_dashboard')
+
+    from erp.ai.services.explainability import ExplainabilityService
+    svc = ExplainabilityService(company)
+    result = svc.global_feature_importance(model_type)
+
+    context = {
+        'title': _('Global Feature Importance – %(label)s') % {
+            'label': XAI_MODELS[model_type]['label'],
+        },
+        'model_type': model_type,
+        'model_label': XAI_MODELS[model_type]['label'],
+        'result': result,
+        'has_error': 'error' in result,
+    }
+    return render(request, 'erp/ai/xai_global.html', context)
+
+
+@login_required
+@tenant_required
+def xai_history(request):
+    """Paginated list of all stored explanations."""
+    company = get_user_company(request.user)
+    qs = ExplanationResult.objects.filter(
+        model__company=company,
+    ).select_related('model').order_by('-created_at')
+
+    model_type = request.GET.get('model_type')
+    method = request.GET.get('method')
+    if model_type:
+        qs = qs.filter(model__model_type=model_type)
+    if method:
+        qs = qs.filter(method=method)
+
+    page_obj = paginate_qs(request, qs, per_page=25)
+    context = {
+        'title': _('Explanation History'),
+        'page_obj': page_obj,
+        'xai_models': XAI_MODELS,
+        'selected_model_type': model_type,
+        'selected_method': method,
+    }
+    return render(request, 'erp/ai/xai_history.html', context)

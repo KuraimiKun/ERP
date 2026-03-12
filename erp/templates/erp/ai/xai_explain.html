@@ -1,0 +1,195 @@
+{% extends "erp/base.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block title %}{% trans "Explain Prediction" %}{% endblock %}
+{% block page_title %}{% trans "Explain Prediction" %}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="mb-1"><i class="bi bi-search"></i> {% trans "Explain a Prediction" %}</h4>
+    <p class="text-muted mb-0">
+        {% trans "Select a model and entity to understand why the AI made its prediction." %}
+    </p>
+</div>
+
+<!-- Explanation Request Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="model_type" class="form-label">{% trans "Model" %}</label>
+                    <select name="model_type" id="model_type" class="form-select" required>
+                        <option value="">{% trans "— Select Model —" %}</option>
+                        {% for key, info in xai_models.items %}
+                        <option value="{{ key }}" {% if selected_model == key %}selected{% endif %}>
+                            {{ info.label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="entity_id" class="form-label">{% trans "Entity ID" %}</label>
+                    <input type="number" name="entity_id" id="entity_id"
+                           class="form-control" min="1"
+                           value="{{ selected_entity }}"
+                           placeholder="{% trans 'e.g. 42' %}" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="method" class="form-label">{% trans "Method" %}</label>
+                    <select name="method" id="method" class="form-select">
+                        <option value="shap" {% if selected_method == 'shap' %}selected{% endif %}>
+                            SHAP (Tree-based)
+                        </option>
+                        <option value="lime" {% if selected_method == 'lime' %}selected{% endif %}>
+                            LIME (Model-agnostic)
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-lightning me-1"></i>{% trans "Explain" %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-1"></i> {{ error }}
+</div>
+{% endif %}
+
+{% if result %}
+<!-- Prediction Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card border-start border-primary border-4">
+            <div class="stat-value text-primary">{{ result.prediction|floatformat:4 }}</div>
+            <div class="stat-label">{% trans "Prediction Score" %}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card border-start border-secondary border-4">
+            <div class="stat-value text-secondary">{{ result.base_value|floatformat:4 }}</div>
+            <div class="stat-label">{% trans "Base Value" %}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card border-start border-info border-4">
+            <div class="stat-value text-info">
+                <span class="badge {% if result.method == 'shap' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {{ result.method|upper }}
+                </span>
+            </div>
+            <div class="stat-label">{% trans "Explanation Method" %}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Contributing Features -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-stars me-1"></i> {% trans "Top Contributing Features" %}</h6>
+    </div>
+    <div class="card-body">
+        {% for feat in result.top_features %}
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong>{{ feat.feature }}</strong>
+                <span class="badge {% if feat.direction == 'increases' %}bg-danger{% else %}bg-success{% endif %}">
+                    {% if feat.shap_value %}{{ feat.shap_value|floatformat:4 }}{% else %}{{ feat.lime_weight|floatformat:4 }}{% endif %}
+                    {{ feat.direction }}
+                </span>
+            </div>
+            <small class="text-muted">{{ feat.impact }}</small>
+            {% with val=feat.shap_value|default:feat.lime_weight %}
+            {% widthratio val 1 100 as bar_pct %}
+            {% endwith %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Waterfall Chart -->
+{% if result.waterfall_data %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-bar-chart-steps me-1"></i> {% trans "Waterfall Chart" %}</h6>
+    </div>
+    <div class="card-body">
+        <div id="waterfall-chart" style="width:100%; height:500px;"></div>
+    </div>
+</div>
+{% endif %}
+
+<!-- All Feature Contributions Table -->
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-table me-1"></i> {% trans "All Feature Contributions" %}</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Feature" %}</th>
+                    <th>{% trans "Value" %}</th>
+                    <th>{% trans "Impact" %}</th>
+                    <th>{% trans "Direction" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, data in result.contributions.items %}
+                <tr>
+                    <td><code>{{ name }}</code></td>
+                    <td>{{ data.feature_value|floatformat:4 }}</td>
+                    <td>
+                        {% if data.shap_value %}{{ data.shap_value|floatformat:6 }}{% else %}{{ data.lime_weight|floatformat:6 }}{% endif %}
+                    </td>
+                    <td>
+                        <span class="{% if data.direction == 'increases' %}text-danger{% else %}text-success{% endif %}">
+                            <i class="bi {% if data.direction == 'increases' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {{ data.direction }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if result.waterfall_data %}
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<script>
+(function() {
+    const data = {{ result.waterfall_data|safe }};
+    Plotly.newPlot('waterfall-chart', [{
+        type: 'waterfall',
+        orientation: 'v',
+        x: data.labels,
+        y: data.values,
+        measure: data.measures,
+        connector: { line: { color: 'rgb(63, 63, 63)' } },
+        increasing: { marker: { color: '#dc3545' } },
+        decreasing: { marker: { color: '#198754' } },
+        totals: { marker: { color: '#0d6efd' } },
+    }], {
+        title: { text: 'Feature Contribution Waterfall', font: { size: 14 } },
+        xaxis: { tickangle: -30 },
+        yaxis: { title: 'Contribution to Prediction' },
+        margin: { t: 50, b: 120 },
+        showlegend: false,
+    }, { responsive: true });
+})();
+</script>
+{% endif %}
+{% endblock %}

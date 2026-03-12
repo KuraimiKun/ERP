@@ -130,3 +130,62 @@ class AIInsight(TimeStampedModel):
 
     def __str__(self):
         return f'[{self.get_severity_display()}] {self.title}'
+
+
+class ExplanationResult(models.Model):
+    """Stores SHAP / LIME explanations for individual predictions.
+
+    Each row represents one explanation linked to an ML model and entity,
+    capturing feature contributions, a prediction score, and optional
+    visualisation data (waterfall / beeswarm chart payloads).
+    """
+
+    class Method(models.TextChoices):
+        SHAP = 'shap', 'SHAP'
+        LIME = 'lime', 'LIME'
+
+    model = models.ForeignKey(
+        MLModel, on_delete=models.CASCADE, related_name='explanations',
+    )
+    entity_type = models.CharField(
+        max_length=50, help_text='e.g. Invoice, Lead, Employee',
+    )
+    entity_id = models.PositiveIntegerField()
+    method = models.CharField(max_length=10, choices=Method.choices)
+
+    prediction_score = models.FloatField(
+        help_text='Model output for this entity',
+    )
+    base_value = models.FloatField(
+        default=0, help_text='SHAP base value (expected model output)',
+    )
+    contributions = models.JSONField(
+        default=dict,
+        help_text='Per-feature SHAP values or LIME weights',
+    )
+    top_features = models.JSONField(
+        default=list,
+        help_text='Top contributing features with human-readable impacts',
+    )
+    waterfall_data = models.JSONField(
+        null=True, blank=True,
+        help_text='Plotly-ready waterfall chart payload',
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Explanation Result'
+        verbose_name_plural = 'Explanation Results'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['entity_type', 'entity_id']),
+            models.Index(fields=['model', '-created_at']),
+        ]
+
+    def __str__(self):
+        return (
+            f'{self.get_method_display()} explanation for '
+            f'{self.entity_type}#{self.entity_id} '
+            f'(score={self.prediction_score:.4f})'
+        )

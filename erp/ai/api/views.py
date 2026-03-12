@@ -11,10 +11,10 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
 from erp.views._common import get_user_company
-from erp.ai.models import MLModel, PredictionLog, AIInsight
+from erp.ai.models import MLModel, PredictionLog, AIInsight, ExplanationResult
 from erp.ai.api import (
     MLModelSerializer, PredictionLogSerializer, AIInsightSerializer,
-    AssistantQuerySerializer,
+    AssistantQuerySerializer, ExplanationResultSerializer, ExplainRequestSerializer,
 )
 
 logger = logging.getLogger('erp.ai.api')
@@ -261,3 +261,66 @@ def ai_dashboard_summary(request):
         'models': model_stats,
         'recent_insights': recent,
     })
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  Explainable AI (XAI) API
+# ════════════════════════════════════════════════════════════════════════════
+
+class ExplanationResultViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only viewset for stored explanation results."""
+    serializer_class = ExplanationResultSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        company = get_user_company(self.request.user)
+        qs = ExplanationResult.objects.filter(
+            model__company=company,
+        ).select_related('model').order_by('-created_at')
+
+        model_type = self.request.query_params.get('model_type')
+        entity_type = self.request.query_params.get('entity_type')
+        entity_id = self.request.query_params.get('entity_id')
+        method = self.request.query_params.get('method')
+
+        if model_type:
+            qs = qs.filter(model__model_type=model_type)
+        if entity_type:
+            qs = qs.filter(entity_type=entity_type)
+        if entity_id:
+            qs = qs.filter(entity_id=entity_id)
+        if method:
+            qs = qs.filter(method=method)
+        return qs[:200]
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def xai_explain(request):
+    """Generate an XAI explanation for a single prediction."""
+    serializer = ExplainRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    from erp.ai.services.explainability import ExplainabilityService
+    company = get_user_company(request.user)
+    svc = ExplainabilityService(company)
+    result = svc.explain_prediction(
+        model_type=serializer.validated_data['model_type'],
+        entity_type=serializer.validated_data['entity_type'],
+        entity_id=serializer.validated_data['entity_id'],
+        method=serializer.validated_data['method'],
+    )
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@cache_page(60 * 30)  # 30 minutes
+@vary_on_cookie
+def xai_global_importance(request, model_type):
+    """Return global feature importance for a model type."""
+    from erp.ai.services.explainability import ExplainabilityService
+    company = get_user_company(request.user)
+    svc = ExplainabilityService(company)
+    result = svc.global_feature_importance(model_type)
+    return Response(result)

@@ -258,12 +258,13 @@ class LeadScorer:
         self._source_map = artefact.get('source_map', {})
         self._source_conv_rates = artefact.get('source_conv_rates', {})
 
-    def score_lead(self, lead: Lead) -> float:
-        """Return conversion probability 0–1 for a lead."""
-        self._load()
-        if self._model is None:
-            return lead.probability / 100.0 if lead.probability else 0.1
+    def _build_single_feature_vector(self, lead: Lead) -> np.ndarray | None:
+        """Build the feature vector for a single lead.
 
+        Returns a (1, n_features) numpy array matching FEATURE_COLS order,
+        or None if features cannot be built.
+        Used by both score_lead() and the XAI explainability service.
+        """
         now = timezone.now()
         days = (now - lead.created_at).days if lead.created_at else 0
 
@@ -274,7 +275,6 @@ class LeadScorer:
         meeting_count = activities.filter(activity_type='meeting').count()
         note_count = activities.filter(activity_type='note').count()
 
-        # Engagement velocity
         act_dates = activities.aggregate(
             first_act=Min('activity_date'),
             last_act=Max('activity_date'),
@@ -287,10 +287,9 @@ class LeadScorer:
         if act_dates['last_act']:
             last_act_days = (now - act_dates['last_act']).days
 
-        # Source conversion rate from saved model params
         source_cr = self._source_conv_rates.get(lead.source, 0)
 
-        features = np.array([[
+        return np.array([[
             float(lead.estimated_value or 0),
             np.log1p(float(lead.estimated_value or 0)),
             days,
@@ -307,6 +306,16 @@ class LeadScorer:
             last_act_days,
             source_cr,
         ]])
+
+    def score_lead(self, lead: Lead) -> float:
+        """Return conversion probability 0–1 for a lead."""
+        self._load()
+        if self._model is None:
+            return lead.probability / 100.0 if lead.probability else 0.1
+
+        features = self._build_single_feature_vector(lead)
+        if features is None:
+            return lead.probability / 100.0 if lead.probability else 0.1
 
         features_scaled = self._scaler.transform(features)
         prob = float(self._model.predict_proba(features_scaled)[0][1])

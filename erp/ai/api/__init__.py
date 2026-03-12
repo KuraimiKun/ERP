@@ -3,7 +3,7 @@ AI API Serializers for the ERP AI module.
 """
 
 from rest_framework import serializers
-from erp.ai.models import MLModel, PredictionLog, AIInsight
+from erp.ai.models import MLModel, PredictionLog, AIInsight, ExplanationResult
 
 
 class MLModelSerializer(serializers.ModelSerializer):
@@ -63,3 +63,31 @@ class TriggerResultSerializer(serializers.Serializer):
     status = serializers.CharField()
     results = serializers.ListField(child=serializers.DictField(), default=[])
     message = serializers.CharField(default='')
+
+
+class ExplanationResultSerializer(serializers.ModelSerializer):
+    model_name = serializers.CharField(source='model.name', read_only=True)
+    model_type = serializers.CharField(source='model.model_type', read_only=True)
+    method_display = serializers.CharField(
+        source='get_method_display', read_only=True,
+    )
+
+    class Meta:
+        model = ExplanationResult
+        fields = [
+            'id', 'model', 'model_name', 'model_type',
+            'entity_type', 'entity_id', 'method', 'method_display',
+            'prediction_score', 'base_value', 'contributions',
+            'top_features', 'waterfall_data', 'created_at',
+        ]
+        read_only_fields = fields
+
+
+class ExplainRequestSerializer(serializers.Serializer):
+    model_type = serializers.ChoiceField(choices=MLModel.ModelType.choices)
+    entity_type = serializers.CharField(max_length=50)
+    entity_id = serializers.IntegerField(min_value=1)
+    method = serializers.ChoiceField(
+        choices=[('shap', 'SHAP'), ('lime', 'LIME')],
+        default='shap',
+    )

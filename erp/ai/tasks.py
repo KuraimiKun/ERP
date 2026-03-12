@@ -9,8 +9,10 @@ found in that tenant's database.  This guarantees full tenant isolation.
 """
 
 import logging
+from datetime import timedelta
 from celery import shared_task
 from django.apps import apps
+from django.utils import timezone
 
 logger = logging.getLogger('erp.ai.tasks')
 
@@ -218,3 +220,44 @@ def run_kpi_checks():
                     company.pk, len(results))
 
     _for_each_tenant_company(run, 'KPI checks')
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  Explainable AI (XAI)
+# ════════════════════════════════════════════════════════════════════════════
+
+@shared_task(name='erp.ai.tasks.generate_xai_explanations')
+def generate_xai_explanations():
+    """Weekly: generate SHAP explanations for recent high-risk predictions."""
+    from erp.ai.services.explainability import ExplainabilityService
+    from erp.ai.models import PredictionLog
+
+    def run(company):
+        svc = ExplainabilityService(company)
+        # Get recent high-score predictions from the last 7 days
+        cutoff = timezone.now() - timedelta(days=7)
+        recent = PredictionLog.objects.filter(
+            model__company=company,
+            created_at__gte=cutoff,
+            score__gte=0.6,
+        ).select_related('model').order_by('-score')[:50]
+
+        count = 0
+        for pred in recent:
+            try:
+                svc.explain_prediction(
+                    model_type=pred.model.model_type,
+                    entity_type=pred.entity_type,
+                    entity_id=pred.entity_id,
+                    method='shap',
+                )
+                count += 1
+            except Exception as exc:
+                logger.debug(
+                    'XAI explanation skipped for %s#%s: %s',
+                    pred.entity_type, pred.entity_id, exc,
+                )
+        logger.info('XAI explanations – company %d: %d generated',
+                    company.pk, count)
+
+    _for_each_tenant_company(run, 'XAI explanations')

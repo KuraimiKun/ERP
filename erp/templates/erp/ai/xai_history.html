@@ -1,0 +1,135 @@
+{% extends "erp/base.html" %}
+{% load humanize %}
+{% load i18n %}
+
+{% block title %}{% trans "Explanation History" %}{% endblock %}
+{% block page_title %}{% trans "Explanation History" %}{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h4 class="mb-1"><i class="bi bi-clock-history"></i> {% trans "Explanation History" %}</h4>
+        <p class="text-muted mb-0">{% trans "Browse all generated XAI explanations." %}</p>
+    </div>
+    <a href="{% url 'erp:xai_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>{% trans "Back to XAI" %}
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label small mb-0">{% trans "Model" %}</label>
+                <select name="model_type" class="form-select form-select-sm">
+                    <option value="">{% trans "All" %}</option>
+                    {% for key, info in xai_models.items %}
+                    <option value="{{ key }}" {% if selected_model_type == key %}selected{% endif %}>
+                        {{ info.label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label small mb-0">{% trans "Method" %}</label>
+                <select name="method" class="form-select form-select-sm">
+                    <option value="">{% trans "All" %}</option>
+                    <option value="shap" {% if selected_method == 'shap' %}selected{% endif %}>SHAP</option>
+                    <option value="lime" {% if selected_method == 'lime' %}selected{% endif %}>LIME</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Table -->
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Model" %}</th>
+                    <th>{% trans "Entity" %}</th>
+                    <th>{% trans "Method" %}</th>
+                    <th>{% trans "Prediction" %}</th>
+                    <th>{% trans "Base Value" %}</th>
+                    <th>{% trans "Top Feature" %}</th>
+                    <th>{% trans "Date" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in page_obj %}
+                <tr>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary">
+                            {{ exp.model.get_model_type_display }}
+                        </span>
+                    </td>
+                    <td>{{ exp.entity_type }} #{{ exp.entity_id }}</td>
+                    <td>
+                        <span class="badge {% if exp.method == 'shap' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ exp.get_method_display }}
+                        </span>
+                    </td>
+                    <td>{{ exp.prediction_score|floatformat:4 }}</td>
+                    <td>{{ exp.base_value|floatformat:4 }}</td>
+                    <td>
+                        {% with top=exp.top_features.0 %}
+                            {% if top %}
+                                <small><strong>{{ top.feature }}</strong> ({{ top.direction }})</small>
+                            {% else %}
+                                —
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td><small class="text-muted">{{ exp.created_at|naturaltime }}</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        {% trans "No explanations generated yet." %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&model_type={{ selected_model_type|default:'' }}&method={{ selected_method|default:'' }}">
+                &laquo;
+            </a>
+        </li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}&model_type={{ selected_model_type|default:'' }}&method={{ selected_method|default:'' }}">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}&model_type={{ selected_model_type|default:'' }}&method={{ selected_method|default:'' }}">
+                &raquo;
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
