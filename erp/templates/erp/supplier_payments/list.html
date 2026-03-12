@@ -78,12 +78,12 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Payment #" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="payment_number" label=_("Payment #") %}</th>
                     <th>{% trans "Supplier" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="payment_date" label=_("Date") %}</th>
                     <th>{% trans "Payment Method" %}</th>
                     <th>{% trans "Reference" %}</th>
-                    <th class="text-start">{% trans "Amount" %}</th>
+                    <th class="text-start">{% include "erp/includes/sort_header.html" with field="amount" label=_("Amount") %}</th>
                     <th class="text-start">{% trans "Allocated" %}</th>
                     <th class="text-start">{% trans "Unallocated" %}</th>
                     <th>{% trans "Actions" %}</th>

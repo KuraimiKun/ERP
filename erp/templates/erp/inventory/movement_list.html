@@ -67,14 +67,14 @@
                 <table class="erp-table table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>{% trans "Date" %}</th>
-                            <th>{% trans "Type" %}</th>
+                            <th>{% include "erp/includes/sort_header.html" with field="movement_date" label=_("Date") %}</th>
+                            <th>{% include "erp/includes/sort_header.html" with field="movement_type" label=_("Type") %}</th>
                             <th>{% trans "Product" %}</th>
                             <th>{% trans "Warehouse" %}</th>
                             <th>{% trans "Bin" %}</th>
                             <th>{% trans "Lot" %}</th>
-                            <th class="text-start">{% trans "Quantity" %}</th>
-                            <th class="text-start">{% trans "Unit Cost" %}</th>
+                            <th class="text-start">{% include "erp/includes/sort_header.html" with field="quantity" label=_("Quantity") %}</th>
+                            <th class="text-start">{% include "erp/includes/sort_header.html" with field="unit_cost" label=_("Unit Cost") %}</th>
                             <th>{% trans "Reference" %}</th>
                             <th>{% trans "Performed By" %}</th>
                         </tr>

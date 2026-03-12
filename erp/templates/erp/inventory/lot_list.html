@@ -37,10 +37,10 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Lot Number" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="lot_number" label=_("Lot Number") %}</th>
                     <th>{% trans "Product" %}</th>
                     <th>{% trans "Manufacture Date" %}</th>
-                    <th>{% trans "Expiry Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="expiry_date" label=_("Expiry Date") %}</th>
                     <th>{% trans "Expired" %}</th>
                     <th>{% trans "Supplier" %}</th>
                     <th>{% trans "Actions" %}</th>

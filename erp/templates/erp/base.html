@@ -196,6 +196,20 @@
             font-size: 0.9rem;
             border-bottom: 1px solid #f1f5f9;
         }
+
+        /* Sortable column headers */
+        .erp-sort-link {
+            color: #475569;
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .erp-sort-link:hover { color: #1e40af; }
+        .erp-sort-link.active { color: #1e3a8a; font-weight: 700; }
+        .erp-sort-icon-idle { opacity: 0; transition: opacity .15s; font-size: 0.7rem; }
+        th:hover .erp-sort-icon-idle { opacity: .45; }
         
         /* Status Badges */
         .badge-status {

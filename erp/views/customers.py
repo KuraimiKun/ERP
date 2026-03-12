@@ -9,7 +9,7 @@ from erp.forms import CustomerForm
 from erp.services import get_customer_id
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -17,7 +17,7 @@ from ._common import (
 def customer_list(request):
     """List all customers."""
     company = get_user_company(request.user)
-    customers = Customer.objects.filter(company=company).order_by('name')
+    customers = Customer.objects.filter(company=company)
 
     customer_type = request.GET.get('type')
     if customer_type:
@@ -31,6 +31,11 @@ def customer_list(request):
             Q(customer_id__icontains=search)
         )
 
+    customers, current_sort, current_order = apply_sorting(
+        request, customers,
+        allowed_fields=['name', 'email', 'customer_type', 'created_at'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, customers)
 
     return render(request, 'erp/customers/list.html', {
@@ -38,6 +43,8 @@ def customer_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'customer_types': Customer.CustomerType.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

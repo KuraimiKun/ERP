@@ -55,9 +55,40 @@ def paginate_qs(request, queryset, per_page=DEFAULT_PAGE_SIZE):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
-    # Build a query-string that keeps existing filters but strips 'page'
+    # Build a query-string that keeps existing filters but strips 'page',
+    # 'sort', and 'order' (sort headers rebuild these themselves).
     params = request.GET.copy()
-    params.pop('page', None)
+    for key in ('page', 'sort', 'order'):
+        params.pop(key, None)
     query_string = params.urlencode()
 
     return page_obj, query_string
+
+
+def apply_sorting(request, queryset, allowed_fields, default='-created_at'):
+    """Apply user-requested sorting to *queryset* safely.
+
+    Reads ``sort`` (field name) and ``order`` (``asc`` / ``desc``) from
+    ``request.GET``.  Only fields listed in *allowed_fields* are accepted;
+    anything else falls back to *default*.
+
+    Returns ``(sorted_queryset, current_sort, current_order)`` so that
+    templates can render active-sort indicators.
+    """
+    sort = request.GET.get('sort', '').strip()
+    order = request.GET.get('order', 'asc').strip().lower()
+
+    if sort in allowed_fields:
+        current_sort = sort
+    else:
+        # Parse the default to extract sort/order
+        if default.startswith('-'):
+            current_sort = default[1:]
+            order = 'desc'
+        else:
+            current_sort = default
+            order = 'asc'
+
+    current_order = 'desc' if order == 'desc' else 'asc'
+    order_field = f'-{current_sort}' if current_order == 'desc' else current_sort
+    return queryset.order_by(order_field), current_sort, current_order

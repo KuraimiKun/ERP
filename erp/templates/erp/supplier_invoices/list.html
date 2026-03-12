@@ -28,14 +28,14 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Invoice #" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="invoice_number" label=_("Invoice #") %}</th>
                     <th>{% trans "Supplier" %}</th>
                     <th>{% trans "Supplier Invoice #" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="invoice_date" label=_("Date") %}</th>
                     <th>{% trans "Due Date" %}</th>
-                    <th class="text-start">{% trans "Total" %}</th>
+                    <th class="text-start">{% include "erp/includes/sort_header.html" with field="total_amount" label=_("Total") %}</th>
                     <th class="text-start">{% trans "Balance" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                 </tr>
             </thead>
             <tbody>

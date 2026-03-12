@@ -101,8 +101,8 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Employee" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="employee__first_name" label=_("Employee") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="date" label=_("Date") %}</th>
                     <th>{% trans "Check In" %}</th>
                     <th>{% trans "Check Out" %}</th>
                     <th>{% trans "Status" %}</th>

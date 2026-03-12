@@ -65,6 +65,10 @@ class Account(ERPBaseModel):
         verbose_name_plural = 'Accounts'
         unique_together = ['company', 'code']
         ordering = ['code']
+        indexes = [
+            models.Index(fields=['company', 'account_type', 'is_active'], name='idx_acct_company_type_active'),
+            models.Index(fields=['company', 'is_active'], name='idx_acct_company_active'),
+        ]
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -241,6 +245,10 @@ class Customer(ERPBaseModel):
         verbose_name = 'Customer'
         verbose_name_plural = 'Customers'
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['company', 'is_active'], name='idx_cust_company_active'),
+            models.Index(fields=['company', 'customer_type'], name='idx_cust_company_type'),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.customer_id})"
@@ -331,6 +339,12 @@ class Invoice(ERPBaseModel):
         verbose_name = 'Invoice'
         verbose_name_plural = 'Invoices'
         ordering = ['-invoice_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_inv_company_status'),
+            models.Index(fields=['company', 'invoice_date'], name='idx_inv_company_date'),
+            models.Index(fields=['customer', 'status'], name='idx_inv_customer_status'),
+            models.Index(fields=['company', 'due_date', 'status'], name='idx_inv_company_due_status'),
+        ]
 
     def __str__(self):
         return f"{self.invoice_number} - {self.customer.name}"
@@ -485,6 +499,10 @@ class Payment(ERPBaseModel):
         verbose_name = 'Payment'
         verbose_name_plural = 'Payments'
         ordering = ['-payment_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'payment_date'], name='idx_pay_company_date'),
+            models.Index(fields=['customer', 'payment_date'], name='idx_pay_customer_date'),
+        ]
 
     def __str__(self):
         return f"{self.payment_number} - {self.customer.name} ({self.amount})"
@@ -609,6 +627,11 @@ class Expense(ERPBaseModel):
         verbose_name = 'Expense'
         verbose_name_plural = 'Expenses'
         ordering = ['-expense_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status', 'expense_date'], name='idx_exp_company_status_date'),
+            models.Index(fields=['company', 'category'], name='idx_exp_company_category'),
+            models.Index(fields=['company', 'employee'], name='idx_exp_company_employee'),
+        ]
 
     def __str__(self):
         return f"{self.expense_number} - {self.description[:50]}"
@@ -740,6 +763,11 @@ class JournalEntry(ERPBaseModel):
         verbose_name_plural = 'القيود اليومية'
         unique_together = ['company', 'entry_number']
         ordering = ['-entry_date', '-entry_number']
+        indexes = [
+            models.Index(fields=['company', 'status', 'entry_date'], name='idx_je_company_status_date'),
+            models.Index(fields=['company', 'entry_type'], name='idx_je_company_type'),
+            models.Index(fields=['company', 'fiscal_year'], name='idx_je_company_fy'),
+        ]
 
     def __str__(self):
         return f"{self.entry_number} - {self.entry_date}"
@@ -817,6 +845,9 @@ class JournalEntryLine(TimeStampedModel):
         verbose_name = 'سطر قيد'
         verbose_name_plural = 'سطور القيد'
         ordering = ['id']
+        indexes = [
+            models.Index(fields=['account', 'journal_entry'], name='idx_jel_account_je'),
+        ]
 
     def __str__(self):
         if self.debit_amount > 0:

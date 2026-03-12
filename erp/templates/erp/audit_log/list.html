@@ -62,10 +62,10 @@
         <table class="table erp-table">
             <thead>
                 <tr>
-                    <th>{% trans "Date and Time" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="created_at" label=_("Date and Time") %}</th>
                     <th>{% trans "User" %}</th>
-                    <th>{% trans "Action" %}</th>
-                    <th>{% trans "Object" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="action" label=_("Action") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="object_repr" label=_("Object") %}</th>
                     <th>{% trans "Details" %}</th>
                     <th>IP</th>
                 </tr>

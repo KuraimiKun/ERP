@@ -23,8 +23,8 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Name" %}</th>
-                    <th>{% trans "Rate" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="name" label=_("Name") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="rate" label=_("Rate") %}</th>
                     <th>{% trans "Default" %}</th>
                     <th>{% trans "Status" %}</th>
                     <th>{% trans "Actions" %}</th>

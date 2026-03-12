@@ -46,10 +46,10 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Serial Number" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="serial_number" label=_("Serial Number") %}</th>
                     <th>{% trans "Product" %}</th>
                     <th>{% trans "Lot" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                     <th>{% trans "Warehouse" %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>

@@ -251,6 +251,12 @@ class FixedAsset(ERPBaseModel):
         verbose_name = 'Fixed Asset'
         verbose_name_plural = 'Fixed Assets'
         ordering = ['-acquisition_date']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_fa_company_status'),
+            models.Index(fields=['company', 'category'], name='idx_fa_company_category'),
+            models.Index(fields=['company', 'department'], name='idx_fa_company_dept'),
+            models.Index(fields=['company', 'acquisition_date'], name='idx_fa_company_acqdate'),
+        ]
 
     def __str__(self):
         return f"{self.asset_number} – {self.name}"
@@ -429,6 +435,10 @@ class DepreciationSchedule(TimeStampedModel):
         verbose_name_plural = 'Depreciation Schedules'
         ordering = ['asset', 'period_date']
         unique_together = [('asset', 'period_date')]
+        indexes = [
+            models.Index(fields=['asset', 'status'], name='idx_depr_asset_status'),
+            models.Index(fields=['status', 'period_date'], name='idx_depr_status_date'),
+        ]
 
     def __str__(self):
         return f"{self.asset.asset_number} – {self.period_date}"

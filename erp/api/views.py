@@ -97,8 +97,11 @@ class CurrencyViewSet(viewsets.ModelViewSet):
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['code', 'name']
+    filterset_fields = ['is_active', 'is_base']
+    ordering_fields = ['code', 'name', 'exchange_rate']
+    ordering = ['code']
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
@@ -106,8 +109,10 @@ class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [IsAdminUser]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['name', 'legal_name']
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'legal_name', 'email']
+    ordering_fields = ['name', 'created_at']
+    ordering = ['name']
 
 
 class DepartmentViewSet(ERPBaseViewSet):
@@ -116,6 +121,8 @@ class DepartmentViewSet(ERPBaseViewSet):
     serializer_class = DepartmentSerializer
     search_fields = ['name', 'code']
     filterset_fields = ['is_active', 'parent']
+    ordering_fields = ['name', 'code', 'created_at']
+    ordering = ['name']
 
 
 class BranchViewSet(ERPBaseViewSet):
@@ -123,14 +130,19 @@ class BranchViewSet(ERPBaseViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
     search_fields = ['name', 'code', 'city']
-    filterset_fields = ['is_active', 'is_headquarters']
+    filterset_fields = ['is_active', 'is_headquarters', 'city', 'country']
+    ordering_fields = ['name', 'city', 'created_at']
+    ordering = ['name']
 
 
 class FiscalYearViewSet(ERPBaseViewSet):
     """API endpoint for fiscal years."""
     queryset = FiscalYear.objects.all()
     serializer_class = FiscalYearSerializer
+    search_fields = ['name']
     filterset_fields = ['is_current', 'is_closed']
+    ordering_fields = ['start_date', 'end_date', 'name']
+    ordering = ['-start_date']
 
 
 # =============================================================================
@@ -179,15 +191,20 @@ class LeaveTypeViewSet(ERPBaseViewSet):
     """API endpoint for leave types."""
     queryset = LeaveType.objects.all()
     serializer_class = LeaveTypeSerializer
+    search_fields = ['name', 'code']
     filterset_fields = ['is_active', 'is_paid', 'requires_approval']
+    ordering_fields = ['name', 'days_allowed']
+    ordering = ['name']
 
 
 class LeaveRequestViewSet(ERPBaseViewSet):
     """API endpoint for leave requests."""
     queryset = LeaveRequest.objects.select_related('employee', 'leave_type', 'approved_by')
     serializer_class = LeaveRequestSerializer
+    search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id']
     filterset_fields = ['employee', 'leave_type', 'status']
-    ordering_fields = ['start_date', 'created_at']
+    ordering_fields = ['start_date', 'end_date', 'created_at', 'days_requested']
+    ordering = ['-created_at']
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -231,8 +248,10 @@ class AttendanceViewSet(ERPBaseViewSet):
     """API endpoint for attendance records."""
     queryset = Attendance.objects.select_related('employee')
     serializer_class = AttendanceSerializer
-    filterset_fields = ['employee', 'status', 'date']
-    ordering_fields = ['date', 'check_in']
+    search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id']
+    filterset_fields = ['employee', 'is_present', 'is_late', 'date']
+    ordering_fields = ['date', 'check_in', 'check_out', 'hours_worked']
+    ordering = ['-date']
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -247,8 +266,10 @@ class PayrollViewSet(ERPBaseViewSet):
     queryset = Payroll.objects.select_related('employee')
     serializer_class = PayrollSerializer
     permission_classes = [IsAdminUser]
+    search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id']
     filterset_fields = ['employee', 'status']
-    ordering_fields = ['period_start', 'payment_date']
+    ordering_fields = ['period_start', 'period_end', 'payment_date', 'net_salary']
+    ordering = ['-period_end']
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -267,21 +288,29 @@ class AccountViewSet(ERPBaseViewSet):
     queryset = Account.objects.select_related('parent')
     serializer_class = AccountSerializer
     search_fields = ['code', 'name']
-    filterset_fields = ['account_type', 'is_active', 'parent']
+    filterset_fields = ['account_type', 'is_active', 'is_system', 'parent']
+    ordering_fields = ['code', 'name', 'account_type', 'current_balance']
+    ordering = ['code']
 
 
 class TaxRateViewSet(ERPBaseViewSet):
     """API endpoint for tax rates."""
     queryset = TaxRate.objects.all()
     serializer_class = TaxRateSerializer
-    filterset_fields = ['is_active']
+    search_fields = ['name']
+    filterset_fields = ['is_active', 'is_default']
+    ordering_fields = ['name', 'rate']
+    ordering = ['rate']
 
 
 class PaymentMethodViewSet(ERPBaseViewSet):
     """API endpoint for payment methods."""
     queryset = PaymentMethod.objects.all()
     serializer_class = PaymentMethodSerializer
+    search_fields = ['name', 'code']
     filterset_fields = ['is_active']
+    ordering_fields = ['name']
+    ordering = ['name']
 
 
 class CustomerViewSet(ERPBaseViewSet):
@@ -289,8 +318,9 @@ class CustomerViewSet(ERPBaseViewSet):
     queryset = Customer.objects.select_related('currency')
     serializer_class = CustomerSerializer
     search_fields = ['name', 'email', 'customer_id', 'phone']
-    filterset_fields = ['customer_type', 'is_active']
-    ordering_fields = ['name', 'created_at', 'balance']
+    filterset_fields = ['customer_type', 'is_active', 'assigned_to']
+    ordering_fields = ['name', 'created_at', 'current_balance', 'customer_type']
+    ordering = ['name']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -333,8 +363,9 @@ class InvoiceViewSet(ERPBaseViewSet):
     queryset = Invoice.objects.select_related('customer', 'currency')
     serializer_class = InvoiceSerializer
     search_fields = ['invoice_number', 'customer__name', 'reference']
-    filterset_fields = ['customer', 'status']
-    ordering_fields = ['invoice_date', 'due_date', 'total_amount', 'created_at']
+    filterset_fields = ['customer', 'status', 'invoice_type']
+    ordering_fields = ['invoice_date', 'due_date', 'total_amount', 'balance_due', 'created_at']
+    ordering = ['-invoice_date']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -376,15 +407,19 @@ class PaymentViewSet(ERPBaseViewSet):
     queryset = Payment.objects.select_related('customer', 'payment_method')
     serializer_class = PaymentSerializer
     search_fields = ['payment_number', 'customer__name', 'reference']
-    filterset_fields = ['customer', 'payment_method']
+    filterset_fields = ['customer', 'payment_method', 'payment_type']
     ordering_fields = ['payment_date', 'amount', 'created_at']
+    ordering = ['-payment_date']
 
 
 class ExpenseCategoryViewSet(ERPBaseViewSet):
     """API endpoint for expense categories."""
     queryset = ExpenseCategory.objects.all()
     serializer_class = ExpenseCategorySerializer
+    search_fields = ['name', 'code']
     filterset_fields = ['is_active', 'parent']
+    ordering_fields = ['name']
+    ordering = ['name']
 
 
 class ExpenseViewSet(ERPBaseViewSet):
@@ -392,8 +427,9 @@ class ExpenseViewSet(ERPBaseViewSet):
     queryset = Expense.objects.select_related('category', 'submitted_by', 'approved_by')
     serializer_class = ExpenseSerializer
     search_fields = ['expense_number', 'description']
-    filterset_fields = ['category', 'status', 'submitted_by']
-    ordering_fields = ['expense_date', 'total_amount', 'created_at']
+    filterset_fields = ['category', 'status', 'submitted_by', 'employee']
+    ordering_fields = ['expense_date', 'total_amount', 'created_at', 'status']
+    ordering = ['-expense_date']
     
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -421,8 +457,9 @@ class SupplierViewSet(ERPBaseViewSet):
     queryset = Supplier.objects.prefetch_related('contacts')
     serializer_class = SupplierSerializer
     search_fields = ['name', 'email', 'supplier_id']
-    filterset_fields = ['supplier_type', 'is_active']
-    ordering_fields = ['name', 'rating', 'created_at']
+    filterset_fields = ['supplier_type', 'is_active', 'rating']
+    ordering_fields = ['name', 'rating', 'created_at', 'current_balance']
+    ordering = ['name']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -442,16 +479,20 @@ class SupplierContactViewSet(ERPBaseViewSet):
     """API endpoint for supplier contacts."""
     queryset = SupplierContact.objects.select_related('supplier')
     serializer_class = SupplierContactSerializer
+    search_fields = ['name', 'email']
     filterset_fields = ['supplier', 'is_primary']
+    ordering_fields = ['name']
+    ordering = ['name']
 
 
 class PurchaseOrderViewSet(ERPBaseViewSet):
     """API endpoint for purchase orders."""
     queryset = PurchaseOrder.objects.select_related('supplier')
     serializer_class = PurchaseOrderSerializer
-    search_fields = ['po_number', 'supplier__name']
+    search_fields = ['po_number', 'supplier__name', 'reference']
     filterset_fields = ['supplier', 'status']
-    ordering_fields = ['po_date', 'total_amount', 'created_at']
+    ordering_fields = ['po_date', 'expected_date', 'total_amount', 'created_at']
+    ordering = ['-po_date']
 
 
 # =============================================================================
@@ -464,7 +505,8 @@ class LeadViewSet(ERPBaseViewSet):
     serializer_class = LeadSerializer
     search_fields = ['first_name', 'last_name', 'email', 'lead_number', 'company_name']
     filterset_fields = ['source', 'status', 'assigned_to']
-    ordering_fields = ['created_at', 'estimated_value', 'next_follow_up']
+    ordering_fields = ['created_at', 'estimated_value', 'next_follow_up', 'expected_close_date']
+    ordering = ['-created_at']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -534,8 +576,10 @@ class LeadActivityViewSet(ERPBaseViewSet):
     """API endpoint for lead activities."""
     queryset = LeadActivity.objects.select_related('lead', 'performed_by')
     serializer_class = LeadActivitySerializer
-    filterset_fields = ['lead', 'activity_type']
+    search_fields = ['subject', 'description']
+    filterset_fields = ['lead', 'activity_type', 'is_completed']
     ordering_fields = ['activity_date', 'created_at']
+    ordering = ['-activity_date']
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -549,8 +593,10 @@ class CustomerInteractionViewSet(ERPBaseViewSet):
     """API endpoint for customer interactions."""
     queryset = CustomerInteraction.objects.select_related('customer', 'performed_by')
     serializer_class = CustomerInteractionSerializer
-    filterset_fields = ['customer', 'interaction_type']
+    search_fields = ['subject', 'description']
+    filterset_fields = ['customer', 'interaction_type', 'requires_follow_up']
     ordering_fields = ['interaction_date', 'created_at']
+    ordering = ['-interaction_date']
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -565,8 +611,9 @@ class CampaignViewSet(ERPBaseViewSet):
     queryset = Campaign.objects.all()
     serializer_class = CampaignSerializer
     search_fields = ['name']
-    filterset_fields = ['campaign_type', 'status']
-    ordering_fields = ['start_date', 'budget', 'created_at']
+    filterset_fields = ['campaign_type', 'status', 'owner']
+    ordering_fields = ['start_date', 'end_date', 'budget', 'actual_cost', 'created_at']
+    ordering = ['-start_date']
     
     @action(detail=True, methods=['get'])
     def performance(self, request, pk=None):
@@ -591,7 +638,8 @@ class TaskViewSet(ERPBaseViewSet):
     serializer_class = TaskSerializer
     search_fields = ['title', 'description']
     filterset_fields = ['status', 'priority', 'assigned_to']
-    ordering_fields = ['due_date', 'priority', 'created_at']
+    ordering_fields = ['due_date', 'priority', 'created_at', 'status']
+    ordering = ['-created_at']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -638,7 +686,10 @@ class TaskCommentViewSet(viewsets.ModelViewSet):
     queryset = TaskComment.objects.select_related('task', 'author')
     serializer_class = TaskCommentSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['task']
+    ordering_fields = ['created_at']
+    ordering = ['created_at']
 
 
 # =============================================================================
@@ -649,7 +700,10 @@ class ServiceCategoryViewSet(ERPBaseViewSet):
     """API endpoint for service categories."""
     queryset = ServiceCategory.objects.all()
     serializer_class = ServiceCategorySerializer
+    search_fields = ['name', 'code']
     filterset_fields = ['is_active', 'parent']
+    ordering_fields = ['name', 'sort_order']
+    ordering = ['sort_order', 'name']
 
 
 class ServicePricingViewSet(ERPBaseViewSet):
@@ -658,6 +712,8 @@ class ServicePricingViewSet(ERPBaseViewSet):
     serializer_class = ServicePricingSerializer
     search_fields = ['name', 'code']
     filterset_fields = ['category', 'pricing_type', 'is_active']
+    ordering_fields = ['name', 'base_price', 'code', 'created_at']
+    ordering = ['name']
 
 
 class QuoteViewSet(ERPBaseViewSet):
@@ -666,7 +722,8 @@ class QuoteViewSet(ERPBaseViewSet):
     serializer_class = QuoteSerializer
     search_fields = ['quote_number', 'customer__name', 'reference']
     filterset_fields = ['customer', 'lead', 'status']
-    ordering_fields = ['quote_date', 'total_amount', 'created_at']
+    ordering_fields = ['quote_date', 'valid_until', 'total_amount', 'created_at']
+    ordering = ['-quote_date']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -726,7 +783,10 @@ class DashboardViewSet(ERPBaseViewSet):
     """API endpoint for dashboards."""
     queryset = Dashboard.objects.prefetch_related('widgets')
     serializer_class = DashboardSerializer
+    search_fields = ['name']
     filterset_fields = ['is_default', 'created_by']
+    ordering_fields = ['name', 'created_at']
+    ordering = ['name']
 
 
 class DashboardWidgetViewSet(viewsets.ModelViewSet):
@@ -734,7 +794,10 @@ class DashboardWidgetViewSet(viewsets.ModelViewSet):
     queryset = DashboardWidget.objects.all()
     serializer_class = DashboardWidgetSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['dashboard', 'widget_type']
+    ordering_fields = ['position', 'created_at']
+    ordering = ['position']
 
 
 class KPIViewSet(ERPBaseViewSet):
@@ -770,9 +833,10 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AuditLog.objects.select_related('user')
     serializer_class = AuditLogSerializer
     permission_classes = [IsAdminUser]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['object_repr', 'changes']
     filterset_fields = ['user', 'action', 'content_type']
-    ordering_fields = ['timestamp']
+    ordering_fields = ['timestamp', 'action']
     ordering = ['-timestamp']
 
 

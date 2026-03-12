@@ -19,11 +19,11 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Adjustment Number" %}</th>
-                    <th>{% trans "Type" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="adjustment_number" label=_("Adjustment Number") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="adjustment_type" label=_("Type") %}</th>
                     <th>{% trans "Warehouse" %}</th>
-                    <th>{% trans "Date" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="adjustment_date" label=_("Date") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>

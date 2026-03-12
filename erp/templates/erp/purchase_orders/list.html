@@ -45,12 +45,12 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "Order Number" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="po_number" label=_("Order Number") %}</th>
                     <th>{% trans "Supplier" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="po_date" label=_("Date") %}</th>
                     <th>{% trans "Expected Delivery Date" %}</th>
-                    <th>{% trans "Status" %}</th>
-                    <th>{% trans "Total" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="total_amount" label=_("Total") %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>

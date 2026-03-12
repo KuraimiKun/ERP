@@ -70,12 +70,12 @@
                 <table class="erp-table table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>{% trans "Pick #" %}</th>
-                            <th>{% trans "Date" %}</th>
+                            <th>{% include "erp/includes/sort_header.html" with field="pick_number" label=_("Pick #") %}</th>
+                            <th>{% include "erp/includes/sort_header.html" with field="pick_date" label=_("Date") %}</th>
                             <th>{% trans "Warehouse" %}</th>
                             <th>{% trans "Invoice" %}</th>
                             <th>{% trans "Assigned To" %}</th>
-                            <th>{% trans "Status" %}</th>
+                            <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                             <th class="text-center">{% trans "Actions" %}</th>
                         </tr>
                     </thead>

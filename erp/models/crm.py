@@ -98,6 +98,12 @@ class Lead(ERPBaseModel):
         verbose_name = 'Lead'
         verbose_name_plural = 'Leads'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_lead_company_status'),
+            models.Index(fields=['company', 'assigned_to'], name='idx_lead_company_assigned'),
+            models.Index(fields=['company', 'source'], name='idx_lead_company_source'),
+            models.Index(fields=['status', 'next_follow_up'], name='idx_lead_status_followup'),
+        ]
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.lead_number})"
@@ -144,6 +150,9 @@ class LeadActivity(TimeStampedModel):
         verbose_name = 'Lead Activity'
         verbose_name_plural = 'Lead Activities'
         ordering = ['-activity_date']
+        indexes = [
+            models.Index(fields=['lead', 'activity_date'], name='idx_la_lead_date'),
+        ]
 
     def __str__(self):
         return f"{self.get_activity_type_display()} - {self.subject}"
@@ -190,6 +199,10 @@ class CustomerInteraction(TimeStampedModel):
         verbose_name = 'Customer Interaction'
         verbose_name_plural = 'Customer Interactions'
         ordering = ['-interaction_date']
+        indexes = [
+            models.Index(fields=['customer', 'interaction_date'], name='idx_ci_customer_date'),
+            models.Index(fields=['interaction_type', 'interaction_date'], name='idx_ci_type_date'),
+        ]
 
     def __str__(self):
         return f"{self.customer.name} - {self.subject}"
@@ -266,6 +279,10 @@ class Campaign(ERPBaseModel):
         verbose_name = 'Campaign'
         verbose_name_plural = 'Campaigns'
         ordering = ['-start_date']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_camp_company_status'),
+            models.Index(fields=['company', 'campaign_type'], name='idx_camp_company_type'),
+        ]
 
     def __str__(self):
         return self.name
@@ -363,6 +380,11 @@ class Task(ERPBaseModel):
         verbose_name = 'Task'
         verbose_name_plural = 'Tasks'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['company', 'status', 'priority'], name='idx_task_company_status_pri'),
+            models.Index(fields=['assigned_to', 'status'], name='idx_task_assigned_status'),
+            models.Index(fields=['status', 'due_date'], name='idx_task_status_due'),
+        ]
 
     def __str__(self):
         return self.title

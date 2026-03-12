@@ -23,7 +23,7 @@ from erp.forms import (
 )
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -32,7 +32,7 @@ from ._common import (
 @staff_member_required
 def employee_list(request):
     company = get_user_company(request.user)
-    employees = Employee.objects.filter(company=company).select_related('department').order_by('first_name')
+    employees = Employee.objects.filter(company=company).select_related('department')
 
     department = request.GET.get('department')
     if department:
@@ -51,6 +51,11 @@ def employee_list(request):
             Q(employee_id__icontains=search)
         )
 
+    employees, current_sort, current_order = apply_sorting(
+        request, employees,
+        allowed_fields=['first_name', 'last_name', 'employee_id', 'employment_status', 'created_at'],
+        default='first_name',
+    )
     departments = Department.objects.filter(company=company, is_active=True)
 
     page_obj, query_string = paginate_qs(request, employees)
@@ -61,6 +66,8 @@ def employee_list(request):
         'query_string': query_string,
         'departments': departments,
         'statuses': Employee.EmploymentStatus.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -170,12 +177,19 @@ def department_list(request):
     company = get_user_company(request.user)
     departments = Department.objects.filter(company=company).select_related('parent', 'manager')
 
-    page_obj, query_string = paginate_qs(request, departments.order_by('name'))
+    departments, current_sort, current_order = apply_sorting(
+        request, departments,
+        allowed_fields=['name', 'created_at'],
+        default='name',
+    )
+    page_obj, query_string = paginate_qs(request, departments)
 
     return render(request, 'erp/departments/list.html', {
         'departments': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -256,8 +270,13 @@ def attendance_list(request):
         employee__company=company,
         date__gte=start_date,
         date__lte=end_date
-    ).select_related('employee').order_by('-date', 'employee__first_name')
+    ).select_related('employee')
 
+    attendances, current_sort, current_order = apply_sorting(
+        request, attendances,
+        allowed_fields=['date', 'employee__first_name'],
+        default='-date',
+    )
     page_obj, query_string = paginate_qs(request, attendances)
 
     return render(request, 'erp/attendance/list.html', {
@@ -266,6 +285,8 @@ def attendance_list(request):
         'query_string': query_string,
         'start_date': start_date,
         'end_date': end_date,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -318,12 +339,17 @@ def leave_request_list(request):
     company = get_user_company(request.user)
     leave_requests = LeaveRequest.objects.filter(
         employee__company=company
-    ).select_related('employee', 'leave_type', 'approved_by').order_by('-created_at')
+    ).select_related('employee', 'leave_type', 'approved_by')
 
     status = request.GET.get('status')
     if status:
         leave_requests = leave_requests.filter(status=status)
 
+    leave_requests, current_sort, current_order = apply_sorting(
+        request, leave_requests,
+        allowed_fields=['start_date', 'end_date', 'status', 'created_at'],
+        default='-created_at',
+    )
     page_obj, query_string = paginate_qs(request, leave_requests)
 
     return render(request, 'erp/leave_requests/list.html', {
@@ -331,6 +357,8 @@ def leave_request_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'statuses': LeaveRequest.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -407,7 +435,7 @@ def payroll_list(request):
     company = get_user_company(request.user)
     payrolls = Payroll.objects.filter(
         employee__company=company,
-    ).select_related('employee', 'currency', 'journal_entry').order_by('-period_start')
+    ).select_related('employee', 'currency', 'journal_entry')
 
     status = request.GET.get('status')
     if status:
@@ -427,6 +455,11 @@ def payroll_list(request):
         total_gross=Sum('gross_salary'),
     )
 
+    payrolls, current_sort, current_order = apply_sorting(
+        request, payrolls,
+        allowed_fields=['period_start', 'period_end', 'gross_salary', 'net_salary', 'status'],
+        default='-period_start',
+    )
     page_obj, query_string = paginate_qs(request, payrolls)
 
     return render(request, 'erp/payroll/list.html', {
@@ -436,6 +469,8 @@ def payroll_list(request):
         'stats': stats,
         'selected_status': status or '',
         'statuses': Payroll.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

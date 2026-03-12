@@ -11,9 +11,9 @@
             <thead>
                 <tr>
                     <th>{% trans "Asset" %}</th>
-                    <th>{% trans "Disposal Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="disposal_date" label=_("Disposal Date") %}</th>
                     <th>{% trans "Type" %}</th>
-                    <th>{% trans "Sale Amount" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="disposal_amount" label=_("Sale Amount") %}</th>
                     <th>{% trans "Book Value" %}</th>
                     <th>{% trans "Gain/Loss" %}</th>
                     <th>{% trans "Journal" %}</th>

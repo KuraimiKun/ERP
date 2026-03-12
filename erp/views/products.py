@@ -8,7 +8,7 @@ from erp.models import Product, ProductCategory
 from erp.forms import ProductCategoryForm, ProductForm, ProductSupplierFormSet
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -18,12 +18,20 @@ from ._common import (
 def product_category_list(request):
     company = get_user_company(request.user)
     categories = ProductCategory.objects.filter(company=company)
+
+    categories, current_sort, current_order = apply_sorting(
+        request, categories,
+        allowed_fields=['name', 'created_at'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, categories)
 
     return render(request, 'erp/product_categories/list.html', {
         'categories': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -104,7 +112,12 @@ def product_list(request):
             quantity_on_hand__lte=F('reorder_level')
         )
 
-    page_obj, query_string = paginate_qs(request, products.order_by('name'))
+    products, current_sort, current_order = apply_sorting(
+        request, products,
+        allowed_fields=['name', 'sku', 'selling_price', 'quantity_on_hand', 'product_type'],
+        default='name',
+    )
+    page_obj, query_string = paginate_qs(request, products)
 
     return render(request, 'erp/products/list.html', {
         'products': page_obj,
@@ -112,6 +125,8 @@ def product_list(request):
         'query_string': query_string,
         'categories': ProductCategory.objects.filter(company=company, is_active=True),
         'product_types': Product.ProductType.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

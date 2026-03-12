@@ -102,13 +102,13 @@
             <table class="table table-hover erp-table mb-0">
                 <thead>
                     <tr>
-                        <th>{% trans "Entry Number" %}</th>
-                        <th>{% trans "Date" %}</th>
-                        <th>{% trans "Type" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="entry_number" label=_("Entry Number") %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="entry_date" label=_("Date") %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="entry_type" label=_("Type") %}</th>
                         <th>{% trans "Description" %}</th>
-                        <th>{% trans "Debit" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="total_debit" label=_("Debit") %}</th>
                         <th>{% trans "Credit" %}</th>
-                        <th>{% trans "Status" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                         <th>{% trans "Actions" %}</th>
                     </tr>
                 </thead>

@@ -117,6 +117,9 @@ class Warehouse(ERPBaseModel):
         verbose_name_plural = 'Warehouses'
         unique_together = ['company', 'code']
         ordering = ['code']
+        indexes = [
+            models.Index(fields=['company', 'is_active'], name='idx_wh_company_active'),
+        ]
 
     def __str__(self):
         return f'{self.code} – {self.name}'
@@ -257,6 +260,10 @@ class SerialNumber(TimeStampedModel):
         verbose_name_plural = 'Serial Numbers'
         unique_together = ['company', 'product', 'serial_number']
         ordering = ['serial_number']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_sn_company_status'),
+            models.Index(fields=['product', 'status'], name='idx_sn_product_status'),
+        ]
 
     def __str__(self):
         return f'{self.product.sku} – SN {self.serial_number}'
@@ -310,6 +317,10 @@ class StockItem(TimeStampedModel):
         verbose_name_plural = 'Stock Items'
         unique_together = ['company', 'product', 'warehouse', 'bin', 'lot']
         ordering = ['product__sku', 'warehouse__code']
+        indexes = [
+            models.Index(fields=['company', 'warehouse'], name='idx_si_company_wh'),
+            models.Index(fields=['company', 'product'], name='idx_si_company_prod'),
+        ]
 
     def __str__(self):
         return f'{self.product.sku} @ {self.warehouse.code} = {self.on_hand}'
@@ -457,6 +468,11 @@ class GoodsReceiptNote(ERPBaseModel):
         verbose_name = 'Goods Receipt Note'
         verbose_name_plural = 'Goods Receipt Notes'
         ordering = ['-receipt_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_grn_company_status'),
+            models.Index(fields=['company', 'receipt_date'], name='idx_grn_company_date'),
+            models.Index(fields=['supplier', 'status'], name='idx_grn_supplier_status'),
+        ]
 
     def __str__(self):
         return f'{self.grn_number} ← PO {self.purchase_order.po_number}'
@@ -538,6 +554,10 @@ class StockTransfer(ERPBaseModel):
         verbose_name = 'Stock Transfer'
         verbose_name_plural = 'Stock Transfers'
         ordering = ['-transfer_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_xfer_company_status'),
+            models.Index(fields=['company', 'transfer_date'], name='idx_xfer_company_date'),
+        ]
 
     def __str__(self):
         return f'{self.transfer_number}: {self.from_warehouse.code} → {self.to_warehouse.code}'
@@ -621,6 +641,10 @@ class StockAdjustment(ERPBaseModel):
         verbose_name = 'Stock Adjustment'
         verbose_name_plural = 'Stock Adjustments'
         ordering = ['-adjustment_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status', 'adjustment_type'], name='idx_adj_co_status_type'),
+            models.Index(fields=['company', 'adjustment_date'], name='idx_adj_company_date'),
+        ]
 
     def __str__(self):
         return f'{self.adjustment_number} ({self.get_adjustment_type_display()})'
@@ -697,6 +721,10 @@ class CycleCount(ERPBaseModel):
         verbose_name = 'Cycle Count'
         verbose_name_plural = 'Cycle Counts'
         ordering = ['-count_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_cc_company_status'),
+            models.Index(fields=['company', 'count_date'], name='idx_cc_company_date'),
+        ]
 
     def __str__(self):
         return f'{self.count_number} – {self.warehouse.code}'
@@ -782,6 +810,10 @@ class PickList(ERPBaseModel):
         verbose_name = 'Pick List'
         verbose_name_plural = 'Pick Lists'
         ordering = ['-pick_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_pick_company_status'),
+            models.Index(fields=['assigned_to', 'status'], name='idx_pick_assignee_status'),
+        ]
 
     def __str__(self):
         return self.pick_number
@@ -853,6 +885,11 @@ class ShipmentNote(ERPBaseModel):
         verbose_name = 'Shipment Note'
         verbose_name_plural = 'Shipment Notes'
         ordering = ['-shipment_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_ship_company_status'),
+            models.Index(fields=['company', 'shipment_date'], name='idx_ship_company_date'),
+            models.Index(fields=['customer', 'status'], name='idx_ship_customer_status'),
+        ]
 
     def __str__(self):
         return self.shipment_number

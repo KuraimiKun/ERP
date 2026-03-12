@@ -15,7 +15,7 @@ from erp.forms import (
 from erp.services import get_lead_number
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -24,7 +24,7 @@ from ._common import (
 @staff_member_required
 def lead_list(request):
     company = get_user_company(request.user)
-    leads = Lead.objects.filter(company=company).order_by('-created_at')
+    leads = Lead.objects.filter(company=company)
 
     status = request.GET.get('status')
     if status:
@@ -43,6 +43,11 @@ def lead_list(request):
             Q(lead_number__icontains=search)
         )
 
+    leads, current_sort, current_order = apply_sorting(
+        request, leads,
+        allowed_fields=['first_name', 'last_name', 'status', 'source', 'created_at'],
+        default='-created_at',
+    )
     page_obj, query_string = paginate_qs(request, leads)
 
     return render(request, 'erp/leads/list.html', {
@@ -51,6 +56,8 @@ def lead_list(request):
         'query_string': query_string,
         'statuses': Lead.Status.choices,
         'sources': Lead.Source.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -170,13 +177,20 @@ def campaign_list(request):
     if status:
         campaigns = campaigns.filter(status=status)
 
-    page_obj, query_string = paginate_qs(request, campaigns.order_by('-start_date'))
+    campaigns, current_sort, current_order = apply_sorting(
+        request, campaigns,
+        allowed_fields=['name', 'start_date', 'end_date', 'status'],
+        default='-start_date',
+    )
+    page_obj, query_string = paginate_qs(request, campaigns)
 
     return render(request, 'erp/campaigns/list.html', {
         'campaigns': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
         'statuses': Campaign.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -258,7 +272,7 @@ def campaign_delete(request, pk):
 @staff_member_required
 def task_list(request):
     company = get_user_company(request.user)
-    tasks = Task.objects.filter(company=company).select_related('assigned_to').order_by('-created_at')
+    tasks = Task.objects.filter(company=company).select_related('assigned_to')
 
     status = request.GET.get('status')
     if status:
@@ -272,6 +286,11 @@ def task_list(request):
     if my_tasks and hasattr(request.user, 'employee_profile'):
         tasks = tasks.filter(assigned_to=request.user.employee_profile)
 
+    tasks, current_sort, current_order = apply_sorting(
+        request, tasks,
+        allowed_fields=['title', 'status', 'priority', 'due_date', 'created_at'],
+        default='-created_at',
+    )
     page_obj, query_string = paginate_qs(request, tasks)
 
     return render(request, 'erp/tasks/list.html', {
@@ -280,6 +299,8 @@ def task_list(request):
         'query_string': query_string,
         'statuses': Task.Status.choices,
         'priorities': Task.Priority.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

@@ -41,6 +41,8 @@ class UnitOfMeasureViewSet(ERPBaseViewSet):
     serializer_class = UnitOfMeasureSerializer
     search_fields = ['name', 'abbreviation']
     filterset_fields = ['category', 'is_base', 'is_active']
+    ordering_fields = ['name', 'category']
+    ordering = ['name']
 
 
 class UnitOfMeasureConversionViewSet(ERPBaseViewSet):
@@ -55,6 +57,8 @@ class WarehouseViewSet(ERPBaseViewSet):
     serializer_class = WarehouseSerializer
     search_fields = ['code', 'name', 'city']
     filterset_fields = ['is_active']
+    ordering_fields = ['name', 'code', 'city', 'created_at']
+    ordering = ['name']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -75,7 +79,10 @@ class WarehouseViewSet(ERPBaseViewSet):
 class WarehouseZoneViewSet(ERPBaseViewSet):
     queryset = WarehouseZone.objects.all()
     serializer_class = WarehouseZoneSerializer
+    search_fields = ['name', 'code']
     filterset_fields = ['warehouse', 'zone_type', 'is_active']
+    ordering_fields = ['name', 'code']
+    ordering = ['name']
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -86,7 +93,10 @@ class WarehouseZoneViewSet(ERPBaseViewSet):
 class WarehouseBinViewSet(ERPBaseViewSet):
     queryset = WarehouseBin.objects.all()
     serializer_class = WarehouseBinSerializer
+    search_fields = ['code', 'name']
     filterset_fields = ['is_active']
+    ordering_fields = ['code', 'name']
+    ordering = ['code']
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -100,7 +110,9 @@ class LotBatchViewSet(ERPBaseViewSet):
     queryset = LotBatch.objects.select_related('product', 'supplier').all()
     serializer_class = LotBatchSerializer
     search_fields = ['lot_number', 'product__name']
-    filterset_fields = ['product']
+    filterset_fields = ['product', 'supplier']
+    ordering_fields = ['lot_number', 'manufacture_date', 'expiry_date', 'created_at']
+    ordering = ['-created_at']
 
 
 class SerialNumberViewSet(ERPBaseViewSet):
@@ -108,6 +120,8 @@ class SerialNumberViewSet(ERPBaseViewSet):
     serializer_class = SerialNumberSerializer
     search_fields = ['serial_number', 'product__name']
     filterset_fields = ['status', 'product', 'warehouse']
+    ordering_fields = ['serial_number', 'created_at']
+    ordering = ['-created_at']
 
 
 # ── Stock Item / Movement ──────────────────────────────────────
@@ -117,6 +131,8 @@ class StockItemViewSet(ERPBaseViewSet):
     serializer_class = StockItemSerializer
     search_fields = ['product__name', 'product__sku']
     filterset_fields = ['warehouse', 'product']
+    ordering_fields = ['quantity', 'product__name', 'warehouse__name']
+    ordering = ['product__name']
     http_method_names = ['get', 'head', 'options']  # Read-only
 
     def get_queryset(self):
@@ -151,6 +167,8 @@ class GoodsReceiptNoteViewSet(ERPBaseViewSet):
     serializer_class = GoodsReceiptNoteSerializer
     search_fields = ['grn_number', 'supplier__name']
     filterset_fields = ['status', 'warehouse', 'supplier']
+    ordering_fields = ['grn_number', 'received_date', 'created_at']
+    ordering = ['-created_at']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -180,6 +198,8 @@ class StockTransferViewSet(ERPBaseViewSet):
     serializer_class = StockTransferSerializer
     search_fields = ['transfer_number']
     filterset_fields = ['status', 'from_warehouse', 'to_warehouse']
+    ordering_fields = ['transfer_number', 'created_at']
+    ordering = ['-created_at']
 
     @action(detail=True, methods=['post'])
     def ship(self, request, pk=None):
@@ -209,8 +229,10 @@ class StockTransferViewSet(ERPBaseViewSet):
 class StockAdjustmentViewSet(ERPBaseViewSet):
     queryset = StockAdjustment.objects.select_related('warehouse').all()
     serializer_class = StockAdjustmentSerializer
-    search_fields = ['adjustment_number']
+    search_fields = ['adjustment_number', 'reason']
     filterset_fields = ['status', 'adjustment_type', 'warehouse']
+    ordering_fields = ['adjustment_number', 'created_at']
+    ordering = ['-created_at']
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -231,6 +253,8 @@ class CycleCountViewSet(ERPBaseViewSet):
     serializer_class = CycleCountSerializer
     search_fields = ['count_number']
     filterset_fields = ['status', 'warehouse']
+    ordering_fields = ['count_number', 'created_at']
+    ordering = ['-created_at']
 
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):
@@ -250,7 +274,9 @@ class PickListViewSet(ERPBaseViewSet):
     queryset = PickList.objects.select_related('warehouse', 'assigned_to').all()
     serializer_class = PickListSerializer
     search_fields = ['pick_number']
-    filterset_fields = ['status', 'warehouse']
+    filterset_fields = ['status', 'warehouse', 'assigned_to']
+    ordering_fields = ['pick_number', 'created_at']
+    ordering = ['-created_at']
 
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):
@@ -272,7 +298,9 @@ class ShipmentNoteViewSet(ERPBaseViewSet):
     ).all()
     serializer_class = ShipmentNoteSerializer
     search_fields = ['shipment_number', 'tracking_number', 'customer__name']
-    filterset_fields = ['status', 'warehouse']
+    filterset_fields = ['status', 'warehouse', 'customer']
+    ordering_fields = ['shipment_number', 'shipped_date', 'created_at']
+    ordering = ['-created_at']
 
     @action(detail=True, methods=['post'])
     def ship(self, request, pk=None):
@@ -293,8 +321,10 @@ class ReorderRuleViewSet(ERPBaseViewSet):
         'product', 'warehouse', 'preferred_supplier'
     ).all()
     serializer_class = ReorderRuleSerializer
-    search_fields = ['product__name']
-    filterset_fields = ['warehouse', 'is_active']
+    search_fields = ['product__name', 'product__sku']
+    filterset_fields = ['warehouse', 'is_active', 'preferred_supplier']
+    ordering_fields = ['product__name', 'reorder_point', 'created_at']
+    ordering = ['product__name']
 
     @action(detail=False, methods=['get'])
     def suggestions(self, request):

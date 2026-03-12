@@ -23,7 +23,7 @@ from erp.forms.fixed_assets import (
 from django.utils.translation import gettext as _
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -41,13 +41,19 @@ def asset_category_list(request):
         categories = categories.filter(
             Q(name__icontains=search) | Q(code__icontains=search)
         )
-
+    categories, current_sort, current_order = apply_sorting(
+        request, categories,
+        allowed_fields=['name', 'code', 'useful_life_years'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, categories)
 
     return render(request, 'erp/fixed_assets/categories/list.html', {
         'categories': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -131,7 +137,11 @@ def asset_list(request):
         total_book_value=Sum('current_book_value'),
         total_depreciation=Sum('accumulated_depreciation'),
     )
-
+    assets, current_sort, current_order = apply_sorting(
+        request, assets,
+        allowed_fields=['asset_number', 'name', 'acquisition_date', 'acquisition_cost', 'current_book_value', 'status'],
+        default='-acquisition_date',
+    )
     page_obj, query_string = paginate_qs(request, assets)
 
     return render(request, 'erp/fixed_assets/assets/list.html', {
@@ -141,6 +151,8 @@ def asset_list(request):
         'statuses': FixedAsset.Status.choices,
         'categories': categories,
         'totals': totals,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -264,7 +276,11 @@ def depreciation_list(request):
     asset_id = request.GET.get('asset')
     if asset_id:
         schedules = schedules.filter(asset_id=asset_id)
-
+    schedules, current_sort, current_order = apply_sorting(
+        request, schedules,
+        allowed_fields=['period_date', 'depreciation_amount', 'status'],
+        default='-period_date',
+    )
     page_obj, query_string = paginate_qs(request, schedules)
 
     return render(request, 'erp/fixed_assets/depreciation/list.html', {
@@ -272,6 +288,8 @@ def depreciation_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'statuses': DepreciationSchedule.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -379,12 +397,19 @@ def disposal_list(request):
     disposals = AssetDisposal.objects.filter(
         asset__company=company,
     ).select_related('asset', 'journal_entry')
+    disposals, current_sort, current_order = apply_sorting(
+        request, disposals,
+        allowed_fields=['disposal_date', 'disposal_amount'],
+        default='-disposal_date',
+    )
     page_obj, query_string = paginate_qs(request, disposals)
 
     return render(request, 'erp/fixed_assets/disposals/list.html', {
         'disposals': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -457,12 +482,19 @@ def transfer_fa_list(request):
         'asset', 'from_department', 'to_department',
         'from_custodian', 'to_custodian',
     )
+    transfers, current_sort, current_order = apply_sorting(
+        request, transfers,
+        allowed_fields=['transfer_date', 'created_at'],
+        default='-transfer_date',
+    )
     page_obj, query_string = paginate_qs(request, transfers)
 
     return render(request, 'erp/fixed_assets/transfers/list.html', {
         'transfers': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -498,12 +530,19 @@ def revaluation_list(request):
     revaluations = AssetRevaluation.objects.filter(
         asset__company=company,
     ).select_related('asset', 'journal_entry')
+    revaluations, current_sort, current_order = apply_sorting(
+        request, revaluations,
+        allowed_fields=['revaluation_date', 'new_value'],
+        default='-revaluation_date',
+    )
     page_obj, query_string = paginate_qs(request, revaluations)
 
     return render(request, 'erp/fixed_assets/revaluations/list.html', {
         'revaluations': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -576,7 +615,11 @@ def maintenance_list(request):
     mtype = request.GET.get('type')
     if mtype:
         logs = logs.filter(maintenance_type=mtype)
-
+    logs, current_sort, current_order = apply_sorting(
+        request, logs,
+        allowed_fields=['maintenance_date', 'cost', 'status', 'maintenance_type'],
+        default='-maintenance_date',
+    )
     page_obj, query_string = paginate_qs(request, logs)
 
     return render(request, 'erp/fixed_assets/maintenance/list.html', {
@@ -585,6 +628,8 @@ def maintenance_list(request):
         'query_string': query_string,
         'statuses': AssetMaintenanceLog.Status.choices,
         'types': AssetMaintenanceLog.MaintenanceType.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

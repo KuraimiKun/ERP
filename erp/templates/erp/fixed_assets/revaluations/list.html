@@ -11,9 +11,9 @@
             <thead>
                 <tr>
                     <th>{% trans "Asset" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="revaluation_date" label=_("Date") %}</th>
                     <th>{% trans "Old Value" %}</th>
-                    <th>{% trans "New Value" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="new_value" label=_("New Value") %}</th>
                     <th>{% trans "Change" %}</th>
                     <th>{% trans "Appraiser" %}</th>
                     <th>{% trans "Journal" %}</th>

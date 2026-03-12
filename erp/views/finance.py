@@ -23,7 +23,7 @@ from erp.forms import (
 )
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -32,7 +32,7 @@ from ._common import (
 @staff_member_required
 def invoice_list(request):
     company = get_user_company(request.user)
-    invoices = Invoice.objects.filter(company=company).select_related('customer').order_by('-invoice_date')
+    invoices = Invoice.objects.filter(company=company).select_related('customer')
 
     status = request.GET.get('status')
     if status:
@@ -45,6 +45,11 @@ def invoice_list(request):
             Q(customer__name__icontains=search)
         )
 
+    invoices, current_sort, current_order = apply_sorting(
+        request, invoices,
+        allowed_fields=['invoice_number', 'invoice_date', 'due_date', 'total_amount', 'status'],
+        default='-invoice_date',
+    )
     page_obj, query_string = paginate_qs(request, invoices)
 
     return render(request, 'erp/invoices/list.html', {
@@ -52,6 +57,8 @@ def invoice_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'statuses': Invoice.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -175,13 +182,20 @@ def payment_list(request):
     if payment_type:
         payments = payments.filter(payment_type=payment_type)
 
-    page_obj, query_string = paginate_qs(request, payments.order_by('-payment_date'))
+    payments, current_sort, current_order = apply_sorting(
+        request, payments,
+        allowed_fields=['payment_date', 'amount', 'payment_type'],
+        default='-payment_date',
+    )
+    page_obj, query_string = paginate_qs(request, payments)
 
     return render(request, 'erp/payments/list.html', {
         'payments': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
         'payment_types': Payment.PaymentType.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -296,13 +310,20 @@ def expense_list(request):
     if status:
         expenses = expenses.filter(status=status)
 
-    page_obj, query_string = paginate_qs(request, expenses.order_by('-expense_date'))
+    expenses, current_sort, current_order = apply_sorting(
+        request, expenses,
+        allowed_fields=['expense_date', 'amount', 'status', 'category__name'],
+        default='-expense_date',
+    )
+    page_obj, query_string = paginate_qs(request, expenses)
 
     return render(request, 'erp/expenses/list.html', {
         'expenses': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
         'statuses': Expense.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -467,6 +488,11 @@ def tax_rate_list(request):
     company = get_user_company(request.user)
     tax_rates = TaxRate.objects.filter(company=company) if company else TaxRate.objects.none()
 
+    tax_rates, current_sort, current_order = apply_sorting(
+        request, tax_rates,
+        allowed_fields=['name', 'rate'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, tax_rates)
 
     return render(request, 'erp/tax_rates/list.html', {
@@ -474,6 +500,8 @@ def tax_rate_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'company': company,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -543,6 +571,11 @@ def payment_method_list(request):
     company = get_user_company(request.user)
     payment_methods = PaymentMethod.objects.filter(company=company) if company else PaymentMethod.objects.none()
 
+    payment_methods, current_sort, current_order = apply_sorting(
+        request, payment_methods,
+        allowed_fields=['name'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, payment_methods)
 
     return render(request, 'erp/payment_methods/list.html', {
@@ -550,6 +583,8 @@ def payment_method_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'company': company,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -619,6 +654,11 @@ def expense_category_list(request):
     company = get_user_company(request.user)
     expense_categories = ExpenseCategory.objects.filter(company=company) if company else ExpenseCategory.objects.none()
 
+    expense_categories, current_sort, current_order = apply_sorting(
+        request, expense_categories,
+        allowed_fields=['name'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, expense_categories)
 
     return render(request, 'erp/expense_categories/list.html', {
@@ -626,6 +666,8 @@ def expense_category_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'company': company,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -695,6 +737,11 @@ def currency_list(request):
     company = get_user_company(request.user)
     currencies = Currency.objects.all()
 
+    currencies, current_sort, current_order = apply_sorting(
+        request, currencies,
+        allowed_fields=['code', 'name'],
+        default='code',
+    )
     page_obj, query_string = paginate_qs(request, currencies)
 
     return render(request, 'erp/currencies/list.html', {
@@ -702,6 +749,8 @@ def currency_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'company': company,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -768,6 +817,11 @@ def fiscal_year_list(request):
     company = get_user_company(request.user)
     fiscal_years = FiscalYear.objects.filter(company=company) if company else FiscalYear.objects.none()
 
+    fiscal_years, current_sort, current_order = apply_sorting(
+        request, fiscal_years,
+        allowed_fields=['start_date', 'end_date', 'name'],
+        default='-start_date',
+    )
     page_obj, query_string = paginate_qs(request, fiscal_years)
 
     return render(request, 'erp/fiscal_years/list.html', {
@@ -775,6 +829,8 @@ def fiscal_year_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'company': company,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

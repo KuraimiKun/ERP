@@ -97,6 +97,10 @@ class Supplier(ERPBaseModel):
         verbose_name = 'Supplier'
         verbose_name_plural = 'Suppliers'
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['company', 'supplier_type', 'is_active'], name='idx_sup_company_type_active'),
+            models.Index(fields=['company', 'is_active'], name='idx_sup_company_active'),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.supplier_id})"
@@ -220,6 +224,10 @@ class PurchaseOrder(ERPBaseModel):
         verbose_name = 'Purchase Order'
         verbose_name_plural = 'Purchase Orders'
         ordering = ['-po_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status', 'po_date'], name='idx_po_company_status_date'),
+            models.Index(fields=['supplier', 'status'], name='idx_po_supplier_status'),
+        ]
 
     def __str__(self):
         return f"{self.po_number} - {self.supplier.name}"
@@ -344,6 +352,11 @@ class SupplierInvoice(ERPBaseModel):
         verbose_name_plural = 'Supplier Invoices'
         unique_together = ['company', 'invoice_number']
         ordering = ['-invoice_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status', 'invoice_date'], name='idx_si_company_status_date'),
+            models.Index(fields=['supplier', 'status'], name='idx_si_supplier_status'),
+            models.Index(fields=['company', 'due_date', 'status'], name='idx_si_company_due_status'),
+        ]
 
     def __str__(self):
         return f"{self.invoice_number} - {self.supplier.name}"
@@ -454,6 +467,10 @@ class SupplierPayment(ERPBaseModel):
         verbose_name = 'Supplier Payment'
         verbose_name_plural = 'Supplier Payments'
         ordering = ['-payment_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'payment_date'], name='idx_sp_company_date'),
+            models.Index(fields=['supplier', 'payment_date'], name='idx_sp_supplier_date'),
+        ]
 
     def __str__(self):
         return f"{self.payment_number} - {self.supplier.name}"

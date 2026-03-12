@@ -14,7 +14,7 @@ from erp.forms import (
 from erp.services import get_quote_number
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -33,7 +33,12 @@ def quote_list(request):
 
     from datetime import date
 
-    page_obj, query_string = paginate_qs(request, quotes.order_by('-quote_date'))
+    quotes, current_sort, current_order = apply_sorting(
+        request, quotes,
+        allowed_fields=['quote_number', 'quote_date', 'total_amount', 'status'],
+        default='-quote_date',
+    )
+    page_obj, query_string = paginate_qs(request, quotes)
 
     return render(request, 'erp/quotes/list.html', {
         'quotes': page_obj,
@@ -41,6 +46,8 @@ def quote_list(request):
         'query_string': query_string,
         'statuses': Quote.Status.choices,
         'today': date.today(),
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -148,12 +155,20 @@ def quote_delete(request, pk):
 def service_category_list(request):
     company = get_user_company(request.user)
     categories = ServiceCategory.objects.filter(company=company)
+
+    categories, current_sort, current_order = apply_sorting(
+        request, categories,
+        allowed_fields=['name', 'created_at'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, categories)
 
     return render(request, 'erp/service_categories/list.html', {
         'categories': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -224,13 +239,20 @@ def service_list(request):
     if cat:
         services = services.filter(category_id=cat)
 
-    page_obj, query_string = paginate_qs(request, services.order_by('name'))
+    services, current_sort, current_order = apply_sorting(
+        request, services,
+        allowed_fields=['name', 'code', 'base_price', 'pricing_type'],
+        default='name',
+    )
+    page_obj, query_string = paginate_qs(request, services)
 
     return render(request, 'erp/services/list.html', {
         'services': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
         'categories': ServiceCategory.objects.filter(company=company, is_active=True),
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

@@ -133,6 +133,10 @@ class Department(ERPBaseModel):
         verbose_name = 'Department'
         verbose_name_plural = 'Departments'
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['company', 'is_active'], name='idx_dept_company_active'),
+            models.Index(fields=['company', 'parent'], name='idx_dept_company_parent'),
+        ]
 
     def __str__(self):
         return self.name
@@ -174,6 +178,9 @@ class Branch(ERPBaseModel):
         verbose_name = 'Branch'
         verbose_name_plural = 'Branches'
         ordering = ['-is_headquarters', 'name']
+        indexes = [
+            models.Index(fields=['company', 'is_active'], name='idx_branch_company_active'),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.company.name})"
@@ -196,6 +203,9 @@ class FiscalYear(ERPBaseModel):
         verbose_name = 'Fiscal Year'
         verbose_name_plural = 'Fiscal Years'
         ordering = ['-start_date']
+        indexes = [
+            models.Index(fields=['company', 'is_current'], name='idx_fy_company_current'),
+        ]
 
     def __str__(self):
         return self.name

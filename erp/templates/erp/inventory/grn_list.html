@@ -46,12 +46,12 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th>{% trans "GRN Number" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="grn_number" label=_("GRN Number") %}</th>
                     <th>{% trans "Supplier" %}</th>
                     <th>{% trans "Warehouse" %}</th>
                     <th>{% trans "Purchase Order" %}</th>
-                    <th>{% trans "Receipt Date" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="receipt_date" label=_("Receipt Date") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>

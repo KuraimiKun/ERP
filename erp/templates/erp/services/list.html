@@ -42,11 +42,11 @@
             <table class="table erp-table">
                 <thead>
                     <tr>
-                        <th>{% trans "Name" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="name" label=_("Name") %}</th>
                         <th>{% trans "Category" %}</th>
-                        <th>{% trans "Base Price" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="base_price" label=_("Base Price") %}</th>
                         <th>{% trans "Currency" %}</th>
-                        <th>{% trans "Pricing Unit" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="pricing_type" label=_("Pricing Unit") %}</th>
                         <th>{% trans "Status" %}</th>
                         <th>{% trans "Actions" %}</th>
                     </tr>

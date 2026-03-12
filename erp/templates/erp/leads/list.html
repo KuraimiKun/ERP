@@ -55,12 +55,12 @@
             <thead>
                 <tr>
                     <th>{% trans "Lead Number" %}</th>
-                    <th>{% trans "Name" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="first_name" label=_("Name") %}</th>
                     <th>{% trans "Email" %}</th>
                     <th>{% trans "Phone" %}</th>
-                    <th>{% trans "Source" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="source" label=_("Source") %}</th>
                     <th>{% trans "Expected Value" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                     <th>{% trans "Assigned To" %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>

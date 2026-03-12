@@ -51,12 +51,12 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>{% trans "Date" %}</th>
-                        <th>{% trans "Category" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="expense_date" label=_("Date") %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="category__name" label=_("Category") %}</th>
                         <th>{% trans "Description" %}</th>
                         <th>{% trans "Submitted By" %}</th>
-                        <th>{% trans "Amount" %}</th>
-                        <th>{% trans "Status" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="amount" label=_("Amount") %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                         <th class="text-start">{% trans "Actions" %}</th>
                     </tr>
                 </thead>

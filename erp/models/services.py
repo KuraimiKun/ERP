@@ -133,6 +133,10 @@ class ServicePricing(ERPBaseModel):
         verbose_name = 'Service Pricing'
         verbose_name_plural = 'Service Pricings'
         ordering = ['category', 'name']
+        indexes = [
+            models.Index(fields=['company', 'is_active', 'category'], name='idx_svc_company_active_cat'),
+            models.Index(fields=['company', 'pricing_type'], name='idx_svc_company_pricetype'),
+        ]
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -320,6 +324,10 @@ class Quote(ERPBaseModel):
         verbose_name = 'Quote'
         verbose_name_plural = 'Quotes'
         ordering = ['-quote_date', '-id']
+        indexes = [
+            models.Index(fields=['company', 'status', 'quote_date'], name='idx_quote_company_status_date'),
+            models.Index(fields=['customer', 'status'], name='idx_quote_customer_status'),
+        ]
 
     def __str__(self):
         return f"{self.quote_number} - {self.customer.name}"
@@ -540,6 +548,11 @@ class Product(ERPBaseModel):
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['company', 'is_active', 'category'], name='idx_prod_company_active_cat'),
+            models.Index(fields=['company', 'product_type'], name='idx_prod_company_type'),
+            models.Index(fields=['sku'], name='idx_prod_sku'),
+        ]
 
     def __str__(self):
         return f"{self.sku} - {self.name}"

@@ -22,7 +22,7 @@
             <table class="table erp-table">
                 <thead>
                     <tr>
-                        <th>{% trans "Name" %}</th>
+                        <th>{% include "erp/includes/sort_header.html" with field="name" label=_("Name") %}</th>
                         <th>{% trans "Name (Arabic)" %}</th>
                         <th>{% trans "Description" %}</th>
                         <th>{% trans "Status" %}</th>

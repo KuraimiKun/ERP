@@ -1,0 +1,18 @@
+{% load i18n %}
+{# Sortable column header – requires current_sort and current_order in context. #}
+{% with is_active=field|stringformat:"s" %}
+<a href="?{{ query_string }}{% if query_string %}&{% endif %}sort={{ field }}&order={% if current_sort == field and current_order == 'asc' %}desc{% else %}asc{% endif %}&page=1"
+   class="erp-sort-link{% if current_sort == field %} active{% endif %}"
+   title="{% trans 'Sort by' %} {{ label }}">
+    {{ label }}
+    {% if current_sort == field %}
+        {% if current_order == 'asc' %}
+            <i class="bi bi-sort-up"></i>
+        {% else %}
+            <i class="bi bi-sort-down"></i>
+        {% endif %}
+    {% else %}
+        <i class="bi bi-arrow-down-up erp-sort-icon-idle"></i>
+    {% endif %}
+</a>
+{% endwith %}

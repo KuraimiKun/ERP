@@ -187,6 +187,12 @@ class Employee(ERPBaseModel):
         verbose_name = 'Employee'
         verbose_name_plural = 'Employees'
         ordering = ['first_name', 'last_name']
+        indexes = [
+            models.Index(fields=['company', 'employment_status'], name='idx_emp_company_status'),
+            models.Index(fields=['company', 'department'], name='idx_emp_company_dept'),
+            models.Index(fields=['company', 'branch'], name='idx_emp_company_branch'),
+            models.Index(fields=['company', 'approval_status'], name='idx_emp_company_approval'),
+        ]
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.employee_id})"
@@ -291,6 +297,11 @@ class LeaveRequest(ERPBaseModel):
         verbose_name = 'Leave Request'
         verbose_name_plural = 'Leave Requests'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['employee', 'status'], name='idx_lr_employee_status'),
+            models.Index(fields=['employee', 'start_date'], name='idx_lr_employee_startdate'),
+            models.Index(fields=['status', 'start_date'], name='idx_lr_status_startdate'),
+        ]
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.leave_type.name} ({self.start_date})"
@@ -323,6 +334,9 @@ class Attendance(TimeStampedModel):
         verbose_name_plural = 'Attendances'
         unique_together = ['employee', 'date']
         ordering = ['-date', 'employee']
+        indexes = [
+            models.Index(fields=['date', 'is_present'], name='idx_att_date_present'),
+        ]
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.date}"
@@ -391,6 +405,10 @@ class Payroll(ERPBaseModel):
         verbose_name_plural = 'Payrolls'
         unique_together = ['employee', 'period_start', 'period_end']
         ordering = ['-period_end', 'employee']
+        indexes = [
+            models.Index(fields=['employee', 'status'], name='idx_payroll_employee_status'),
+            models.Index(fields=['status', 'period_start'], name='idx_payroll_status_period'),
+        ]
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.period_start} to {self.period_end}"

@@ -8,7 +8,7 @@ from erp.models import JournalEntry, Account
 from erp.forms import JournalEntryForm, JournalEntryLineFormSet
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -16,7 +16,7 @@ from ._common import (
 def journal_entry_list(request):
     """قائمة القيود اليومية"""
     company = get_user_company(request.user)
-    entries = JournalEntry.objects.filter(company=company).order_by('-entry_date', '-entry_number')
+    entries = JournalEntry.objects.filter(company=company)
 
     status = request.GET.get('status')
     entry_type = request.GET.get('type')
@@ -36,6 +36,11 @@ def journal_entry_list(request):
     posted_count = entries.filter(status='posted').count()
     draft_count = entries.filter(status='draft').count()
 
+    entries, current_sort, current_order = apply_sorting(
+        request, entries,
+        allowed_fields=['entry_number', 'entry_date', 'entry_type', 'status', 'total_debit'],
+        default='-entry_date',
+    )
     page_obj, query_string = paginate_qs(request, entries)
 
     context = {
@@ -47,6 +52,8 @@ def journal_entry_list(request):
         'draft_count': draft_count,
         'status_choices': JournalEntry.Status.choices,
         'type_choices': JournalEntry.EntryType.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     }
     return render(request, 'erp/journal_entries/list.html', context)
 

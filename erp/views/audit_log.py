@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 
 from erp.models import AuditLog
 from ._common import (
-    render, staff_member_required,
+    render, staff_member_required, apply_sorting,
 )
 
 User = get_user_model()
@@ -18,7 +18,7 @@ User = get_user_model()
 @staff_member_required
 def audit_log_list(request):
     """Paginated audit log with filters."""
-    qs = AuditLog.objects.select_related('user', 'content_type').order_by('-created_at')
+    qs = AuditLog.objects.select_related('user', 'content_type')
 
     # Filters
     user_id = request.GET.get('user', '')
@@ -41,12 +41,19 @@ def audit_log_list(request):
     if search:
         qs = qs.filter(object_repr__icontains=search)
 
+    qs, current_sort, current_order = apply_sorting(
+        request, qs,
+        allowed_fields=['created_at', 'action', 'object_repr'],
+        default='-created_at',
+    )
+
     paginator = Paginator(qs, 30)
     page = paginator.get_page(request.GET.get('page', 1))
 
-    # Build query string for pagination links (strip 'page' param)
+    # Build query string for pagination links (strip page/sort/order)
     qd = request.GET.copy()
-    qd.pop('page', None)
+    for key in ('page', 'sort', 'order'):
+        qd.pop(key, None)
     query_string = qd.urlencode()
 
     users = User.objects.filter(
@@ -63,4 +70,6 @@ def audit_log_list(request):
         'current_date_from': date_from,
         'current_date_to': date_to,
         'current_search': search,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })

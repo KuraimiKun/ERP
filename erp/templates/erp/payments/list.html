@@ -45,11 +45,11 @@
             <thead>
                 <tr>
                     <th>{% trans "Payment Number" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="payment_date" label=_("Date") %}</th>
                     <th>{% trans "Customer" %}</th>
                     <th>{% trans "Invoice" %}</th>
                     <th>{% trans "Payment Method" %}</th>
-                    <th>{% trans "Amount" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="amount" label=_("Amount") %}</th>
                     <th>{% trans "Reference" %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>

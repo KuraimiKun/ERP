@@ -56,11 +56,11 @@
         <table class="table erp-table mb-0">
             <thead>
                 <tr>
-                    <th style="width: 40%">{% trans "Task" %}</th>
+                    <th style="width: 40%">{% include "erp/includes/sort_header.html" with field="title" label=_("Task") %}</th>
                     <th>{% trans "Assigned To" %}</th>
-                    <th>{% trans "Priority" %}</th>
-                    <th>{% trans "Due Date" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="priority" label=_("Priority") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="due_date" label=_("Due Date") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>

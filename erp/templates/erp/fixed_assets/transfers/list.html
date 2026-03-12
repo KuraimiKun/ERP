@@ -11,7 +11,7 @@
             <thead>
                 <tr>
                     <th>{% trans "Asset" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="transfer_date" label=_("Date") %}</th>
                     <th>{% trans "From Department" %}</th>
                     <th>{% trans "To Department" %}</th>
                     <th>{% trans "From Location" %}</th>

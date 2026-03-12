@@ -30,7 +30,7 @@ from erp.forms.inventory import (
 from erp.services.sequence import SequenceService
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -50,12 +50,19 @@ def warehouse_list(request):
             Q(name__icontains=search) | Q(code__icontains=search) |
             Q(name_ar__icontains=search) | Q(city__icontains=search)
         )
-    page_obj, query_string = paginate_qs(request, warehouses.order_by('code'))
+    warehouses, current_sort, current_order = apply_sorting(
+        request, warehouses,
+        allowed_fields=['code', 'name', 'city'],
+        default='code',
+    )
+    page_obj, query_string = paginate_qs(request, warehouses)
 
     return render(request, 'erp/inventory/warehouse_list.html', {
         'warehouses': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -222,12 +229,19 @@ def zone_delete(request, pk):
 def uom_list(request):
     company = get_user_company(request.user)
     uoms = UnitOfMeasure.objects.filter(company=company)
-    page_obj, query_string = paginate_qs(request, uoms.order_by('category', 'name'))
+    uoms, current_sort, current_order = apply_sorting(
+        request, uoms,
+        allowed_fields=['name', 'category', 'abbreviation'],
+        default='name',
+    )
+    page_obj, query_string = paginate_qs(request, uoms)
 
     return render(request, 'erp/inventory/uom_list.html', {
         'uoms': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -293,12 +307,19 @@ def lot_list(request):
         lots = lots.filter(
             Q(lot_number__icontains=search) | Q(product__name__icontains=search)
         )
-    page_obj, query_string = paginate_qs(request, lots.order_by('-created_at'))
+    lots, current_sort, current_order = apply_sorting(
+        request, lots,
+        allowed_fields=['lot_number', 'expiry_date', 'created_at'],
+        default='-created_at',
+    )
+    page_obj, query_string = paginate_qs(request, lots)
 
     return render(request, 'erp/inventory/lot_list.html', {
         'lots': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -367,13 +388,20 @@ def serial_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         serials = serials.filter(status=status_filter)
-    page_obj, query_string = paginate_qs(request, serials.order_by('-created_at'))
+    serials, current_sort, current_order = apply_sorting(
+        request, serials,
+        allowed_fields=['serial_number', 'status', 'created_at'],
+        default='-created_at',
+    )
+    page_obj, query_string = paginate_qs(request, serials)
 
     return render(request, 'erp/inventory/serial_list.html', {
         'serials': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
         'status_choices': SerialNumber.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -430,12 +458,19 @@ def grn_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         grns = grns.filter(status=status_filter)
-    page_obj, query_string = paginate_qs(request, grns.order_by('-receipt_date', '-created_at'))
+    grns, current_sort, current_order = apply_sorting(
+        request, grns,
+        allowed_fields=['grn_number', 'receipt_date', 'status'],
+        default='-receipt_date',
+    )
+    page_obj, query_string = paginate_qs(request, grns)
 
     return render(request, 'erp/inventory/grn_list.html', {
         'grns': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -559,12 +594,19 @@ def transfer_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         transfers = transfers.filter(status=status_filter)
-    page_obj, query_string = paginate_qs(request, transfers.order_by('-transfer_date', '-created_at'))
+    transfers, current_sort, current_order = apply_sorting(
+        request, transfers,
+        allowed_fields=['transfer_number', 'transfer_date', 'status'],
+        default='-transfer_date',
+    )
+    page_obj, query_string = paginate_qs(request, transfers)
 
     return render(request, 'erp/inventory/transfer_list.html', {
         'transfers': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -689,12 +731,19 @@ def adjustment_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         adjustments = adjustments.filter(status=status_filter)
-    page_obj, query_string = paginate_qs(request, adjustments.order_by('-adjustment_date', '-created_at'))
+    adjustments, current_sort, current_order = apply_sorting(
+        request, adjustments,
+        allowed_fields=['adjustment_number', 'adjustment_date', 'adjustment_type', 'status'],
+        default='-adjustment_date',
+    )
+    page_obj, query_string = paginate_qs(request, adjustments)
 
     return render(request, 'erp/inventory/adjustment_list.html', {
         'adjustments': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -805,12 +854,19 @@ def cycle_count_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         counts = counts.filter(status=status_filter)
-    page_obj, query_string = paginate_qs(request, counts.order_by('-count_date', '-created_at'))
+    counts, current_sort, current_order = apply_sorting(
+        request, counts,
+        allowed_fields=['count_number', 'count_date', 'status'],
+        default='-count_date',
+    )
+    page_obj, query_string = paginate_qs(request, counts)
 
     return render(request, 'erp/inventory/cycle_count_list.html', {
         'counts': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -920,12 +976,19 @@ def pick_list_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         picks = picks.filter(status=status_filter)
-    page_obj, query_string = paginate_qs(request, picks.order_by('-pick_date', '-created_at'))
+    picks, current_sort, current_order = apply_sorting(
+        request, picks,
+        allowed_fields=['pick_number', 'pick_date', 'status'],
+        default='-pick_date',
+    )
+    page_obj, query_string = paginate_qs(request, picks)
 
     return render(request, 'erp/inventory/pick_list_list.html', {
         'picks': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -1044,12 +1107,20 @@ def shipment_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         shipments = shipments.filter(status=status_filter)
-    page_obj, query_string = paginate_qs(request, shipments.order_by('-shipment_date', '-created_at'))
+
+    shipments, current_sort, current_order = apply_sorting(
+        request, shipments,
+        allowed_fields=['shipment_number', 'shipment_date', 'status'],
+        default='-shipment_date',
+    )
+    page_obj, query_string = paginate_qs(request, shipments)
 
     return render(request, 'erp/inventory/shipment_list.html', {
         'shipments': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -1158,12 +1229,20 @@ def reorder_rule_list(request):
     rules = ReorderRule.objects.filter(company=company).select_related(
         'product', 'warehouse', 'preferred_supplier'
     )
-    page_obj, query_string = paginate_qs(request, rules.order_by('product__name'))
+
+    rules, current_sort, current_order = apply_sorting(
+        request, rules,
+        allowed_fields=['product__name', 'reorder_point', 'lead_time_days', 'is_active'],
+        default='product__name',
+    )
+    page_obj, query_string = paginate_qs(request, rules)
 
     return render(request, 'erp/inventory/reorder_rule_list.html', {
         'rules': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -1254,7 +1333,12 @@ def stock_movement_list(request):
     if product_id:
         movements = movements.filter(product_id=product_id)
 
-    page_obj, query_string = paginate_qs(request, movements.order_by('-movement_date', '-created_at'))
+    movements, current_sort, current_order = apply_sorting(
+        request, movements,
+        allowed_fields=['movement_date', 'movement_type', 'quantity', 'unit_cost'],
+        default='-movement_date',
+    )
+    page_obj, query_string = paginate_qs(request, movements)
 
     return render(request, 'erp/inventory/movement_list.html', {
         'movements': page_obj,
@@ -1262,6 +1346,8 @@ def stock_movement_list(request):
         'query_string': query_string,
         'movement_types': StockMovement.MovementType.choices,
         'warehouses': Warehouse.objects.filter(company=company, is_active=True),
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

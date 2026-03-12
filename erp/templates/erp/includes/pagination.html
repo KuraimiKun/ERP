@@ -4,7 +4,7 @@
     <ul class="pagination justify-content-center mb-0">
         {% if page_obj.has_previous %}
         <li class="page-item">
-            <a class="page-link" href="?{{ query_string }}&page={{ page_obj.previous_page_number }}">
+            <a class="page-link" href="?{{ query_string }}{% if current_sort %}{% if query_string %}&{% endif %}sort={{ current_sort }}&order={{ current_order }}{% endif %}{% if query_string or current_sort %}&{% endif %}page={{ page_obj.previous_page_number }}">
                 &lsaquo; {% trans "Previous" %}
             </a>
         </li>
@@ -15,12 +15,12 @@
         {% for num in page_obj.paginator.page_range %}
             {% if page_obj.paginator.num_pages <= 7 %}
                 <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?{{ query_string }}&page={{ num }}">{{ num }}</a>
+                    <a class="page-link" href="?{{ query_string }}{% if current_sort %}{% if query_string %}&{% endif %}sort={{ current_sort }}&order={{ current_order }}{% endif %}{% if query_string or current_sort %}&{% endif %}page={{ num }}">{{ num }}</a>
                 </li>
             {% else %}
                 {% if num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
                 <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?{{ query_string }}&page={{ num }}">{{ num }}</a>
+                    <a class="page-link" href="?{{ query_string }}{% if current_sort %}{% if query_string %}&{% endif %}sort={{ current_sort }}&order={{ current_order }}{% endif %}{% if query_string or current_sort %}&{% endif %}page={{ num }}">{{ num }}</a>
                 </li>
                 {% elif num == 2 and page_obj.number > 4 or num == page_obj.paginator.num_pages|add:"-1" and page_obj.number < page_obj.paginator.num_pages|add:"-3" %}
                 <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
@@ -30,7 +30,7 @@
 
         {% if page_obj.has_next %}
         <li class="page-item">
-            <a class="page-link" href="?{{ query_string }}&page={{ page_obj.next_page_number }}">
+            <a class="page-link" href="?{{ query_string }}{% if current_sort %}{% if query_string %}&{% endif %}sort={{ current_sort }}&order={{ current_order }}{% endif %}{% if query_string or current_sort %}&{% endif %}page={{ page_obj.next_page_number }}">
                 {% trans "Next" %} &rsaquo;
             </a>
         </li>

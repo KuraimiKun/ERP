@@ -41,15 +41,15 @@
                 <table class="erp-table table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>{% trans "Product" %}</th>
+                            <th>{% include "erp/includes/sort_header.html" with field="product__name" label=_("Product") %}</th>
                             <th>{% trans "Warehouse" %}</th>
-                            <th class="text-start">{% trans "Reorder Point" %}</th>
+                            <th class="text-start">{% include "erp/includes/sort_header.html" with field="reorder_point" label=_("Reorder Point") %}</th>
                             <th class="text-start">{% trans "Safety Stock" %}</th>
                             <th class="text-start">{% trans "Min Order Qty" %}</th>
                             <th class="text-start">{% trans "Max Order Qty" %}</th>
-                            <th class="text-start">{% trans "Lead Time (days)" %}</th>
+                            <th class="text-start">{% include "erp/includes/sort_header.html" with field="lead_time_days" label=_("Lead Time (days)") %}</th>
                             <th>{% trans "Supplier" %}</th>
-                            <th>{% trans "Active" %}</th>
+                            <th>{% include "erp/includes/sort_header.html" with field="is_active" label=_("Active") %}</th>
                             <th class="text-center">{% trans "Actions" %}</th>
                         </tr>
                     </thead>

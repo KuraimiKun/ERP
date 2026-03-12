@@ -40,11 +40,11 @@
             <thead>
                 <tr>
                     <th>{% trans "Asset" %}</th>
-                    <th>{% trans "Period" %}</th>
-                    <th>{% trans "Amount" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="period_date" label=_("Period") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="depreciation_amount" label=_("Amount") %}</th>
                     <th>{% trans "Accumulated" %}</th>
                     <th>{% trans "Book Value After" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                     <th>{% trans "Journal" %}</th>
                     <th></th>
                 </tr>

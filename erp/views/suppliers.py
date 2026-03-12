@@ -27,7 +27,7 @@ from erp.services import (
 )
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
-    get_user_company, staff_member_required, paginate_qs,
+    get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
 
 
@@ -38,7 +38,7 @@ from ._common import (
 @vary_on_cookie
 def supplier_list(request):
     company = get_user_company(request.user)
-    suppliers = Supplier.objects.filter(company=company).order_by('name')
+    suppliers = Supplier.objects.filter(company=company)
 
     supplier_type = request.GET.get('type')
     if supplier_type:
@@ -52,6 +52,11 @@ def supplier_list(request):
             Q(supplier_id__icontains=search)
         )
 
+    suppliers, current_sort, current_order = apply_sorting(
+        request, suppliers,
+        allowed_fields=['name', 'supplier_type', 'created_at'],
+        default='name',
+    )
     page_obj, query_string = paginate_qs(request, suppliers)
 
     return render(request, 'erp/suppliers/list.html', {
@@ -59,6 +64,8 @@ def supplier_list(request):
         'page_obj': page_obj,
         'query_string': query_string,
         'supplier_types': Supplier.SupplierType.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -166,13 +173,20 @@ def purchase_order_list(request):
     if status:
         orders = orders.filter(status=status)
 
-    page_obj, query_string = paginate_qs(request, orders.order_by('-po_date'))
+    orders, current_sort, current_order = apply_sorting(
+        request, orders,
+        allowed_fields=['po_number', 'po_date', 'total_amount', 'status'],
+        default='-po_date',
+    )
+    page_obj, query_string = paginate_qs(request, orders)
 
     return render(request, 'erp/purchase_orders/list.html', {
         'orders': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
         'statuses': PurchaseOrder.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -409,13 +423,20 @@ def supplier_invoice_list(request):
             Q(supplier_invoice_number__icontains=search)
         )
 
-    page_obj, query_string = paginate_qs(request, invoices.order_by('-invoice_date'))
+    invoices, current_sort, current_order = apply_sorting(
+        request, invoices,
+        allowed_fields=['invoice_number', 'invoice_date', 'total_amount', 'status'],
+        default='-invoice_date',
+    )
+    page_obj, query_string = paginate_qs(request, invoices)
 
     return render(request, 'erp/supplier_invoices/list.html', {
         'invoices': page_obj,
         'page_obj': page_obj,
         'query_string': query_string,
         'statuses': SupplierInvoice.Status.choices,
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 
@@ -557,7 +578,12 @@ def supplier_payment_list(request):
 
     suppliers = Supplier.objects.filter(company=company, is_active=True).order_by('name')
 
-    page_obj, query_string = paginate_qs(request, payments.order_by('-payment_date'))
+    payments, current_sort, current_order = apply_sorting(
+        request, payments,
+        allowed_fields=['payment_number', 'payment_date', 'amount'],
+        default='-payment_date',
+    )
+    page_obj, query_string = paginate_qs(request, payments)
 
     return render(request, 'erp/supplier_payments/list.html', {
         'payments': page_obj,
@@ -566,6 +592,8 @@ def supplier_payment_list(request):
         'stats': stats,
         'suppliers': suppliers,
         'selected_supplier': supplier_filter or '',
+        'current_sort': current_sort,
+        'current_order': current_order,
     })
 
 

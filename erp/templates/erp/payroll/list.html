@@ -68,12 +68,12 @@
             <thead>
                 <tr>
                     <th>{% trans "Employee" %}</th>
-                    <th>{% trans "Period" %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="period_start" label=_("Period") %}</th>
                     <th class="text-end">{% trans "Basic Salary" %}</th>
-                    <th class="text-end">{% trans "Gross" %}</th>
+                    <th class="text-end">{% include "erp/includes/sort_header.html" with field="gross_salary" label=_("Gross") %}</th>
                     <th class="text-end">{% trans "Deductions" %}</th>
-                    <th class="text-end">{% trans "Net" %}</th>
-                    <th>{% trans "Status" %}</th>
+                    <th class="text-end">{% include "erp/includes/sort_header.html" with field="net_salary" label=_("Net") %}</th>
+                    <th>{% include "erp/includes/sort_header.html" with field="status" label=_("Status") %}</th>
                     <th>{% trans "Actions" %}</th>
                 </tr>
             </thead>
