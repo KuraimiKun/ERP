@@ -98,21 +98,31 @@ def lead_convert_to_customer(request, pk):
 
         currency = company.base_currency
 
-        customer = Customer.objects.create(
-            company=company,
-            customer_id=get_customer_id(company),
-            name=name,
-            customer_type=customer_type,
-            email=lead.email or '',
-            phone=lead.phone or '',
-            mobile=lead.mobile or '',
-            billing_city=lead.city or '',
-            billing_country=lead.country or '',
-            billing_address=lead.address or '',
-            currency=currency,
-            notes=f'تم التحويل من العميل المحتمل: {lead.lead_number}',
-            is_active=True,
-        )
+        # Check for existing customer with same email to prevent duplicates
+        existing = None
+        if lead.email:
+            existing = Customer.objects.filter(
+                company=company, email=lead.email,
+            ).first()
+
+        if existing:
+            customer = existing
+        else:
+            customer = Customer.objects.create(
+                company=company,
+                customer_id=get_customer_id(company),
+                name=name,
+                customer_type=customer_type,
+                email=lead.email or '',
+                phone=lead.phone or '',
+                mobile=lead.mobile or '',
+                billing_city=lead.city or '',
+                billing_country=lead.country or '',
+                billing_address=lead.address or '',
+                currency=currency,
+                notes=f'تم التحويل من العميل المحتمل: {lead.lead_number}',
+                is_active=True,
+            )
 
         # Link lead → customer
         lead.converted_customer = customer

@@ -182,6 +182,17 @@ class AuditService:
         ).order_by('-created_at')[:limit]
 
 
+# Field names (substrings) whose values must never appear in audit diffs.
+_SENSITIVE_KEYWORDS = {'password', 'api_key', 'token', 'secret', 'encryption_key'}
+_REDACTED = '***REDACTED***'
+
+
+def _is_sensitive(field_name):
+    """Return True if *field_name* matches any sensitive keyword."""
+    lower = field_name.lower()
+    return any(kw in lower for kw in _SENSITIVE_KEYWORDS)
+
+
 def get_field_changes(instance, old_instance):
     """
     Compare two model instances and return the field changes.
@@ -215,10 +226,16 @@ def get_field_changes(instance, old_instance):
             new_value = new_value.pk
         
         if old_value != new_value:
-            changes[field_name] = {
-                'before': str(old_value) if old_value is not None else None,
-                'after': str(new_value) if new_value is not None else None
-            }
+            if _is_sensitive(field_name):
+                changes[field_name] = {
+                    'before': _REDACTED,
+                    'after': _REDACTED,
+                }
+            else:
+                changes[field_name] = {
+                    'before': str(old_value) if old_value is not None else None,
+                    'after': str(new_value) if new_value is not None else None
+                }
     
     return changes
 

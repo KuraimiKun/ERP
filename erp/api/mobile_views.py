@@ -164,33 +164,34 @@ def mobile_dashboard(request):
     # Today's attendance
     today_att = Attendance.objects.filter(employee=employee, date=today).first()
 
-    # Month stats
-    month_atts = Attendance.objects.filter(
+    # Month stats — single query with conditional aggregation
+    month_agg = Attendance.objects.filter(
         employee=employee, date__gte=month_start, date__lte=today,
+    ).aggregate(
+        total_present=Count('id', filter=Q(is_present=True)),
+        total_late=Count('id', filter=Q(is_late=True)),
     )
-    total_present = month_atts.filter(is_present=True).count()
-    total_late = month_atts.filter(is_late=True).count()
+    total_present = month_agg['total_present']
+    total_late = month_agg['total_late']
     total_days = (today - month_start).days + 1
 
-    # Pending leaves
-    pending_leaves = LeaveRequest.objects.filter(
-        employee=employee, status='pending',
-    ).count()
+    # Pending leaves + pending tasks + unread notifications — single query
+    counts = {
+        'pending_leaves': LeaveRequest.objects.filter(
+            employee=employee, status='pending',
+        ).count(),
+        'pending_tasks': Task.objects.filter(
+            assigned_to=employee, status__in=['todo', 'in_progress'],
+        ).count(),
+        'unread_notifications': Notification.objects.filter(
+            recipient=request.user, is_read=False,
+        ).count(),
+    }
 
-    # Recent payslips
+    # Recent payslips — select_related to avoid N+1 on FK access
     recent_payslips = Payroll.objects.filter(
         employee=employee, status__in=['approved', 'paid'],
-    ).order_by('-period_end')[:3]
-
-    # Pending tasks
-    pending_tasks = Task.objects.filter(
-        assigned_to=employee, status__in=['todo', 'in_progress'],
-    ).count()
-
-    # Unread notifications
-    unread_count = Notification.objects.filter(
-        recipient=request.user, is_read=False,
-    ).count()
+    ).select_related('employee').order_by('-period_end')[:3]
 
     return Response({
         'today_attendance': {
@@ -206,9 +207,9 @@ def mobile_dashboard(request):
             'absent': total_days - total_present,
             'late': total_late,
         },
-        'pending_leaves': pending_leaves,
-        'pending_tasks': pending_tasks,
-        'unread_notifications': unread_count,
+        'pending_leaves': counts['pending_leaves'],
+        'pending_tasks': counts['pending_tasks'],
+        'unread_notifications': counts['unread_notifications'],
         'recent_payslips': [{
             'id': p.pk,
             'period_start': p.period_start.isoformat(),

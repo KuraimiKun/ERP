@@ -432,6 +432,7 @@ def execute_import(entity, headers, rows, company, user):
     created = 0
     updated = 0
     error_rows = []
+    seen_unique_vals = set()
 
     with transaction.atomic():
         for row_idx, row in enumerate(rows, start=2):
@@ -459,6 +460,15 @@ def execute_import(entity, headers, rows, company, user):
                     'errors': {unique_field: 'Required field is empty.'},
                 })
                 continue
+
+            # Detect intra-file duplicates
+            if unique_val in seen_unique_vals:
+                error_rows.append({
+                    'row_num': row_idx,
+                    'errors': {unique_field: f'Duplicate value "{unique_val}" already in this file.'},
+                })
+                continue
+            seen_unique_vals.add(unique_val)
 
             # Try to find existing record
             try:
