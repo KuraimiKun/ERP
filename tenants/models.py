@@ -16,6 +16,8 @@ import uuid
 import secrets
 import string
 
+from .fields import EncryptedCharField
+
 
 class TenantUserManager(BaseUserManager):
     """Custom manager for TenantUser model."""
@@ -170,7 +172,7 @@ class PostgresServer(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(65535)]
     )
     admin_username = models.CharField(max_length=100, default='postgres')
-    admin_password = models.CharField(max_length=255)
+    admin_password = EncryptedCharField(max_length=512)
     
     # Docker-specific fields
     docker_container_id = models.CharField(max_length=64, blank=True)
@@ -227,8 +229,8 @@ class PostgresServer(models.Model):
     
     @property
     def connection_string(self):
-        """Get the base connection string for this server."""
-        return f"postgresql://{self.admin_username}:{self.admin_password}@{self.host}:{self.port}"
+        """Get the base connection string for this server (credentials masked)."""
+        return f"postgresql://{self.admin_username}:***@{self.host}:{self.port}"
 
 
 def generate_db_password():
@@ -272,7 +274,7 @@ class TenantDatabase(models.Model):
     
     # Database credentials
     db_username = models.CharField(max_length=63)
-    db_password = models.CharField(max_length=255, default=generate_db_password)
+    db_password = EncryptedCharField(max_length=512, default=generate_db_password)
     
     # Status
     status = models.CharField(
@@ -343,8 +345,8 @@ class TenantDatabase(models.Model):
     
     @property
     def connection_string(self):
-        """Get the full connection string."""
-        return f"postgresql://{self.db_username}:{self.db_password}@{self.server.host}:{self.server.port}/{self.name}"
+        """Get the connection string (credentials masked to prevent log leakage)."""
+        return f"postgresql://{self.db_username}:***@{self.server.host}:{self.server.port}/{self.name}"
 
 
 class DatabaseAssignment(models.Model):

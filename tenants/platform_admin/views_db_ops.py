@@ -6,6 +6,8 @@ maintenance operations, export/import, clone, password reset, locks.
 """
 
 import os
+import re
+import uuid
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, FileResponse
@@ -14,6 +16,17 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_POST
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
+
+# Max SQL import file size (50 MB)
+_SQL_IMPORT_MAX_BYTES = 50 * 1024 * 1024
+
+# Dangerous DDL patterns that should be rejected from uploaded SQL files.
+_DANGEROUS_SQL_RE = re.compile(
+    r'\b(DROP\s+DATABASE|DROP\s+TABLESPACE|ALTER\s+ROLE|ALTER\s+USER|'
+    r'CREATE\s+ROLE|CREATE\s+USER|COPY\s+.*\bFROM\s+PROGRAM|'
+    r'pg_read_file|pg_write_file|lo_import|lo_export)\b',
+    re.IGNORECASE,
+)
 
 from tenants.models import TenantDatabase, ServerLog
 from tenants.services.database_service import DatabaseService
@@ -216,14 +229,41 @@ def pa_db_import(request, pk):
         messages.error(request, _('Please upload a SQL file.'))
         return redirect('tenants:pa_database_detail', pk=pk)
 
-    # Save uploaded file temporarily
-    upload_dir = os.path.join(settings.BASE_DIR, 'media', 'uploads')
+    # ── Size guard ────────────────────────────────────────────────────
+    if sql_file.size > _SQL_IMPORT_MAX_BYTES:
+        messages.error(
+            request,
+            _('SQL file too large (%(size).1f MB). Maximum is %(max)d MB.')
+            % {'size': sql_file.size / 1024 / 1024, 'max': _SQL_IMPORT_MAX_BYTES // 1024 // 1024},
+        )
+        return redirect('tenants:pa_database_detail', pk=pk)
+
+    # ── Save with a random filename (prevents path traversal) ────────
+    upload_dir = os.path.join(settings.BASE_DIR, 'private_uploads')
     os.makedirs(upload_dir, exist_ok=True)
-    filepath = os.path.join(upload_dir, sql_file.name)
+    safe_name = f"{uuid.uuid4().hex}.sql"
+    filepath = os.path.join(upload_dir, safe_name)
 
     with open(filepath, 'wb+') as dest:
         for chunk in sql_file.chunks():
             dest.write(chunk)
+
+    # ── Scan for dangerous DDL ───────────────────────────────────────
+    try:
+        with open(filepath, 'r', errors='replace') as f:
+            content = f.read()
+        match = _DANGEROUS_SQL_RE.search(content)
+        if match:
+            os.remove(filepath)
+            messages.error(
+                request,
+                _('SQL file contains a prohibited statement: %(stmt)s. '
+                  'Contact an administrator if this is intentional.')
+                % {'stmt': match.group(0)},
+            )
+            return redirect('tenants:pa_database_detail', pk=pk)
+    except Exception:
+        pass  # binary / encoding issues — psql will catch real errors
 
     svc = DatabaseService()
     success, msg = svc.import_database(db, filepath)

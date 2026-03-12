@@ -4,6 +4,7 @@ Base utilities shared across AI services.
 Provides helpers for model persistence, feature engineering, and logging.
 """
 
+import hashlib
 import logging
 import joblib
 from datetime import timedelta
@@ -31,14 +32,25 @@ def get_model_path(company_id: int, model_type: str, version: int) -> Path:
     return directory / f'{model_type}_v{version}.joblib'
 
 
+def _sha256(path: Path) -> str:
+    """Return the hex SHA-256 digest of a file."""
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 16), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def save_model_artefact(ml_model: MLModel, artefact):
     """Persist a sklearn / custom model to disk and update the registry."""
     path = get_model_path(ml_model.company_id, ml_model.model_type,
                           ml_model.version)
     joblib.dump(artefact, path)
     ml_model.artefact_path = str(path.relative_to(settings.ML_MODEL_DIR))
+    ml_model.artefact_sha256 = _sha256(path)
     ml_model.last_trained_at = timezone.now()
-    ml_model.save(update_fields=['artefact_path', 'last_trained_at',
+    ml_model.save(update_fields=['artefact_path', 'artefact_sha256',
+                                  'last_trained_at',
                                   'accuracy_score', 'training_samples'])
     logger.info('Saved %s v%d for company %d (samples=%d, score=%.4f)',
                 ml_model.model_type, ml_model.version, ml_model.company_id,
@@ -47,10 +59,42 @@ def save_model_artefact(ml_model: MLModel, artefact):
 
 
 def load_model_artefact(ml_model: MLModel):
-    """Load a serialised model artefact from disk."""
-    path = Path(settings.ML_MODEL_DIR) / ml_model.artefact_path
+    """Load a serialised model artefact from disk.
+
+    Security hardening:
+    - Rejects artefact_path values containing '..' to prevent path traversal.
+    - Validates that the resolved path is inside ML_MODEL_DIR.
+    - Verifies the SHA-256 checksum (when stored) to detect tampering.
+    """
+    raw_path = ml_model.artefact_path
+    if '..' in raw_path:
+        raise ValueError(
+            f'Refusing to load artefact with path-traversal segments: {raw_path}'
+        )
+
+    base = Path(settings.ML_MODEL_DIR).resolve()
+    path = (base / raw_path).resolve()
+
+    # Ensure the resolved path is still within ML_MODEL_DIR
+    if not str(path).startswith(str(base)):
+        raise ValueError(
+            f'Artefact path resolves outside ML_MODEL_DIR: {path}'
+        )
+
     if not path.exists():
         raise FileNotFoundError(f'Model artefact not found: {path}')
+
+    # Verify checksum when available
+    expected_hash = getattr(ml_model, 'artefact_sha256', '') or ''
+    if expected_hash:
+        actual_hash = _sha256(path)
+        if actual_hash != expected_hash:
+            raise ValueError(
+                f'Checksum mismatch for {path} – artefact may have been '
+                f'tampered with (expected {expected_hash[:16]}…, '
+                f'got {actual_hash[:16]}…)'
+            )
+
     return joblib.load(path)
 
 

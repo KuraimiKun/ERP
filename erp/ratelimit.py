@@ -56,10 +56,21 @@ def ratelimit(*, group, rate, method="POST", block=True):
 
         @ratelimit(group="login", rate="5/m")
         def login_view(request): ...
+
+        @ratelimit(group="login", rate="3/5m")   # 3 per 5 minutes
+        def login_view(request): ...
     """
-    num, period_char = rate.split("/")
+    num, period_spec = rate.split("/")
     max_requests = int(num)
-    period_seconds = {"s": 1, "m": 60, "h": 3600, "d": 86400}[period_char]
+
+    # Support compound periods like "5m" (5 minutes), "2h", etc.
+    _period_map = {"s": 1, "m": 60, "h": 3600, "d": 86400}
+    if period_spec[-1] in _period_map:
+        unit_seconds = _period_map[period_spec[-1]]
+        multiplier = int(period_spec[:-1]) if len(period_spec) > 1 else 1
+        period_seconds = unit_seconds * multiplier
+    else:
+        raise ValueError(f"Unknown rate period: {period_spec!r}")
 
     def decorator(view_func):
         from functools import wraps
@@ -138,3 +149,53 @@ class LoginRateThrottle(SimpleRateThrottle):
             "scope": self.scope,
             "ident": self.get_ident(request),
         }
+
+
+# ---------------------------------------------------------------------------
+# Account lockout — failed-login tracking
+# ---------------------------------------------------------------------------
+
+_LOCKOUT_MAX_FAILURES = 10       # lock after this many consecutive failures
+_LOCKOUT_WINDOW_SECONDS = 900    # 15-minute sliding window
+_LOCKOUT_DURATION_SECONDS = 1800 # 30-minute lockout
+
+
+def _lockout_key(username):
+    raw = f"ratelimit:lockout:{username}"
+    return hashlib.md5(raw.encode()).hexdigest()
+
+
+def record_failed_login(username):
+    """Record one failed login attempt for *username*."""
+    key = _lockout_key(username)
+    now = time.time()
+    history = cache.get(key, [])
+    history = [t for t in history if t > now - _LOCKOUT_WINDOW_SECONDS]
+    history.append(now)
+    cache.set(key, history, _LOCKOUT_WINDOW_SECONDS + _LOCKOUT_DURATION_SECONDS)
+    if len(history) >= _LOCKOUT_MAX_FAILURES:
+        logger.warning("Account lockout triggered for user=%s (%d failures)",
+                       username, len(history))
+
+
+def check_account_lockout(username):
+    """Return (is_locked, message) for *username*."""
+    key = _lockout_key(username)
+    now = time.time()
+    history = cache.get(key, [])
+    # Keep only entries inside the window
+    history = [t for t in history if t > now - _LOCKOUT_WINDOW_SECONDS]
+    if len(history) >= _LOCKOUT_MAX_FAILURES:
+        # How long until the oldest failure falls out of the window?
+        seconds_left = int(history[0] + _LOCKOUT_WINDOW_SECONDS - now) + 1
+        minutes_left = max(seconds_left // 60, 1)
+        return True, (
+            f"Account temporarily locked due to too many failed login "
+            f"attempts. Please try again in {minutes_left} minute(s)."
+        )
+    return False, ""
+
+
+def clear_failed_logins(username):
+    """Clear the lockout counter after a successful login."""
+    cache.delete(_lockout_key(username))

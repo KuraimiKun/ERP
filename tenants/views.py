@@ -62,7 +62,7 @@ def signup_view(request):
 
 
 @require_http_methods(["GET", "POST"])
-@ratelimit(group="login", rate="5/m")
+@ratelimit(group="login", rate="3/5m")
 def login_view(request):
     """User login view."""
     if request.user.is_authenticated:
@@ -70,8 +70,21 @@ def login_view(request):
     
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
+
+        # Import lockout helpers once
+        from erp.ratelimit import check_account_lockout, record_failed_login, clear_failed_logins
+        attempted_username = request.POST.get('username', '').strip()
+
         if form.is_valid():
             user = form.get_user()
+
+            # Check account lockout
+            locked, msg = check_account_lockout(user.username)
+            if locked:
+                form.add_error(None, msg)
+                return render(request, 'tenants/login.html', {'form': form})
+
+            clear_failed_logins(user.username)
             login(request, user)
             
             # Check user status
@@ -85,11 +98,16 @@ def login_view(request):
                     messages.error(request, 'Your account has been suspended.')
                     return redirect('tenants:login')
             
-            # Redirect to ERP dashboard or next URL
-            next_url = request.GET.get('next')
-            if next_url:
+            # Redirect to ERP dashboard or safe next URL
+            from django.utils.http import url_has_allowed_host_and_scheme
+            next_url = request.GET.get('next', '')
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
                 return redirect(next_url)
             return redirect('erp:dashboard')
+        else:
+            # Invalid credentials — record failure for lockout tracking
+            if attempted_username:
+                record_failed_login(attempted_username)
     else:
         form = LoginForm()
     

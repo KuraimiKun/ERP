@@ -7,6 +7,7 @@ container inspection, restart, and environment configuration.
 """
 
 import json
+import re
 import subprocess
 import logging
 import time
@@ -14,6 +15,17 @@ import uuid
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+_SAFE_NAME_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_.-]*$')
+
+
+def _validate_name(value, label='name'):
+    """Reject names with shell metacharacters or path separators."""
+    if not value or not _SAFE_NAME_RE.match(value):
+        raise ValueError(
+            f'Invalid {label}: {value!r}. '
+            f'Only alphanumerics, hyphens, underscores, and dots are allowed.'
+        )
 
 
 class DockerService:
@@ -27,24 +39,27 @@ class DockerService:
     
     def _run_command(self, command, check=True):
         """
-        Run a shell command and return the output.
-        
+        Run a command and return the output.
+
         Args:
-            command: Command string or list to execute
-            check: Whether to raise exception on non-zero exit
-            
+            command: Command as a *list* of arguments (no shell expansion).
+            check: Whether to raise exception on non-zero exit.
+
         Returns:
             tuple: (success, output)
         """
         try:
             if isinstance(command, str):
+                # Legacy callers — split is safe here because the only
+                # string invocations are fixed literals ("docker info").
                 command = command.split()
-            
+
             result = subprocess.run(
                 command,
                 capture_output=True,
                 text=True,
-                check=check
+                check=check,
+                shell=False,          # never use shell expansion
             )
             return True, result.stdout.strip()
         except subprocess.CalledProcessError as e:
@@ -61,9 +76,11 @@ class DockerService:
     
     def ensure_network_exists(self):
         """Create Docker network if it doesn't exist."""
+        _validate_name(self.network_name, 'network name')
+
         # Check if network exists
         success, output = self._run_command(
-            f"docker network ls --filter name={self.network_name} -q",
+            ["docker", "network", "ls", "--filter", f"name={self.network_name}", "-q"],
             check=False
         )
         
@@ -72,7 +89,7 @@ class DockerService:
         
         # Create network
         success, output = self._run_command(
-            f"docker network create {self.network_name}",
+            ["docker", "network", "create", self.network_name],
             check=False
         )
         
@@ -87,7 +104,7 @@ class DockerService:
         """Pull the PostgreSQL Docker image."""
         logger.info(f"Pulling PostgreSQL image: {self.postgres_image}")
         success, output = self._run_command(
-            f"docker pull {self.postgres_image}",
+            ["docker", "pull", self.postgres_image],
             check=False
         )
         return success
@@ -128,6 +145,7 @@ class DockerService:
         # Generate container name if not provided
         if not container_name:
             container_name = f"erp_postgres_{uuid.uuid4().hex[:8]}"
+        _validate_name(container_name, 'container name')
         
         # Volume name for persistent storage
         volume_name = f"{container_name}_data"
@@ -213,9 +231,10 @@ class DockerService:
         
         if not server.docker_container_name:
             raise ValueError("No Docker container name set for this server")
-        
+        _validate_name(server.docker_container_name, 'container name')
+
         success, output = self._run_command(
-            f"docker start {server.docker_container_name}",
+            ["docker", "start", server.docker_container_name],
             check=False
         )
         
@@ -253,9 +272,10 @@ class DockerService:
         
         if not server.docker_container_name:
             raise ValueError("No Docker container name set for this server")
-        
+        _validate_name(server.docker_container_name, 'container name')
+
         success, output = self._run_command(
-            f"docker stop {server.docker_container_name}",
+            ["docker", "stop", server.docker_container_name],
             check=False
         )
         
@@ -294,13 +314,14 @@ class DockerService:
         
         if not server.docker_container_name:
             raise ValueError("No Docker container name set for this server")
-        
+        _validate_name(server.docker_container_name, 'container name')
+
         # Stop container first
         self.stop_container(server)
         
         # Remove container
         success, output = self._run_command(
-            f"docker rm {server.docker_container_name}",
+            ["docker", "rm", server.docker_container_name],
             check=False
         )
         
@@ -309,8 +330,9 @@ class DockerService:
         
         # Remove volume if requested
         if remove_volume and server.docker_volume_name:
+            _validate_name(server.docker_volume_name, 'volume name')
             vol_success, vol_output = self._run_command(
-                f"docker volume rm {server.docker_volume_name}",
+                ["docker", "volume", "rm", server.docker_volume_name],
                 check=False
             )
             if not vol_success:
@@ -337,9 +359,10 @@ class DockerService:
         """
         if not server.docker_container_name:
             return None
-        
+        _validate_name(server.docker_container_name, 'container name')
+
         success, output = self._run_command(
-            f"docker inspect --format={{{{.State.Status}}}} {server.docker_container_name}",
+            ["docker", "inspect", "--format", "{{.State.Status}}", server.docker_container_name],
             check=False
         )
         
@@ -358,9 +381,10 @@ class DockerService:
         """
         if not server.docker_container_name:
             return ""
-        
+        _validate_name(server.docker_container_name, 'container name')
+
         success, output = self._run_command(
-            f"docker logs --tail {lines} {server.docker_container_name}",
+            ["docker", "logs", "--tail", str(int(lines)), server.docker_container_name],
             check=False
         )
         
@@ -374,9 +398,10 @@ class DockerService:
 
         if not server.docker_container_name:
             raise ValueError("No Docker container name set for this server")
+        _validate_name(server.docker_container_name, 'container name')
 
         success, output = self._run_command(
-            f"docker restart {server.docker_container_name}",
+            ["docker", "restart", server.docker_container_name],
             check=False,
         )
 
@@ -778,13 +803,30 @@ class DockerService:
         except json.JSONDecodeError:
             return None
 
+    # Whitelist of commands allowed inside containers.
+    _ALLOWED_EXEC_COMMANDS = {
+        'pg_isready',
+        'psql -l',
+        'psql --version',
+        'pg_controldata /var/lib/postgresql/data',
+    }
+
     def exec_in_container(self, server, command):
         """
-        Execute a command inside a container.
+        Execute a **whitelisted** command inside a container.
         Returns (success, output).
+
+        Only commands listed in ``_ALLOWED_EXEC_COMMANDS`` are permitted.
         """
         if not server.docker_container_name:
             raise ValueError("No Docker container name set.")
+        _validate_name(server.docker_container_name, 'container name')
 
-        cmd = ["docker", "exec", server.docker_container_name, "sh", "-c", command]
+        if command not in self._ALLOWED_EXEC_COMMANDS:
+            raise ValueError(
+                f"Command not allowed: {command!r}. "
+                f"Permitted: {sorted(self._ALLOWED_EXEC_COMMANDS)}"
+            )
+
+        cmd = ["docker", "exec", server.docker_container_name] + command.split()
         return self._run_command(cmd, check=False)

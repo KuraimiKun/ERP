@@ -35,6 +35,8 @@ class MLModel(TimeStampedModel):
 
     # Serialised artefact path (relative to ML_MODEL_DIR)
     artefact_path = models.CharField(max_length=512, blank=True)
+    artefact_sha256 = models.CharField(max_length=64, blank=True,
+                                        help_text='SHA-256 checksum of the artefact file')
 
     # Meta / hyper-parameters stored as JSON
     parameters = models.JSONField(default=dict, blank=True)

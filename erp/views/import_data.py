@@ -9,6 +9,7 @@ Three-step wizard:
 
 import json
 
+from django.conf import settings
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.contrib import messages
@@ -20,6 +21,9 @@ from erp.services.import_data import (
 )
 from ._common import get_user_company, staff_member_required
 
+# 10 MB hard cap for CSV/Excel uploads
+_IMPORT_MAX_BYTES = getattr(settings, 'IMPORT_MAX_FILE_SIZE', 10 * 1024 * 1024)
+
 
 @staff_member_required
 def import_upload(request):
@@ -29,6 +33,18 @@ def import_upload(request):
         if form.is_valid():
             entity = form.cleaned_data['entity']
             uploaded_file = form.cleaned_data['file']
+
+            # ── Size guard ──────────────────────────────────────────
+            if uploaded_file.size > _IMPORT_MAX_BYTES:
+                form.add_error(
+                    'file',
+                    _('File too large (%(size).1f MB). Maximum is %(max)d MB.')
+                    % {
+                        'size': uploaded_file.size / 1024 / 1024,
+                        'max': _IMPORT_MAX_BYTES // 1024 // 1024,
+                    },
+                )
+                return render(request, 'erp/import/upload.html', {'form': form})
 
             try:
                 headers, rows = parse_file(uploaded_file)

@@ -10,14 +10,18 @@ performance analytics, password reset, and connection management.
 import logging
 import os
 import secrets
+import stat
 import string
 import subprocess
+import tempfile
+import uuid
 import psycopg2
 from psycopg2 import sql
 from django.conf import settings
 from django.core.management import call_command
 from django.utils import timezone
 from io import StringIO
+from pathlib import Path
 
 from ..routers import add_tenant_database
 
@@ -65,6 +69,44 @@ class DatabaseService:
     - Running Django migrations on tenant databases
     - Health checks and status monitoring
     """
+
+    # ── .pgpass helpers ──────────────────────────────────────────────────
+
+    @staticmethod
+    def _write_pgpass(host, port, database, user, password):
+        """Create a temporary .pgpass file with 0600 permissions.
+
+        Returns the path to the file.  The caller MUST clean it up
+        via ``_cleanup_pgpass`` (use a ``finally`` block).
+        """
+        # Escape colons and backslashes per pgpass format
+        def _esc(v):
+            return str(v).replace('\\', '\\\\').replace(':', '\\:')
+
+        line = f"{_esc(host)}:{_esc(port)}:{_esc(database)}:{_esc(user)}:{_esc(password)}\n"
+
+        fd, path = tempfile.mkstemp(prefix='.pgpass_', suffix='.tmp')
+        try:
+            os.write(fd, line.encode())
+        finally:
+            os.close(fd)
+
+        # Restrict to owner-only on platforms that support it
+        try:
+            os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)  # 0600
+        except OSError:
+            pass  # Windows — permissions handled by user account
+
+        return path
+
+    @staticmethod
+    def _cleanup_pgpass(path):
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
+    # ── connections ──────────────────────────────────────────────────────
     
     def get_admin_connection(self, server, database='postgres'):
         """
@@ -769,19 +811,19 @@ class DatabaseService:
     def export_database(self, tenant_db):
         """
         Export (pg_dump) a tenant database to a SQL file.
+        Backups are stored outside the web-accessible media directory.
         Returns (success, file_path_or_error).
         """
         from ..models import ServerLog
 
-        backup_dir = os.path.join(settings.BASE_DIR, 'media', 'backups')
+        backup_dir = os.path.join(settings.BASE_DIR, 'private_backups')
         os.makedirs(backup_dir, exist_ok=True)
 
         timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"{tenant_db.name}_{timestamp}.sql"
+        filename = f"{tenant_db.name}_{timestamp}_{uuid.uuid4().hex[:8]}.sql"
         filepath = os.path.join(backup_dir, filename)
 
         env = os.environ.copy()
-        env['PGPASSWORD'] = tenant_db.server.admin_password
 
         cmd = [
             'pg_dump',
@@ -793,7 +835,17 @@ class DatabaseService:
             '-f', filepath,
         ]
 
+        pgpass_path = None
         try:
+            pgpass_path = self._write_pgpass(
+                tenant_db.server.host,
+                str(tenant_db.server.port),
+                tenant_db.name,
+                tenant_db.server.admin_username,
+                tenant_db.server.admin_password,
+            )
+            env['PGPASSFILE'] = pgpass_path
+
             result = subprocess.run(
                 cmd, env=env, capture_output=True, text=True, timeout=600
             )
@@ -833,6 +885,9 @@ class DatabaseService:
             return False, "Export timed out after 600 seconds"
         except Exception as e:
             return False, str(e)
+        finally:
+            if pgpass_path:
+                self._cleanup_pgpass(pgpass_path)
 
     def import_database(self, tenant_db, sql_file_path):
         """
@@ -845,7 +900,6 @@ class DatabaseService:
             return False, "SQL file not found"
 
         env = os.environ.copy()
-        env['PGPASSWORD'] = tenant_db.server.admin_password
 
         cmd = [
             'psql',
@@ -856,7 +910,17 @@ class DatabaseService:
             '-f', sql_file_path,
         ]
 
+        pgpass_path = None
         try:
+            pgpass_path = self._write_pgpass(
+                tenant_db.server.host,
+                str(tenant_db.server.port),
+                tenant_db.name,
+                tenant_db.server.admin_username,
+                tenant_db.server.admin_password,
+            )
+            env['PGPASSFILE'] = pgpass_path
+
             result = subprocess.run(
                 cmd, env=env, capture_output=True, text=True, timeout=600
             )
@@ -886,6 +950,9 @@ class DatabaseService:
             return False, "Import timed out after 600 seconds"
         except Exception as e:
             return False, str(e)
+        finally:
+            if pgpass_path:
+                self._cleanup_pgpass(pgpass_path)
 
     def clone_database(self, source_db, new_name, new_display_name, created_by):
         """

@@ -30,12 +30,29 @@ if not _secret:
     )
 SECRET_KEY = _secret
 
+# ── Field-level encryption key (Fernet, base64url-encoded 32-byte key) ──
+_enc_key = os.getenv('FIELD_ENCRYPTION_KEY', '')
+if not _enc_key:
+    import warnings
+    warnings.warn(
+        'FIELD_ENCRYPTION_KEY is not set! Encrypted model fields will fail. '
+        'Generate a key with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"',
+        stacklevel=1,
+    )
+FIELD_ENCRYPTION_KEY = _enc_key
+
 # SECURITY WARNING: don't run with debug turned on in production!
 # Defaults to False so a missing .env in production does NOT accidentally
 # expose debug pages.
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,10.0.2.2').split(',')
+
+# ── Upload size limits ──────────────────────────────────────────────────────
+# Max size of a POST body (covers form data + file uploads processed in memory)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52_428_800       # 50 MB
+# Uploads larger than this threshold spool to disk instead of memory
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5_242_880        # 5 MB
 
 # ── Production security settings (active when DEBUG=False) ──────────────────
 if not DEBUG:
@@ -266,7 +283,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'burst': '60/min',
         'sustained': '1000/day',
-        'login': '5/min',
+        'login': '3/min',
     },
 }
 

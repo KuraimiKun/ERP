@@ -4,6 +4,7 @@ Core/Company models for the ERP system.
 
 from django.db import models
 from .base import ERPBaseModel, TimeStampedModel
+from tenants.fields import EncryptedCharField
 
 
 class Currency(TimeStampedModel):
@@ -80,9 +81,9 @@ class Company(ERPBaseModel):
     swift_code = models.CharField(max_length=20, blank=True)
 
     # AI / ML Configuration (per-tenant)
-    openai_api_key = models.CharField(
-        max_length=255, blank=True,
-        help_text='Your OpenAI API key (sk-…). Stored per tenant.',
+    openai_api_key = EncryptedCharField(
+        max_length=512, blank=True,
+        help_text='Your OpenAI API key (sk-…). Encrypted at rest.',
     )
     openai_model = models.CharField(
         max_length=100, blank=True, default='gpt-4o-mini',
