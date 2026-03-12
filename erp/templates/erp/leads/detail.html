@@ -5,7 +5,7 @@
 {% block page_title %}{% trans "Lead Details" %}{% endblock %}
 
 {% block content %}
-<!-- شريط التنقل -->
+<!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
@@ -89,7 +89,7 @@
             </div>
         </div>
         
-        <!-- التواريخ -->
+        <!-- Timeline -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h6 class="mb-0">{% trans "Timeline" %}</h6>
@@ -122,7 +122,7 @@
     </div>
     
     <div class="col-lg-8">
-        <!-- ملاحظات -->
+        <!-- Notes -->
         {% if lead.notes %}
         <div class="erp-card mb-4">
             <div class="erp-card-header">
@@ -134,7 +134,7 @@
         </div>
         {% endif %}
         
-        <!-- سجل النشاطات -->
+        <!-- Activity Log -->
         <div class="erp-card mb-4">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">{% trans "Activity Log" %}</h6>
@@ -180,7 +180,7 @@
             </div>
         </div>
         
-        <!-- عروض الأسعار -->
+        <!-- Quotes -->
         <div class="erp-card">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">{% trans "Quotes" %}</h6>

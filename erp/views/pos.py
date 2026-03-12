@@ -9,6 +9,7 @@ import json
 from decimal import Decimal
 
 from django.http import JsonResponse
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
@@ -69,7 +70,7 @@ def pos_session_open(request):
     try:
         terminal = POSTerminal.objects.get(pk=terminal_id, company=company, is_active=True)
     except POSTerminal.DoesNotExist:
-        messages.error(request, 'Terminal not found.')
+        messages.error(request, _('Terminal not found.'))
         return redirect('erp:pos_terminal_select')
 
     from erp.services.pos import open_session
@@ -100,7 +101,7 @@ def pos_main(request, session_id):
             'terminal', 'terminal__warehouse', 'opened_by',
         ).get(pk=session_id, company=company, status='open')
     except POSSession.DoesNotExist:
-        messages.error(request, 'Session not found or already closed.')
+        messages.error(request, _('Session not found or already closed.'))
         return redirect('erp:pos_terminal_select')
 
     payment_methods = list(
@@ -182,7 +183,7 @@ def pos_order_history(request, session_id):
             pk=session_id, company=company,
         )
     except POSSession.DoesNotExist:
-        messages.error(request, 'Session not found.')
+        messages.error(request, _('Session not found.'))
         return redirect('erp:pos_terminal_select')
 
     orders = session.orders.select_related('customer', 'employee').order_by('-order_date')
@@ -206,7 +207,7 @@ def pos_order_receipt(request, order_id):
             'session__terminal', 'customer', 'employee',
         ).get(pk=order_id, company=company)
     except POSOrder.DoesNotExist:
-        messages.error(request, 'Order not found.')
+        messages.error(request, _('Order not found.'))
         return redirect('erp:pos_terminal_select')
 
     lines = order.lines.select_related('product').all()
@@ -229,13 +230,13 @@ def pos_generate_invoice(request, order_id):
     """Generate an Invoice from a POS order. Returns JSON."""
     employee = _get_employee_for_user(request)
     if not employee:
-        return JsonResponse({'error': 'No employee profile'}, status=400)
+        return JsonResponse({'error': _('No employee profile')}, status=400)
 
     company = get_user_company(request.user)
     try:
         order = POSOrder.objects.get(pk=order_id, company=company)
     except POSOrder.DoesNotExist:
-        return JsonResponse({'error': 'Order not found'}, status=404)
+        return JsonResponse({'error': _('Order not found')}, status=404)
 
     from erp.services.pos import generate_invoice_from_pos
     try:
@@ -351,12 +352,12 @@ def pos_api_create_order(request):
     """Create a POS order from cart JSON data."""
     employee = _get_employee_for_user(request)
     if not employee:
-        return JsonResponse({'error': 'No employee profile'}, status=400)
+        return JsonResponse({'error': _('No employee profile')}, status=400)
 
     try:
         body = json.loads(request.body)
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        return JsonResponse({'error': _('Invalid JSON')}, status=400)
 
     session_id = body.get('session_id')
     cart_items = body.get('items', [])
@@ -366,13 +367,13 @@ def pos_api_create_order(request):
     notes = body.get('notes', '')
 
     if not cart_items:
-        return JsonResponse({'error': 'Cart is empty'}, status=400)
+        return JsonResponse({'error': _('Cart is empty')}, status=400)
 
     company = get_user_company(request.user)
     try:
         session = POSSession.objects.get(pk=session_id, company=company, status='open')
     except POSSession.DoesNotExist:
-        return JsonResponse({'error': 'Session not found or closed'}, status=400)
+        return JsonResponse({'error': _('Session not found or closed')}, status=400)
 
     customer = None
     if customer_id:
@@ -413,24 +414,24 @@ def pos_api_complete_order(request):
     """Process payment and complete a POS order."""
     employee = _get_employee_for_user(request)
     if not employee:
-        return JsonResponse({'error': 'No employee profile'}, status=400)
+        return JsonResponse({'error': _('No employee profile')}, status=400)
 
     try:
         body = json.loads(request.body)
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        return JsonResponse({'error': _('Invalid JSON')}, status=400)
 
     order_id = body.get('order_id')
     payments_data = body.get('payments', [])
 
     if not payments_data:
-        return JsonResponse({'error': 'No payment data provided'}, status=400)
+        return JsonResponse({'error': _('No payment data provided')}, status=400)
 
     company = get_user_company(request.user)
     try:
         order = POSOrder.objects.get(pk=order_id, company=company, status='draft')
     except POSOrder.DoesNotExist:
-        return JsonResponse({'error': 'Order not found or already completed'}, status=400)
+        return JsonResponse({'error': _('Order not found or already completed')}, status=400)
 
     from erp.services.pos import complete_pos_order
     try:

@@ -165,7 +165,7 @@
                                 </a>
                             </td>
                             <td>{{ order.created_at|date:"H:i" }}</td>
-                            <td>{{ order.customer.name|default_if_none:_("Walk-in") }}</td>
+                            <td>{% if order.customer.name %}{{ order.customer.name }}{% else %}{% trans "Walk-in" %}{% endif %}</td>
                             <td>{{ order.total|floatformat:2 }}</td>
                             <td>
                                 {% if order.status == 'completed' %}

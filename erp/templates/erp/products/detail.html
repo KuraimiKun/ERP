@@ -16,7 +16,7 @@
 
 {% block content %}
 <div class="row">
-    <!-- معلومات المنتج -->
+    <!-- Product Info -->
     <div class="col-md-8">
         <div class="erp-card mb-4">
             <div class="erp-card-header">
@@ -26,7 +26,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <table class="table table-borderless">
-                            <tr><th class="text-muted" style="width:40%">SKU</th><td>{{ product.sku }}</td></tr>
+                            <tr><th class="text-muted" style="width:40%">{% trans "SKU" %}</th><td>{{ product.sku }}</td></tr>
                             <tr><th class="text-muted">{% trans "Barcode" %}</th><td>{{ product.barcode|default:"-" }}</td></tr>
                             <tr><th class="text-muted">{% trans "Name" %}</th><td>{{ product.name }}</td></tr>
                             <tr><th class="text-muted">{% trans "Name (Arabic)" %}</th><td>{{ product.name_ar|default:"-" }}</td></tr>
@@ -69,7 +69,7 @@
             </div>
         </div>
 
-        <!-- التسعير -->
+        <!-- Pricing -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h5>{% trans "Pricing" %}</h5>
@@ -106,7 +106,7 @@
             </div>
         </div>
 
-        <!-- الموردون -->
+        <!-- Suppliers -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h5>{% trans "Suppliers" %}</h5>
@@ -150,9 +150,9 @@
         </div>
     </div>
 
-    <!-- الشريط الجانبي -->
+    <!-- Sidebar -->
     <div class="col-md-4">
-        <!-- المخزون -->
+        <!-- Inventory -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h5>{% trans "Inventory" %}</h5>
@@ -192,7 +192,7 @@
         </div>
         {% endif %}
 
-        <!-- آخر الفواتير -->
+        <!-- Recent Invoices -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h5>{% trans "Recent Invoices" %}</h5>
@@ -213,7 +213,7 @@
             </div>
         </div>
 
-        <!-- آخر أوامر الشراء -->
+        <!-- Recent Purchase Orders -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h5>{% trans "Recent Purchase Orders" %}</h5>

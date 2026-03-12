@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {{ company.name|default:"تورستا" }}</title>
+    <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {% if company.name %}{{ company.name }}{% else %}{% trans "Tourista" %}{% endif %}</title>
     
     <!-- Bootstrap 5 CSS -->
     {% if LANGUAGE_BIDI %}
@@ -279,10 +279,10 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- الشريط الجانبي -->
+    <!-- Sidebar -->
     <aside class="erp-sidebar" id="erpSidebar">
         <div class="erp-sidebar-brand">
-            <h4><i class="bi bi-building ms-2"></i>تورستا ERP</h4>
+            <h4><i class="bi bi-building ms-2"></i>{% trans "Tourista ERP" %}</h4>
             {% if company %}
             <small class="text-muted">{{ company.name }}</small>
             {% endif %}
@@ -597,15 +597,15 @@
         </nav>
     </aside>
     
-    <!-- المحتوى الرئيسي -->
+    <!-- Main Content -->
     <main class="erp-main">
-        <!-- الرأس -->
+        <!-- Header -->
         <header class="erp-header">
             <div class="d-flex align-items-center">
                 <button class="btn btn-link d-lg-none p-0 ms-3" id="sidebarToggle">
                     <i class="bi bi-list fs-4"></i>
                 </button>
-                <h5 class="mb-0">{% block page_title %}لوحة التحكم{% endblock %}</h5>
+                <h5 class="mb-0">{% block page_title %}{% trans "Dashboard" %}{% endblock %}</h5>
             </div>
             
             <div class="d-flex align-items-center gap-3">
@@ -678,7 +678,7 @@
             </div>
         </header>
         
-        <!-- محتوى الصفحة -->
+        <!-- Page Content -->
         <div class="erp-content">
             {% if messages %}
             {% for message in messages %}

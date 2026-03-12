@@ -5,7 +5,7 @@
 {% block page_title %}{% trans "Customer Details" %}{% endblock %}
 
 {% block content %}
-<!-- المسار -->
+<!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'erp:dashboard' %}">{% trans "Dashboard" %}</a></li>
@@ -15,7 +15,7 @@
 </nav>
 
 <div class="row">
-    <!-- بطاقة معلومات العميل -->
+    <!-- Customer Info Card -->
     <div class="col-lg-4">
         <div class="erp-card mb-4">
             <div class="erp-card-body text-center">
@@ -48,7 +48,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="text-muted small">{% trans "City / Country" %}</label>
-                    <div>{{ customer.billing_city|default:"" }}{% if customer.billing_city and customer.billing_country %}، {% endif %}{{ customer.billing_country|default:"-" }}</div>
+                    <div>{{ customer.billing_city|default:"" }}{% if customer.billing_city and customer.billing_country %}, {% endif %}{{ customer.billing_country|default:"-" }}</div>
                 </div>
             </div>
             <div class="erp-card-body border-top">
@@ -63,7 +63,7 @@
             </div>
         </div>
         
-        <!-- الملخص المالي -->
+        <!-- Financial Summary -->
         <div class="erp-card mb-4">
             <div class="erp-card-header">
                 <h6 class="mb-0">{% trans "Financial Summary" %}</h6>
@@ -87,9 +87,9 @@
         </div>
     </div>
     
-    <!-- المحتوى الرئيسي -->
+    <!-- Main Content -->
     <div class="col-lg-8">
-        <!-- التبويبات -->
+        <!-- Tabs -->
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#invoices">
@@ -114,7 +114,7 @@
         </ul>
         
         <div class="tab-content">
-            <!-- تبويب الفواتير -->
+            <!-- Invoices Tab -->
             <div class="tab-pane fade show active" id="invoices">
                 <div class="erp-card">
                     <div class="erp-card-header d-flex justify-content-between align-items-center">
@@ -154,7 +154,7 @@
                 </div>
             </div>
             
-            <!-- تبويب المدفوعات -->
+            <!-- Payments Tab -->
             <div class="tab-pane fade" id="payments">
                 <div class="erp-card">
                     <div class="erp-card-header">
@@ -187,7 +187,7 @@
                 </div>
             </div>
             
-            <!-- تبويب عروض الأسعار -->
+            <!-- Quotes Tab -->
             <div class="tab-pane fade" id="quotes">
                 <div class="erp-card">
                     <div class="erp-card-header">
@@ -220,7 +220,7 @@
                 </div>
             </div>
             
-            <!-- تبويب التفاعلات -->
+            <!-- Interactions Tab -->
             <div class="tab-pane fade" id="interactions">
                 <div class="erp-card">
                     <div class="erp-card-header">
