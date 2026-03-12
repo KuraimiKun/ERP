@@ -19,14 +19,22 @@ from erp.models import (
 from ._common import render, get_user_company, staff_member_required
 
 
-def _company_cache_prefix(request):
-    """Cache key prefix scoped to the user's company."""
-    company = get_user_company(request.user)
-    return f"co{company.pk}" if company else "co0"
+def _per_company_cache(timeout):
+    """Decorator: cache_page with a per-company key prefix."""
+    import functools
+
+    def decorator(view_func):
+        @functools.wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            company = get_user_company(request.user)
+            prefix = f"co{company.pk}" if company else "co0"
+            return cache_page(timeout, key_prefix=prefix)(view_func)(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 @staff_member_required
-@cache_page(60 * 5, key_prefix=_company_cache_prefix)
+@_per_company_cache(60 * 5)
 @vary_on_cookie
 def dashboard(request):
     """Main ERP dashboard view."""
@@ -150,7 +158,7 @@ def dashboard(request):
 
 
 @staff_member_required
-@cache_page(60 * 10, key_prefix=_company_cache_prefix)
+@_per_company_cache(60 * 10)
 @vary_on_cookie
 def dashboard_charts_data(request):
     """API endpoint for dashboard chart data."""

@@ -21,7 +21,11 @@ DEFAULT_PAGE_SIZE = 25
 def get_user_company(user):
     """Get the company associated with the current user.
 
-    Raises PermissionDenied if the user has no linked company — never
+    Checks (in order):
+      1. Employee profile linked to the user
+      2. Company created by the user (owner / admin)
+
+    Raises PermissionDenied if no company can be resolved — never
     falls back to an arbitrary company.
     """
     try:
@@ -29,6 +33,12 @@ def get_user_company(user):
             return user.employee_profile.company
     except Exception:
         pass
+
+    # Fallback: the user may be the company owner / admin who created it
+    company = Company.objects.filter(created_by=user).first()
+    if company:
+        return company
+
     raise PermissionDenied(
         'No company is associated with your account. '
         'Please contact your administrator.'
