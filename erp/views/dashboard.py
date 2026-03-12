@@ -19,8 +19,14 @@ from erp.models import (
 from ._common import render, get_user_company, staff_member_required
 
 
+def _company_cache_prefix(request):
+    """Cache key prefix scoped to the user's company."""
+    company = get_user_company(request.user)
+    return f"co{company.pk}" if company else "co0"
+
+
 @staff_member_required
-@cache_page(60 * 5)   # 5 minutes
+@cache_page(60 * 5, key_prefix=_company_cache_prefix)
 @vary_on_cookie
 def dashboard(request):
     """Main ERP dashboard view."""
@@ -144,7 +150,7 @@ def dashboard(request):
 
 
 @staff_member_required
-@cache_page(60 * 10)  # 10 minutes
+@cache_page(60 * 10, key_prefix=_company_cache_prefix)
 @vary_on_cookie
 def dashboard_charts_data(request):
     """API endpoint for dashboard chart data."""

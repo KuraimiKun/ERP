@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate
 from django.db.models import Count, Q, Sum, Avg
 from django.db.models.functions import Coalesce, ExtractHour
 from django.utils import timezone
+from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
@@ -352,12 +353,18 @@ def mobile_attendance_scan(request):
     if not employee.portal_can_scan_qr:
         return _error('Permission denied.', 403)
 
+    # ── Rate-limit: 1 scan per 30 s per employee ──
+    _SCAN_COOLDOWN = 30
+    throttle_key = f"qr_scan:{employee.pk}"
+    if cache.get(throttle_key):
+        return _error('Please wait before scanning again.', 429)
+
     qr_data = request.data.get('qr_data', '')
     if not qr_data:
         return _error('No QR code data provided.')
 
     try:
-        device = AttendanceDevice.verify_qr_payload(qr_data, max_age=120)
+        device = AttendanceDevice.verify_qr_payload(qr_data, max_age=30)
     except ValueError as e:
         return _error(str(e))
 
@@ -366,6 +373,17 @@ def mobile_attendance_scan(request):
 
     today = timezone.now().date()
     now_time = timezone.now().time()
+
+    # ── Duplicate check-in guard ──
+    existing = Attendance.objects.filter(employee=employee, date=today).first()
+    if existing and existing.check_in:
+        last_ts = datetime.combine(today, existing.check_out or existing.check_in)
+        elapsed = (datetime.combine(today, now_time) - last_ts).total_seconds()
+        if elapsed < _SCAN_COOLDOWN:
+            return _error('Duplicate scan detected. Try again shortly.', 429)
+
+    # Mark cooldown AFTER validation passes
+    cache.set(throttle_key, 1, _SCAN_COOLDOWN)
 
     attendance, created = Attendance.objects.get_or_create(
         employee=employee,

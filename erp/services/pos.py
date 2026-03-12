@@ -10,6 +10,7 @@ Core business logic for Point of Sale operations:
   - generate_invoice_from_pos  Create Invoice + InvoiceLines from POSOrder
 """
 
+import logging
 from decimal import Decimal
 
 from django.db import transaction
@@ -26,6 +27,11 @@ from erp.models import (
 from erp.services.sequence import SequenceService
 from erp.services.inventory import record_stock_movement
 from erp.services.accounting import create_invoice_journal_entry
+
+logger = logging.getLogger(__name__)
+
+# Cash variance threshold (fraction of expected_cash); e.g. 0.05 = 5 %
+_CASH_VARIANCE_THRESHOLD = Decimal('0.05')
 
 
 def open_session(*, company, terminal, employee, opening_balance):
@@ -85,6 +91,26 @@ def close_session(*, session, employee, closing_balance, notes=''):
         session.total_refunds = refund_stats['total_refunds']
 
         session.save(using=db)
+
+    # -- Cash variance audit alert --
+    if session.expected_cash:
+        variance_ratio = abs(session.cash_difference) / session.expected_cash
+        if variance_ratio > _CASH_VARIANCE_THRESHOLD:
+            logger.warning(
+                "POS cash variance alert: session=%s employee=%s "
+                "expected=%s closing=%s diff=%s (%.1f%%)",
+                session.session_number,
+                employee.pk,
+                session.expected_cash,
+                session.closing_balance,
+                session.cash_difference,
+                float(variance_ratio * 100),
+            )
+            session.closing_notes = (
+                f"⚠ CASH VARIANCE {variance_ratio * 100:.1f}% "
+                f"(diff {session.cash_difference})\n{session.closing_notes}"
+            )
+            session.save(using=db, update_fields=['closing_notes'])
 
     return session
 
