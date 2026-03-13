@@ -1575,6 +1575,8 @@ msgid ""
 "This URL does not require login. Keep it private and only share with IT "
 "staff."
 msgstr ""
+"URL ini tidak memerlukan login. Simpan secara rahasia dan hanya bagikan "
+"dengan staf TI."
 
 #: .\erp\templates\erp\attendance\device_detail.html:57
 #, fuzzy
@@ -1669,6 +1671,8 @@ msgid ""
 "Revoke this device? The physical device will need to reconnect and be re-"
 "approved."
 msgstr ""
+"Cabut perangkat ini? Perangkat fisik perlu terhubung kembali dan disetujui "
+"ulang."
 
 #: .\erp\templates\erp\attendance\device_detail.html:131
 msgid "Revoke Binding"
@@ -1679,6 +1683,8 @@ msgid ""
 "No physical device has connected yet. Open the Kiosk URL above on a TV or "
 "tablet to start the binding process."
 msgstr ""
+"Belum ada perangkat fisik yang terhubung. Buka URL Kiosk di atas pada TV "
+"atau tablet untuk memulai proses pengikatan."
 
 #: .\erp\templates\erp\attendance\device_detail.html:152
 #: .\erp\templates\erp\attendance\kiosk_pending.html:114
@@ -1758,6 +1764,8 @@ msgid ""
 "A physical device has connected and needs your approval before it can "
 "display the attendance QR code."
 msgstr ""
+"Perangkat fisik telah terhubung dan memerlukan persetujuan Anda sebelum "
+"dapat menampilkan kode QR kehadiran."
 
 #: .\erp\templates\erp\attendance\device_list.html:47
 #, fuzzy
@@ -1994,6 +2002,7 @@ msgid ""
 "This device has been registered and is waiting for the administrator to "
 "approve it."
 msgstr ""
+"Perangkat ini telah terdaftar dan menunggu persetujuan dari administrator."
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:110
 msgid "Once approved, the attendance QR code will appear here automatically."
@@ -2018,6 +2027,9 @@ msgid ""
 "current device from the Attendance Devices page and then visit this URL "
 "again on the new device."
 msgstr ""
+"Jika perangkat ini perlu dialihkan, minta administrator untuk mencabut "
+"perangkat saat ini dari halaman Perangkat Kehadiran lalu kunjungi URL ini "
+"lagi pada perangkat baru."
 
 #: .\erp\templates\erp\attendance\list.html:4
 #: .\erp\templates\erp\attendance\list.html:5 .\erp\templates\erp\base.html:515
@@ -4383,6 +4395,8 @@ msgid ""
 "Make sure you allow camera access when prompted. HTTPS is required for "
 "camera access."
 msgstr ""
+"Pastikan Anda mengizinkan akses kamera saat diminta. HTTPS diperlukan untuk "
+"akses kamera."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:138
 msgid "Camera access denied or not available. Please check permissions."
@@ -4397,6 +4411,8 @@ msgid ""
 "Your browser does not support camera access. Please use a modern browser "
 "with HTTPS."
 msgstr ""
+"Browser Anda tidak mendukung akses kamera. Silakan gunakan browser modern "
+"dengan HTTPS."
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:5
 #, fuzzy
@@ -4929,6 +4945,8 @@ msgid ""
 "This will generate a unique registration link. Share it with new employees "
 "so they can register their accounts."
 msgstr ""
+"Ini akan menghasilkan tautan pendaftaran unik. Bagikan dengan karyawan baru "
+"agar mereka dapat mendaftarkan akun mereka."
 
 #: .\erp\templates\erp\employees\invite_link_form.html:27
 #: .\erp\templates\erp\leads\convert_confirm.html:32
@@ -7107,6 +7125,8 @@ msgid ""
 "These suggestions are based on active reorder rules where current stock has "
 "fallen below the reorder point."
 msgstr ""
+"Saran-saran ini didasarkan pada aturan pemesanan ulang aktif di mana stok "
+"saat ini telah turun di bawah titik pemesanan ulang."
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:26
 msgid "Suggestions"
@@ -7636,6 +7656,8 @@ msgid ""
 "These settings affect how inventory is valued in financial reports and "
 "journal entries."
 msgstr ""
+"Pengaturan ini memengaruhi bagaimana persediaan dinilai dalam laporan "
+"keuangan dan entri jurnal."
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:5
 #, fuzzy
@@ -8109,6 +8131,8 @@ msgid ""
 "A new customer account will be created from the lead data and its status "
 "will be changed to Won."
 msgstr ""
+"Akun pelanggan baru akan dibuat dari data prospek dan statusnya akan diubah "
+"menjadi Dimenangkan."
 
 #: .\erp\templates\erp\leads\convert_confirm.html:23
 #, fuzzy
@@ -9274,6 +9298,8 @@ msgid ""
 "A new invoice will be created with <strong>Draft</strong> status from the "
 "quote data. You can edit the invoice after creation."
 msgstr ""
+"Faktur baru akan dibuat dengan status <strong>Draf</strong> dari data "
+"penawaran. Anda dapat mengedit faktur setelah dibuat."
 
 #: .\erp\templates\erp\quotes\convert_confirm.html:33
 #: .\erp\templates\erp\quotes\detail.html:64
@@ -10382,6 +10408,8 @@ msgid ""
 "Fill in your details to register. Your employer will review and approve your "
 "account."
 msgstr ""
+"Isi data Anda untuk mendaftar. Perusahaan Anda akan meninjau dan menyetujui "
+"akun Anda."
 
 #: .\tenants\templates\tenants\employee_register.html:29
 msgid "Login Credentials"
