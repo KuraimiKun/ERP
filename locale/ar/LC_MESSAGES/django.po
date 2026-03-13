@@ -1575,6 +1575,8 @@ msgid ""
 "This URL does not require login. Keep it private and only share with IT "
 "staff."
 msgstr ""
+"هذا الرابط لا يتطلب تسجيل الدخول. احتفظ به بشكل سري وشاركه فقط مع فريق "
+"تكنولوجيا المعلومات."
 
 #: .\erp\templates\erp\attendance\device_detail.html:57
 #, fuzzy
@@ -1669,6 +1671,8 @@ msgid ""
 "Revoke this device? The physical device will need to reconnect and be re-"
 "approved."
 msgstr ""
+"هل تريد إلغاء ربط هذا الجهاز؟ سيحتاج الجهاز الفعلي إلى إعادة الاتصال "
+"والموافقة عليه مجدداً."
 
 #: .\erp\templates\erp\attendance\device_detail.html:131
 msgid "Revoke Binding"
@@ -1679,6 +1683,8 @@ msgid ""
 "No physical device has connected yet. Open the Kiosk URL above on a TV or "
 "tablet to start the binding process."
 msgstr ""
+"لم يتصل أي جهاز فعلي بعد. افتح رابط الكشك أعلاه على تلفزيون أو جهاز لوحي "
+"لبدء عملية الربط."
 
 #: .\erp\templates\erp\attendance\device_detail.html:152
 #: .\erp\templates\erp\attendance\kiosk_pending.html:114
@@ -1758,6 +1764,8 @@ msgid ""
 "A physical device has connected and needs your approval before it can "
 "display the attendance QR code."
 msgstr ""
+"تم اتصال جهاز فعلي ويحتاج إلى موافقتك قبل أن يتمكن من عرض رمز QR الخاص "
+"بالحضور."
 
 #: .\erp\templates\erp\attendance\device_list.html:47
 #, fuzzy
@@ -1994,6 +2002,7 @@ msgid ""
 "This device has been registered and is waiting for the administrator to "
 "approve it."
 msgstr ""
+"تم تسجيل هذا الجهاز وهو في انتظار موافقة المسؤول."
 
 #: .\erp\templates\erp\attendance\kiosk_pending.html:110
 msgid "Once approved, the attendance QR code will appear here automatically."
@@ -2018,6 +2027,9 @@ msgid ""
 "current device from the Attendance Devices page and then visit this URL "
 "again on the new device."
 msgstr ""
+"إذا كان هذا الجهاز بحاجة إلى إعادة تعيين، اطلب من المسؤول إلغاء ربط الجهاز "
+"الحالي من صفحة أجهزة الحضور ثم قم بزيارة هذا الرابط مرة أخرى على الجهاز "
+"الجديد."
 
 #: .\erp\templates\erp\attendance\list.html:4
 #: .\erp\templates\erp\attendance\list.html:5 .\erp\templates\erp\base.html:515
@@ -4381,6 +4393,8 @@ msgid ""
 "Make sure you allow camera access when prompted. HTTPS is required for "
 "camera access."
 msgstr ""
+"تأكد من السماح بالوصول إلى الكاميرا عند المطالبة. يتطلب الوصول إلى الكاميرا "
+"بروتوكول HTTPS."
 
 #: .\erp\templates\erp\employee_portal\qr_scanner.html:138
 msgid "Camera access denied or not available. Please check permissions."
@@ -4395,6 +4409,8 @@ msgid ""
 "Your browser does not support camera access. Please use a modern browser "
 "with HTTPS."
 msgstr ""
+"متصفحك لا يدعم الوصول إلى الكاميرا. يرجى استخدام متصفح حديث مع بروتوكول "
+"HTTPS."
 
 #: .\erp\templates\erp\employee_portal\scan_result.html:5
 #, fuzzy
@@ -4927,6 +4943,8 @@ msgid ""
 "This will generate a unique registration link. Share it with new employees "
 "so they can register their accounts."
 msgstr ""
+"سيتم إنشاء رابط تسجيل فريد. شاركه مع الموظفين الجدد حتى يتمكنوا من تسجيل "
+"حساباتهم."
 
 #: .\erp\templates\erp\employees\invite_link_form.html:27
 #: .\erp\templates\erp\leads\convert_confirm.html:32
@@ -7101,6 +7119,8 @@ msgid ""
 "These suggestions are based on active reorder rules where current stock has "
 "fallen below the reorder point."
 msgstr ""
+"تستند هذه الاقتراحات إلى قواعد إعادة الطلب النشطة حيث انخفض المخزون الحالي "
+"إلى ما دون نقطة إعادة الطلب."
 
 #: .\erp\templates\erp\inventory\reorder_suggestions.html:26
 msgid "Suggestions"
@@ -7630,6 +7650,7 @@ msgid ""
 "These settings affect how inventory is valued in financial reports and "
 "journal entries."
 msgstr ""
+"تؤثر هذه الإعدادات على كيفية تقييم المخزون في التقارير المالية وقيود اليومية."
 
 #: .\erp\templates\erp\inventory\warehouse_detail.html:5
 #, fuzzy
@@ -8100,6 +8121,8 @@ msgid ""
 "A new customer account will be created from the lead data and its status "
 "will be changed to Won."
 msgstr ""
+"سيتم إنشاء حساب عميل جديد من بيانات العميل المحتمل وسيتم تغيير حالته إلى "
+"مكسوب."
 
 #: .\erp\templates\erp\leads\convert_confirm.html:23
 #, fuzzy
@@ -9260,6 +9283,8 @@ msgid ""
 "A new invoice will be created with <strong>Draft</strong> status from the "
 "quote data. You can edit the invoice after creation."
 msgstr ""
+"سيتم إنشاء فاتورة جديدة بحالة <strong>مسودة</strong> من بيانات عرض السعر. "
+"يمكنك تعديل الفاتورة بعد إنشائها."
 
 #: .\erp\templates\erp\quotes\convert_confirm.html:33
 #: .\erp\templates\erp\quotes\detail.html:64
@@ -10364,6 +10389,7 @@ msgid ""
 "Fill in your details to register. Your employer will review and approve your "
 "account."
 msgstr ""
+"أدخل بياناتك للتسجيل. سيقوم صاحب العمل بمراجعة حسابك والموافقة عليه."
 
 #: .\tenants\templates\tenants\employee_register.html:29
 msgid "Login Credentials"
