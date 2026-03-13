@@ -1,11 +1,25 @@
 \babel@toc {english}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Evolution of ERP systems from MRP (1970s) to Cloud AI-ERP (2020s)}}{8}{figure.caption.2}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Three levels of multi-tenant data isolation}}{10}{figure.caption.4}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Evolution of ERP systems from MRP (1970s) to Cloud AI-ERP (2020s)}}{9}{figure.caption.2}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Three levels of multi-tenant data isolation}}{11}{figure.caption.4}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Sprint (Agile) methodology lifecycle}}{17}{figure.caption.6}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Gantt chart showing Sprint timeline and dependencies}}{19}{figure.caption.8}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces High-level system architecture showing the three-tier design with multi-tenant database routing}}{21}{figure.caption.10}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Database-per-tenant architecture with dynamic PostgreSQL provisioning}}{22}{figure.caption.11}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces AI/ML pipeline architecture showing the flow from raw data to actionable insights}}{23}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Sprint (Agile) methodology lifecycle}}{23}{figure.caption.7}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Gantt chart showing Sprint timeline and dependencies}}{25}{figure.caption.9}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces High-level system architecture showing the three-tier design with multi-tenant database routing}}{27}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Database-per-tenant architecture with dynamic PostgreSQL provisioning}}{28}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces AI/ML pipeline architecture showing the flow from raw data to actionable insights}}{30}{figure.caption.13}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Use case diagram for the Explainable AI module}}{42}{figure.caption.16}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Class diagram for the ExplainabilityService and related components}}{43}{figure.caption.17}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Data flow for instance-level SHAP/LIME explanation generation}}{45}{figure.caption.19}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces ROC/AUC comparison chart of the three classification models}}{52}{figure.caption.21}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Late Payment global SHAP beeswarm/bar importance visual}}{53}{figure.caption.23}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces Lead Scoring global SHAP visual showing temporal leakage dominance}}{54}{figure.caption.25}%
+\contentsline {figure}{\numberline {6.4}{\ignorespaces Employee Attrition global SHAP visual showing proxy-target leakage}}{55}{figure.caption.27}%
+\contentsline {figure}{\numberline {6.5}{\ignorespaces Summary dashboard figure comparing normal vs leaky feature-importance profiles}}{56}{figure.caption.29}%
+\contentsline {figure}{\numberline {6.6}{\ignorespaces SHAP waterfall plot of a single high-risk Late Payment prediction}}{57}{figure.caption.31}%
+\contentsline {figure}{\numberline {6.7}{\ignorespaces Side-by-side SHAP vs LIME explanation comparison visual}}{58}{figure.caption.33}%
+\addvspace {10\p@ }

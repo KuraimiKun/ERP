@@ -165,6 +165,10 @@ INPUT C:\Program Files\MiKTeX\tex\latex\amsmath\amsgen.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\amsmath\amsbsy.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\amsmath\amsbsy.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\amsmath\amsopn.sty
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\amssymb.sty
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\amssymb.sty
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\amsfonts.sty
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\amsfonts.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\pgf\frontendlayer\tikz.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\pgf\frontendlayer\tikz.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\pgf\basiclayer\pgf.sty
@@ -318,7 +322,54 @@ INPUT C:\Program Files\MiKTeX\tex\latex\pdflscape\pdflscape-nometadata.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\pdflscape\pdflscape-nometadata.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\graphics\lscape.sty
 INPUT C:\Program Files\MiKTeX\tex\latex\graphics\lscape.sty
+INPUT .\figures\Lambang-UM.png
+INPUT .\figures\Lambang-UM.png
+INPUT .\figures\Lambang-UM.png
+INPUT .\figures\Lambang-UM.png
+INPUT .\figures\Lambang-UM.png
+INPUT .\figures\Lambang-UM.png
+INPUT .\figures\Lambang-UM.png
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
+INPUT C:\Users\Kuraimi\AppData\Local\MiKTeX\fonts\map\pdftex\pdftex.map
+INPUT C:\Program Files\MiKTeX\fonts\enc\dvips\base\8r.enc
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm
+INPUT C:\Program Files\MiKTeX\tex\latex\psnfss\t1pcr.fd
+INPUT C:\Program Files\MiKTeX\tex\latex\psnfss\t1pcr.fd
+INPUT C:\Program Files\MiKTeX\tex\latex\psnfss\t1pcr.fd
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\courier\pcrr8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrr8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
+INPUT .\thesis.toc
+INPUT .\thesis.toc
+INPUT thesis.toc
 INPUT C:\Program Files\MiKTeX\fonts\tfm\public\cm\cmr8.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\public\cm\cmr6.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\public\cm\cmmi12.tfm
@@ -330,40 +381,18 @@ INPUT C:\Program Files\MiKTeX\fonts\tfm\public\cm\cmsy6.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\public\cm\cmex10.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\cmextra\cmex8.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\cmextra\cmex7.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8r.tfm
-INPUT C:\Users\Kuraimi\AppData\Local\MiKTeX\fonts\map\pdftex\pdftex.map
-INPUT C:\Program Files\MiKTeX\fonts\enc\dvips\base\8r.enc
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
-INPUT .\thesis.toc
-INPUT .\thesis.toc
-INPUT thesis.toc
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\umsa.fd
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\umsa.fd
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\umsa.fd
+INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\symbols\msam10.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\symbols\msam10.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\symbols\msam7.tfm
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\umsb.fd
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\umsb.fd
+INPUT C:\Program Files\MiKTeX\tex\latex\amsfonts\umsb.fd
+INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\symbols\msbm10.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\symbols\msbm10.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\public\amsfonts\symbols\msbm7.tfm
 INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
 OUTPUT thesis.toc
@@ -387,62 +416,141 @@ INPUT .\figures\erp_evolution_timeline.png
 INPUT .\figures\erp_evolution_timeline.png
 INPUT .\figures\erp_evolution_timeline.png
 INPUT .\figures\erp_evolution_timeline.png
-INPUT C:\Program Files\MiKTeX\tex\latex\psnfss\t1pcr.fd
-INPUT C:\Program Files\MiKTeX\tex\latex\psnfss\t1pcr.fd
-INPUT C:\Program Files\MiKTeX\tex\latex\psnfss\t1pcr.fd
+INPUT .\figures\multi_tenancy_models.png
+INPUT .\figures\multi_tenancy_models.png
+INPUT .\figures\multi_tenancy_models.png
+INPUT .\figures\multi_tenancy_models.png
+INPUT .\figures\multi_tenancy_models.png
+INPUT .\figures\multi_tenancy_models.png
+INPUT .\figures\multi_tenancy_models.png
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
+INPUT .\figures\sprint_lifecycle.png
+INPUT .\figures\sprint_lifecycle.png
+INPUT .\figures\sprint_lifecycle.png
+INPUT .\figures\sprint_lifecycle.png
+INPUT .\figures\sprint_lifecycle.png
+INPUT .\figures\sprint_lifecycle.png
+INPUT .\figures\sprint_lifecycle.png
+INPUT .\figures\sprint_gantt_chart.png
+INPUT .\figures\sprint_gantt_chart.png
+INPUT .\figures\sprint_gantt_chart.png
+INPUT .\figures\sprint_gantt_chart.png
+INPUT .\figures\sprint_gantt_chart.png
+INPUT .\figures\sprint_gantt_chart.png
+INPUT .\figures\sprint_gantt_chart.png
+INPUT .\figures\system_architecture.png
+INPUT .\figures\system_architecture.png
+INPUT .\figures\system_architecture.png
+INPUT .\figures\system_architecture.png
+INPUT .\figures\system_architecture.png
+INPUT .\figures\system_architecture.png
+INPUT .\figures\system_architecture.png
+INPUT .\figures\multi_tenant_architecture.png
+INPUT .\figures\multi_tenant_architecture.png
+INPUT .\figures\multi_tenant_architecture.png
+INPUT .\figures\multi_tenant_architecture.png
+INPUT .\figures\multi_tenant_architecture.png
+INPUT .\figures\multi_tenant_architecture.png
+INPUT .\figures\multi_tenant_architecture.png
+INPUT .\figures\ml_pipeline_architecture.png
+INPUT .\figures\ml_pipeline_architecture.png
+INPUT .\figures\ml_pipeline_architecture.png
+INPUT .\figures\ml_pipeline_architecture.png
+INPUT .\figures\ml_pipeline_architecture.png
+INPUT .\figures\ml_pipeline_architecture.png
+INPUT .\figures\ml_pipeline_architecture.png
+INPUT .\figures\xai_use_case_diagram.png
+INPUT .\figures\xai_use_case_diagram.png
+INPUT .\figures\xai_use_case_diagram.png
+INPUT .\figures\xai_use_case_diagram.png
+INPUT .\figures\xai_use_case_diagram.png
+INPUT .\figures\xai_use_case_diagram.png
+INPUT .\figures\xai_use_case_diagram.png
+INPUT .\figures\xai_class_diagram.png
+INPUT .\figures\xai_class_diagram.png
+INPUT .\figures\xai_class_diagram.png
+INPUT .\figures\xai_class_diagram.png
+INPUT .\figures\xai_class_diagram.png
+INPUT .\figures\xai_class_diagram.png
+INPUT .\figures\xai_class_diagram.png
+INPUT .\figures\xai_pipeline_architecture.png
+INPUT .\figures\xai_pipeline_architecture.png
+INPUT .\figures\xai_pipeline_architecture.png
+INPUT .\figures\xai_pipeline_architecture.png
+INPUT .\figures\xai_pipeline_architecture.png
+INPUT .\figures\xai_pipeline_architecture.png
+INPUT .\figures\xai_pipeline_architecture.png
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
 INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\courier\pcrr8t.vf
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrr8r.tfm
-INPUT .\figures\multi_tenancy_models.png
-INPUT .\figures\multi_tenancy_models.png
-INPUT .\figures\multi_tenancy_models.png
-INPUT .\figures\multi_tenancy_models.png
-INPUT .\figures\multi_tenancy_models.png
-INPUT .\figures\multi_tenancy_models.png
-INPUT .\figures\multi_tenancy_models.png
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
-INPUT .\figures\sprint_lifecycle.png
-INPUT .\figures\sprint_lifecycle.png
-INPUT .\figures\sprint_lifecycle.png
-INPUT .\figures\sprint_lifecycle.png
-INPUT .\figures\sprint_lifecycle.png
-INPUT .\figures\sprint_lifecycle.png
-INPUT .\figures\sprint_lifecycle.png
-INPUT .\figures\sprint_gantt_chart.png
-INPUT .\figures\sprint_gantt_chart.png
-INPUT .\figures\sprint_gantt_chart.png
-INPUT .\figures\sprint_gantt_chart.png
-INPUT .\figures\sprint_gantt_chart.png
-INPUT .\figures\sprint_gantt_chart.png
-INPUT .\figures\sprint_gantt_chart.png
-INPUT .\figures\system_architecture.png
-INPUT .\figures\system_architecture.png
-INPUT .\figures\system_architecture.png
-INPUT .\figures\system_architecture.png
-INPUT .\figures\system_architecture.png
-INPUT .\figures\system_architecture.png
-INPUT .\figures\system_architecture.png
-INPUT .\figures\multi_tenant_architecture.png
-INPUT .\figures\multi_tenant_architecture.png
-INPUT .\figures\multi_tenant_architecture.png
-INPUT .\figures\multi_tenant_architecture.png
-INPUT .\figures\multi_tenant_architecture.png
-INPUT .\figures\multi_tenant_architecture.png
-INPUT .\figures\multi_tenant_architecture.png
-INPUT .\figures\ml_pipeline_architecture.png
-INPUT .\figures\ml_pipeline_architecture.png
-INPUT .\figures\ml_pipeline_architecture.png
-INPUT .\figures\ml_pipeline_architecture.png
-INPUT .\figures\ml_pipeline_architecture.png
-INPUT .\figures\ml_pipeline_architecture.png
-INPUT .\figures\ml_pipeline_architecture.png
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrb8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\courier\pcrb8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrb8r.tfm
+INPUT .\figures\xai_model_auc_comparison.png
+INPUT .\figures\xai_model_auc_comparison.png
+INPUT .\figures\xai_model_auc_comparison.png
+INPUT .\figures\xai_model_auc_comparison.png
+INPUT .\figures\xai_model_auc_comparison.png
+INPUT .\figures\xai_model_auc_comparison.png
+INPUT .\figures\xai_model_auc_comparison.png
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
+INPUT .\figures\xai_shap_global_late_payment_beeswarm.png
+INPUT .\figures\xai_shap_global_late_payment_beeswarm.png
+INPUT .\figures\xai_shap_global_late_payment_beeswarm.png
+INPUT .\figures\xai_shap_global_late_payment_beeswarm.png
+INPUT .\figures\xai_shap_global_late_payment_beeswarm.png
+INPUT .\figures\xai_shap_global_late_payment_beeswarm.png
+INPUT .\figures\xai_shap_global_late_payment_beeswarm.png
+INPUT .\figures\xai_shap_global_lead_scoring_beeswarm.png
+INPUT .\figures\xai_shap_global_lead_scoring_beeswarm.png
+INPUT .\figures\xai_shap_global_lead_scoring_beeswarm.png
+INPUT .\figures\xai_shap_global_lead_scoring_beeswarm.png
+INPUT .\figures\xai_shap_global_lead_scoring_beeswarm.png
+INPUT .\figures\xai_shap_global_lead_scoring_beeswarm.png
+INPUT .\figures\xai_shap_global_lead_scoring_beeswarm.png
+INPUT .\figures\xai_shap_global_attrition_beeswarm.png
+INPUT .\figures\xai_shap_global_attrition_beeswarm.png
+INPUT .\figures\xai_shap_global_attrition_beeswarm.png
+INPUT .\figures\xai_shap_global_attrition_beeswarm.png
+INPUT .\figures\xai_shap_global_attrition_beeswarm.png
+INPUT .\figures\xai_shap_global_attrition_beeswarm.png
+INPUT .\figures\xai_shap_global_attrition_beeswarm.png
+INPUT .\figures\xai_leakage_summary_dashboard.png
+INPUT .\figures\xai_leakage_summary_dashboard.png
+INPUT .\figures\xai_leakage_summary_dashboard.png
+INPUT .\figures\xai_leakage_summary_dashboard.png
+INPUT .\figures\xai_leakage_summary_dashboard.png
+INPUT .\figures\xai_leakage_summary_dashboard.png
+INPUT .\figures\xai_leakage_summary_dashboard.png
+INPUT .\figures\xai_instance_waterfall_example.png
+INPUT .\figures\xai_instance_waterfall_example.png
+INPUT .\figures\xai_instance_waterfall_example.png
+INPUT .\figures\xai_instance_waterfall_example.png
+INPUT .\figures\xai_instance_waterfall_example.png
+INPUT .\figures\xai_instance_waterfall_example.png
+INPUT .\figures\xai_instance_waterfall_example.png
+INPUT .\figures\xai_shap_vs_lime_side_by_side.png
+INPUT .\figures\xai_shap_vs_lime_side_by_side.png
+INPUT .\figures\xai_shap_vs_lime_side_by_side.png
+INPUT .\figures\xai_shap_vs_lime_side_by_side.png
+INPUT .\figures\xai_shap_vs_lime_side_by_side.png
+INPUT .\figures\xai_shap_vs_lime_side_by_side.png
+INPUT .\figures\xai_shap_vs_lime_side_by_side.png
 INPUT .\thesis.bbl
 INPUT .\thesis.bbl
 INPUT thesis.bbl
 INPUT thesis.aux
 INPUT .\thesis.out
 INPUT .\thesis.out
+INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
+INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmex10.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi12.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi12.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmmi8.pfb
@@ -453,6 +561,12 @@ INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmr8.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmr8.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy10.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy10.pfb
+INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy8.pfb
+INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\cm\cmsy8.pfb
+INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\symbols\msbm10.pfb
+INPUT C:\Program Files\MiKTeX\fonts\type1\public\amsfonts\symbols\msbm10.pfb
+INPUT C:\Program Files\MiKTeX\fonts\type1\urw\courier\ucrb8a.pfb
+INPUT C:\Program Files\MiKTeX\fonts\type1\urw\courier\ucrb8a.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\urw\courier\ucrr8a.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\urw\courier\ucrr8a.pfb
 INPUT C:\Program Files\MiKTeX\fonts\type1\urw\times\utmb8a.pfb

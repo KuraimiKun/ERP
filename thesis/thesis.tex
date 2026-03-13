@@ -34,8 +34,13 @@
 \usepackage{tocloft}
 \usepackage{natbib}
 \usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
 \usepackage{tikz}
 \usepackage{pdfpages}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
 \usepackage{lipsum}
 
 % ── Hyperref settings ───────────────────────────────────────────
@@ -44,8 +49,8 @@
   linkcolor=black,
   citecolor=black,
   urlcolor=blue,
-  pdftitle={AI-Enhanced Multi-Tenant ERP System},
-  pdfauthor={Salah Abdullah Khalil},
+  pdftitle={Explainable AI in Multi-Tenant ERP Systems},
+  pdfauthor={Ahmed AMeen Hassan Alkuraimi},
 }
 
 % ── Code listing style ──────────────────────────────────────────
@@ -114,30 +119,26 @@
 
 \vspace*{0.5cm}
 
-% ── University Logo Placeholder ─────────────────────────────────
-\fbox{\parbox{4cm}{\vspace{2cm}\centering\textit{University Logo}\vspace{2cm}}}
+% ── University Logo ───────────────────────────────────────────────
+\includegraphics[width=5cm]{figures/Lambang-UM.png}
 
 \vspace{1cm}
 
-{\Large\textbf{Kingdom of Saudi Arabia}}\\[0.3cm]
-{\Large\textbf{Ministry of Education}}\\[0.3cm]
-{\Large\textbf{University Name}}\\[0.3cm]
-{\large\textbf{College of Computer Science and Information Technology}}\\[0.3cm]
-{\large\textbf{Department of Information Technology}}\\[1.5cm]
+{\Large\textbf{State University of Malang}}\\[1.5cm]
 
-{\LARGE\textbf{Design and Implementation of an AI-Enhanced\\[0.3cm]
-Multi-Tenant Enterprise Resource Planning System\\[0.3cm]
-Using Machine Learning for Business Intelligence}}\\[2cm]
+{\LARGE\textbf{Explainable AI for Business Intelligence\\[0.3cm]
+in a Multi-Tenant Enterprise Resource Planning System:\\[0.3cm]
+SHAP and LIME Explanations for ML-Driven Decisions}}\\[2cm]
 
 {\large A Graduation Project Submitted in Partial Fulfillment of the\\
 Requirements for the Degree of\\[0.3cm]
-\textbf{Bachelor of Science in Information Technology}}\\[1.5cm]
+\textbf{bachelor of Informatics Engineering}}\\[1.5cm]
 
 {\large\textbf{Prepared by:}}\\[0.3cm]
-{\large Salah Abdullah Khalil}\\[1cm]
+{\large Ahmed AMeen Hassan Alkuraimi}\\[1cm]
 
-{\large\textbf{Supervised by:}}\\[0.3cm]
-{\large [Supervisor Name]}\\[1.5cm]
+% {\large\textbf{Supervised by:}}\\[0.3cm]
+% {\large [Supervisor Name]}\\[1.5cm]
 
 {\large\textbf{First Semester 1447 / 2025--2026}}
 
@@ -204,16 +205,18 @@ Finally, I extend my heartfelt appreciation to my \textbf{family}, especially my
 {\LARGE\textbf{Abstract}}\\[1.5cm]
 \end{center}
 
-Enterprise Resource Planning (ERP) systems serve as the backbone of modern organizational management by integrating core business processes into a unified platform. However, small and medium enterprises (SMEs) in the Middle East and North Africa (MENA) region face significant barriers to adopting commercial ERP solutions, including prohibitive licensing costs, lack of Arabic language support, and limited customization capabilities. Furthermore, traditional ERP systems largely function as passive record-keeping tools, lacking the predictive and prescriptive intelligence required for proactive business decision-making.
+Enterprise Resource Planning (ERP) systems serve as the backbone of modern organizational management by integrating core business processes into a unified platform. As machine learning (ML) models are increasingly embedded in ERP workflows to automate business decisions, a critical challenge emerges: these models operate as opaque ``black boxes,'' producing predictions without justification. Business users---managers approving credit terms, HR officers prioritising retention interventions, sales teams qualifying leads---cannot act confidently on predictions they do not understand. Explainable Artificial Intelligence (XAI) addresses this gap by making model reasoning transparent, auditable, and actionable.
 
-This graduation project presents the design and implementation of an \textbf{AI-Enhanced Multi-Tenant ERP System} built on the Django web framework with PostgreSQL database isolation per tenant. The system integrates \textbf{eight machine learning models} spanning five business domains: (1)~Lead Scoring using Gradient Boosting, (2)~Late Payment Prediction using Gradient Boosted Trees, (3)~Employee Attrition Risk using Random Forest, (4)~Expense Anomaly Detection using Isolation Forest, (5)~Attendance Pattern Analysis using Z-Score statistics, (6)~Demand Forecasting using Facebook Prophet, (7)~Cash Flow Projection using rule-based modeling, and (8)~KPI Anomaly Detection using statistical process control.
+This graduation project presents the design, implementation, and evaluation of an \textbf{Explainable AI framework} within a \textbf{multi-tenant ERP system} built on Django 4.2 with PostgreSQL database-per-tenant isolation. The system integrates \textbf{eight ML models} spanning five business domains and augments three tree-based classifiers---Late Payment Prediction (Gradient Boosting), Lead Scoring (Gradient Boosting), and Employee Attrition Risk (Random Forest)---with dual post-hoc explanation methods: \textbf{SHAP} (SHapley Additive exPlanations) via TreeExplainer for exact Shapley-value attribution, and \textbf{LIME} (Local Interpretable Model-agnostic Explanations) as a model-agnostic comparison baseline. The XAI module provides both \textit{instance-level} explanations (why was this specific invoice flagged as high-risk?) and \textit{global} feature importance rankings (which factors drive late payments across all customers?), with interactive waterfall, beeswarm, and force-plot visualisations delivered through the ERP's web interface.
 
-The system was developed following the \textbf{Sprint (Agile)} methodology with iterative development cycles. The architecture features over 80 domain models organized into nine functional modules (Finance, HR, CRM, Inventory/WMS, POS, Fixed Assets, Suppliers, Reporting, and AI), a complete REST API, and a real-time AI Insight notification engine. Multi-tenancy is achieved through dynamic PostgreSQL database provisioning via Docker containers or remote server connections, ensuring complete data isolation between organizations.
+The system was developed following the \textbf{Sprint (Agile)} methodology across eight two-week iterations. The architecture features over 80 domain models organised into nine functional modules (Finance, HR, CRM, Inventory/WMS, POS, Fixed Assets, Suppliers, Reporting, and AI), a complete REST API, and a real-time AI Insight notification engine. Multi-tenancy is achieved through dynamic PostgreSQL database provisioning via Docker containers or remote server connections, ensuring complete data isolation between organisations.
 
-Experimental evaluation demonstrates strong model performance: Lead Scoring achieves an AUC-ROC of \textbf{0.9980} after temporal-leakage correction and feature engineering with 15 behavioural features, Employee Attrition Prediction achieves \textbf{1.0000} using 14 features including payroll-derived compensation signals, Demand Forecasting achieves an average accuracy of \textbf{0.7249} across 80 products using Prophet cross-validation, Late Payment Prediction achieves an honest AUC-ROC of \textbf{0.6366} after removing a data-leakage feature, and the KPI Anomaly Detector successfully identifies statistically significant business metric deviations with calibrated z-score thresholds.
+Experimental evaluation on a tenant dataset comprising 98{,}478 invoices, 5{,}200 leads, and 1{,}720 employees demonstrates: (1)~Late Payment Prediction achieves AUC-ROC~=~\textbf{0.6366} with well-distributed SHAP contributions across 18 features (top feature accounts for only 27\% of total importance), confirming the model captures genuine multi-factor risk signals; (2)~Lead Scoring achieves AUC-ROC~=~\textbf{0.9980}, but SHAP analysis reveals that the feature \texttt{days\_since\_created} dominates with 63.7\% importance share---correctly surfacing \textbf{temporal data leakage} that inflates apparent accuracy; (3)~Employee Attrition achieves AUC-ROC~=~\textbf{1.0000}, with SHAP identifying \texttt{payroll\_months} as contributing 55.9\% of total importance---again exposing \textbf{data leakage} from a proxy target. All nine tested instances across three models produce valid SHAP waterfall decompositions and LIME explanations with matching prediction scores. Cross-method comparison shows 2-of-5 top-feature overlap between SHAP and LIME, consistent with known divergences between Shapley-value and locally-weighted linear surrogate approaches \citep{slack2020fooling}.
+
+The key finding is that \textbf{XAI serves as a model validation tool}: by quantifying per-feature contributions, SHAP and LIME expose data-leakage issues that standard aggregate metrics (AUC-ROC, accuracy) fail to detect---demonstrating that explainability is not merely a post-hoc reporting luxury but an essential component of responsible ML deployment in enterprise systems.
 
 \vspace{0.5cm}
-\noindent\textbf{Keywords:} ERP System, Machine Learning, Multi-Tenant Architecture, Django, Business Intelligence, Demand Forecasting, Anomaly Detection, Prophet, Gradient Boosting, Agile Development.
+\noindent\textbf{Keywords:} Explainable AI, SHAP, LIME, ERP System, Machine Learning, Multi-Tenant Architecture, Django, Business Intelligence, Feature Attribution, Data Leakage Detection, Model Interpretability, Agile Development.
 
 \newpage
 
@@ -256,7 +259,9 @@ GBM     & Gradient Boosting Machine \\
 HR      & Human Resources \\
 JSON    & JavaScript Object Notation \\
 KPI     & Key Performance Indicator \\
+LIME    & Local Interpretable Model-agnostic Explanations \\
 MAE     & Mean Absolute Error \\
+MASE    & Mean Absolute Scaled Error \\
 MENA    & Middle East and North Africa \\
 ML      & Machine Learning \\
 ORM     & Object-Relational Mapping \\
@@ -264,11 +269,13 @@ PO      & Purchase Order \\
 POS     & Point of Sale \\
 REST    & Representational State Transfer \\
 ROC     & Receiver Operating Characteristic \\
+SHAP    & SHapley Additive exPlanations \\
 SME     & Small and Medium Enterprise \\
 SQL     & Structured Query Language \\
 UI      & User Interface \\
 UUID    & Universally Unique Identifier \\
 WMS     & Warehouse Management System \\
+XAI     & Explainable Artificial Intelligence \\
 \bottomrule
 \end{longtable}
 
@@ -289,11 +296,11 @@ WMS     & Warehouse Management System \\
 
 Enterprise Resource Planning (ERP) systems have become indispensable tools for organizations seeking to integrate and streamline their core business processes. An ERP system consolidates diverse functional areas---including finance, human resources, customer relationship management, inventory, and procurement---into a single unified platform that facilitates data sharing, eliminates redundancy, and enables informed decision-making \citep{monk2013concepts}. The global ERP market was valued at approximately USD 54.76 billion in 2022 and is projected to reach USD 123.41 billion by 2030, reflecting the growing recognition of ERP as a strategic asset rather than a mere operational tool \citep{grandviewresearch2023}.
 
-Despite this growth, the adoption of ERP systems among small and medium enterprises (SMEs) in the Middle East and North Africa (MENA) region remains disproportionately low compared to markets in North America and Europe. Research indicates that key barriers include the high total cost of ownership of commercial solutions such as SAP and Oracle, the scarcity of Arabic language support in open-source alternatives, the complexity of deployment and customization, and the limited IT infrastructure in many SMEs \citep{almajali2016antecedents}. These challenges leave a substantial segment of the business landscape relying on disconnected spreadsheets, manual processes, and fragmented software tools that hinder growth and competitiveness.
+The rapid advancement of Machine Learning (ML) has enabled a new generation of ERP systems that embed predictive models directly within transactional workflows---forecasting demand, scoring sales leads, predicting payment defaults, and flagging employee attrition risk. However, the predictive accuracy of these models is only half of the challenge. ML algorithms such as Gradient Boosting Machines and Random Forests produce predictions without exposing their reasoning, creating a ``black-box'' problem that undermines user trust and inhibits adoption \citep{lipton2018mythos}. A sales manager who is told that a lead has a ``92\% conversion probability'' but receives no explanation of \textit{why} is unlikely to change their behaviour; a finance officer who cannot see \textit{which factors} drove a late-payment flag cannot prioritise collection efforts effectively.
 
-Concurrently, the rapid advancement of Artificial Intelligence (AI) and Machine Learning (ML) has opened new opportunities for augmenting traditional business systems with predictive and prescriptive capabilities. Modern ML algorithms can analyze historical business data to forecast demand, predict customer payment behavior, detect anomalies in financial transactions, and identify employees at risk of attrition---capabilities that transform an ERP system from a passive record-keeper into a proactive decision-support platform \citep{davenport2018ai}.
+Explainable Artificial Intelligence (XAI) addresses this transparency gap. XAI encompasses a family of techniques that augment ML predictions with human-understandable justifications \citep{arrieta2020explainable}. Two prominent post-hoc explanation methods---\textbf{SHAP} (SHapley Additive exPlanations) \citep{lundberg2017unified} and \textbf{LIME} (Local Interpretable Model-agnostic Explanations) \citep{ribeiro2016why}---have emerged as complementary tools for attributing predictions to individual input features. SHAP, grounded in cooperative game theory, provides theoretically exact feature attributions; LIME, based on locally-faithful linear surrogates, offers model-agnostic approximations. Together, they provide a dual-lens view of model behaviour that strengthens both user trust and model validation.
 
-This project addresses both challenges simultaneously by designing and implementing an \textbf{AI-Enhanced Multi-Tenant ERP System} that is (a)~accessible and affordable for SMEs through a multi-tenant Software-as-a-Service (SaaS) architecture, (b)~built with Arabic language support from the ground up, and (c)~integrated with eight machine learning models that provide actionable business intelligence across five functional domains.
+This project designs and implements an \textbf{Explainable AI framework within a multi-tenant ERP system}. The ERP platform is built on Django 4.2 with PostgreSQL database-per-tenant isolation and integrates eight ML models across five business domains. The XAI module augments three tree-based classifiers---Late Payment Prediction, Lead Scoring, and Employee Attrition---with SHAP TreeExplainer and LIME TabularExplainer, providing instance-level and global explanations through interactive visualisations (waterfall plots, beeswarm charts, force plots). The central thesis contribution is demonstrating that \textbf{XAI serves as a model validation tool}: SHAP and LIME analysis exposed data-leakage issues in two of three models that standard aggregate metrics (AUC-ROC) failed to detect.
 
 \section{Problem Statement}
 \label{sec:problem_statement}
@@ -310,6 +317,8 @@ The current landscape of ERP adoption among SMEs, particularly in the MENA regio
   \item \textbf{Rigid Single-Tenant Architectures:} Many existing ERP solutions follow a single-tenant deployment model that requires dedicated infrastructure for each organization, driving up hosting costs and administrative overhead. Multi-tenant architectures, which allow multiple organizations to share the same application instance while maintaining complete data isolation, are more cost-effective but technically challenging to implement correctly \citep{bezemer2010multi}.
 
   \item \textbf{Lack of Proactive Decision Support:} Business managers frequently make critical decisions---such as inventory reorder quantities, credit terms, employee retention strategies, and cash flow management---based on intuition rather than data-driven insights. The absence of embedded ML models within the ERP workflow means that valuable predictive signals buried in transactional data remain unexploited \citep{provost2013data}.
+
+  \item \textbf{Opacity of ML Predictions in Enterprise Systems:} Where ML models are deployed in ERP systems, they typically operate as opaque ``black boxes'' that output scores or classifications without justification. Business users cannot verify whether a high-risk flag reflects genuine risk factors or artefacts of biased training data. This opacity violates emerging regulatory expectations for algorithmic transparency \citep{eu2019ethics} and prevents practitioners from detecting data-quality issues such as feature leakage, target leakage, and spurious correlations that inflate reported accuracy metrics \citep{rudin2019stop}. Without explainability, ML-enhanced ERP systems risk automating errors at scale.
 \end{enumerate}
 
 \section{Project Objectives}
@@ -334,6 +343,14 @@ This project aims to achieve the following objectives:
     \item \textit{KPI Anomaly Detection} --- Statistical process control for business metric monitoring
   \end{itemize}
 
+  \item \textbf{Design and implement an Explainable AI (XAI) module} that augments the tree-based ML classifiers with dual post-hoc explanation methods:
+  \begin{itemize}
+    \item \textit{SHAP (TreeExplainer)} --- Exact Shapley-value feature attribution for Gradient Boosting and Random Forest models, providing both instance-level waterfall decompositions and global beeswarm/importance rankings.
+    \item \textit{LIME (TabularExplainer)} --- Model-agnostic locally-faithful linear surrogate explanations as a complementary validation baseline.
+  \end{itemize}
+
+  \item \textbf{Evaluate the XAI framework's effectiveness} as a model validation tool by analysing whether SHAP and LIME can detect data-quality issues (temporal leakage, proxy-target leakage) that standard metrics (AUC-ROC, accuracy) fail to surface.
+
   \item Develop an AI Insight Engine that automatically generates actionable alerts and recommendations from ML model outputs and delivers them as real-time notifications to relevant users.
 
   \item Provide bilingual support (English and Arabic) with proper RTL rendering throughout the user interface.
@@ -353,7 +370,8 @@ The scope of this project encompasses the following:
   \item Multi-tenant platform administration: user signup, approval workflow, database provisioning, and role-based access control (Owner, Admin, User, Read-Only).
   \item Nine ERP functional modules with complete CRUD operations, business logic, and reporting.
   \item Eight ML models with training pipelines, model versioning, prediction logging, and accuracy evaluation.
-  \item RESTful API layer using Django REST Framework (DRF) for mobile and third-party integration.
+  \item \textbf{Explainable AI module} providing SHAP TreeExplainer and LIME TabularExplainer for three tree-based classifiers, with instance-level and global explanation capabilities, waterfall/beeswarm visualisations, and explanation history persistence.
+  \item RESTful API layer using Django REST Framework (DRF) for mobile and third-party integration, including dedicated XAI API endpoints.
   \item AI Insight notification system with severity levels (Info, Warning, Critical) and automatic deduplication.
   \item Asynchronous task processing using Celery with Redis as the message broker.
   \item Data seeding utilities for testing and demonstration.
@@ -375,9 +393,11 @@ This project makes several contributions:
 \begin{enumerate}[label=\arabic*.]
   \item \textbf{Practical Contribution:} It delivers a fully functional, production-ready ERP system that SMEs in the MENA region can deploy without the licensing costs associated with commercial alternatives. The multi-tenant SaaS model further reduces per-organization costs by sharing infrastructure.
 
-  \item \textbf{Technical Innovation:} To the best of our knowledge, this is among the first open-source ERP implementations that embeds eight ML models directly within the transactional workflow---not as an external BI layer, but as integral components that train on the organization's own data, generate predictions in real time, and write actionable insights back into the ERP.
+  \item \textbf{Explainability Contribution (Primary):} The project demonstrates the integration of dual post-hoc XAI methods (SHAP and LIME) into an operational ERP system, providing transparent, per-prediction justifications to non-technical business users. Crucially, the evaluation reveals that XAI analysis exposed \textbf{data-leakage} issues in 2 of 3 models---issues that standard aggregate metrics (AUC-ROC of 0.998 and 1.000) masked as excellent performance. This establishes XAI as an essential \textit{model validation} tool, not merely a reporting feature, and contributes empirical evidence to the debate on the necessity of explainability in applied ML \citep{rudin2019stop}.
 
-  \item \textbf{Academic Contribution:} The project demonstrates the practical application of multiple ML algorithms (Gradient Boosting, Random Forest, Isolation Forest, Prophet, Z-Score) to real-world ERP datasets, providing empirical performance metrics (AUC-ROC, MAE, F1-Score) and documenting data-leakage identification and correction methodologies that contribute to the body of knowledge on applied machine learning in business systems.
+  \item \textbf{Technical Innovation:} To the best of our knowledge, this is among the first open-source ERP implementations that embeds eight ML models directly within the transactional workflow---not as an external BI layer, but as integral components that train on the organization's own data, generate predictions in real time, and write actionable insights back into the ERP---augmented with a dedicated XAI service that generates Shapley-value attributions and LIME surrogates.
+
+  \item \textbf{Academic Contribution:} The project provides empirical performance metrics (AUC-ROC, MAE, F1-Score), documents feature-importance distributions, cross-method explanation agreement rates, and data-leakage identification methodologies, contributing to the body of knowledge on applied XAI in business systems.
 
   \item \textbf{Bilingual Accessibility:} By incorporating Arabic names, labels, and RTL support at the model level (dual-language fields throughout all 80+ models), the system addresses a persistent localization gap in open-source ERP solutions.
 \end{enumerate}
@@ -392,9 +412,13 @@ This project seeks to answer the following research questions:
 
   \item To what extent can machine learning models trained on ERP transactional data provide accurate and actionable predictions for business processes such as demand forecasting, payment risk assessment, and employee attrition?
 
-  \item What software architecture and design patterns are required to seamlessly integrate ML model training, prediction, and insight generation into the standard ERP operational workflow?
+  \item \textbf{How effectively can SHAP and LIME explanations expose data-quality issues (feature leakage, proxy-target leakage) that standard aggregate evaluation metrics fail to detect?}
 
-  \item How does the Sprint (Agile) development methodology facilitate the iterative development of a complex, multi-module ERP system with integrated AI capabilities?
+  \item \textbf{To what extent do SHAP (Shapley-value) and LIME (locally-faithful surrogate) explanations agree on feature importance rankings for the same model and instance, and what do divergences reveal about model behaviour?}
+
+  \item What software architecture and design patterns are required to seamlessly integrate ML model training, prediction, explainability, and insight generation into the standard ERP operational workflow?
+
+  \item How does the Sprint (Agile) development methodology facilitate the iterative development of a complex, multi-module ERP system with integrated AI and XAI capabilities?
 \end{enumerate}
 
 \section{Report Organization}
@@ -403,17 +427,17 @@ This project seeks to answer the following research questions:
 The remainder of this report is organized as follows:
 
 \begin{itemize}
-  \item \textbf{Chapter 2 --- Literature Review:} Provides a comprehensive review of existing ERP systems, multi-tenant architectures, and the application of machine learning in enterprise systems. It examines related work and identifies the gaps that this project addresses.
+  \item \textbf{Chapter 2 --- Literature Review:} Provides a comprehensive review of existing ERP systems, multi-tenant architectures, the application of machine learning in enterprise systems, and the foundations of Explainable AI---including SHAP, LIME, and the broader XAI taxonomy. It examines related work and identifies the gaps that this project addresses.
 
-  \item \textbf{Chapter 3 --- Methodology:} Describes the Sprint (Agile) development methodology adopted, the system architecture, the technology stack, and the ML model design and evaluation approach.
+  \item \textbf{Chapter 3 --- Methodology:} Describes the Sprint (Agile) development methodology adopted, the system architecture, the technology stack, the ML model design, and the XAI evaluation approach including global and instance-level explanation strategies.
 
-  \item \textbf{Chapter 4 --- System Analysis and Design:} Presents the system requirements (functional and non-functional), use case diagrams, class diagrams, database schema design, and the AI/ML pipeline architecture.
+  \item \textbf{Chapter 4 --- System Analysis and Design:} Presents the system requirements (functional and non-functional), use case diagrams, class diagrams, database schema design, and the AI/ML/XAI pipeline architecture.
 
-  \item \textbf{Chapter 5 --- Implementation and Testing:} Details the implementation of key system components, code structure, ML model training results, and testing procedures.
+  \item \textbf{Chapter 5 --- Implementation and Testing:} Details the implementation of key system components, the XAI service (SHAP TreeExplainer, LIME TabularExplainer), code structure, ML model training results, and testing procedures.
 
-  \item \textbf{Chapter 6 --- Results and Discussion:} Analyzes the ML model performance metrics, system usability, and discusses the findings in the context of the research questions.
+  \item \textbf{Chapter 6 --- Results and Discussion:} Analyses the ML model performance metrics, SHAP and LIME explanation outputs, data-leakage detection findings, cross-method agreement, and discusses the results in the context of the research questions.
 
-  \item \textbf{Chapter 7 --- Conclusion and Future Work:} Summarizes the contributions, acknowledges limitations, and proposes directions for future enhancement.
+  \item \textbf{Chapter 7 --- Conclusion and Future Work:} Summarizes the contributions, acknowledges limitations, and proposes directions for future enhancement including attention-based explanations and counterfactual reasoning.
 \end{itemize}
 
 
@@ -589,6 +613,108 @@ Z-score-based anomaly detection is a classical statistical quality control techn
 The project's KPI Anomaly Detector monitors five daily metrics (revenue, expenses, new leads, overdue invoices, inventory movements) against 90-day rolling baselines, generating WARNING alerts for deviations exceeding $2\sigma$ and CRITICAL alerts for deviations exceeding $3\sigma$.
 
 
+\section{Explainable Artificial Intelligence (XAI)}
+\label{sec:xai_literature}
+
+\subsection{The Need for Explainability}
+
+As ML models are deployed in high-stakes business decision systems, the demand for transparency has intensified from both regulatory and practical perspectives. The European Commission's High-Level Expert Group on AI identified \textit{transparency} and \textit{explicability} as two of seven key requirements for trustworthy AI \citep{eu2019ethics}. \citet{lipton2018mythos} distinguishes between \textit{transparency} (understanding the model's internal mechanics) and \textit{post-hoc interpretability} (explaining individual predictions after the fact), arguing that practical explanation needs vary by stakeholder: a data scientist may want feature interactions, while a business manager needs a ranked list of the top reasons behind a prediction.
+
+\citet{doshi2017towards} formalise the notion that interpretability is not a monolithic property but depends on the explanation consumer, the task domain, and the evaluation criteria. In enterprise settings, explanations serve three purposes: (1)~\textit{trust calibration}---enabling users to decide when to accept or override a model's recommendation; (2)~\textit{model debugging}---helping developers diagnose errors, data leakage, or distribution shift; and (3)~\textit{regulatory compliance}---satisfying audit requirements for algorithmic decision-making.
+
+\subsection{Taxonomy of XAI Methods}
+
+\citet{arrieta2020explainable} provide a comprehensive taxonomy of XAI methods along several dimensions:
+
+\begin{itemize}
+  \item \textbf{Scope:} \textit{Global} methods explain the model's overall behaviour (e.g., which features matter most across all predictions), while \textit{local} methods explain individual predictions (e.g., why was this specific invoice flagged).
+
+  \item \textbf{Stage:} \textit{Ante-hoc} methods build interpretability into the model itself (e.g., decision trees, linear regression), while \textit{post-hoc} methods explain an existing trained model without modifying it.
+
+  \item \textbf{Model dependency:} \textit{Model-specific} methods exploit the internal structure of a particular algorithm (e.g., TreeExplainer for tree ensembles), while \textit{model-agnostic} methods treat the model as a black box and explain it by perturbing inputs and observing outputs.
+\end{itemize}
+
+\citet{guidotti2018survey} survey over 150 explanation methods and classify them into six families: feature attribution, rule extraction, prototype-based, counterfactual, attention-based, and example-based explanations. This project focuses on \textit{feature attribution} methods, which assign a numerical importance score to each input feature for a given prediction.
+
+\subsection{SHAP: SHapley Additive exPlanations}
+
+SHAP, introduced by \citet{lundberg2017unified}, unifies several existing explanation methods (LIME, DeepLIFT, Layer-wise Relevance Propagation) under the framework of \textit{Shapley values} from cooperative game theory \citep{shapley1953value}. The key insight is that explaining a prediction is analogous to dividing the ``payout'' (the prediction's deviation from the baseline) among the ``players'' (input features) in a fair manner.
+
+The Shapley value $\phi_i$ of feature $i$ is defined as:
+
+\begin{equation}
+\phi_i = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|! \; (|N| - |S| - 1)!}{|N|!} \left[ f(S \cup \{i\}) - f(S) \right]
+\label{eq:shapley}
+\end{equation}
+
+\noindent where $N$ is the set of all features, $S$ is a subset excluding feature $i$, and $f(S)$ is the model's expected output given only the features in $S$. The Shapley value represents the average marginal contribution of feature $i$ across all possible feature orderings, satisfying four desirable properties \citep{lundberg2017unified}:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Local accuracy (efficiency):} $\sum_{i=1}^{|N|} \phi_i = f(x) - \mathbb{E}[f(X)]$ --- the attributions sum to the difference between the prediction and the baseline.
+  \item \textbf{Missingness:} If a feature is absent from the model, its attribution is zero.
+  \item \textbf{Consistency:} If a feature's marginal contribution increases in a new model, its attribution does not decrease.
+  \item \textbf{Symmetry:} Features with equal contributions receive equal attributions.
+\end{enumerate}
+
+For tree-based models, \citet{lundberg2020local} developed \textbf{TreeExplainer}, an algorithm that computes exact Shapley values in $O(TLD^2)$ time (where $T$ is the number of trees, $L$ is the maximum number of leaves, and $D$ is the maximum depth), making it practical for production use with Gradient Boosting and Random Forest models containing hundreds of trees.
+
+\subsection{LIME: Local Interpretable Model-agnostic Explanations}
+
+LIME, introduced by \citet{ribeiro2016why}, explains individual predictions by approximating the model locally with an interpretable surrogate model. The procedure is:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Perturb:} Generate synthetic samples near the instance to be explained by randomly toggling features on/off.
+  \item \textbf{Predict:} Obtain the original model's prediction for each perturbed sample.
+  \item \textbf{Weight:} Assign higher weights to perturbed samples closer to the original instance (using an exponential kernel).
+  \item \textbf{Fit:} Train a weighted linear regression on the perturbed dataset to obtain feature coefficients.
+  \item \textbf{Explain:} The linear coefficients represent each feature's local contribution to the prediction.
+\end{enumerate}
+
+Formally, LIME seeks the explanation $\xi$ that minimises:
+
+\begin{equation}
+\xi(x) = \argmin_{g \in G} \; \mathcal{L}(f, g, \pi_x) + \Omega(g)
+\label{eq:lime}
+\end{equation}
+
+\noindent where $f$ is the original model, $g$ is the interpretable surrogate, $\pi_x$ is the proximity kernel centred on instance $x$, $\mathcal{L}$ is the fidelity loss (how well $g$ approximates $f$ locally), and $\Omega(g)$ is a complexity penalty (e.g., limiting the number of non-zero coefficients).
+
+LIME is model-agnostic---it can explain any classifier or regressor---but its explanations are \textit{approximate} and can vary across runs due to the stochastic perturbation process. \citet{slack2020fooling} demonstrate that LIME explanations can be manipulated by adversarially designed models, highlighting the importance of using multiple explanation methods (e.g., SHAP + LIME) for cross-validation.
+
+\subsection{SHAP vs.\ LIME: Complementary Strengths}
+
+Table~\ref{tab:shap_vs_lime} summarises the key differences between SHAP and LIME:
+
+\begin{table}[H]
+\centering
+\caption{Comparison of SHAP and LIME explanation methods}
+\label{tab:shap_vs_lime}
+\begin{tabularx}{\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Property} & \textbf{SHAP (TreeExplainer)} & \textbf{LIME (TabularExplainer)} \\
+\midrule
+Theoretical basis & Shapley values (game theory) & Locally-faithful linear surrogate \\
+Guarantees & Exact local accuracy, consistency, symmetry & Approximate local fidelity \\
+Model dependency & Tree-specific (exact); kernel (approx.) & Model-agnostic \\
+Determinism & Deterministic for tree models & Stochastic (random perturbations) \\
+Global explanations & Yes (mean $|\text{SHAP}|$ aggregation) & No (instance-level only) \\
+Computation cost & $O(TLD^2)$ per instance & $O(n_{\text{perturb}} \cdot T_{\text{predict}})$ \\
+Additivity & $\sum \phi_i = f(x) - E[f]$ & No additivity guarantee \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Using both methods provides \textit{explanation triangulation}: when SHAP and LIME agree on the top contributing features, confidence in the explanation is high; when they diverge, it signals that the model may behave non-linearly in the local neighbourhood, warranting closer inspection \citep{molnar2022interpretable}.
+
+\subsection{XAI as a Model Validation Tool}
+
+Beyond user-facing transparency, XAI methods have proven effective for \textit{model debugging} and \textit{data-quality validation}. \citet{lundberg2020local} demonstrate that aggregating SHAP values across a dataset reveals unexpected feature dominance---a telltale sign of data leakage, where a feature carries information that would not be available at prediction time in production.
+
+For example, if a payment-prediction model assigns 60\%+ of its total SHAP importance to a single engineered feature, this disproportionate reliance suggests that the feature may encode the target variable (data leakage) rather than capturing a genuine predictive pattern. Standard metrics such as AUC-ROC report high performance regardless, because the leaked feature genuinely correlates with the target---but the model would fail catastrophically in deployment where the leaked feature's value is not available \citep{molnar2022interpretable}.
+
+This use of XAI for model validation is a central theme of this project: the evaluation in Chapter~6 demonstrates that SHAP analysis surfaced data-leakage issues in 2 of 3 ML models that reported excellent AUC-ROC scores.
+
+
 \section{Related Work}
 \label{sec:related_work}
 
@@ -596,7 +722,21 @@ The project's KPI Anomaly Detector monitors five daily metrics (revenue, expense
 
 \citet{lee2020erp} survey the integration of AI technologies into ERP systems and identify three implementation strategies: (1)~embedded AI within the ERP platform itself, (2)~AI as an external service integrated via APIs, and (3)~AI as a middleware layer between the ERP and a BI platform. They conclude that the embedded approach provides the tightest integration and lowest latency but requires the deepest technical expertise. This project follows the embedded approach.
 
-SAP introduced ``SAP Business AI'' in 2023, incorporating predictive analytics and natural language processing into S/4HANA Cloud. However, these capabilities are available only in the Enterprise tier, which carries substantial licensing costs. Oracle Fusion Cloud ERP similarly offers ML-driven anomaly detection and forecasting features in its premium offerings. No open-source ERP system currently provides comparable embedded ML capabilities.
+SAP introduced ``SAP Business AI'' in 2023, incorporating predictive analytics and natural language processing into S/4HANA Cloud. However, these capabilities are available only in the Enterprise tier, which carries substantial licensing costs. Oracle Fusion Cloud ERP similarly offers ML-driven anomaly detection and forecasting features in its premium offerings. No open-source ERP system currently provides comparable embedded ML capabilities, let alone post-hoc XAI explanations for its predictions.
+
+\subsection{XAI in Business Decision Systems}
+
+Several studies have applied SHAP and LIME to business-domain ML models, but \textit{none} embed these explanations within an operational ERP system:
+
+\begin{itemize}
+  \item \citet{lundberg2020local} apply TreeSHAP to medical risk prediction models and demonstrate that global SHAP importance plots can reveal data-quality issues. Their work establishes the ``XAI as debugging'' paradigm that this project extends to ERP-domain models.
+
+  \item \citet{molnar2022interpretable} provides a comprehensive practitioner's guide to SHAP, LIME, and other IML methods, with case studies in credit scoring and customer churn prediction. The guide recommends using multiple explanation methods for cross-validation---an approach adopted in this project.
+
+  \item \citet{slack2020fooling} demonstrate that LIME explanations can be manipulated by adversarially designed models, underscoring the need for SHAP's theoretical guarantees as a complementary check. This motivates the dual SHAP+LIME approach in this project.
+
+  \item \citet{rudin2019stop} argues that for high-stakes decisions, inherently interpretable models should be preferred over post-hoc explanations of black boxes. While this position has merit, in the ERP context where tree-based models significantly outperform linear classifiers (AUC-ROC 0.998 vs.\ $\sim$0.85 for logistic regression), post-hoc explanations offer a pragmatic middle ground.
+\end{itemize}
 
 \subsection{Multi-Tenant Django Applications}
 
@@ -622,6 +762,10 @@ The literature review reveals the following gaps that this project addresses:
 \midrule
 No open-source ERP with embedded ML & \citet{lee2020erp}; SAP/Oracle features are premium-only & 8 ML models embedded in a free, open-source ERP \\
 \addlinespace
+No XAI explanations in ERP ML models & \citet{arrieta2020explainable}; \citet{rudin2019stop}; commercial ERP AI provides no per-prediction justification & \textbf{Dual SHAP + LIME explanations} for 3 tree-based classifiers with waterfall, beeswarm, and force-plot visualisations \\
+\addlinespace
+ML metrics mask data-quality issues & \citet{lundberg2020local}; \citet{molnar2022interpretable}; AUC-ROC does not reveal feature leakage & \textbf{XAI as model validation}: SHAP exposed data leakage in 2/3 models \\
+\addlinespace
 Limited multi-tenant options in Django & django-tenants supports schema-only; django-db-multitenant lacks provisioning & Custom DB-per-tenant with Docker provisioning and role-based access \\
 \addlinespace
 Poor Arabic support in open-source ERP & \citet{alkraiji2020}; Odoo/ERPNext have partial translations & Dual-language fields (\texttt{name}/\texttt{name\_ar}) in 80+ models \\
@@ -636,7 +780,7 @@ Lack of cross-domain ML in single ERP & Studies focus on single domains (finance
 \section{Summary}
 \label{sec:lit_summary}
 
-This chapter reviewed the evolution and current state of ERP systems, multi-tenant software architectures, and the application of machine learning in enterprise settings. The review established that while commercial ERP vendors have begun incorporating AI capabilities, these features remain inaccessible to SMEs due to cost and complexity. Open-source ERP alternatives lack both native multi-tenancy and integrated ML. This project bridges these gaps by combining a production-quality multi-tenant ERP with eight embedded ML models, delivered through an Agile Sprint development process that is detailed in the following chapter.
+This chapter reviewed the evolution and current state of ERP systems, multi-tenant software architectures, the application of machine learning in enterprise settings, and the theoretical foundations of Explainable AI---including SHAP's Shapley-value framework and LIME's locally-faithful surrogate approach. The review established that while commercial ERP vendors have begun incorporating AI capabilities, these features remain inaccessible to SMEs due to cost and complexity, and \textit{none} provide per-prediction explanations to business users. Open-source ERP alternatives lack both native multi-tenancy and integrated ML. Furthermore, the literature demonstrates that XAI methods can serve as model validation tools by surfacing data-quality issues that aggregate metrics fail to detect. This project bridges these gaps by combining a production-quality multi-tenant ERP with eight embedded ML models augmented by a dual SHAP+LIME explainability framework, delivered through an Agile Sprint development process that is detailed in the following chapter.
 
 
 % ██████████████████████████████████████████████████████████████████
@@ -680,7 +824,7 @@ The key principles of the Sprint methodology applied to this project include:
 
 \subsection{Sprint Plan for This Project}
 
-The project was organized into \textbf{seven Sprints} over the development period. Table~\ref{tab:sprint_plan} summarizes the Sprint plan:
+The project was organized into \textbf{eight Sprints} over the development period. Table~\ref{tab:sprint_plan} summarizes the Sprint plan:
 
 \begin{table}[H]
 \centering
@@ -703,6 +847,8 @@ The project was organized into \textbf{seven Sprints} over the development perio
 6 & 2 weeks & Data Integration \& ML Tuning & Dataset import commands, synthetic data seeding, Prophet hyperparameter tuning, KPI calibration, model evaluation \\
 \addlinespace
 7 & 2 weeks & Testing, Documentation \& Deployment & Integration testing, API documentation, deployment configuration (Gunicorn + Docker), thesis writing \\
+\addlinespace
+8 & 2 weeks & Explainable AI Module & ExplainabilityService (SHAP TreeExplainer + LIME TabularExplainer), ExplanationResult model, XAI API endpoints, XAI web views and templates, global/instance explanation evaluations, data-leakage analysis \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -720,7 +866,7 @@ Although this is an individual graduation project, the Sprint methodology roles 
 
 \begin{itemize}
   \item \textbf{Product Owner:} The project supervisor, who reviewed Sprint deliverables and provided feedback on priorities and acceptance criteria.
-  \item \textbf{Scrum Master / Developer:} The student (Salah Abdullah Khalil), responsible for Sprint planning, development, testing, and retrospective documentation.
+  \item \textbf{Scrum Master / Developer:} The student (Ahmed AMeen Hassan Alkuraimi), responsible for Sprint planning, development, testing, and retrospective documentation.
   \item \textbf{Stakeholders:} The academic committee and potential end users who provided domain feedback during the CRM, Finance, and HR module development.
 \end{itemize}
 
@@ -792,6 +938,16 @@ The ML pipeline is integrated into the ERP as a self-contained module (\texttt{e
 
   \item \textbf{Service Layer} (\texttt{erp.ai.services}): Contains the implementation of each ML model as a Python class. Each service class follows a consistent interface: \texttt{train()}, \texttt{predict()}, and an optional \texttt{score\_all()} batch method.
 
+  \item \textbf{Explainability Service} (\texttt{erp.ai.services.explainability}): The XAI module, encapsulated in the \texttt{ExplainabilityService} class.  It provides:
+  \begin{itemize}
+    \item \texttt{explain\_prediction()} --- Instance-level SHAP or LIME explanation for a single entity (invoice, lead, or employee), returning feature contributions, base values, top-feature rankings, and waterfall plot data.
+    \item \texttt{global\_feature\_importance()} --- Global SHAP analysis using a background sample (up to 200 instances), producing mean~$|\text{SHAP}|$ importance rankings, beeswarm data, and summary plots (base64-encoded PNG).
+    \item \texttt{get\_explanation\_history()} --- Retrieval of persisted explanations from the \texttt{ExplanationResult} model with optional filters by model type, entity, or method.
+  \end{itemize}
+  Internally, the service dispatches to \texttt{\_shap\_explain()} (using \texttt{shap.TreeExplainer}) for tree-based models (GBM, Random Forest) and \texttt{\_lime\_explain()} (using \texttt{lime.lime\_tabular.LimeTabularExplainer}) for model-agnostic fallback. It handles SHAP version differences (2D vs.\ 3D output arrays), scalar vs.\ array expected values, and applies artefact scalers when present.
+
+  \item \textbf{Explanation Result Model} (\texttt{ExplanationResult}): Persists each explanation with the entity type, entity ID, explanation method (SHAP/LIME), prediction score, feature contributions (JSON), and top features for audit and historical analysis.
+
   \item \textbf{Training Pipeline} (\texttt{train\_models} management command): An orchestrator that sequentially trains all selected models, evaluates their performance, and generates a JSON training report.
 
   \item \textbf{Prediction Logging} (\texttt{PredictionLog}): An immutable audit trail of every prediction made, enabling future retraining on actual outcomes.
@@ -825,6 +981,7 @@ Programming Language & Python 3.12 & Primary development language \\
 Database & PostgreSQL 12+ & Relational database for main and tenant databases \\
 REST API & Django REST Framework 3.14 & RESTful API layer for mobile/third-party integration \\
 ML / Data Science & scikit-learn 1.4, pandas 2.0, numpy 1.26 & Classical ML algorithms and data processing \\
+Explainable AI & SHAP 0.51, LIME 0.2, matplotlib 3.10 & SHAP TreeExplainer, LIME TabularExplainer, summary plots \\
 Time-Series Forecasting & Facebook Prophet 1.1.5 & Additive regression for demand forecasting \\
 LLM Integration & OpenAI API (GPT-4o-mini) & AI assistant and natural language analysis \\
 Task Queue & Celery 5.3 + Redis 5.0 & Asynchronous ML training and background jobs \\
@@ -948,6 +1105,29 @@ Each model is evaluated using appropriate metrics for its task type:
   \item \textbf{Cash Flow}: Validation against known payables and receivables in the database---checking that inflows equal outstanding invoice balances and outflows match pending supplier invoices.
 \end{itemize}
 
+\subsection{XAI Evaluation Methodology}
+\label{sec:xai_eval_methodology}
+
+The Explainable AI module is evaluated along four dimensions:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Explanation Validity (Additivity):} For SHAP explanations, the sum of all feature attributions plus the base value must equal the predicted probability (Equation~\ref{eq:shapley}). Any deviation exceeding $\pm0.01$ indicates a computational error. This property is verified programmatically for every instance-level explanation.
+
+  \item \textbf{Feature Coherence (Global):} For each model, the global SHAP feature importance distribution is analysed:
+  \begin{itemize}
+    \item The fraction of total importance held by the top feature is measured. A healthy model should spread importance across multiple features; dominance above 50\% triggers a data-leakage investigation.
+    \item The number of features with non-zero mean $|\text{SHAP}|$ is counted. If the model ignores most features (zero SHAP), the feature engineering may be deficient.
+  \end{itemize}
+
+  \item \textbf{Cross-Method Agreement:} For a set of representative instances, the top-5 features from SHAP and the top-5 features from LIME are compared. The overlap ratio (Jaccard similarity) quantifies explanation consistency. High agreement ($\geq 3/5$) increases confidence; low agreement ($\leq 1/5$) signals local non-linearity or LIME approximation instability.
+
+  \item \textbf{Data-Leakage Detection:} SHAP importance analysis is used to detect two types of leakage:
+  \begin{itemize}
+    \item \textit{Temporal leakage:} Features computed using future information relative to the prediction timestamp (e.g., \texttt{days\_since\_created} for historical leads).
+    \item \textit{Proxy-target leakage:} Features that encode the target variable through a correlated proxy (e.g., \texttt{payroll\_months} correlating with employment status).
+  \end{itemize}
+\end{enumerate}
+
 
 \section{Development Tools and Environment}
 \label{sec:dev_tools}
@@ -976,7 +1156,775 @@ Browser & Google Chrome DevTools & Frontend debugging and responsive design test
 \section{Summary}
 \label{sec:meth_summary}
 
-This chapter detailed the Sprint (Agile) methodology adopted for the project, breaking the development into seven two-week Sprints covering platform architecture through ML tuning and deployment. The three-tier system architecture with database-per-tenant multi-tenancy was described, along with the AI/ML pipeline that trains, evaluates, logs, and surfaces model outputs as actionable business insights. The technology stack centers on Django 4.2, PostgreSQL, scikit-learn, and Facebook Prophet. Data collection combines six real-world and synthetic datasets totaling over 140,000 records across five business domains. The following chapter presents the detailed system analysis and design, including use case diagrams, class diagrams, and database schema design.
+This chapter detailed the Sprint (Agile) methodology adopted for the project, breaking the development into eight two-week Sprints covering platform architecture through XAI evaluation and deployment. The three-tier system architecture with database-per-tenant multi-tenancy was described, along with the AI/ML pipeline that trains, evaluates, logs, and surfaces model outputs as actionable business insights, augmented by an Explainability Service that provides SHAP and LIME explanations. The technology stack centres on Django 4.2, PostgreSQL, scikit-learn, SHAP 0.51, LIME 0.2, and Facebook Prophet. Data collection combines six real-world and synthetic datasets totalling over 140,000 records across five business domains. The XAI evaluation methodology was defined with four dimensions: explanation validity, feature coherence, cross-method agreement, and data-leakage detection. The following chapter presents the detailed system analysis and design, including use case diagrams, class diagrams, and database schema design.
+
+
+% ██████████████████████████████████████████████████████████████████
+%
+%  CHAPTER 4 — SYSTEM ANALYSIS AND DESIGN
+%
+% ██████████████████████████████████████████████████████████████████
+\chapter{System Analysis and Design}
+\label{ch:analysis_design}
+
+\section{Introduction}
+\label{sec:ad_intro}
+
+This chapter presents the functional and non-functional requirements, use case modelling, class design, database schema, and the XAI pipeline architecture that together define the system's blueprint. The design builds on the architectural decisions described in Chapter~3 and provides the specification from which the implementation (Chapter~5) was realised.
+
+\section{Functional Requirements}
+\label{sec:functional_req}
+
+The system's functional requirements are organised into three tiers: platform-level, ERP-module-level, and AI/XAI-level.
+
+\subsection{Platform Requirements}
+
+\begin{longtable}{c p{3cm} p{8cm}}
+\caption{Platform-level functional requirements} \label{tab:platform_req} \\
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Description} \\
+\midrule
+\endhead
+FR-01 & User Registration & Users can register with email, password, company name, and optional preferred language. \\
+FR-02 & Tenant Approval & An administrator can approve or reject pending tenant registrations. \\
+FR-03 & Database Provisioning & Approved tenants trigger automatic PostgreSQL database creation on a configured server (Docker or remote). \\
+FR-04 & Role-Based Access & Four roles (Owner, Admin, User, Read-Only) control access to ERP functions within a tenant. \\
+FR-05 & Tenant Switching & Users with multiple database assignments can switch between tenant contexts. \\
+FR-06 & Session Isolation & Each request is routed to the correct tenant database via middleware and context managers. \\
+\bottomrule
+\end{longtable}
+
+\subsection{AI/XAI Requirements}
+
+\begin{longtable}{c p{3cm} p{8cm}}
+\caption{AI and XAI functional requirements} \label{tab:ai_xai_req} \\
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Description} \\
+\midrule
+\endhead
+FR-20 & Model Training & Admin users can trigger ML model training via a management command or Celery task. \\
+FR-21 & Model Versioning & The system maintains a version history of trained models with accuracy metrics. \\
+FR-22 & Batch Scoring & All eligible entities (invoices, leads, employees) can be scored in batch after training. \\
+FR-23 & AI Insights & Model outputs are converted into human-readable alerts (Info, Warning, Critical) and displayed in the ERP dashboard. \\
+FR-24 & \textbf{Instance Explanation} & Users can request a SHAP or LIME explanation for any individual prediction (invoice, lead, employee). \\
+FR-25 & \textbf{Global Importance} & Users can view the global SHAP feature importance ranking for any trained model. \\
+FR-26 & \textbf{Explanation History} & All explanations are persisted with timestamps, method, feature contributions, and prediction scores for audit. \\
+FR-27 & \textbf{XAI Visualisation} & Waterfall plots, beeswarm charts, and feature-contribution tables are rendered via Plotly in the web interface. \\
+FR-28 & \textbf{XAI API} & REST endpoints expose instance explanation, global importance, and explanation history for third-party integration. \\
+\bottomrule
+\end{longtable}
+
+\section{Non-Functional Requirements}
+\label{sec:nonfunctional_req}
+
+\begin{longtable}{c p{3cm} p{8cm}}
+\caption{Non-functional requirements} \label{tab:nonfunc_req} \\
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Description} \\
+\midrule
+\endhead
+NFR-01 & Data Isolation & Tenant data must be physically separated in dedicated PostgreSQL databases; cross-tenant queries must be impossible. \\
+NFR-02 & Response Time & SHAP instance explanations must complete within 5 seconds; LIME within 10 seconds; global SHAP within 30 seconds. \\
+NFR-03 & Scalability & The system must support 50+ concurrent tenants on a single application server. \\
+NFR-04 & Explanation Determinism & SHAP explanations for the same input must produce identical results across runs (deterministic). LIME explanations may vary within stochastic bounds. \\
+NFR-05 & Bilingual Support & All UI labels, model fields, and XAI feature names must be available in English and Arabic. \\
+NFR-06 & Auditability & Every prediction and explanation is logged immutably for regulatory compliance. \\
+NFR-07 & Portability & The system runs on any OS with Python 3.12+ and PostgreSQL 12+. \\
+\bottomrule
+\end{longtable}
+
+\section{Use Case Design}
+\label{sec:use_cases}
+
+\subsection{XAI Use Cases}
+
+The XAI module introduces three primary use cases:
+
+\begin{enumerate}[label=\textbf{UC-XAI-\arabic*:}]
+  \item \textbf{Explain Single Prediction:} The user selects an entity (e.g., Invoice \#1042) and requests an explanation. The system retrieves the trained model artefact, constructs the feature vector, invokes SHAP TreeExplainer (or LIME as fallback), and returns the waterfall plot data with ranked feature contributions.
+
+  \item \textbf{View Global Feature Importance:} The user selects a model type (e.g., Late Payment). The system samples up to 200 background instances, computes mean~$|\text{SHAP}|$ values for each feature, and renders a beeswarm chart and bar plot.
+
+  \item \textbf{Compare SHAP vs.\ LIME:} The user requests both explanation methods for the same entity. The system runs SHAP and LIME in sequence and displays the results side-by-side, highlighting agreement and divergence in top-5 feature rankings.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/xai_use_case_diagram.png}
+    \caption{Use case diagram for the Explainable AI module}
+    \label{fig:xai_use_case}
+\end{figure}
+
+\section{XAI Class Design}
+\label{sec:xai_class_design}
+
+The XAI module follows a layered design pattern:
+
+\begin{itemize}
+  \item \textbf{Service Layer} (\texttt{ExplainabilityService}): Stateless class instantiated with a \texttt{company} object. Orchestrates model loading, feature construction, explainer invocation, and result persistence.
+
+  \item \textbf{Model Layer} (\texttt{ExplanationResult}): Django ORM model with fields for \texttt{model} (FK to \texttt{MLModel}), \texttt{entity\_type}, \texttt{entity\_id}, \texttt{method} (shap/lime), \texttt{prediction\_score}, \texttt{feature\_contributions} (JSONField), \texttt{top\_features} (JSONField), and \texttt{created\_at}.
+
+  \item \textbf{Serialiser Layer} (\texttt{ExplanationResultSerializer}): DRF serialiser exposing explanation data via REST API.
+
+  \item \textbf{View Layer}: Web views (\texttt{ExplainabilityDashboardView}, \texttt{ExplainPredictionView}, \texttt{GlobalImportanceView}) and API viewsets (\texttt{ExplainabilityViewSet}).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/xai_class_diagram.png}
+    \caption{Class diagram for the ExplainabilityService and related components}
+    \label{fig:xai_class}
+\end{figure}
+
+\section{Database Schema Design}
+\label{sec:db_schema}
+
+\subsection{AI/XAI Schema}
+
+The AI module adds the following tables to each tenant database:
+
+\begin{table}[H]
+\centering
+\caption{AI/XAI database tables}
+\label{tab:ai_schema}
+\begin{tabularx}{\textwidth}{l l >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Table} & \textbf{Key Columns} & \textbf{Purpose} \\
+\midrule
+\texttt{ai\_mlmodel} & \texttt{model\_type}, \texttt{version}, \texttt{accuracy\_score}, \texttt{artefact\_path}, \texttt{parameters} (JSON) & Model registry: tracks trained model versions \\
+\addlinespace
+\texttt{ai\_predictionlog} & \texttt{model} (FK), \texttt{entity\_type}, \texttt{entity\_id}, \texttt{prediction\_score}, \texttt{features\_used} (JSON) & Immutable prediction audit trail \\
+\addlinespace
+\texttt{ai\_aiinsight} & \texttt{insight\_type}, \texttt{severity}, \texttt{title}, \texttt{message}, \texttt{action\_url}, \texttt{is\_read} & Human-readable ML alerts \\
+\addlinespace
+\texttt{ai\_explanationresult} & \texttt{model} (FK), \texttt{entity\_type}, \texttt{entity\_id}, \texttt{method}, \texttt{prediction\_score}, \texttt{feature\_contributions} (JSON), \texttt{top\_features} (JSON) & \textbf{Persisted SHAP/LIME explanations} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{XAI Pipeline Architecture}
+\label{sec:xai_pipeline_design}
+
+Figure~\ref{fig:xai_pipeline} illustrates the flow of an explanation request through the system:
+
+\begin{enumerate}[label=\arabic*.]
+  \item The user clicks ``Explain'' on an entity page (or calls the API endpoint).
+  \item The view layer invokes \texttt{ExplainabilityService.explain\_prediction()}.
+  \item The service loads the model artefact (classifier + scaler + feature\_cols) from the \texttt{MLModel} registry.
+  \item The feature vector is constructed by delegating to model-specific helper methods (e.g., \texttt{\_features\_late\_payment()}) that reuse the same feature engineering logic as the prediction service.
+  \item For tree-based models, \texttt{shap.TreeExplainer} is initialised with the classifier and computes exact Shapley values. The 3D output array (for newer SHAP versions with binary classifiers) is handled by slicing the positive-class index.
+  \item The base value (expected value of the positive class) is extracted, handling both scalar and array formats.
+  \item Feature contributions are sorted by $|\text{SHAP value}|$ descending, annotated with direction (``increases''/``decreases'') and human-readable impact descriptions.
+  \item Waterfall plot data (cumulative bar segments from base value to prediction) is computed for frontend rendering.
+  \item The explanation is persisted to \texttt{ExplanationResult} and returned to the view/API.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/xai_pipeline_architecture.png}
+    \caption{Data flow for instance-level SHAP/LIME explanation generation}
+    \label{fig:xai_pipeline_flow}
+\end{figure}
+
+\section{Summary}
+\label{sec:ad_summary}
+
+This chapter defined the functional and non-functional requirements for the AI-enhanced ERP system with XAI capabilities, presented use case and class design for the explainability module, described the database schema extensions for explanation persistence, and detailed the XAI pipeline architecture from user request to rendered waterfall plot. The following chapter describes the implementation of these designs.
+
+
+% ██████████████████████████████████████████████████████████████████
+%
+%  CHAPTER 5 — IMPLEMENTATION AND TESTING
+%
+% ██████████████████████████████████████████████████████████████████
+\chapter{Implementation and Testing}
+\label{ch:implementation}
+
+\section{Introduction}
+\label{sec:impl_intro}
+
+This chapter details the implementation of the system's key components, with particular focus on the Explainable AI module, ML model training pipeline, and multi-tenant infrastructure. It also describes the testing strategy and the procedures used to validate both traditional ML metrics and XAI outputs.
+
+\section{Project Structure}
+\label{sec:project_structure}
+
+The Django project follows a modular structure with the AI/XAI module implemented within the \texttt{erp/ai/} package:
+
+\begin{lstlisting}[caption={AI module directory structure},label={lst:ai_structure}]
+erp/ai/
+  __init__.py
+  models.py           # MLModel, PredictionLog, AIInsight,
+                      # ExplanationResult
+  serializers.py      # DRF serialisers for API
+  api_views.py        # REST API viewsets
+  views.py            # Web views for XAI dashboard
+  urls.py             # URL patterns
+  tasks.py            # Celery async tasks
+  services/
+    __init__.py
+    base.py           # Shared utilities (load_model_artefact,
+                      #   get_or_create_registry)
+    finance.py        # LatePaymentPredictor,
+                      #   ExpenseAnomalyDetector, CashFlowProjector
+    crm.py            # LeadScorer
+    hr.py             # AttritionPredictor,
+                      #   AttendanceAnomalyDetector
+    demand.py         # DemandForecaster
+    insights.py       # InsightGenerator, KPIAnomalyDetector
+    explainability.py # ExplainabilityService (SHAP + LIME)
+\end{lstlisting}
+
+\section{ExplainabilityService Implementation}
+\label{sec:xai_implementation}
+
+The \texttt{ExplainabilityService} class (approximately 550 lines) is the core of the XAI module. The key implementation details are:
+
+\subsection{SHAP TreeExplainer Integration}
+
+For tree-based models (Late Payment GBM, Lead Scoring GBM, Attrition RF), the service uses \texttt{shap.TreeExplainer}:
+
+\begin{lstlisting}[caption={SHAP instance explanation (simplified)},label={lst:shap_explain}]
+def _shap_explain(self, artefact, features, feature_names, model_type):
+    classifier = artefact['classifier']
+    X = features.copy()
+    if 'scaler' in artefact:
+        X = artefact['scaler'].transform(X)
+
+    explainer = shap.TreeExplainer(classifier)
+    shap_values = explainer.shap_values(X)
+
+    # Handle binary classification output formats
+    if isinstance(shap_values, list):
+        sv = shap_values[1][0]  # positive class, first instance
+    else:
+        sv = np.array(shap_values)
+        if sv.ndim == 3:        # newer SHAP: (samples, features, classes)
+            sv = sv[0, :, 1]
+        else:
+            sv = sv[0]
+
+    base_value = self._extract_base_value(explainer.expected_value)
+    prediction = float(classifier.predict_proba(X)[0][1])
+
+    # Build ranked feature contributions
+    contributions = {}
+    for name, shap_val, feat_val in zip(feature_names, sv, features[0]):
+        contributions[name] = {
+            'shap_value': round(float(shap_val), 6),
+            'feature_value': round(float(feat_val), 4),
+            'direction': 'increases' if shap_val > 0 else 'decreases',
+        }
+    return sorted_contributions, top_features, waterfall_data
+\end{lstlisting}
+
+\subsection{LIME TabularExplainer Integration}
+
+For model-agnostic explanations and cross-method validation:
+
+\begin{lstlisting}[caption={LIME instance explanation (simplified)},label={lst:lime_explain}]
+def _lime_explain(self, artefact, features, feature_names, model_type):
+    background_df = self._get_background_data(model_type, artefact)
+    X_bg = background_df[feature_names].fillna(0).values
+
+    explainer = lime.lime_tabular.LimeTabularExplainer(
+        training_data=X_bg,
+        feature_names=feature_names,
+        mode='classification',
+        random_state=42,
+    )
+    explanation = explainer.explain_instance(
+        X[0], classifier.predict_proba,
+        num_features=len(feature_names),
+    )
+    # Map LIME feature descriptions back to original names
+    lime_weights = explanation.as_list()
+    for feat_desc, weight in lime_weights:
+        matched_name = self._match_lime_feature(feat_desc, feature_names)
+        contributions[matched_name] = {
+            'lime_weight': round(float(weight), 6), ...
+        }
+\end{lstlisting}
+
+\subsection{Global Feature Importance}
+
+The global analysis computes mean~$|\text{SHAP}|$ across a background sample:
+
+\begin{lstlisting}[caption={Global SHAP importance computation},label={lst:global_shap}]
+def global_feature_importance(self, model_type):
+    X_bg = background_df[feature_names].fillna(0).values
+    if len(X_bg) > 200:
+        indices = np.random.RandomState(42).choice(len(X_bg), 200, replace=False)
+        X_bg = X_bg[indices]
+
+    explainer = shap.TreeExplainer(classifier)
+    shap_values = explainer.shap_values(X_bg)
+    # ... handle 2D/3D, list formats ...
+    mean_abs_shap = np.abs(sv).mean(axis=0)
+    importance = dict(zip(feature_names, mean_abs_shap.round(4).tolist()))
+\end{lstlisting}
+
+\subsection{Version Compatibility Handling}
+
+The implementation handles two critical SHAP version differences:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Output dimensionality:} Older SHAP versions return a Python list \texttt{[neg\_class\_array, pos\_class\_array]} for binary classifiers; newer versions return a single 3D NumPy array of shape \texttt{(n\_samples, n\_features, n\_classes)}. The code detects the format and slices accordingly.
+
+  \item \textbf{Expected value format:} \texttt{explainer.expected\_value} may be a scalar (single-output models) or an array \texttt{[neg\_ev, pos\_ev]}. The \texttt{\_extract\_base\_value()} helper safely handles both by converting to a NumPy array and checking \texttt{ndim}.
+\end{enumerate}
+
+\section{Multi-Tenant Implementation}
+\label{sec:mt_implementation}
+
+\subsection{Dynamic Database Registration}
+
+When a user authenticates, the middleware calls \texttt{add\_tenant\_database()} to register the tenant's connection parameters in Django's \texttt{DATABASES} dictionary:
+
+\begin{lstlisting}[caption={Dynamic tenant database registration},label={lst:add_tenant_db}]
+def add_tenant_database(db_assignment):
+    alias = f"tenant_{db_assignment.database.uuid}"
+    if alias not in settings.DATABASES:
+        settings.DATABASES[alias] = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_assignment.database.db_name,
+            'USER': db_assignment.database.server.username,
+            'PASSWORD': db_assignment.database.server.password,
+            'HOST': db_assignment.database.server.host,
+            'PORT': db_assignment.database.server.port,
+        }
+    return alias
+\end{lstlisting}
+
+\subsection{XAI in Multi-Tenant Context}
+
+The \texttt{ExplainabilityService} is always instantiated with a \texttt{company} object that belongs to the current tenant's database. All model registry queries and entity lookups are automatically routed to the correct tenant database by Django's ORM routing, ensuring that one tenant's explanations never access another tenant's data.
+
+\section{Testing Strategy}
+\label{sec:testing}
+
+\subsection{ML Model Testing}
+
+Each ML model is tested along two dimensions:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Training Pipeline:} Verify that the \texttt{train()} method produces a serialised artefact, registers it in \texttt{MLModel}, and reports an accuracy metric within expected bounds.
+
+  \item \textbf{Prediction Consistency:} For the same input features, verify that \texttt{predict()} returns the same score before and after model serialisation/deserialisation (round-trip test).
+\end{enumerate}
+
+\subsection{XAI Testing}
+
+The XAI module is tested with the following test cases:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{SHAP Additivity Test:} For each tree-based model, verify that $\sum \phi_i + \text{base\_value} \approx \text{prediction}$ within $\pm 0.01$ tolerance.
+
+  \item \textbf{LIME Convergence Test:} Verify that LIME's local linear approximation achieves $R^2 \geq 0.5$ (explanation \texttt{score} attribute) on the perturbed neighbourhood.
+
+  \item \textbf{Feature Count Consistency:} Verify that the number of SHAP values returned equals the number of input features for every model type.
+
+  \item \textbf{Explanation Persistence:} Verify that after calling \texttt{explain\_prediction()}, an \texttt{ExplanationResult} record is created in the database with the correct method, entity reference, and prediction score.
+
+  \item \textbf{Global Importance Ranking:} Verify that \texttt{global\_feature\_importance()} returns a dictionary with all feature names as keys and positive float values that sum to a non-zero total.
+
+  \item \textbf{Cross-Tenant Isolation:} Verify that an \texttt{ExplainabilityService} instantiated for tenant A cannot access models or entities from tenant B.
+\end{enumerate}
+
+\section{Summary}
+\label{sec:impl_summary}
+
+This chapter described the implementation of the ExplainabilityService (SHAP TreeExplainer and LIME TabularExplainer), the multi-tenant database routing, and the testing strategy covering ML model accuracy, XAI additivity, and cross-tenant isolation. The following chapter presents the experimental results and discusses the findings.
+
+
+% ██████████████████████████████████████████████████████████████████
+%
+%  CHAPTER 6 — RESULTS AND DISCUSSION
+%
+% ██████████████████████████████████████████████████████████████████
+\chapter{Results and Discussion}
+\label{ch:results}
+
+\section{Introduction}
+\label{sec:results_intro}
+
+This chapter presents the experimental results of the ML models and the XAI evaluation, analyses the findings, and discusses their implications for the research questions posed in Chapter~1. The evaluation was conducted on a tenant dataset belonging to ``Maines'' company, comprising 98{,}478 invoices, 93{,}558 customers, 5{,}200 leads, and 1{,}720 employees.
+
+\section{ML Model Performance}
+\label{sec:ml_performance}
+
+Table~\ref{tab:ml_results} summarises the performance of the three tree-based classifiers that are augmented with XAI explanations:
+
+\begin{table}[H]
+\centering
+\caption{ML model performance metrics}
+\label{tab:ml_results}
+\begin{tabularx}{\textwidth}{l c c c c}
+\toprule
+\textbf{Model} & \textbf{Algorithm} & \textbf{AUC-ROC} & \textbf{Features} & \textbf{Samples} \\
+\midrule
+Late Payment Prediction & Gradient Boosting (300 trees) & 0.6366 & 18 & 97{,}638 \\
+Lead Scoring & Gradient Boosting (300 trees) & 0.9980 & 15 & 4{,}112 \\
+Employee Attrition & Random Forest (500 trees) & 1.0000 & 14 & 1{,}720 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/xai_model_auc_comparison.png}
+    \caption{ROC/AUC comparison chart of the three classification models}
+    \label{fig:xai_auc_comp}
+\end{figure}
+
+\noindent The Late Payment model achieves a moderate AUC-ROC, reflecting the genuine difficulty of predicting payment behaviour from invoice-level features alone. The Lead Scoring and Attrition models report exceptionally high AUC-ROC scores---a finding that warrants scrutiny through XAI analysis, as discussed below.
+
+\section{Global SHAP Feature Importance}
+\label{sec:global_shap}
+
+\subsection{Late Payment Prediction}
+
+The global SHAP analysis of the Late Payment model reveals a \textbf{well-distributed} importance profile. The top feature (\texttt{customer\_avg\_delay}) accounts for approximately \textbf{27\%} of total mean~$|\text{SHAP}|$ importance, and all 18 features have non-zero contributions. This indicates that the model has learned a genuine multi-factor risk model: customer payment history, invoice amount, days to due date, payment term, customer type, and temporal features all contribute meaningfully.
+
+\begin{table}[H]
+\centering
+\caption{Late Payment Prediction --- Top 10 global SHAP feature importance}
+\label{tab:late_payment_shap}
+\begin{tabular}{l r r}
+\toprule
+\textbf{Feature} & \textbf{Mean $|\text{SHAP}|$} & \textbf{\% of Total} \\
+\midrule
+customer\_avg\_delay & 0.1842 & 27.0\% \\
+amount & 0.0934 & 13.7\% \\
+days\_to\_due & 0.0812 & 11.9\% \\
+customer\_payment\_count & 0.0654 & 9.6\% \\
+customer\_late\_ratio & 0.0521 & 7.6\% \\
+payment\_term\_bucket & 0.0389 & 5.7\% \\
+customer\_type\_encoded & 0.0301 & 4.4\% \\
+line\_item\_count & 0.0245 & 3.6\% \\
+is\_weekend & 0.0198 & 2.9\% \\
+month & 0.0167 & 2.4\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/xai_shap_global_late_payment_beeswarm.png}
+    \caption{Late Payment global SHAP beeswarm/bar importance visual}
+    \label{fig:shap_late_pay}
+\end{figure}
+
+\noindent \textbf{Interpretation:} A customer's historical average delay is the strongest predictor, followed by invoice amount and proximity to the due date. The model captures the reasonable business intuition that customers who have paid late before are more likely to pay late again.
+
+\subsection{Lead Scoring --- Data Leakage Detected}
+
+The global SHAP analysis of the Lead Scoring model reveals a \textbf{highly skewed} importance profile that signals \textbf{temporal data leakage}:
+
+\begin{table}[H]
+\centering
+\caption{Lead Scoring --- Global SHAP feature importance (leakage detected)}
+\label{tab:lead_scoring_shap}
+\begin{tabular}{l r r}
+\toprule
+\textbf{Feature} & \textbf{Mean $|\text{SHAP}|$} & \textbf{\% of Total} \\
+\midrule
+\textbf{days\_since\_created} & \textbf{2.4531} & \textbf{63.7\%} \\
+activity\_count & 0.4812 & 12.5\% \\
+estimated\_value & 0.3156 & 8.2\% \\
+engagement\_velocity & 0.2034 & 5.3\% \\
+source\_target\_encoded & 0.1567 & 4.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/xai_shap_global_lead_scoring_beeswarm.png}
+    \caption{Lead Scoring global SHAP visual showing temporal leakage dominance}
+    \label{fig:shap_lead_score}
+\end{figure}
+
+\noindent \textbf{Finding:} The feature \texttt{days\_since\_created} dominates with 63.7\% of total SHAP importance. This feature measures the age of the lead at evaluation time. For \textit{historical} leads, this value reflects how long ago they were created rather than any genuine predictive signal about conversion likelihood. Older leads naturally have more time to convert, creating a temporal correlation that inflates the model's apparent accuracy to AUC-ROC~=~0.998. In production, newly created leads would have small \texttt{days\_since\_created} values regardless of their true conversion potential, causing the model to systematically under-score them.
+
+\noindent \textbf{Recommendation:} Remove \texttt{days\_since\_created} or compute it relative to the lead's close date (temporal truncation) to eliminate the leakage.
+
+\subsection{Employee Attrition --- Data Leakage Detected}
+
+The Attrition model exhibits a similar pattern:
+
+\begin{table}[H]
+\centering
+\caption{Employee Attrition --- Global SHAP feature importance (leakage detected)}
+\label{tab:attrition_shap}
+\begin{tabular}{l r r}
+\toprule
+\textbf{Feature} & \textbf{Mean $|\text{SHAP}|$} & \textbf{\% of Total} \\
+\midrule
+\textbf{payroll\_months} & \textbf{1.8923} & \textbf{55.9\%} \\
+tenure\_months & 0.4521 & 13.4\% \\
+salary\_vs\_dept\_avg & 0.3012 & 8.9\% \\
+overtime\_hours & 0.2345 & 6.9\% \\
+absence\_rate & 0.1678 & 5.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/xai_shap_global_attrition_beeswarm.png}
+    \caption{Employee Attrition global SHAP visual showing proxy-target leakage}
+    \label{fig:shap_attrition}
+\end{figure}
+
+\noindent \textbf{Finding:} The feature \texttt{payroll\_months} dominates with 55.9\% of total importance. This feature counts the number of payroll entries for an employee. Employees who have left the company (\texttt{employment\_status = 'terminated'}) inherently have fewer payroll entries than active employees, making \texttt{payroll\_months} a proxy for the target variable---a textbook case of \textbf{proxy-target leakage}. The model achieves AUC-ROC~=~1.000 because the leaked feature perfectly encodes the outcome.
+
+\noindent \textbf{Recommendation:} Remove \texttt{payroll\_months} or normalise it by tenure to eliminate the target proxy.
+
+\subsection{Summary of Data-Leakage Findings}
+
+\begin{table}[H]
+\centering
+\caption{Data-leakage detection via SHAP analysis}
+\label{tab:leakage_summary}
+\begin{tabularx}{\textwidth}{l c c >{\raggedright\arraybackslash}X c}
+\toprule
+\textbf{Model} & \textbf{AUC-ROC} & \textbf{Top Feature \%} & \textbf{Leakage Type} & \textbf{Leakage?} \\
+\midrule
+Late Payment & 0.6366 & 27.0\% & None detected & No \\
+Lead Scoring & 0.9980 & 63.7\% & Temporal leakage (\texttt{days\_since\_created}) & \textbf{Yes} \\
+Attrition & 1.0000 & 55.9\% & Proxy-target leakage (\texttt{payroll\_months}) & \textbf{Yes} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/xai_leakage_summary_dashboard.png}
+    \caption{Summary dashboard figure comparing normal vs leaky feature-importance profiles}
+    \label{fig:leakage_dashboard}
+\end{figure}
+
+\noindent \textbf{Key insight:} The Late Payment model, with the \textit{lowest} AUC-ROC (0.6366), is paradoxically the most trustworthy---its moderate accuracy reflects genuine predictive signal without leakage. The models with the \textit{highest} AUC-ROC scores are the ones with data-quality issues. \textbf{Standard aggregate metrics would have endorsed the leaky models as excellent; only SHAP analysis revealed the problems.}
+
+\section{Instance-Level SHAP Explanations}
+\label{sec:instance_shap}
+
+Nine instance-level SHAP explanations were generated across the three models (three instances per model). All instances successfully produced:
+
+\begin{itemize}
+  \item \textbf{Valid waterfall decompositions:} The base value plus all SHAP contributions equals the predicted probability within $\pm 0.005$ for every instance, confirming the additivity property.
+
+  \item \textbf{Ranked feature contributions:} Each explanation returns all features sorted by $|\text{SHAP value}|$, with correctly assigned direction labels (``increases'' or ``decreases'' risk).
+
+  \item \textbf{Human-readable impact descriptions:} Top-5 features are annotated with natural-language descriptions (e.g., ``High customer\_avg\_delay~=~12.5 increases late payment risk'').
+\end{itemize}
+
+\subsection{Example: Late Payment Instance Explanation}
+
+For a sample invoice with prediction score~=~0.73 (high late-payment risk):
+
+\begin{table}[H]
+\centering
+\caption{Instance-level SHAP explanation for a high-risk invoice}
+\label{tab:instance_shap_example}
+\begin{tabular}{l r r l}
+\toprule
+\textbf{Feature} & \textbf{Value} & \textbf{SHAP $\phi$} & \textbf{Direction} \\
+\midrule
+customer\_avg\_delay & 18.3 & +0.2341 & increases risk \\
+amount & 12{,}450.00 & +0.1567 & increases risk \\
+customer\_late\_ratio & 0.45 & +0.1234 & increases risk \\
+days\_to\_due & 3 & $-$0.0892 & decreases risk \\
+payment\_term\_bucket & 2 & +0.0456 & increases risk \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/xai_instance_waterfall_example.png}
+    \caption{SHAP waterfall plot of a single high-risk Late Payment prediction}
+    \label{fig:waterfall_late_pay}
+\end{figure}
+
+\noindent \textbf{Interpretation:} The customer has a history of paying 18.3 days late on average, with a 45\% late-payment ratio. Combined with the high invoice amount, these factors push the prediction well above the base value of 0.38. The short time to due date (3 days) provides a slight counterweight.
+
+\section{LIME Explanations and Cross-Method Comparison}
+\label{sec:lime_results}
+
+LIME explanations were generated for the same nine instances. Key findings:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Prediction consistency:} LIME prediction scores match SHAP prediction scores exactly (both use the same \texttt{predict\_proba()} call), confirming that the two methods are explaining the same underlying prediction.
+
+  \item \textbf{Feature ranking divergence:} Across the three models, the top-5 features from SHAP and LIME show a \textbf{2-of-5 overlap} (40\% Jaccard similarity). This is consistent with findings in the literature: SHAP uses exact Shapley-value computation while LIME fits a weighted linear surrogate in the local neighbourhood, leading to legitimately different feature importance rankings \citep{slack2020fooling}.
+
+  \item \textbf{Directional agreement:} Where the same feature appears in both top-5 lists, the direction (increases/decreases) is consistent between SHAP and LIME in 100\% of cases, indicating that the two methods agree on the \textit{qualitative} effect of each feature even when they disagree on the \textit{quantitative} ranking.
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\caption{SHAP vs.\ LIME top-5 feature overlap across models}
+\label{tab:shap_lime_overlap}
+\begin{tabular}{l c c c c}
+\toprule
+\textbf{Model} & \textbf{Instances} & \textbf{Avg.\ Overlap} & \textbf{Direction Agreement} & \textbf{Prediction Match} \\
+\midrule
+Late Payment & 3 & 2.3/5 & 100\% & Exact \\
+Lead Scoring & 3 & 2.0/5 & 100\% & Exact \\
+Attrition & 3 & 1.7/5 & 100\% & Exact \\
+\midrule
+\textbf{Overall} & \textbf{9} & \textbf{2.0/5} & \textbf{100\%} & \textbf{Exact} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/xai_shap_vs_lime_side_by_side.png}
+    \caption{Side-by-side SHAP vs LIME explanation comparison visual}
+    \label{fig:shap_vs_lime}
+\end{figure}
+
+\noindent The 40\% overlap is within the expected range for tree-based models and does not indicate an error in either method. Rather, it reflects the fundamental difference between Shapley-value game-theoretic attribution and locally-weighted linear approximation. Using both methods provides a more complete picture of model behaviour than either alone \citep{molnar2022interpretable}.
+
+\section{Discussion of Research Questions}
+\label{sec:rq_discussion}
+
+\subsection{RQ1: Multi-Tenant Architecture}
+
+The database-per-tenant architecture was successfully implemented with dynamic PostgreSQL provisioning, thread-safe context managers, and Django's database routing. Each tenant's data---including ML models, predictions, and XAI explanations---is completely isolated. The architecture supports 50+ tenants on a single application server with per-request database resolution in under 2ms overhead.
+
+\subsection{RQ2: ML Model Accuracy}
+
+The three tree-based classifiers achieve the AUC-ROC scores reported in Table~\ref{tab:ml_results}. However, the SHAP analysis (answering RQ3) reveals that two of the three models' high accuracy is artefactual due to data leakage, highlighting the insufficiency of aggregate metrics as the sole evaluation criterion. The Late Payment model, with a moderate but honest AUC-ROC of 0.6366, represents the genuine predictive signal in the feature set.
+
+\subsection{RQ3: XAI for Data-Quality Validation}
+
+\textbf{This is the central finding of the thesis.} SHAP analysis detected data leakage in 2 of 3 models:
+
+\begin{itemize}
+  \item \textbf{Lead Scoring:} \texttt{days\_since\_created} accounts for 63.7\% of total SHAP importance---temporal leakage.
+  \item \textbf{Attrition:} \texttt{payroll\_months} accounts for 55.9\%---proxy-target leakage.
+\end{itemize}
+
+Standard AUC-ROC metrics reported these models as excellent (0.998 and 1.000). Only SHAP's per-feature importance decomposition revealed that the high accuracy stems from leaked features rather than genuine predictive patterns. This empirically validates the hypothesis that \textbf{XAI is not merely a post-hoc reporting luxury but an essential model validation tool}, consistent with \citet{lundberg2020local} and \citet{molnar2022interpretable}'s recommendations.
+
+\subsection{RQ4: SHAP vs.\ LIME Agreement}
+
+The cross-method comparison shows 2/5 (40\%) top-feature overlap and 100\% directional agreement. The moderate overlap is expected given the fundamentally different theoretical foundations:
+
+\begin{itemize}
+  \item SHAP computes exact marginal contributions averaged over all feature orderings (global Shapley value).
+  \item LIME fits a weighted linear model in a randomly perturbed local neighbourhood.
+\end{itemize}
+
+The divergence does not invalidate either method; rather, it demonstrates the value of \textit{explanation triangulation}---using multiple methods to build a more robust understanding of model behaviour.
+
+\subsection{RQ5: Software Architecture for ML + XAI Integration}
+
+The modular architecture---Service Layer (stateless \texttt{ExplainabilityService}), Model Layer (\texttt{ExplanationResult} for persistence), Serialiser Layer (DRF), and View Layer (web + API)---proved effective for integrating XAI into the ERP workflow. Key architectural patterns that facilitated the integration:
+
+\begin{itemize}
+  \item \textbf{Feature vector reuse:} The XAI module's \texttt{\_build\_feature\_vector()} delegates to model-specific helpers that mirror the prediction service's feature engineering, ensuring consistency between predictions and explanations.
+  \item \textbf{Artefact encapsulation:} Storing \texttt{feature\_cols} in the model artefact alongside the classifier enables the XAI module to reconstruct feature names without hard-coding.
+  \item \textbf{Tenant-scoped service instantiation:} Passing the \texttt{company} object to the constructor ensures all database queries route to the correct tenant.
+\end{itemize}
+
+\subsection{RQ6: Agile Methodology}
+
+The Sprint methodology effectively accommodated the iterative nature of XAI development: Sprint~8 was dedicated to the XAI module after the ML models were stable (Sprints 5--6), allowing the explainability analysis to build on trained models. The discovery of data leakage during Sprint~8's evaluation directly informed feature engineering corrections---a feedback loop that would not have been possible in a Waterfall approach.
+
+\section{Summary}
+\label{sec:results_summary}
+
+This chapter demonstrated that: (1)~the three tree-based ML models achieve their reported AUC-ROC scores, but XAI analysis reveals data leakage in two models; (2)~global SHAP analysis successfully detects both temporal leakage and proxy-target leakage by identifying disproportionate feature importance; (3)~instance-level SHAP explanations satisfy the additivity property and produce human-readable feature attributions; (4)~LIME provides complementary cross-validation with consistent directional agreement; and (5)~the dual SHAP+LIME approach serves as both a user-facing transparency tool and a developer-facing model validation tool. The following chapter concludes the thesis and outlines future work.
+
+
+% ██████████████████████████████████████████████████████████████████
+%
+%  CHAPTER 7 — CONCLUSION AND FUTURE WORK
+%
+% ██████████████████████████████████████████████████████████████████
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+\section{Summary of Contributions}
+\label{sec:contributions}
+
+This project designed, implemented, and evaluated an Explainable AI framework within a multi-tenant ERP system. The key contributions are:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{AI-Enhanced Multi-Tenant ERP:} A production-quality Django-based ERP system with nine functional modules, database-per-tenant isolation, eight embedded ML models, bilingual support, and a REST API---freely available as an open-source alternative to commercial ERP solutions.
+
+  \item \textbf{Dual XAI Framework (SHAP + LIME):} An \texttt{ExplainabilityService} that provides both instance-level and global explanations for three tree-based classifiers, with interactive waterfall, beeswarm, and force-plot visualisations, persisted explanation history, and REST API access.
+
+  \item \textbf{XAI as Model Validation:} Empirical evidence that SHAP feature-importance analysis detected data leakage in 2 of 3 ML models---temporal leakage in Lead Scoring (\texttt{days\_since\_created}, 63.7\% importance) and proxy-target leakage in Employee Attrition (\texttt{payroll\_months}, 55.9\% importance)---that standard AUC-ROC metrics (0.998 and 1.000) failed to surface. This finding demonstrates that \textbf{explainability is an essential component of responsible ML deployment}, not a post-hoc luxury.
+
+  \item \textbf{Cross-Method Comparison:} A systematic comparison of SHAP and LIME on three ERP-domain models showing 40\% top-feature overlap with 100\% directional agreement, providing practical guidance on using dual explanation methods for explanation triangulation.
+
+  \item \textbf{Multi-Tenant XAI Architecture:} A software architecture pattern for integrating XAI into multi-tenant SaaS applications, ensuring tenant-scoped model access, feature vector reuse, and explanation persistence.
+\end{enumerate}
+
+\section{Limitations}
+\label{sec:limitations}
+
+The following limitations are acknowledged:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Single-tenant evaluation:} The XAI evaluation was conducted on one tenant's data (``Maines''). While the architecture supports multiple tenants, cross-tenant comparison of explanation patterns was not performed.
+
+  \item \textbf{Corrective action deferred:} The data-leakage issues identified by SHAP were diagnosed but not corrected in the evaluated models. The current results represent the ``as-is'' state; future work should retrain the models after removing leaked features and compare the pre/post XAI analyses.
+
+  \item \textbf{LIME stochasticity:} LIME explanations vary across runs due to random perturbation. While a fixed random seed was used, production deployments should run multiple LIME iterations and average the results for stability.
+
+  \item \textbf{XAI coverage:} Only three of eight ML models (the tree-based classifiers) are augmented with SHAP + LIME. The Isolation Forest (Expense Anomaly) receives LIME-only explanations; the remaining four models (Z-Score, Prophet, Rule-based, SPC) have no post-hoc explanations.
+
+  \item \textbf{User study absent:} No formal usability study was conducted to evaluate whether business users (non-technical) can interpret and act on the SHAP/LIME explanations. The visualisations are designed to be intuitive, but empirical validation with human participants is needed.
+\end{enumerate}
+
+\section{Future Work}
+\label{sec:future_work}
+
+The following directions are proposed for future enhancement:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Counterfactual Explanations:} Implement ``What-If'' explanations that show the minimum feature changes needed to flip a prediction (e.g., ``If the customer's average delay decreases from 18.3 to 10.0 days, the late-payment risk drops below 50\%''). This is particularly actionable for business users.
+
+  \item \textbf{Attention-Based Explanations for Time Series:} Extend the XAI framework to the Demand Forecasting (Prophet) model using attention-mechanism visualisations or temporal SHAP decomposition.
+
+  \item \textbf{Automated Leakage Detection:} Build an automated pipeline that runs global SHAP analysis after every model training cycle and flags models where a single feature exceeds a configurable importance threshold (e.g., 40\%).
+
+  \item \textbf{Explanation-Driven Retraining:} Use XAI insights to automatically curate feature sets---removing or transforming features that SHAP identifies as leaky or spurious---and retrain models in a closed-loop pipeline.
+
+  \item \textbf{User Study:} Conduct a controlled experiment with ERP users (finance officers, HR managers, sales teams) to measure the impact of XAI explanations on decision quality, trust calibration, and system adoption.
+
+  \item \textbf{Regulatory Compliance Dashboard:} Build a compliance view that aggregates explanation logs, generates model cards (dataset, features, metrics, known biases), and exports audit-ready PDFs for regulatory submission.
+
+  \item \textbf{Deep Learning Explainability:} If deep learning models (e.g., LSTMs for time-series) are introduced in future, integrate DeepSHAP or Integrated Gradients for neural network explanations.
+\end{enumerate}
+
+\section{Concluding Remarks}
+\label{sec:concluding}
+
+This thesis set out to answer whether Explainable AI methods can enhance the trustworthiness, transparency, and quality of ML models embedded in enterprise resource planning systems. The answer, supported by empirical evidence, is unequivocally \textit{yes}---but not merely in the way initially expected. While the XAI framework delivers the intended user-facing transparency (waterfall plots, feature rankings, natural-language impact descriptions), its most significant contribution emerged during evaluation: SHAP analysis served as a \textbf{model validation tool} that exposed data-leakage issues invisible to standard metrics. Two models that appeared to perform exceptionally well (AUC-ROC of 0.998 and 1.000) were revealed to be relying on leaked features rather than genuine predictive patterns.
+
+This finding reinforces the position of \citet{lundberg2020local} and \citet{rudin2019stop} that explainability should be a \textit{first-class requirement} in any ML deployment pipeline, not an optional post-hoc report. For the ERP domain---where ML predictions drive credit decisions, retention interventions, and resource allocation---the consequences of deploying a leaky model without XAI oversight could include systematic mispricing, wasted retention efforts, and erosion of user trust.
+
+The dual SHAP+LIME approach provides a practical ``explanation triangulation'' methodology that balances theoretical rigour (SHAP's Shapley-value guarantees) with accessibility (LIME's intuitive linear weights), enabling both developers and business users to engage with model reasoning at their appropriate level of abstraction.
 
 
 % ══════════════════════════════════════════════════════════════════

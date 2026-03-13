@@ -14,6 +14,14 @@ Al-Majali, D. (2016).
 \newblock {\em International Review of Management and Business Research},
   5(4):1290--1301.
 
+\bibitem[Arrieta et~al., 2020]{arrieta2020explainable}
+Arrieta, A.~B., D{\'\i}az-Rodr{\'\i}guez, N., Del~Ser, J., Bennetot, A., Tabik,
+  S., Barbado, A., Garcia, S., Gil-Lopez, S., Molina, D., Benjamins, R.,
+  Chatila, R., and Herrera, F. (2020).
+\newblock Explainable {Artificial Intelligence} ({XAI}): Concepts, taxonomies,
+  opportunities and challenges toward responsible {AI}.
+\newblock {\em Information Fusion}, 58:82--115.
+
 \bibitem[Bezemer and Zaidman, 2010]{bezemer2010multi}
 Bezemer, C.-P. and Zaidman, A. (2010).
 \newblock Multi-tenant {SaaS} applications: Maintenance dream or nightmare?
@@ -41,6 +49,19 @@ Chong, F. and Carraro, G. (2006).
 Davenport, T.~H. and Ronanki, R. (2018).
 \newblock {\em Artificial Intelligence for the Real World}, volume~96.
 
+\bibitem[Doshi-Velez and Kim, 2017]{doshi2017towards}
+Doshi-Velez, F. and Kim, B. (2017).
+\newblock Towards a rigorous science of interpretable machine learning.
+\newblock {\em arXiv preprint arXiv:1702.08608}.
+
+\bibitem[{European Commission High-Level Expert Group on AI},
+  2019]{eu2019ethics}
+{European Commission High-Level Expert Group on AI} (2019).
+\newblock Ethics guidelines for trustworthy {AI}.
+\newblock {\em European Commission}.
+\newblock
+  \url{https://ec.europa.eu/digital-single-market/en/news/ethics-guidelines-trustworthy-ai}.
+
 \bibitem[Fildes et~al., 2022]{fildes2022forecasting}
 Fildes, R., Ma, S., and Kolassa, S. (2022).
 \newblock Retail forecasting: Research and practice.
@@ -52,6 +73,12 @@ Fildes, R., Ma, S., and Kolassa, S. (2022).
   Report}.
 \newblock Technical report, Grand View Research.
 \newblock Report ID: GVR-1-68038-955-0.
+
+\bibitem[Guidotti et~al., 2018]{guidotti2018survey}
+Guidotti, R., Monreale, A., Ruggieri, S., Turini, F., Giannotti, F., and
+  Pedreschi, D. (2018).
+\newblock A survey of methods for explaining black box models.
+\newblock {\em ACM Computing Surveys}, 51(5):1--42.
 
 \bibitem[{IBM}, 2017]{ibm2017hr}
 {IBM} (2017).
@@ -75,11 +102,36 @@ Lee, J., Siau, K., and Hong, S. (2003).
 \newblock Enterprise integration with {ERP} and {EAI}.
 \newblock {\em Communications of the ACM}, 46(2):54--60.
 
+\bibitem[Lipton, 2018]{lipton2018mythos}
+Lipton, Z.~C. (2018).
+\newblock The mythos of model interpretability.
+\newblock {\em Queue}, 16(3):31--57.
+
 \bibitem[Liu et~al., 2008]{liu2008isolation}
 Liu, F.~T., Ting, K.~M., and Zhou, Z.-H. (2008).
 \newblock Isolation forest.
 \newblock In {\em Proceedings of the 8th IEEE International Conference on Data
   Mining (ICDM)}, pages 413--422.
+
+\bibitem[Lundberg et~al., 2020]{lundberg2020local}
+Lundberg, S.~M., Erion, G., Chen, H., DeGrave, A., Prutkin, J.~M., Nair, B.,
+  Katz, R., Himmelfarb, J., Bansal, N., and Lee, S.-I. (2020).
+\newblock From local explanations to global understanding with explainable {AI}
+  for trees.
+\newblock {\em Nature Machine Intelligence}, 2(1):56--67.
+
+\bibitem[Lundberg and Lee, 2017]{lundberg2017unified}
+Lundberg, S.~M. and Lee, S.-I. (2017).
+\newblock A unified approach to interpreting model predictions.
+\newblock In {\em Advances in Neural Information Processing Systems 30
+  (NeurIPS)}, pages 4765--4774.
+
+\bibitem[Molnar, 2022]{molnar2022interpretable}
+Molnar, C. (2022).
+\newblock {\em Interpretable Machine Learning: A Guide for Making Black Box
+  Models Explainable}.
+\newblock Independently Published, 2nd edition.
+\newblock \url{https://christophm.github.io/interpretable-ml-book/}.
 
 \bibitem[Monk and Wagner, 2013]{monk2013concepts}
 Monk, E. and Wagner, B. (2013).
@@ -108,16 +160,42 @@ Provost, F. and Fawcett, T. (2013).
   Mining and Data-Analytic Thinking}.
 \newblock O'Reilly Media, Sebastopol, CA.
 
+\bibitem[Ribeiro et~al., 2016]{ribeiro2016why}
+Ribeiro, M.~T., Singh, S., and Guestrin, C. (2016).
+\newblock ``{W}hy should {I} trust you?'': Explaining the predictions of any
+  classifier.
+\newblock In {\em Proceedings of the 22nd ACM SIGKDD International Conference
+  on Knowledge Discovery and Data Mining}, pages 1135--1144.
+
+\bibitem[Rudin, 2019]{rudin2019stop}
+Rudin, C. (2019).
+\newblock Stop explaining black box machine learning models for high stakes
+  decisions and use interpretable models instead.
+\newblock {\em Nature Machine Intelligence}, 1(5):206--215.
+
 \bibitem[Schwaber and Sutherland, 2020]{schwaber2020scrum}
 Schwaber, K. and Sutherland, J. (2020).
 \newblock {\em The Scrum Guide: The Definitive Guide to Scrum --- The Rules of
   the Game}.
 \newblock Scrum.org.
 
+\bibitem[Shapley, 1953]{shapley1953value}
+Shapley, L.~S. (1953).
+\newblock A value for n-person games.
+\newblock In Kuhn, H.~W. and Tucker, A.~W., editors, {\em Contributions to the
+  Theory of Games}, volume~2, pages 307--317. Princeton University Press.
+
 \bibitem[Shewhart, 1931]{shewhart1931economic}
 Shewhart, W.~A. (1931).
 \newblock {\em Economic Control of Quality of Manufactured Product}.
 \newblock D. Van Nostrand Company, New York.
+
+\bibitem[Slack et~al., 2020]{slack2020fooling}
+Slack, D., Hilgard, S., Jia, E., Singh, S., and Lakkaraju, H. (2020).
+\newblock Fooling {LIME} and {SHAP}: Adversarial attacks on post hoc
+  explanation methods.
+\newblock In {\em Proceedings of the AAAI/ACM Conference on AI, Ethics, and
+  Society}, pages 180--186.
 
 \bibitem[{Society for Human Resource Management}, 2022]{shrm2022}
 {Society for Human Resource Management} (2022).
