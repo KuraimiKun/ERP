@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex thesis"] 1773376593.13515 "thesis.aux" "thesis.bbl" "thesis" 1773376603.06188 0
+["bibtex thesis"] 1773731075.43108 "thesis.aux" "thesis.bbl" "thesis" 1773731139.46721 0
   "./references.bib" 1773362053 11304 30db4fbbad9ecf90311bbddfe5b2f53b ""
   "C:/Program Files/MiKTeX/bibtex/bst/bibtex/apalike.bst" 1291972791 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "thesis.aux" 1773376601 37094 601aa3cd349a5774bb35fe99d115e2a2 "pdflatex"
+  "thesis.aux" 1773731138 37098 57c31f0239e867ca759f4b2069a0c75b "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1773376593.51476 "f:/erpdjango/thesis/thesis.tex" "thesis.pdf" "thesis" 1773376603.0626 0
+["pdflatex"] 1773731132.81718 "f:/erpdjango/thesis/thesis.tex" "thesis.pdf" "thesis" 1773731139.46773 0
   "C:/Program Files/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8r.tfm" 1136765053 1292 3059476c50a24578715759f22652f3d0 ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8t.tfm" 1136765053 1384 87406e4336af44af883a035f17f319d9 ""
@@ -221,7 +221,7 @@
   "C:/Program Files/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1750586519 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1750586599 13225209 1d52f8f13f365b1dcbc035b4ee098197 ""
-  "f:/erpdjango/thesis/thesis.tex" 1773376579 136852 24483d98b615d543bac72b3a4a171222 ""
+  "f:/erpdjango/thesis/thesis.tex" 1773731132 137816 f7e864420e286e015af0b9c0f444d45d ""
   "figures/Lambang-UM.png" 1773374375 310576 b6512df05f8c555e29ee41f1291af35c ""
   "figures/erp_evolution_timeline.png" 1773034774 184116 a890d052101e1834285df5da6736370b ""
   "figures/ml_pipeline_architecture.png" 1773034778 427474 515717e0a5e594957b01787ebdba7bcd ""
@@ -240,13 +240,13 @@
   "figures/xai_shap_global_lead_scoring_beeswarm.png" 1773364987 89832 fd5db6a183324696eb24991de503e005 ""
   "figures/xai_shap_vs_lime_side_by_side.png" 1773364990 97905 3a079af25c64120284ebbb37e8f719d9 ""
   "figures/xai_use_case_diagram.png" 1773364990 27913 80e92a7c28631f9e4310469a3ebe8a36 ""
-  "thesis.aux" 1773376601 37094 601aa3cd349a5774bb35fe99d115e2a2 "pdflatex"
-  "thesis.bbl" 1773376593 8790 163343007c0bf736f3a8dfc62235a02e "bibtex thesis"
-  "thesis.lof" 1773376601 2617 a02f6599ff7f1a4dc50d1a67c7bfc673 "pdflatex"
-  "thesis.lot" 1773376601 2433 87ff22d7b583e17c006f946e6ea9da3c "pdflatex"
-  "thesis.out" 1773376601 22056 386d2124555d2dd20debc8c999ba6348 "pdflatex"
-  "thesis.tex" 1773376579 136852 24483d98b615d543bac72b3a4a171222 ""
-  "thesis.toc" 1773376601 10621 aee3c37888faa8a314be3db466fb99c5 "pdflatex"
+  "thesis.aux" 1773731138 37098 57c31f0239e867ca759f4b2069a0c75b "pdflatex"
+  "thesis.bbl" 1773731075 8790 163343007c0bf736f3a8dfc62235a02e "bibtex thesis"
+  "thesis.lof" 1773731138 2618 b529424593b40fe1d2e28d6e026bb26b "pdflatex"
+  "thesis.lot" 1773731138 2433 2e9208cab2844bb6a82e9681cba2d082 "pdflatex"
+  "thesis.out" 1773731138 22056 386d2124555d2dd20debc8c999ba6348 "pdflatex"
+  "thesis.tex" 1773731132 137816 f7e864420e286e015af0b9c0f444d45d ""
+  "thesis.toc" 1773731138 10623 0479dfa1ec3256326fe3bfac3e4cfdb1 "pdflatex"
   (generated)
   "thesis.aux"
   "thesis.lof"

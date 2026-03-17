@@ -1,0 +1,83 @@
+Here is a structured prompt you can copy and paste directly into Gamma.app to generate your Proposal Seminar (Sumbero) presentation.
+
+*** COPY EVERYTHING BELOW THIS LINE ***
+
+Create a professional, academic, and engaging 12-slide presentation for my Thesis Proposal Seminar (Sumbero). 
+The presentation should have a clean, modern tech aesthetic suitable for a computer science and informatics engineering defense. Use bullet points and keep text concise.
+
+**Topic:** Explainable AI for Business Intelligence in a Multi-Tenant Enterprise Resource Planning System: SHAP and LIME Explanations for ML-Driven Decisions.
+
+Here is the exact outline and content for each slide:
+
+---
+
+# Slide 1: Title Slide
+- **Title:** Explainable AI for Business Intelligence in a Multi-Tenant ERP System
+- **Subtitle:** SHAP and LIME Explanations for ML-Driven Decisions for SMEs
+- **Presenter:** Ahmed AMeen Hassan Alkuraimi
+- **Degree:** Bachelor of Informatics Engineering, State University of Malang
+- **Visual:** A high-tech introductory background or a university logo.
+
+# Slide 2: Background & Context
+- **The SME Challenge:** Middle to small SMEs need ERP systems to manage operations, but commercial solutions (SAP, Oracle) are too expensive and complex.
+- **The Rise of ML:** Modern businesses want Machine Learning (ML) for demand forecasting, credit risk, and employee retention.
+- **The "Black-Box" Problem:** Embedded ML models give predictions without explanations. If business users don't understand the "why" behind the AI, they cannot trust or act safely on the decisions.
+
+# Slide 3: Problem Statement
+- **High Costs & Rigid Architectures:** SMEs cannot afford single-tenant ERPs.
+- **Missing Core Modules:** SMEs need accessible POS (Point of Sale) and CRM (Customer Relationship Management) workflows.
+- **Opacity of AI:** ML predictions lack transparency. 
+- **Hidden Risks:** Standard metrics (like AUC-ROC) can mask "data leakage" (when a model cheats using data it shouldn't have), leading to failed real-world deployment.
+
+# Slide 4: Proposed Solution
+- **A Lightweight, Multi-Tenant ERP:** Built specifically for small enterprise implementation.
+- **Cost-effective:** Shared infrastructure using database-per-tenant architecture.
+- **Rich Business Modules:** Contains 9 core modules including Finance, CRM, POS, HR, and Inventory.
+- **Embedded Explainable AI (XAI):** Uses SHAP and LIME methodologies to open the "black box" of machine learning, making predictions transparent and auditable.
+
+# Slide 5: Research Objectives
+- Design and implement a full-stack, web-based ERP system for SMEs.
+- Establish a multi-tenant PostgreSQL structure for secure data isolation.
+- Integrate ML models for business intelligence (e.g., Late Payment Prediction, Lead Scoring, Employee Attrition).
+- **Primary Goal:** Implement an XAI module (SHAP & LIME) to provide transparent feature attributions to non-technical users.
+- Evaluate XAI as a *model validation tool* to catch data-quality issues and data leakage.
+
+# Slide 6: System Architecture & Tech Stack
+- **Backend Framework:** Django 4.2 (Python)
+- **Database:** PostgreSQL (Database-per-tenant isolation for security)
+- **Development Methodology:** Agile (8 Sprints)
+- **Machine Learning Layer:** Scikit-Learn (Gradient Boosting, Random Forest, Isolation Forest)
+- **XAI Layer:** 
+  - `shap.TreeExplainer` for exact Shapley-value feature importance.
+  - `lime.TabularExplainer` for model-agnostic cross-validation.
+
+# Slide 7: Explainable AI Methodology
+- **Instance-Level Explanations:** Answering "Why was *this specific* invoice flagged as high-risk?" (Rendered as Waterfall plots).
+- **Global Feature Importance:** Answering "What generally drives late payments across all customers?" (Rendered as Beeswarm plots).
+- **Triangulation:** Using both SHAP (game-theory based) and LIME (local linear approximation) to ensure explanation robustness.
+
+# Slide 8: Early Findings & Model Evaluation
+- 3 Tree-based classifiers evaluated: Late Payment (AUC: 0.63), Lead Scoring (AUC: 0.99), Employee Attrition (AUC: 1.00).
+- **The Discovery:** High AUC scores in Lead Scoring and Attrition looked suspicious. 
+- **XAI to the Rescue:** SHAP analysis revealed severe *data leakage*. 
+  - Lead Scoring was relying 63.7% on "days_since_created".
+  - Attrition was relying 55.9% on "payroll_months" (a proxy for the target).
+
+# Slide 9: The Core Contribution: XAI for Model Validation
+- **Beyond User Trust:** Explainability is not just for the end-user. It is a critical developer tool.
+- Standard aggregate metrics (Accuracy, AUC-ROC) endorsed "leaky" models as excellent. 
+- Only XAI (SHAP & LIME) successfully diagnosed the data-leakage, preventing a flawed model from reaching production.
+
+# Slide 10: Expected Conclusions
+- A Multi-tenant Django ERP is highly feasible and cost-effective for SMEs, bridging the gap with essential modules like CRM and POS.
+- Embedding ML requires XAI to be safe for business environments.
+- **Key Takeaway:** Explainability should be a first-class requirement in any ML deployment pipeline, not an optional post-hoc report.
+
+# Slide 11: Future Work
+- Implement counterfactual explanations ("What-If" scenarios).
+- Automated XAI-driven retraining (auto-drop leaky features).
+- Conduct a formal user study with SME business managers (Sales/HR) on UI usability.
+
+# Slide 12: Q&A
+- **Heading:** Thank You / Questions & Answers
+- **Sub-text:** "Bridging the gap between advanced AI and practical, trustworthy SME workflows."

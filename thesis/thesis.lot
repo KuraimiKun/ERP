@@ -1,27 +1,27 @@
 \babel@toc {english}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Comparison of major open-source ERP systems}}{10}{table.caption.3}%
-\contentsline {table}{\numberline {2.2}{\ignorespaces Comparison of SHAP and LIME explanation methods}}{17}{table.caption.5}%
-\contentsline {table}{\numberline {2.3}{\ignorespaces Literature gap analysis and project contributions}}{20}{table.caption.6}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Comparison of major open-source ERP systems}}{11}{table.caption.3}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Comparison of SHAP and LIME explanation methods}}{18}{table.caption.5}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Literature gap analysis and project contributions}}{21}{table.caption.6}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Sprint plan and deliverables}}{24}{table.caption.8}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces SDLC model comparison and justification}}{26}{table.caption.10}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Technology stack}}{31}{table.caption.14}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces ML model specifications}}{34}{table.3.4}%
-\contentsline {table}{\numberline {3.5}{\ignorespaces Development tools and environment}}{37}{table.caption.15}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Sprint plan and deliverables}}{25}{table.caption.8}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces SDLC model comparison and justification}}{27}{table.caption.10}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Technology stack}}{32}{table.caption.14}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces ML model specifications}}{35}{table.3.4}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Development tools and environment}}{38}{table.caption.15}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Platform-level functional requirements}}{39}{table.4.1}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces AI and XAI functional requirements}}{40}{table.4.2}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Non-functional requirements}}{40}{table.4.3}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces AI/XAI database tables}}{44}{table.caption.18}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Platform-level functional requirements}}{40}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces AI and XAI functional requirements}}{41}{table.4.2}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Non-functional requirements}}{41}{table.4.3}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces AI/XAI database tables}}{45}{table.caption.18}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.1}{\ignorespaces ML model performance metrics}}{51}{table.caption.20}%
-\contentsline {table}{\numberline {6.2}{\ignorespaces Late Payment Prediction --- Top 10 global SHAP feature importance}}{53}{table.caption.22}%
-\contentsline {table}{\numberline {6.3}{\ignorespaces Lead Scoring --- Global SHAP feature importance (leakage detected)}}{54}{table.caption.24}%
-\contentsline {table}{\numberline {6.4}{\ignorespaces Employee Attrition --- Global SHAP feature importance (leakage detected)}}{55}{table.caption.26}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces Data-leakage detection via SHAP analysis}}{56}{table.caption.28}%
-\contentsline {table}{\numberline {6.6}{\ignorespaces Instance-level SHAP explanation for a high-risk invoice}}{57}{table.caption.30}%
-\contentsline {table}{\numberline {6.7}{\ignorespaces SHAP vs.\ LIME top-5 feature overlap across models}}{58}{table.caption.32}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces ML model performance metrics}}{52}{table.caption.20}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Late Payment Prediction --- Top 10 global SHAP feature importance}}{54}{table.caption.22}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Lead Scoring --- Global SHAP feature importance (leakage detected)}}{55}{table.caption.24}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Employee Attrition --- Global SHAP feature importance (leakage detected)}}{56}{table.caption.26}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Data-leakage detection via SHAP analysis}}{57}{table.caption.28}%
+\contentsline {table}{\numberline {6.6}{\ignorespaces Instance-level SHAP explanation for a high-risk invoice}}{58}{table.caption.30}%
+\contentsline {table}{\numberline {6.7}{\ignorespaces SHAP vs.\ LIME top-5 feature overlap across models}}{59}{table.caption.32}%
 \addvspace {10\p@ }

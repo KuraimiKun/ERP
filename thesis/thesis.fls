@@ -345,6 +345,8 @@ INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
 INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm
 INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
@@ -353,8 +355,6 @@ INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm
 INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmri8t.vf
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8r.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8t.tfm
-INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
-INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8r.tfm
 INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmb8t.vf
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmb8r.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmri8t.tfm

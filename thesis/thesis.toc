@@ -5,114 +5,114 @@
 \contentsline {section}{\numberline {1.2}Problem Statement}{2}{section.1.2}%
 \contentsline {section}{\numberline {1.3}Project Objectives}{3}{section.1.3}%
 \contentsline {section}{\numberline {1.4}Project Scope}{4}{section.1.4}%
-\contentsline {subsection}{\numberline {1.4.1}In Scope}{4}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.1}In Scope}{5}{subsection.1.4.1}%
 \contentsline {subsection}{\numberline {1.4.2}Out of Scope}{5}{subsection.1.4.2}%
-\contentsline {section}{\numberline {1.5}Project Significance}{5}{section.1.5}%
+\contentsline {section}{\numberline {1.5}Project Significance}{6}{section.1.5}%
 \contentsline {section}{\numberline {1.6}Project Questions}{6}{section.1.6}%
 \contentsline {section}{\numberline {1.7}Report Organization}{7}{section.1.7}%
-\contentsline {chapter}{\numberline {2}Literature Review}{8}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Introduction}{8}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Enterprise Resource Planning (ERP) Systems}{8}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Definition and Evolution}{8}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}ERP Architecture Models}{9}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}ERP Adoption in SMEs}{9}{subsection.2.2.3}%
-\contentsline {subsection}{\numberline {2.2.4}Open-Source ERP Systems}{10}{subsection.2.2.4}%
-\contentsline {section}{\numberline {2.3}Multi-Tenant Software Architecture}{10}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Definition and Models}{10}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Multi-Tenancy in Django}{11}{subsection.2.3.2}%
-\contentsline {section}{\numberline {2.4}Machine Learning in Enterprise Systems}{12}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Overview of ML in Business Applications}{12}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Lead Scoring with Gradient Boosting}{12}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Payment Risk Prediction with Gradient Boosting}{13}{subsection.2.4.3}%
-\contentsline {subsection}{\numberline {2.4.4}Employee Attrition Prediction with Random Forest}{13}{subsection.2.4.4}%
-\contentsline {subsection}{\numberline {2.4.5}Anomaly Detection with Isolation Forest}{13}{subsection.2.4.5}%
-\contentsline {subsection}{\numberline {2.4.6}Time-Series Forecasting with Prophet}{14}{subsection.2.4.6}%
-\contentsline {subsection}{\numberline {2.4.7}Statistical Process Control for KPI Monitoring}{14}{subsection.2.4.7}%
-\contentsline {section}{\numberline {2.5}Explainable Artificial Intelligence (XAI)}{14}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}The Need for Explainability}{14}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {2.5.2}Taxonomy of XAI Methods}{15}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}SHAP: SHapley Additive exPlanations}{15}{subsection.2.5.3}%
-\contentsline {subsection}{\numberline {2.5.4}LIME: Local Interpretable Model-agnostic Explanations}{16}{subsection.2.5.4}%
-\contentsline {subsection}{\numberline {2.5.5}SHAP vs.\ LIME: Complementary Strengths}{17}{subsection.2.5.5}%
-\contentsline {subsection}{\numberline {2.5.6}XAI as a Model Validation Tool}{17}{subsection.2.5.6}%
-\contentsline {section}{\numberline {2.6}Related Work}{18}{section.2.6}%
-\contentsline {subsection}{\numberline {2.6.1}AI-Enhanced ERP Systems}{18}{subsection.2.6.1}%
-\contentsline {subsection}{\numberline {2.6.2}XAI in Business Decision Systems}{18}{subsection.2.6.2}%
-\contentsline {subsection}{\numberline {2.6.3}Multi-Tenant Django Applications}{19}{subsection.2.6.3}%
-\contentsline {subsection}{\numberline {2.6.4}ML for Demand Forecasting in Supply Chain}{19}{subsection.2.6.4}%
-\contentsline {section}{\numberline {2.7}Gap Analysis}{19}{section.2.7}%
-\contentsline {section}{\numberline {2.8}Summary}{20}{section.2.8}%
-\contentsline {chapter}{\numberline {3}Methodology}{22}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Introduction}{22}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Development Methodology: Sprint (Agile)}{22}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Overview of Sprint Methodology}{22}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Sprint Plan for This Project}{23}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}Sprint Roles}{25}{subsection.3.2.3}%
-\contentsline {subsection}{\numberline {3.2.4}Justification for Sprint Methodology}{25}{subsection.3.2.4}%
-\contentsline {section}{\numberline {3.3}System Architecture}{26}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}High-Level Architecture}{26}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}Multi-Tenant Database Architecture}{27}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}AI/ML Pipeline Architecture}{28}{subsection.3.3.3}%
-\contentsline {section}{\numberline {3.4}Technology Stack}{30}{section.3.4}%
-\contentsline {section}{\numberline {3.5}Data Collection and Preparation}{32}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Open-Source Datasets}{32}{subsection.3.5.1}%
-\contentsline {subsection}{\numberline {3.5.2}Synthetic Data Generation}{33}{subsection.3.5.2}%
-\contentsline {section}{\numberline {3.6}Machine Learning Model Design}{33}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Model Selection Criteria}{33}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}Model Specifications}{34}{subsection.3.6.2}%
-\contentsline {subsection}{\numberline {3.6.3}Model Evaluation Strategy}{35}{subsection.3.6.3}%
-\contentsline {subsection}{\numberline {3.6.4}XAI Evaluation Methodology}{36}{subsection.3.6.4}%
-\contentsline {section}{\numberline {3.7}Development Tools and Environment}{37}{section.3.7}%
-\contentsline {section}{\numberline {3.8}Summary}{37}{section.3.8}%
-\contentsline {chapter}{\numberline {4}System Analysis and Design}{39}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Introduction}{39}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Functional Requirements}{39}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Platform Requirements}{39}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}AI/XAI Requirements}{40}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Non-Functional Requirements}{40}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Use Case Design}{41}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}XAI Use Cases}{41}{subsection.4.4.1}%
-\contentsline {section}{\numberline {4.5}XAI Class Design}{42}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Database Schema Design}{43}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}AI/XAI Schema}{43}{subsection.4.6.1}%
-\contentsline {section}{\numberline {4.7}XAI Pipeline Architecture}{44}{section.4.7}%
-\contentsline {section}{\numberline {4.8}Summary}{45}{section.4.8}%
-\contentsline {chapter}{\numberline {5}Implementation and Testing}{46}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Introduction}{46}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Project Structure}{46}{section.5.2}%
-\contentsline {section}{\numberline {5.3}ExplainabilityService Implementation}{47}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}SHAP TreeExplainer Integration}{47}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}LIME TabularExplainer Integration}{48}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}Global Feature Importance}{48}{subsection.5.3.3}%
-\contentsline {subsection}{\numberline {5.3.4}Version Compatibility Handling}{49}{subsection.5.3.4}%
-\contentsline {section}{\numberline {5.4}Multi-Tenant Implementation}{49}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Dynamic Database Registration}{49}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}XAI in Multi-Tenant Context}{49}{subsection.5.4.2}%
-\contentsline {section}{\numberline {5.5}Testing Strategy}{50}{section.5.5}%
-\contentsline {subsection}{\numberline {5.5.1}ML Model Testing}{50}{subsection.5.5.1}%
-\contentsline {subsection}{\numberline {5.5.2}XAI Testing}{50}{subsection.5.5.2}%
-\contentsline {section}{\numberline {5.6}Summary}{50}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Results and Discussion}{51}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Introduction}{51}{section.6.1}%
-\contentsline {section}{\numberline {6.2}ML Model Performance}{51}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Global SHAP Feature Importance}{52}{section.6.3}%
-\contentsline {subsection}{\numberline {6.3.1}Late Payment Prediction}{52}{subsection.6.3.1}%
-\contentsline {subsection}{\numberline {6.3.2}Lead Scoring --- Data Leakage Detected}{53}{subsection.6.3.2}%
-\contentsline {subsection}{\numberline {6.3.3}Employee Attrition --- Data Leakage Detected}{54}{subsection.6.3.3}%
-\contentsline {subsection}{\numberline {6.3.4}Summary of Data-Leakage Findings}{56}{subsection.6.3.4}%
-\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{56}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{57}{subsection.6.4.1}%
-\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{58}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Discussion of Research Questions}{59}{section.6.6}%
-\contentsline {subsection}{\numberline {6.6.1}RQ1: Multi-Tenant Architecture}{59}{subsection.6.6.1}%
-\contentsline {subsection}{\numberline {6.6.2}RQ2: ML Model Accuracy}{59}{subsection.6.6.2}%
-\contentsline {subsection}{\numberline {6.6.3}RQ3: XAI for Data-Quality Validation}{59}{subsection.6.6.3}%
-\contentsline {subsection}{\numberline {6.6.4}RQ4: SHAP vs.\ LIME Agreement}{60}{subsection.6.6.4}%
-\contentsline {subsection}{\numberline {6.6.5}RQ5: Software Architecture for ML + XAI Integration}{60}{subsection.6.6.5}%
-\contentsline {subsection}{\numberline {6.6.6}RQ6: Agile Methodology}{60}{subsection.6.6.6}%
-\contentsline {section}{\numberline {6.7}Summary}{61}{section.6.7}%
-\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{62}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Summary of Contributions}{62}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Limitations}{62}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Future Work}{63}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Concluding Remarks}{64}{section.7.4}%
+\contentsline {chapter}{\numberline {2}Literature Review}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Introduction}{9}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Enterprise Resource Planning (ERP) Systems}{9}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Definition and Evolution}{9}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}ERP Architecture Models}{10}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}ERP Adoption in SMEs}{10}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Open-Source ERP Systems}{11}{subsection.2.2.4}%
+\contentsline {section}{\numberline {2.3}Multi-Tenant Software Architecture}{11}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Definition and Models}{11}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Multi-Tenancy in Django}{12}{subsection.2.3.2}%
+\contentsline {section}{\numberline {2.4}Machine Learning in Enterprise Systems}{13}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Overview of ML in Business Applications}{13}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Lead Scoring with Gradient Boosting}{13}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Payment Risk Prediction with Gradient Boosting}{14}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Employee Attrition Prediction with Random Forest}{14}{subsection.2.4.4}%
+\contentsline {subsection}{\numberline {2.4.5}Anomaly Detection with Isolation Forest}{14}{subsection.2.4.5}%
+\contentsline {subsection}{\numberline {2.4.6}Time-Series Forecasting with Prophet}{15}{subsection.2.4.6}%
+\contentsline {subsection}{\numberline {2.4.7}Statistical Process Control for KPI Monitoring}{15}{subsection.2.4.7}%
+\contentsline {section}{\numberline {2.5}Explainable Artificial Intelligence (XAI)}{15}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}The Need for Explainability}{15}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Taxonomy of XAI Methods}{16}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}SHAP: SHapley Additive exPlanations}{16}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}LIME: Local Interpretable Model-agnostic Explanations}{17}{subsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.5.5}SHAP vs.\ LIME: Complementary Strengths}{18}{subsection.2.5.5}%
+\contentsline {subsection}{\numberline {2.5.6}XAI as a Model Validation Tool}{18}{subsection.2.5.6}%
+\contentsline {section}{\numberline {2.6}Related Work}{19}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}AI-Enhanced ERP Systems}{19}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}XAI in Business Decision Systems}{19}{subsection.2.6.2}%
+\contentsline {subsection}{\numberline {2.6.3}Multi-Tenant Django Applications}{20}{subsection.2.6.3}%
+\contentsline {subsection}{\numberline {2.6.4}ML for Demand Forecasting in Supply Chain}{20}{subsection.2.6.4}%
+\contentsline {section}{\numberline {2.7}Gap Analysis}{20}{section.2.7}%
+\contentsline {section}{\numberline {2.8}Summary}{21}{section.2.8}%
+\contentsline {chapter}{\numberline {3}Methodology}{23}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Introduction}{23}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Development Methodology: Sprint (Agile)}{23}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Overview of Sprint Methodology}{23}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Sprint Plan for This Project}{24}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Sprint Roles}{26}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Justification for Sprint Methodology}{26}{subsection.3.2.4}%
+\contentsline {section}{\numberline {3.3}System Architecture}{27}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}High-Level Architecture}{27}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Multi-Tenant Database Architecture}{28}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}AI/ML Pipeline Architecture}{29}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Technology Stack}{31}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Data Collection and Preparation}{33}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Open-Source Datasets}{33}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Synthetic Data Generation}{34}{subsection.3.5.2}%
+\contentsline {section}{\numberline {3.6}Machine Learning Model Design}{34}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Model Selection Criteria}{34}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Model Specifications}{35}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Model Evaluation Strategy}{36}{subsection.3.6.3}%
+\contentsline {subsection}{\numberline {3.6.4}XAI Evaluation Methodology}{37}{subsection.3.6.4}%
+\contentsline {section}{\numberline {3.7}Development Tools and Environment}{38}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Summary}{38}{section.3.8}%
+\contentsline {chapter}{\numberline {4}System Analysis and Design}{40}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Introduction}{40}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Functional Requirements}{40}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Platform Requirements}{40}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}AI/XAI Requirements}{41}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}Non-Functional Requirements}{41}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Use Case Design}{42}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}XAI Use Cases}{42}{subsection.4.4.1}%
+\contentsline {section}{\numberline {4.5}XAI Class Design}{43}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Database Schema Design}{44}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}AI/XAI Schema}{44}{subsection.4.6.1}%
+\contentsline {section}{\numberline {4.7}XAI Pipeline Architecture}{45}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Summary}{46}{section.4.8}%
+\contentsline {chapter}{\numberline {5}Implementation and Testing}{47}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Introduction}{47}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Project Structure}{47}{section.5.2}%
+\contentsline {section}{\numberline {5.3}ExplainabilityService Implementation}{48}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}SHAP TreeExplainer Integration}{48}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}LIME TabularExplainer Integration}{49}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Global Feature Importance}{49}{subsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.3.4}Version Compatibility Handling}{50}{subsection.5.3.4}%
+\contentsline {section}{\numberline {5.4}Multi-Tenant Implementation}{50}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Dynamic Database Registration}{50}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}XAI in Multi-Tenant Context}{50}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}Testing Strategy}{51}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}ML Model Testing}{51}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}XAI Testing}{51}{subsection.5.5.2}%
+\contentsline {section}{\numberline {5.6}Summary}{51}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Results and Discussion}{52}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Introduction}{52}{section.6.1}%
+\contentsline {section}{\numberline {6.2}ML Model Performance}{52}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Global SHAP Feature Importance}{53}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Late Payment Prediction}{53}{subsection.6.3.1}%
+\contentsline {subsection}{\numberline {6.3.2}Lead Scoring --- Data Leakage Detected}{54}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}Employee Attrition --- Data Leakage Detected}{55}{subsection.6.3.3}%
+\contentsline {subsection}{\numberline {6.3.4}Summary of Data-Leakage Findings}{57}{subsection.6.3.4}%
+\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{57}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{58}{subsection.6.4.1}%
+\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{59}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Discussion of Research Questions}{60}{section.6.6}%
+\contentsline {subsection}{\numberline {6.6.1}RQ1: Multi-Tenant Architecture}{60}{subsection.6.6.1}%
+\contentsline {subsection}{\numberline {6.6.2}RQ2: ML Model Accuracy}{60}{subsection.6.6.2}%
+\contentsline {subsection}{\numberline {6.6.3}RQ3: XAI for Data-Quality Validation}{60}{subsection.6.6.3}%
+\contentsline {subsection}{\numberline {6.6.4}RQ4: SHAP vs.\ LIME Agreement}{61}{subsection.6.6.4}%
+\contentsline {subsection}{\numberline {6.6.5}RQ5: Software Architecture for ML + XAI Integration}{61}{subsection.6.6.5}%
+\contentsline {subsection}{\numberline {6.6.6}RQ6: Agile Methodology}{61}{subsection.6.6.6}%
+\contentsline {section}{\numberline {6.7}Summary}{62}{section.6.7}%
+\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{63}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Summary of Contributions}{63}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Limitations}{63}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Future Work}{64}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Concluding Remarks}{65}{section.7.4}%
