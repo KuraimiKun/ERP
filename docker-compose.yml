@@ -1,4 +1,6 @@
 services:
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
   postgres:
     image: postgres:15-alpine
     container_name: erp_postgres
@@ -31,8 +33,39 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── Docker Socket Proxy ──────────────────────────────────────────────────────
+  # Exposes only the Docker API endpoints the app actually needs.
+  # The web/celery services connect here (tcp://docker-socket-proxy:2375)
+  # instead of the raw /var/run/docker.sock, so a compromised app container
+  # cannot escape to the host — swarm, secrets, exec arbitrary images, etc.
+  # are all blocked by default in tecnativa/docker-socket-proxy.
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: erp_docker_proxy
+    restart: unless-stopped
+    # Only the proxy container mounts the raw socket — as read-only.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      # Allow the minimum set of API scopes the app uses:
+      CONTAINERS: 1   # list, inspect, start, stop, restart, remove
+      IMAGES:     1   # list, pull
+      NETWORKS:   1   # list, create
+      VOLUMES:    1   # list, inspect, remove
+      INFO:       1   # docker info (system overview)
+      VERSION:    1   # docker version
+      PING:       1   # health checks
+      POST:       1   # needed for create/start/stop/restart/exec
+      EXEC:       1   # pg_isready health checks inside containers
+      # Everything not listed above is blocked (SWARM, SECRETS, BUILD, etc.)
+    networks:
+      - proxy_net   # isolated; only app containers can reach it
+    # Do NOT expose port 2375 to the host — internal only.
+
+  # ── Application Services ─────────────────────────────────────────────────────
+
   web:
-    build: .
+    build: .                          # uses Dockerfile → requirements-prod.txt (no ML)
     container_name: erp_web
     restart: unless-stopped
     command: python manage.py runserver 0.0.0.0:8000
@@ -43,27 +76,72 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    # Override host names so services reach each other by container name
+    # Override host names so services reach each other by container name.
+    # DOCKER_HOST points to the restricted socket proxy, NOT the raw socket.
     environment:
       DB_HOST: postgres
       DB_PORT: "5432"
       REDIS_URL: "redis://redis:6379/1"
       CELERY_BROKER_URL: "redis://redis:6379/0"
       CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+      DOCKER_HOST: "tcp://docker-socket-proxy:2375"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      docker-socket-proxy:
+        condition: service_started
+    networks:
+      - default
+      - proxy_net
 
   celery-worker:
-    build: .
+    build: .                          # lightweight: no ML packages
     container_name: erp_celery_worker
     restart: unless-stopped
+    # --queues excludes 'ml' so this worker never imports sklearn/numpy/prophet.
     command: >
       celery -A erpproject worker
         --loglevel=info
+        --queues=celery,default
         --concurrency=4
+    volumes:
+      - .:/app
+      - media:/app/media
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      REDIS_URL: "redis://redis:6379/1"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+      DOCKER_HOST: "tcp://docker-socket-proxy:2375"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      docker-socket-proxy:
+        condition: service_started
+    networks:
+      - default
+      - proxy_net
+
+  celery-ml-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.ml       # heavy image: base + scikit-learn, numpy, prophet…
+    container_name: erp_celery_ml_worker
+    restart: unless-stopped
+    # Only consumes the 'ml' queue — receives all erp.ai.tasks.* routed here
+    # by celery.py task_routes.  Lower concurrency because each task is CPU-bound.
+    command: >
+      celery -A erpproject worker
+        --loglevel=info
+        --queues=ml
+        --concurrency=2
     volumes:
       - .:/app
       - media:/app/media
@@ -85,7 +163,7 @@ services:
     build: .
     container_name: erp_celery_beat
     restart: unless-stopped
-    # DatabaseScheduler lets you edit schedules in Django admin without redeploying
+    # DatabaseScheduler lets you edit schedules in Django admin without redeploying.
     command: >
       celery -A erpproject beat
         --loglevel=info
@@ -107,6 +185,11 @@ services:
         condition: service_healthy
       web:
         condition: service_started   # migrations must run before beat creates schedule tables
+
+networks:
+  default: {}
+  proxy_net:
+    internal: true   # no external connectivity — proxy ↔ app only
 
 volumes:
   pgdata:

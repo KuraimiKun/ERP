@@ -6,6 +6,7 @@ Django REST Framework ViewSets for the ERP system.
 
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
@@ -73,11 +74,11 @@ class ERPBaseViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     
     def get_company(self):
-        """Get the current user's company."""
+        """Get the current user's company, or raise 403 if they have no profile."""
         user = self.request.user
         if hasattr(user, 'employee_profile') and user.employee_profile:
             return user.employee_profile.company
-        return Company.objects.first()
+        raise PermissionDenied('No employee profile found for this user.')
     
     def get_queryset(self):
         """Filter queryset by company."""
@@ -958,7 +959,8 @@ class ReportTemplateViewSet(ERPBaseViewSet):
         )
 
         from erp.tasks.report_tasks import generate_report
-        generate_report.delay(generated.pk)
+        from tenants.routers import get_current_db_alias
+        generate_report.delay(generated.pk, db_alias=get_current_db_alias())
 
         return Response(
             GeneratedReportSerializer(generated, context={'request': request}).data,

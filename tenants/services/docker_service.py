@@ -4,14 +4,24 @@ Docker Service
 Handles Docker container management for PostgreSQL servers.
 Enterprise features: stats, resource limits, image management,
 container inspection, restart, and environment configuration.
+
+Security note
+─────────────
+This module uses the Python Docker SDK (``import docker``), which connects to the
+Docker daemon via ``DOCKER_HOST`` from the environment.  In production the app is
+configured to connect to a ``tecnativa/docker-socket-proxy`` sidecar running on
+``tcp://127.0.0.1:2375`` instead of the raw ``/var/run/docker.sock``.  The proxy
+exposes only the container/image/network/volume endpoints — the web process never
+has a path to the raw socket, limiting blast radius if the app is compromised.
 """
 
-import json
-import re
-import subprocess
 import logging
+import re
 import time
 import uuid
+
+import docker
+import docker.errors
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -28,87 +38,131 @@ def _validate_name(value, label='name'):
         )
 
 
+def _bytes_to_human(n):
+    """Convert byte count to a human-readable string (e.g. '123.4MiB')."""
+    for unit in ('B', 'KiB', 'MiB', 'GiB', 'TiB'):
+        if n < 1024:
+            return f'{n:.1f}{unit}'
+        n /= 1024
+    return f'{n:.1f}PiB'
+
+
 class DockerService:
     """
-    Service for managing Docker PostgreSQL containers.
+    Service for managing Docker PostgreSQL containers via the Python SDK.
+
+    Connects to the Docker daemon through ``DOCKER_HOST`` (environment variable)
+    so the connection target can be overridden to a socket proxy without code
+    changes.
     """
-    
+
     def __init__(self):
         self.postgres_image = getattr(settings, 'DOCKER_POSTGRES_IMAGE', 'postgres:15-alpine')
-        self.network_name = getattr(settings, 'DOCKER_NETWORK', 'erp_network')
-    
-    def _run_command(self, command, check=True):
+        self.network_name   = getattr(settings, 'DOCKER_NETWORK', 'erp_network')
+
+    # ── Internal helpers ──────────────────────────────────────────────────────
+
+    def _client(self):
         """
-        Run a command and return the output.
+        Return a Docker SDK client.
 
-        Args:
-            command: Command as a *list* of arguments (no shell expansion).
-            check: Whether to raise exception on non-zero exit.
-
-        Returns:
-            tuple: (success, output)
+        Reads ``DOCKER_HOST`` from the environment (set via .env / docker-compose).
+        Falls back to the local socket when ``DOCKER_HOST`` is not set.
         """
-        try:
-            if isinstance(command, str):
-                # Legacy callers — split is safe here because the only
-                # string invocations are fixed literals ("docker info").
-                command = command.split()
+        return docker.from_env()
 
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                check=check,
-                shell=False,          # never use shell expansion
-            )
-            return True, result.stdout.strip()
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Command failed: {e.stderr}")
-            return False, e.stderr
-        except Exception as e:
-            logger.error(f"Error running command: {str(e)}")
-            return False, str(e)
-    
+    def _get_container(self, client, name):
+        """Return the container object or raise docker.errors.NotFound."""
+        _validate_name(name, 'container name')
+        return client.containers.get(name)
+
+    # ── Health / availability ─────────────────────────────────────────────────
+
     def is_docker_available(self):
-        """Check if Docker is available and running."""
-        success, _ = self._run_command("docker info", check=False)
-        return success
-    
-    def ensure_network_exists(self):
-        """Create Docker network if it doesn't exist."""
-        _validate_name(self.network_name, 'network name')
-
-        # Check if network exists
-        success, output = self._run_command(
-            ["docker", "network", "ls", "--filter", f"name={self.network_name}", "-q"],
-            check=False
-        )
-        
-        if success and output:
-            return True  # Network exists
-        
-        # Create network
-        success, output = self._run_command(
-            ["docker", "network", "create", self.network_name],
-            check=False
-        )
-        
-        if success:
-            logger.info(f"Created Docker network: {self.network_name}")
+        """Return True if the Docker daemon (or proxy) is reachable."""
+        try:
+            self._client().ping()
             return True
-        else:
-            logger.warning(f"Could not create network: {output}")
+        except Exception:
             return False
-    
+
+    # ── Network ───────────────────────────────────────────────────────────────
+
+    def ensure_network_exists(self):
+        """Create the ERP Docker network if it does not already exist."""
+        _validate_name(self.network_name, 'network name')
+        client = self._client()
+        try:
+            existing = client.networks.list(names=[self.network_name])
+            # names filter is a substring match; verify exact match
+            if any(n.name == self.network_name for n in existing):
+                return True
+            client.networks.create(self.network_name, driver='bridge')
+            logger.info('Created Docker network: %s', self.network_name)
+            return True
+        except docker.errors.APIError as exc:
+            logger.warning('Could not create network %s: %s', self.network_name, exc)
+            return False
+
+    # ── Image management ──────────────────────────────────────────────────────
+
     def pull_postgres_image(self):
-        """Pull the PostgreSQL Docker image."""
-        logger.info(f"Pulling PostgreSQL image: {self.postgres_image}")
-        success, output = self._run_command(
-            ["docker", "pull", self.postgres_image],
-            check=False
-        )
-        return success
-    
+        """Pull (or refresh) the configured PostgreSQL image."""
+        logger.info('Pulling PostgreSQL image: %s', self.postgres_image)
+        try:
+            self._client().images.pull(self.postgres_image)
+            return True
+        except docker.errors.APIError as exc:
+            logger.error('Failed to pull image %s: %s', self.postgres_image, exc)
+            return False
+
+    def get_docker_images(self):
+        """Return a list of locally available PostgreSQL-related images."""
+        try:
+            images = self._client().images.list()
+            result = []
+            for img in images:
+                for tag in img.tags:
+                    if 'postgres' in tag.lower():
+                        repo, _, tag_name = tag.partition(':')
+                        result.append({
+                            'repo': repo,
+                            'tag': tag_name or 'latest',
+                            'id': img.short_id.replace('sha256:', ''),
+                            'size': _bytes_to_human(img.attrs.get('Size', 0)),
+                            'created': img.attrs.get('Created', ''),
+                        })
+            return result
+        except docker.errors.APIError:
+            return []
+
+    def pull_image(self, image_name):
+        """
+        Pull a specific Docker image.
+        Returns (success, message).
+        """
+        from ..models import ServerLog
+        try:
+            self._client().images.pull(image_name)
+            ServerLog.objects.create(
+                action='docker_pull',
+                level='success',
+                message=f'Pulled image {image_name}: OK',
+                details={'image': image_name},
+            )
+            return True, 'OK'
+        except docker.errors.APIError as exc:
+            msg = str(exc)
+            ServerLog.objects.create(
+                action='docker_pull',
+                level='error',
+                message=f'Failed to pull image {image_name}: {msg}',
+                details={'image': image_name},
+            )
+            return False, msg
+
+    # ── Container lifecycle ───────────────────────────────────────────────────
+
     def create_postgres_container(
         self,
         name,
@@ -117,59 +171,43 @@ class DockerService:
         port=5432,
         postgres_password='postgres',
         max_databases=50,
-        created_by=None
+        created_by=None,
     ):
         """
-        Create a new Docker PostgreSQL container.
-        
-        Args:
-            name: Display name for the server
-            description: Server description
-            container_name: Docker container name (auto-generated if not provided)
-            port: Host port to map
-            postgres_password: PostgreSQL admin password
-            max_databases: Maximum number of databases
-            created_by: User who created the server
-            
-        Returns:
-            PostgresServer: The created server instance
+        Create a new Docker PostgreSQL container and register it in the DB.
+
+        Returns the created PostgresServer instance.
         """
         from ..models import PostgresServer, ServerLog
-        
+
         if not self.is_docker_available():
-            raise RuntimeError("Docker is not available or not running")
-        
-        # Ensure network exists
+            raise RuntimeError('Docker is not available or not running')
+
         self.ensure_network_exists()
-        
-        # Generate container name if not provided
+
         if not container_name:
-            container_name = f"erp_postgres_{uuid.uuid4().hex[:8]}"
+            container_name = f'erp_postgres_{uuid.uuid4().hex[:8]}'
         _validate_name(container_name, 'container name')
-        
-        # Volume name for persistent storage
-        volume_name = f"{container_name}_data"
-        
-        # Create the container
-        cmd = [
-            "docker", "run", "-d",
-            "--name", container_name,
-            "--network", self.network_name,
-            "-e", f"POSTGRES_PASSWORD={postgres_password}",
-            "-p", f"{port}:5432",
-            "-v", f"{volume_name}:/var/lib/postgresql/data",
-            "--restart", "unless-stopped",
-            self.postgres_image
-        ]
-        
-        success, output = self._run_command(cmd, check=False)
-        
-        if not success:
-            raise RuntimeError(f"Failed to create container: {output}")
-        
-        container_id = output[:12]  # Short container ID
-        
-        # Create the server record
+
+        volume_name = f'{container_name}_data'
+        client = self._client()
+
+        try:
+            container = client.containers.run(
+                self.postgres_image,
+                name=container_name,
+                detach=True,
+                environment={'POSTGRES_PASSWORD': postgres_password},
+                ports={'5432/tcp': port},
+                volumes={volume_name: {'bind': '/var/lib/postgresql/data', 'mode': 'rw'}},
+                network=self.network_name,
+                restart_policy={'Name': 'unless-stopped'},
+            )
+        except docker.errors.APIError as exc:
+            raise RuntimeError(f'Failed to create container: {exc}') from exc
+
+        container_id = container.short_id
+
         server = PostgresServer.objects.create(
             name=name,
             description=description,
@@ -182,382 +220,282 @@ class DockerService:
             docker_container_name=container_name,
             docker_volume_name=volume_name,
             max_databases=max_databases,
-            status='inactive',  # Will be active after health check
-            created_by=created_by
+            status='inactive',
+            created_by=created_by,
         )
-        
-        # Log the creation
+
         ServerLog.objects.create(
             server=server,
             action='docker_container_create',
             level='success',
             message=f'Docker container {container_name} created successfully',
             user=created_by,
-            details={
-                'container_id': container_id,
-                'port': port,
-                'image': self.postgres_image
-            }
+            details={'container_id': container_id, 'port': port, 'image': self.postgres_image},
         )
-        
-        # Wait for PostgreSQL to be ready
-        logger.info("Waiting for PostgreSQL to be ready...")
-        time.sleep(5)  # Give PostgreSQL time to start
-        
-        # Perform health check
+
+        logger.info('Waiting for PostgreSQL to be ready…')
+        time.sleep(5)
+
         from .database_service import DatabaseService
         db_service = DatabaseService()
-        
-        for i in range(10):
-            is_healthy, message = db_service.check_server_health(server)
+        for _ in range(10):
+            is_healthy, _ = db_service.check_server_health(server)
             if is_healthy:
-                logger.info(f"Server {name} is ready!")
+                logger.info('Server %s is ready.', name)
                 break
             time.sleep(2)
-        
-        return server
-    
-    def start_container(self, server):
-        """
-        Start a stopped Docker container.
-        
-        Args:
-            server: PostgresServer instance
-            
-        Returns:
-            bool: Success status
-        """
-        from ..models import ServerLog
-        
-        if not server.docker_container_name:
-            raise ValueError("No Docker container name set for this server")
-        _validate_name(server.docker_container_name, 'container name')
 
-        success, output = self._run_command(
-            ["docker", "start", server.docker_container_name],
-            check=False
-        )
-        
-        if success:
+        return server
+
+    def start_container(self, server):
+        """Start a stopped Docker container. Returns True on success."""
+        from ..models import ServerLog
+
+        if not server.docker_container_name:
+            raise ValueError('No Docker container name set for this server')
+
+        client = self._client()
+        try:
+            self._get_container(client, server.docker_container_name).start()
             server.status = 'active'
             server.save()
-            
             ServerLog.objects.create(
                 server=server,
                 action='docker_container_start',
                 level='success',
-                message=f'Container {server.docker_container_name} started'
+                message=f'Container {server.docker_container_name} started',
             )
-        else:
+            return True
+        except docker.errors.APIError as exc:
             ServerLog.objects.create(
                 server=server,
                 action='docker_container_start',
                 level='error',
-                message=f'Failed to start container: {output}'
+                message=f'Failed to start container: {exc}',
             )
-        
-        return success
-    
-    def stop_container(self, server):
-        """
-        Stop a running Docker container.
-        
-        Args:
-            server: PostgresServer instance
-            
-        Returns:
-            bool: Success status
-        """
-        from ..models import ServerLog
-        
-        if not server.docker_container_name:
-            raise ValueError("No Docker container name set for this server")
-        _validate_name(server.docker_container_name, 'container name')
+            return False
 
-        success, output = self._run_command(
-            ["docker", "stop", server.docker_container_name],
-            check=False
-        )
-        
-        if success:
+    def stop_container(self, server):
+        """Stop a running Docker container. Returns True on success."""
+        from ..models import ServerLog
+
+        if not server.docker_container_name:
+            raise ValueError('No Docker container name set for this server')
+
+        client = self._client()
+        try:
+            self._get_container(client, server.docker_container_name).stop()
             server.status = 'inactive'
             server.save()
-            
             ServerLog.objects.create(
                 server=server,
                 action='docker_container_stop',
                 level='success',
-                message=f'Container {server.docker_container_name} stopped'
+                message=f'Container {server.docker_container_name} stopped',
             )
-        else:
+            return True
+        except docker.errors.APIError as exc:
             ServerLog.objects.create(
                 server=server,
                 action='docker_container_stop',
                 level='error',
-                message=f'Failed to stop container: {output}'
+                message=f'Failed to stop container: {exc}',
             )
-        
-        return success
-    
-    def remove_container(self, server, remove_volume=False):
-        """
-        Remove a Docker container.
-        
-        Args:
-            server: PostgresServer instance
-            remove_volume: Whether to also remove the data volume
-            
-        Returns:
-            bool: Success status
-        """
-        from ..models import ServerLog
-        
-        if not server.docker_container_name:
-            raise ValueError("No Docker container name set for this server")
-        _validate_name(server.docker_container_name, 'container name')
+            return False
 
-        # Stop container first
+    def restart_container(self, server):
+        """Restart a Docker container. Returns True on success."""
+        from ..models import ServerLog
+
+        if not server.docker_container_name:
+            raise ValueError('No Docker container name set for this server')
+
+        client = self._client()
+        try:
+            self._get_container(client, server.docker_container_name).restart()
+            server.status = 'active'
+            server.save()
+            ServerLog.objects.create(
+                server=server,
+                action='docker_container_restart',
+                level='success',
+                message=f'Container {server.docker_container_name} restarted',
+            )
+            return True
+        except docker.errors.APIError as exc:
+            ServerLog.objects.create(
+                server=server,
+                action='docker_container_restart',
+                level='error',
+                message=f'Container restart failed: {exc}',
+            )
+            return False
+
+    def remove_container(self, server, remove_volume=False):
+        """Remove a Docker container (stops it first). Returns True on success."""
+        from ..models import ServerLog
+
+        if not server.docker_container_name:
+            raise ValueError('No Docker container name set for this server')
+
         self.stop_container(server)
-        
-        # Remove container
-        success, output = self._run_command(
-            ["docker", "rm", server.docker_container_name],
-            check=False
-        )
-        
-        if not success:
-            logger.warning(f"Failed to remove container: {output}")
-        
-        # Remove volume if requested
+
+        client = self._client()
+        success = True
+        try:
+            self._get_container(client, server.docker_container_name).remove()
+        except docker.errors.NotFound:
+            pass  # Already gone
+        except docker.errors.APIError as exc:
+            logger.warning('Failed to remove container: %s', exc)
+            success = False
+
         if remove_volume and server.docker_volume_name:
             _validate_name(server.docker_volume_name, 'volume name')
-            vol_success, vol_output = self._run_command(
-                ["docker", "volume", "rm", server.docker_volume_name],
-                check=False
-            )
-            if not vol_success:
-                logger.warning(f"Failed to remove volume: {vol_output}")
-        
+            try:
+                client.volumes.get(server.docker_volume_name).remove()
+            except (docker.errors.NotFound, docker.errors.APIError) as exc:
+                logger.warning('Failed to remove volume: %s', exc)
+
         ServerLog.objects.create(
             server=server,
             action='docker_container_remove',
             level='success' if success else 'warning',
-            message=f'Container {server.docker_container_name} removed'
+            message=f'Container {server.docker_container_name} removed',
         )
-        
         return success
-    
+
+    # ── Container inspection ──────────────────────────────────────────────────
+
     def get_container_status(self, server):
-        """
-        Get the status of a Docker container.
-        
-        Args:
-            server: PostgresServer instance
-            
-        Returns:
-            str: Container status or None if not found
-        """
+        """Return the container status string, or None if not found."""
         if not server.docker_container_name:
             return None
-        _validate_name(server.docker_container_name, 'container name')
+        try:
+            c = self._get_container(self._client(), server.docker_container_name)
+            c.reload()
+            return c.status
+        except (docker.errors.NotFound, docker.errors.APIError):
+            return None
 
-        success, output = self._run_command(
-            ["docker", "inspect", "--format", "{{.State.Status}}", server.docker_container_name],
-            check=False
-        )
-        
-        return output if success else None
-    
     def get_container_logs(self, server, lines=100):
-        """
-        Get recent logs from a Docker container.
-        
-        Args:
-            server: PostgresServer instance
-            lines: Number of log lines to retrieve
-            
-        Returns:
-            str: Log output
-        """
+        """Return the last *lines* log lines from a container."""
         if not server.docker_container_name:
-            return ""
-        _validate_name(server.docker_container_name, 'container name')
+            return ''
+        try:
+            c = self._get_container(self._client(), server.docker_container_name)
+            raw = c.logs(tail=int(lines), stdout=True, stderr=True)
+            return raw.decode('utf-8', errors='replace') if isinstance(raw, bytes) else raw
+        except (docker.errors.NotFound, docker.errors.APIError):
+            return ''
 
-        success, output = self._run_command(
-            ["docker", "logs", "--tail", str(int(lines)), server.docker_container_name],
-            check=False
-        )
-        
-        return output if success else ""
-
-    # ── Enterprise Features ───────────────────────────────────────────────
-
-    def restart_container(self, server):
-        """Restart a Docker container."""
-        from ..models import ServerLog
-
+    def inspect_container(self, server):
+        """Return the full inspect dict for a container, or None."""
         if not server.docker_container_name:
-            raise ValueError("No Docker container name set for this server")
-        _validate_name(server.docker_container_name, 'container name')
-
-        success, output = self._run_command(
-            ["docker", "restart", server.docker_container_name],
-            check=False,
-        )
-
-        ServerLog.objects.create(
-            server=server,
-            action='docker_container_restart',
-            level='success' if success else 'error',
-            message=f'Container restart {"succeeded" if success else "failed"}: {output}',
-        )
-
-        if success:
-            server.status = 'active'
-            server.save()
-
-        return success
+            return None
+        try:
+            c = self._get_container(self._client(), server.docker_container_name)
+            c.reload()
+            return c.attrs
+        except (docker.errors.NotFound, docker.errors.APIError):
+            return None
 
     def get_container_stats(self, server):
         """
-        Get real-time resource usage stats for a Docker container.
+        Return real-time resource usage stats for a container.
 
-        Returns dict with cpu_percent, memory_usage, memory_limit, memory_percent,
-        net_io_in, net_io_out, block_read, block_write, pids.
+        Returns a dict with cpu_percent, memory_used, memory_limit,
+        memory_percent, net_io_in, net_io_out, block_read, block_write, pids.
         """
         if not server.docker_container_name:
             return None
-
-        success, output = self._run_command(
-            [
-                "docker", "stats", server.docker_container_name,
-                "--no-stream",
-                "--format",
-                '{"cpu":"{{.CPUPerc}}","mem_usage":"{{.MemUsage}}","mem_perc":"{{.MemPerc}}","net_io":"{{.NetIO}}","block_io":"{{.BlockIO}}","pids":"{{.PIDs}}"}',
-            ],
-            check=False,
-        )
-
-        if not success or not output:
-            return None
-
         try:
-            raw = json.loads(output.strip().split('\n')[0])
+            c = self._get_container(self._client(), server.docker_container_name)
+            raw = c.stats(stream=False)
 
-            # Parse memory usage "123.4MiB / 1GiB"
-            mem_parts = raw.get('mem_usage', '0B / 0B').split(' / ')
-            mem_used = mem_parts[0].strip() if len(mem_parts) > 0 else '0B'
-            mem_limit = mem_parts[1].strip() if len(mem_parts) > 1 else '0B'
+            # ── CPU % ──
+            cpu_delta    = raw['cpu_stats']['cpu_usage']['total_usage'] \
+                         - raw['precpu_stats']['cpu_usage']['total_usage']
+            system_delta = raw['cpu_stats'].get('system_cpu_usage', 0) \
+                         - raw['precpu_stats'].get('system_cpu_usage', 0)
+            num_cpus     = raw['cpu_stats'].get('online_cpus') \
+                        or len(raw['cpu_stats']['cpu_usage'].get('percpu_usage') or [1])
+            cpu_pct = (cpu_delta / system_delta * num_cpus * 100.0) if system_delta else 0.0
 
-            # Parse net I/O "1.23kB / 4.56kB"
-            net_parts = raw.get('net_io', '0B / 0B').split(' / ')
-            net_in = net_parts[0].strip() if len(net_parts) > 0 else '0B'
-            net_out = net_parts[1].strip() if len(net_parts) > 1 else '0B'
+            # ── Memory ──
+            mem_stats  = raw.get('memory_stats', {})
+            mem_used   = mem_stats.get('usage', 0)
+            mem_limit  = mem_stats.get('limit', 0)
+            mem_pct    = (mem_used / mem_limit * 100.0) if mem_limit else 0.0
 
-            # Parse block I/O
-            blk_parts = raw.get('block_io', '0B / 0B').split(' / ')
-            blk_read = blk_parts[0].strip() if len(blk_parts) > 0 else '0B'
-            blk_write = blk_parts[1].strip() if len(blk_parts) > 1 else '0B'
+            # ── Network I/O (sum across all interfaces) ──
+            net_rx = net_tx = 0
+            for iface in raw.get('networks', {}).values():
+                net_rx += iface.get('rx_bytes', 0)
+                net_tx += iface.get('tx_bytes', 0)
+
+            # ── Block I/O ──
+            blk_read = blk_write = 0
+            for entry in raw.get('blkio_stats', {}).get('io_service_bytes_recursive') or []:
+                if entry.get('op') == 'Read':
+                    blk_read += entry.get('value', 0)
+                elif entry.get('op') == 'Write':
+                    blk_write += entry.get('value', 0)
 
             return {
-                'cpu_percent': raw.get('cpu', '0%').rstrip('%'),
-                'memory_used': mem_used,
-                'memory_limit': mem_limit,
-                'memory_percent': raw.get('mem_perc', '0%').rstrip('%'),
-                'net_io_in': net_in,
-                'net_io_out': net_out,
-                'block_read': blk_read,
-                'block_write': blk_write,
-                'pids': raw.get('pids', '0'),
+                'cpu_percent':    f'{cpu_pct:.2f}',
+                'memory_used':    _bytes_to_human(mem_used),
+                'memory_limit':   _bytes_to_human(mem_limit),
+                'memory_percent': f'{mem_pct:.2f}',
+                'net_io_in':      _bytes_to_human(net_rx),
+                'net_io_out':     _bytes_to_human(net_tx),
+                'block_read':     _bytes_to_human(blk_read),
+                'block_write':    _bytes_to_human(blk_write),
+                'pids':           str(raw.get('pids_stats', {}).get('current', 0)),
             }
-        except (json.JSONDecodeError, IndexError, KeyError):
-            return None
-
-    def inspect_container(self, server):
-        """
-        Return the full `docker inspect` JSON for a container.
-        """
-        if not server.docker_container_name:
-            return None
-
-        success, output = self._run_command(
-            ["docker", "inspect", server.docker_container_name],
-            check=False,
-        )
-
-        if not success or not output:
-            return None
-
-        try:
-            data = json.loads(output)
-            return data[0] if isinstance(data, list) and data else data
-        except json.JSONDecodeError:
+        except (docker.errors.NotFound, docker.errors.APIError, KeyError, ZeroDivisionError):
             return None
 
     def get_container_processes(self, server):
         """
-        List processes running inside the container (docker top).
-        Returns list of dicts with UID, PID, PPID, CMD, etc.
+        List processes inside the container.
+        Returns a list of dicts with pid, user, pct_cpu, pct_mem, command, etc.
         """
         if not server.docker_container_name:
             return []
-
-        success, output = self._run_command(
-            ["docker", "top", server.docker_container_name, "-eo", "pid,user,%cpu,%mem,vsz,rss,command"],
-            check=False,
-        )
-
-        if not success or not output:
+        try:
+            c = self._get_container(self._client(), server.docker_container_name)
+            result = c.top(ps_args='-eo pid,user,%cpu,%mem,vsz,rss,command')
+            titles = [h.lower().replace('%', 'pct_') for h in result.get('Titles', [])]
+            processes = []
+            for row in result.get('Processes') or []:
+                if len(row) >= len(titles):
+                    processes.append(dict(zip(titles, row)))
+            return processes
+        except (docker.errors.NotFound, docker.errors.APIError):
             return []
-
-        lines = output.strip().split('\n')
-        if len(lines) < 2:
-            return []
-
-        headers = [h.replace('%', 'pct_') for h in lines[0].lower().split()]
-        processes = []
-        for line in lines[1:]:
-            parts = line.split(None, len(headers) - 1)
-            if len(parts) >= len(headers):
-                processes.append(dict(zip(headers, parts)))
-        return processes
 
     def get_container_env(self, server):
         """
-        Get environment variables from a running container.
-        Returns list of {'key': ..., 'value': ...}.
+        Return env vars from a running container.
+        Sensitive values (PASSWORD, SECRET, KEY, TOKEN) are masked.
         """
-        if not server.docker_container_name:
-            return []
-
         info = self.inspect_container(server)
         if not info:
             return []
-
-        env_list = info.get('Config', {}).get('Env', [])
         result = []
-        for entry in env_list:
-            parts = entry.split('=', 1)
-            key = parts[0]
-            value = parts[1] if len(parts) > 1 else ''
-            # Mask sensitive values
+        for entry in info.get('Config', {}).get('Env') or []:
+            key, _, value = entry.partition('=')
             if any(s in key.upper() for s in ('PASSWORD', 'SECRET', 'KEY', 'TOKEN')):
                 value = '••••••••'
             result.append({'key': key, 'value': value})
         return result
 
     def get_container_port_mappings(self, server):
-        """
-        Get port mappings for a container.
-        Returns list of {'container_port': ..., 'host_port': ..., 'host_ip': ...}.
-        """
-        if not server.docker_container_name:
-            return []
-
+        """Return port mappings for a container."""
         info = self.inspect_container(server)
         if not info:
             return []
-
         ports_data = info.get('NetworkSettings', {}).get('Ports', {})
         mappings = []
         for container_port, bindings in ports_data.items():
@@ -565,245 +503,178 @@ class DockerService:
                 for b in bindings:
                     mappings.append({
                         'container_port': container_port,
-                        'host_ip': b.get('HostIp', '127.0.0.1'),
-                        'host_port': b.get('HostPort', ''),
+                        'host_ip':        b.get('HostIp', '127.0.0.1'),
+                        'host_port':      b.get('HostPort', ''),
                     })
             else:
                 mappings.append({'container_port': container_port, 'host_ip': '', 'host_port': ''})
         return mappings
 
     def get_container_mounts(self, server):
-        """
-        Get volume mounts for a container.
-        Returns list of dicts with type, source, destination, mode.
-        """
-        if not server.docker_container_name:
-            return []
-
+        """Return volume mounts for a container."""
         info = self.inspect_container(server)
         if not info:
             return []
-
-        mounts = info.get('Mounts', [])
         return [
             {
-                'type': m.get('Type', ''),
-                'source': m.get('Source', m.get('Name', '')),
+                'type':        m.get('Type', ''),
+                'source':      m.get('Source', m.get('Name', '')),
                 'destination': m.get('Destination', ''),
-                'mode': m.get('Mode', 'rw'),
-                'rw': m.get('RW', True),
+                'mode':        m.get('Mode', 'rw'),
+                'rw':          m.get('RW', True),
             }
-            for m in mounts
+            for m in info.get('Mounts') or []
         ]
 
     def get_container_network_info(self, server):
-        """
-        Get network details for a container.
-        """
-        if not server.docker_container_name:
-            return {}
-
+        """Return network details for a container."""
         info = self.inspect_container(server)
         if not info:
             return {}
-
-        nets = info.get('NetworkSettings', {}).get('Networks', {})
         result = {}
-        for net_name, net_data in nets.items():
+        for net_name, net_data in (info.get('NetworkSettings', {}).get('Networks') or {}).items():
             result[net_name] = {
                 'ip_address': net_data.get('IPAddress', ''),
-                'gateway': net_data.get('Gateway', ''),
+                'gateway':    net_data.get('Gateway', ''),
                 'mac_address': net_data.get('MacAddress', ''),
                 'network_id': net_data.get('NetworkID', '')[:12],
             }
         return result
 
     def get_container_uptime_info(self, server):
-        """
-        Get container creation time, start time, uptime details.
-        Returns dict with created, started, status, uptime_seconds.
-        """
-        if not server.docker_container_name:
-            return {}
-
+        """Return creation time, start time, and uptime details."""
         info = self.inspect_container(server)
         if not info:
             return {}
-
         state = info.get('State', {})
         return {
-            'status': state.get('Status', 'unknown'),
-            'running': state.get('Running', False),
-            'started_at': state.get('StartedAt', ''),
-            'finished_at': state.get('FinishedAt', ''),
+            'status':        state.get('Status', 'unknown'),
+            'running':       state.get('Running', False),
+            'started_at':    state.get('StartedAt', ''),
+            'finished_at':   state.get('FinishedAt', ''),
             'restart_count': info.get('RestartCount', 0),
-            'created': info.get('Created', ''),
-            'image': info.get('Config', {}).get('Image', ''),
-            'platform': info.get('Platform', ''),
+            'created':       info.get('Created', ''),
+            'image':         info.get('Config', {}).get('Image', ''),
+            'platform':      info.get('Platform', ''),
         }
 
-    def get_docker_images(self):
-        """List available PostgreSQL-related Docker images."""
-        success, output = self._run_command(
-            ["docker", "images", "--format", '{"repo":"{{.Repository}}","tag":"{{.Tag}}","id":"{{.ID}}","size":"{{.Size}}","created":"{{.CreatedAt}}"}'],
-            check=False,
-        )
-
-        if not success or not output:
-            return []
-
-        images = []
-        for line in output.strip().split('\n'):
-            try:
-                img = json.loads(line)
-                if 'postgres' in img.get('repo', '').lower():
-                    images.append(img)
-            except json.JSONDecodeError:
-                continue
-        return images
-
-    def pull_image(self, image_name):
-        """
-        Pull a specific Docker image.
-        Returns (success, output).
-        """
-        from ..models import ServerLog
-
-        success, output = self._run_command(
-            ["docker", "pull", image_name],
-            check=False,
-        )
-
-        ServerLog.objects.create(
-            action='docker_pull',
-            level='success' if success else 'error',
-            message=f'Pulled image {image_name}: {"OK" if success else output}',
-            details={'image': image_name},
-        )
-
-        return success, output
-
-    def get_docker_system_info(self):
-        """
-        Get Docker system-wide information (docker system df + info).
-        Returns dict with images, containers, volumes, build_cache totals.
-        """
-        result = {
-            'docker_version': '',
-            'total_containers': 0,
-            'running_containers': 0,
-            'paused_containers': 0,
-            'stopped_containers': 0,
-            'total_images': 0,
-            'storage_driver': '',
-            'os': '',
-            'architecture': '',
-            'cpus': 0,
-            'memory': '',
-        }
-
-        # Docker info
-        success, output = self._run_command(
-            ["docker", "info", "--format", '{"containers":{{.Containers}},"running":{{.ContainersRunning}},"paused":{{.ContainersPaused}},"stopped":{{.ContainersStopped}},"images":{{.Images}},"driver":"{{.Driver}}","os":"{{.OperatingSystem}}","arch":"{{.Architecture}}","cpus":{{.NCPU}},"memory":"{{.MemTotal}}"}'],
-            check=False,
-        )
-        if success and output:
-            try:
-                info = json.loads(output.strip())
-                result.update({
-                    'total_containers': info.get('containers', 0),
-                    'running_containers': info.get('running', 0),
-                    'paused_containers': info.get('paused', 0),
-                    'stopped_containers': info.get('stopped', 0),
-                    'total_images': info.get('images', 0),
-                    'storage_driver': info.get('driver', ''),
-                    'os': info.get('os', ''),
-                    'architecture': info.get('arch', ''),
-                    'cpus': info.get('cpus', 0),
-                    'memory': info.get('memory', ''),
-                })
-            except json.JSONDecodeError:
-                pass
-
-        # Docker version
-        success, output = self._run_command(
-            ["docker", "version", "--format", "{{.Server.Version}}"],
-            check=False,
-        )
-        if success and output:
-            result['docker_version'] = output.strip()
-
-        return result
+    # ── Resource management ───────────────────────────────────────────────────
 
     def update_container_resources(self, server, memory_limit=None, cpu_shares=None, cpus=None):
         """
         Update resource constraints on a running container.
+
         memory_limit: e.g. '512m', '1g'
-        cpu_shares: relative weight (1024 = default)
-        cpus: decimal CPU count e.g. '1.5'
+        cpu_shares:   relative weight (1024 = default)
+        cpus:         decimal CPU count e.g. '1.5'
         """
         from ..models import ServerLog
 
         if not server.docker_container_name:
-            raise ValueError("No Docker container name set.")
+            raise ValueError('No Docker container name set.')
 
-        cmd = ["docker", "update"]
+        update_kwargs = {}
         details = {}
 
         if memory_limit:
-            cmd.extend(["--memory", memory_limit])
-            details['memory_limit'] = memory_limit
+            # SDK accepts bytes; parse human strings like '512m', '1g'
+            multipliers = {'k': 1024, 'm': 1024**2, 'g': 1024**3}
+            raw = str(memory_limit).lower()
+            suffix = raw[-1]
+            try:
+                if suffix in multipliers:
+                    update_kwargs['mem_limit'] = int(float(raw[:-1]) * multipliers[suffix])
+                else:
+                    update_kwargs['mem_limit'] = int(raw)
+                details['memory_limit'] = memory_limit
+            except ValueError:
+                pass
+
         if cpu_shares:
-            cmd.extend(["--cpu-shares", str(cpu_shares)])
+            update_kwargs['cpu_shares'] = int(cpu_shares)
             details['cpu_shares'] = cpu_shares
+
         if cpus:
-            cmd.extend(["--cpus", str(cpus)])
+            # SDK uses nano_cpus (1 CPU = 1_000_000_000 nano_cpus)
+            update_kwargs['nano_cpus'] = int(float(cpus) * 1_000_000_000)
             details['cpus'] = cpus
 
-        cmd.append(server.docker_container_name)
-        success, output = self._run_command(cmd, check=False)
+        client = self._client()
+        try:
+            self._get_container(client, server.docker_container_name).update(**update_kwargs)
+            success, msg = True, 'OK'
+        except docker.errors.APIError as exc:
+            success, msg = False, str(exc)
 
         ServerLog.objects.create(
             server=server,
             action='docker_container_update',
             level='success' if success else 'error',
-            message=f'Resource update {"succeeded" if success else "failed"}: {output}',
+            message=f'Resource update {"succeeded" if success else "failed"}: {msg}',
             details=details,
         )
+        return success, msg
 
-        return success, output
+    # ── Volume inspection ─────────────────────────────────────────────────────
 
     def get_volume_info(self, volume_name):
-        """
-        Inspect a Docker volume.
-        Returns dict with driver, mountpoint, labels, created.
-        """
+        """Inspect a Docker volume. Returns a dict or None."""
         if not volume_name:
             return None
-
-        success, output = self._run_command(
-            ["docker", "volume", "inspect", volume_name],
-            check=False,
-        )
-
-        if not success or not output:
-            return None
-
         try:
-            data = json.loads(output)
-            vol = data[0] if isinstance(data, list) and data else data
+            vol = self._client().volumes.get(volume_name)
             return {
-                'name': vol.get('Name', ''),
-                'driver': vol.get('Driver', ''),
-                'mountpoint': vol.get('Mountpoint', ''),
-                'created': vol.get('CreatedAt', ''),
-                'labels': vol.get('Labels', {}),
-                'scope': vol.get('Scope', ''),
+                'name':       vol.attrs.get('Name', ''),
+                'driver':     vol.attrs.get('Driver', ''),
+                'mountpoint': vol.attrs.get('Mountpoint', ''),
+                'created':    vol.attrs.get('CreatedAt', ''),
+                'labels':     vol.attrs.get('Labels') or {},
+                'scope':      vol.attrs.get('Scope', ''),
             }
-        except json.JSONDecodeError:
+        except (docker.errors.NotFound, docker.errors.APIError):
             return None
 
-    # Whitelist of commands allowed inside containers.
+    # ── System info ───────────────────────────────────────────────────────────
+
+    def get_docker_system_info(self):
+        """Return Docker system-wide information."""
+        result = {
+            'docker_version':     '',
+            'total_containers':   0,
+            'running_containers': 0,
+            'paused_containers':  0,
+            'stopped_containers': 0,
+            'total_images':       0,
+            'storage_driver':     '',
+            'os':                 '',
+            'architecture':       '',
+            'cpus':               0,
+            'memory':             '',
+        }
+        try:
+            client = self._client()
+            info = client.info()
+            result.update({
+                'total_containers':   info.get('Containers', 0),
+                'running_containers': info.get('ContainersRunning', 0),
+                'paused_containers':  info.get('ContainersPaused', 0),
+                'stopped_containers': info.get('ContainersStopped', 0),
+                'total_images':       info.get('Images', 0),
+                'storage_driver':     info.get('Driver', ''),
+                'os':                 info.get('OperatingSystem', ''),
+                'architecture':       info.get('Architecture', ''),
+                'cpus':               info.get('NCPU', 0),
+                'memory':             _bytes_to_human(info.get('MemTotal', 0)),
+            })
+            version = client.version()
+            result['docker_version'] = version.get('Version', '')
+        except docker.errors.APIError:
+            pass
+        return result
+
+    # ── Exec (whitelisted diagnostic commands only) ───────────────────────────
+
+    # Commands allowed inside containers — read-only diagnostics only.
     _ALLOWED_EXEC_COMMANDS = {
         'pg_isready',
         'psql -l',
@@ -813,20 +684,25 @@ class DockerService:
 
     def exec_in_container(self, server, command):
         """
-        Execute a **whitelisted** command inside a container.
+        Execute a **whitelisted** diagnostic command inside a container.
         Returns (success, output).
 
         Only commands listed in ``_ALLOWED_EXEC_COMMANDS`` are permitted.
         """
         if not server.docker_container_name:
-            raise ValueError("No Docker container name set.")
+            raise ValueError('No Docker container name set.')
         _validate_name(server.docker_container_name, 'container name')
 
         if command not in self._ALLOWED_EXEC_COMMANDS:
             raise ValueError(
-                f"Command not allowed: {command!r}. "
-                f"Permitted: {sorted(self._ALLOWED_EXEC_COMMANDS)}"
+                f'Command not allowed: {command!r}. '
+                f'Permitted: {sorted(self._ALLOWED_EXEC_COMMANDS)}'
             )
 
-        cmd = ["docker", "exec", server.docker_container_name] + command.split()
-        return self._run_command(cmd, check=False)
+        try:
+            c = self._get_container(self._client(), server.docker_container_name)
+            exit_code, output = c.exec_run(command.split())
+            decoded = output.decode('utf-8', errors='replace') if output else ''
+            return exit_code == 0, decoded
+        except docker.errors.APIError as exc:
+            return False, str(exc)

@@ -54,8 +54,8 @@ def customer_detail(request, pk):
     company = get_user_company(request.user)
     customer = get_object_or_404(Customer, pk=pk, company=company)
 
-    invoices = customer.invoices.order_by('-invoice_date')[:10]
-    payments = customer.payments.order_by('-payment_date')[:10]
+    invoices = customer.invoices.select_related('currency').order_by('-invoice_date')[:10]
+    payments = customer.payments.select_related('currency', 'payment_method').order_by('-payment_date')[:10]
     quotes = customer.quotes.order_by('-quote_date')[:10]
     interactions = customer.interactions.order_by('-interaction_date')[:10]
 

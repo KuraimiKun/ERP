@@ -175,7 +175,9 @@ info "Creating system user '${APP_USER}'..."
 if ! id "$APP_USER" &>/dev/null; then
     useradd --system --shell /bin/bash --home-dir "$APP_DIR" --create-home "$APP_USER"
 fi
-usermod -aG docker "$APP_USER"
+# Do NOT add APP_USER to the docker group.  Direct socket access would let a
+# compromised web process escape to the host.  The app connects to the
+# restricted socket proxy instead (see Section 10: Docker Socket Proxy).
 ok "User '${APP_USER}' ready"
 
 ###############################################################################
@@ -237,6 +239,10 @@ DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@${DOMAIN}}
 REDIS_URL=redis://127.0.0.1:6379/1
 CELERY_BROKER_URL=redis://127.0.0.1:6379/0
 CELERY_RESULT_BACKEND=redis://127.0.0.1:6379/0
+
+# ── Docker Socket Proxy ───────────────────────────────────────────────────────
+# The app connects to the restricted proxy, NOT the raw /var/run/docker.sock.
+DOCKER_HOST=tcp://127.0.0.1:2375
 ENVEOF
 chmod 600 "${APP_DIR}/.env"
 ok ".env written"
@@ -248,16 +254,20 @@ info "Creating Python virtual environment..."
 "python${PYTHON_VERSION}" -m venv "${APP_DIR}/venv"
 source "${APP_DIR}/venv/bin/activate"
 
-info "Installing Python dependencies..."
+info "Installing web dependencies (requirements-prod.txt)..."
 pip install --upgrade pip setuptools wheel -q
-pip install -r "${APP_DIR}/requirements.txt" -q
-# xhtml2pdf is used for PDF generation but missing from requirements.txt
-pip install xhtml2pdf -q
-# Gunicorn for production
-pip install gunicorn -q
-# Celery + Redis client (idempotent — safe to run even if already in requirements.txt)
-pip install "celery[redis]" redis -q
-ok "Python dependencies installed"
+# requirements-prod.txt = requirements.txt + psycopg2 (compiled against system libpq).
+# libpq-dev and build-essential were installed in Section 1.
+pip install -r "${APP_DIR}/requirements-prod.txt" -q
+ok "Web dependencies installed"
+
+info "Installing ML worker dependencies (requirements-ml.txt)..."
+# Installed into the same venv; never imported by Gunicorn workers because
+# all erp.ai.services imports are inside Celery task function bodies (lazy).
+# In Docker the web and ML images are fully separate — this shared-venv
+# approach is a pragmatic simplification for single-VPS deployments.
+pip install -r "${APP_DIR}/requirements-ml.txt" -q
+ok "ML dependencies installed"
 
 ###############################################################################
 # 6. PostgreSQL – Create Database & User
@@ -397,12 +407,46 @@ systemctl restart erp-gunicorn.service
 ok "Gunicorn service active"
 
 ###############################################################################
-# 10. Celery Worker & Beat Scheduler systemd Services
+# 10. Docker Socket Proxy
 ###############################################################################
-info "Configuring Celery worker service..."
+# Runs tecnativa/docker-socket-proxy as a long-lived container.
+# The app connects to tcp://127.0.0.1:2375 (this proxy) instead of the raw
+# /var/run/docker.sock.  The proxy allows only the Docker API scopes the app
+# actually needs; swarm, secrets, build, and everything else is blocked.
+###############################################################################
+info "Starting Docker Socket Proxy..."
+
+# Pull the proxy image (root needs docker access for this step only)
+docker pull tecnativa/docker-socket-proxy:latest 2>/dev/null || true
+
+# Remove stale container if it exists
+docker rm -f erp_docker_proxy 2>/dev/null || true
+
+docker run -d \
+    --name erp_docker_proxy \
+    --restart unless-stopped \
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \
+    -p 127.0.0.1:2375:2375 \
+    -e CONTAINERS=1 \
+    -e IMAGES=1 \
+    -e NETWORKS=1 \
+    -e VOLUMES=1 \
+    -e INFO=1 \
+    -e VERSION=1 \
+    -e PING=1 \
+    -e POST=1 \
+    -e EXEC=1 \
+    tecnativa/docker-socket-proxy:latest
+
+ok "Docker Socket Proxy running on 127.0.0.1:2375 (raw socket is NOT exposed to app)"
+
+###############################################################################
+# 11. Celery Worker & Beat Scheduler systemd Services
+###############################################################################
+info "Configuring Celery worker service (queues: celery, default)..."
 cat > /etc/systemd/system/erp-celery-worker.service <<CELWEOF
 [Unit]
-Description=ERP Django Celery Worker
+Description=ERP Django Celery Worker (web queues)
 After=network.target postgresql.service redis-server.service
 
 [Service]
@@ -412,8 +456,11 @@ Group=${APP_USER}
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
 PIDFile=${APP_DIR}/run/celery-worker.pid
+# --queues excludes 'ml' — this worker never imports sklearn/numpy/prophet,
+# keeping its RSS footprint the same as the Gunicorn web workers.
 ExecStart=${APP_DIR}/venv/bin/celery \\
     -A erpproject worker \\
+    --queues=celery,default \\
     --concurrency=${CELERY_CONCURRENCY} \\
     --loglevel=info \\
     --logfile=${APP_DIR}/logs/celery-worker.log \\
@@ -429,6 +476,40 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 CELWEOF
+
+info "Configuring Celery ML worker service (queue: ml)..."
+cat > /etc/systemd/system/erp-celery-ml-worker.service <<CELMLEOF
+[Unit]
+Description=ERP Django Celery ML Worker (ml queue — scikit-learn, prophet, numpy)
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=forking
+User=${APP_USER}
+Group=${APP_USER}
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${APP_DIR}/.env
+PIDFile=${APP_DIR}/run/celery-ml-worker.pid
+# Lower concurrency: each task is CPU-bound (model training / inference).
+# Adjust ML_CELERY_CONCURRENCY in .env to match available CPU cores.
+ExecStart=${APP_DIR}/venv/bin/celery \\
+    -A erpproject worker \\
+    --queues=ml \\
+    --concurrency=${ML_CELERY_CONCURRENCY:-2} \\
+    --loglevel=info \\
+    --logfile=${APP_DIR}/logs/celery-ml-worker.log \\
+    --pidfile=${APP_DIR}/run/celery-ml-worker.pid \\
+    --detach
+ExecStop=${APP_DIR}/venv/bin/celery multi stopwait worker \\
+    --pidfile=${APP_DIR}/run/celery-ml-worker.pid \\
+    --logfile=${APP_DIR}/logs/celery-ml-worker.log
+ExecReload=/bin/kill -s HUP \$MAINPID
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+CELMLEOF
 
 info "Configuring Celery beat scheduler service..."
 cat > /etc/systemd/system/erp-celery-beat.service <<CELBEOF
@@ -459,8 +540,9 @@ CELBEOF
 
 systemctl daemon-reload
 systemctl enable --now erp-celery-worker.service
+systemctl enable --now erp-celery-ml-worker.service
 systemctl enable --now erp-celery-beat.service
-ok "Celery worker and beat services active"
+ok "Celery worker, ML worker, and beat services active"
 
 ###############################################################################
 # 11. Nginx Configuration
@@ -659,9 +741,15 @@ else
 fi
 
 if systemctl is-active --quiet erp-celery-worker; then
-    ok "Celery worker is running"
+    ok "Celery worker is running (queues: celery, default)"
 else
     warn "Celery worker is not running — check: journalctl -u erp-celery-worker"
+fi
+
+if systemctl is-active --quiet erp-celery-ml-worker; then
+    ok "Celery ML worker is running (queue: ml)"
+else
+    warn "Celery ML worker is not running — check: journalctl -u erp-celery-ml-worker"
 fi
 
 if systemctl is-active --quiet erp-celery-beat; then
@@ -692,6 +780,13 @@ if systemctl is-active --quiet docker; then
     ok "Docker is running"
 else
     warn "Docker is not running"
+fi
+
+# Verify the socket proxy is up and the app can reach it
+if docker ps --format '{{.Names}}' 2>/dev/null | grep -q erp_docker_proxy; then
+    ok "Docker Socket Proxy is running (app connects to tcp://127.0.0.1:2375)"
+else
+    warn "Docker Socket Proxy is not running — check: docker ps -a | grep erp_docker_proxy"
 fi
 
 ###############################################################################

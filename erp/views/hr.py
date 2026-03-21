@@ -78,7 +78,7 @@ def employee_detail(request, pk):
 
     return render(request, 'erp/employees/detail.html', {
         'employee': employee,
-        'documents': employee.documents.order_by('-created_at'),
+        'documents': employee.documents.order_by('-created_at')[:50],
         'leave_requests': employee.leave_requests.order_by('-created_at')[:10],
         'attendances': employee.attendances.order_by('-date')[:30],
         'assigned_tasks': employee.assigned_tasks.order_by('-created_at')[:20],

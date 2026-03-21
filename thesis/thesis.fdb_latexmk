@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex thesis"] 1773731075.43108 "thesis.aux" "thesis.bbl" "thesis" 1773731139.46721 0
+["bibtex thesis"] 1774106358.30664 "thesis.aux" "thesis.bbl" "thesis" 1774106370.18055 0
   "./references.bib" 1773362053 11304 30db4fbbad9ecf90311bbddfe5b2f53b ""
   "C:/Program Files/MiKTeX/bibtex/bst/bibtex/apalike.bst" 1291972791 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "thesis.aux" 1773731138 37098 57c31f0239e867ca759f4b2069a0c75b "pdflatex"
+  "thesis.aux" 1774106368 36192 25738ee277108ad7793e43ae731cb508 "pdflatex"
   (generated)
   "thesis.bbl"
   "thesis.blg"
   (rewritten before read)
-["pdflatex"] 1773731132.81718 "f:/erpdjango/thesis/thesis.tex" "thesis.pdf" "thesis" 1773731139.46773 0
+["pdflatex"] 1774106358.71715 "f:/erpdjango/thesis/thesis.tex" "thesis.pdf" "thesis" 1774106370.18227 0
   "C:/Program Files/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8r.tfm" 1136765053 1292 3059476c50a24578715759f22652f3d0 ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8t.tfm" 1136765053 1384 87406e4336af44af883a035f17f319d9 ""
@@ -221,7 +221,7 @@
   "C:/Program Files/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1750586519 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1750586599 13225209 1d52f8f13f365b1dcbc035b4ee098197 ""
-  "f:/erpdjango/thesis/thesis.tex" 1773731132 137816 f7e864420e286e015af0b9c0f444d45d ""
+  "f:/erpdjango/thesis/thesis.tex" 1774106328 135191 1680f7519670b57f6765d6ac5adfd5d1 ""
   "figures/Lambang-UM.png" 1773374375 310576 b6512df05f8c555e29ee41f1291af35c ""
   "figures/erp_evolution_timeline.png" 1773034774 184116 a890d052101e1834285df5da6736370b ""
   "figures/ml_pipeline_architecture.png" 1773034778 427474 515717e0a5e594957b01787ebdba7bcd ""
@@ -232,21 +232,20 @@
   "figures/system_architecture.png" 1773034777 345228 0d4419c92fbf345454bf9b5cbe221d5d ""
   "figures/xai_class_diagram.png" 1773364990 24401 b3e59372b3580f6a3ed737cb90371d6d ""
   "figures/xai_instance_waterfall_example.png" 1773364989 143503 cb2e2f66fd39786f7f3af1a0759d975a ""
-  "figures/xai_leakage_summary_dashboard.png" 1773364988 141544 b9029e632e0c123c9cbc22ec97a13303 ""
-  "figures/xai_model_auc_comparison.png" 1773364986 84518 fd3e765b3ee26c7715c20e2b32a446ed ""
+  "figures/xai_model_auc_comparison.png" 1773810372 98466 38b37942e47de6fd45a104488ed5f842 ""
   "figures/xai_pipeline_architecture.png" 1773364991 25642 9b685e87666f262cad7d80f75600642d ""
-  "figures/xai_shap_global_attrition_beeswarm.png" 1773364987 86357 18d8b3cecdf5325107dab30690c2ed93 ""
+  "figures/xai_shap_global_attrition_beeswarm.png" 1773810373 120794 33f05f1d9abb461296a5378b1f88be9b ""
   "figures/xai_shap_global_late_payment_beeswarm.png" 1773364986 130860 e97f41a77600fb324b38f0476ccbce89 ""
-  "figures/xai_shap_global_lead_scoring_beeswarm.png" 1773364987 89832 fd5db6a183324696eb24991de503e005 ""
+  "figures/xai_shap_global_lead_scoring_beeswarm.png" 1773810373 107921 2ab9825f5fc8cad04a486fd78ab6c45e ""
   "figures/xai_shap_vs_lime_side_by_side.png" 1773364990 97905 3a079af25c64120284ebbb37e8f719d9 ""
   "figures/xai_use_case_diagram.png" 1773364990 27913 80e92a7c28631f9e4310469a3ebe8a36 ""
-  "thesis.aux" 1773731138 37098 57c31f0239e867ca759f4b2069a0c75b "pdflatex"
-  "thesis.bbl" 1773731075 8790 163343007c0bf736f3a8dfc62235a02e "bibtex thesis"
-  "thesis.lof" 1773731138 2618 b529424593b40fe1d2e28d6e026bb26b "pdflatex"
-  "thesis.lot" 1773731138 2433 2e9208cab2844bb6a82e9681cba2d082 "pdflatex"
-  "thesis.out" 1773731138 22056 386d2124555d2dd20debc8c999ba6348 "pdflatex"
-  "thesis.tex" 1773731132 137816 f7e864420e286e015af0b9c0f444d45d ""
-  "thesis.toc" 1773731138 10623 0479dfa1ec3256326fe3bfac3e4cfdb1 "pdflatex"
+  "thesis.aux" 1774106368 36192 25738ee277108ad7793e43ae731cb508 "pdflatex"
+  "thesis.bbl" 1774106358 8790 163343007c0bf736f3a8dfc62235a02e "bibtex thesis"
+  "thesis.lof" 1774106368 2459 489cb32459d4a58643ba1c6afa75e26b "pdflatex"
+  "thesis.lot" 1774106368 2275 2bd90bde0fddfa3b7d7189ca21857a66 "pdflatex"
+  "thesis.out" 1774106368 21564 d2ae33f5586cab67e71234159372ae27 "pdflatex"
+  "thesis.tex" 1774106328 135191 1680f7519670b57f6765d6ac5adfd5d1 ""
+  "thesis.toc" 1774106368 10470 9700f3274069cee66bbd696346667aac "pdflatex"
   (generated)
   "thesis.aux"
   "thesis.lof"

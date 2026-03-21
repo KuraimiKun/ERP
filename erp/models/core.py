@@ -33,10 +33,13 @@ class Currency(TimeStampedModel):
         return f"{self.code} - {self.name}"
 
     def save(self, *args, **kwargs):
-        # Ensure only one base currency
-        if self.is_base:
-            Currency.objects.filter(is_base=True).exclude(pk=self.pk).update(is_base=False)
-        super().save(*args, **kwargs)
+        # Atomic block prevents two concurrent requests from both setting
+        # is_base=True and leaving the database with duplicate base currencies.
+        from django.db import transaction
+        with transaction.atomic():
+            if self.is_base:
+                Currency.objects.filter(is_base=True).exclude(pk=self.pk).update(is_base=False)
+            super().save(*args, **kwargs)
 
 
 class Company(ERPBaseModel):

@@ -66,7 +66,14 @@ def _for_each_tenant_company(process_fn, task_label='AI task'):
 #  Demand Forecasting
 # ════════════════════════════════════════════════════════════════════════════
 
-@shared_task(name='erp.ai.tasks.retrain_demand_models')
+@shared_task(
+    name='erp.ai.tasks.retrain_demand_models',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def retrain_demand_models():
     """Nightly: retrain demand forecast models for all tenant companies."""
     from erp.ai.services.demand import DemandForecaster
@@ -83,7 +90,14 @@ def retrain_demand_models():
 #  Finance
 # ════════════════════════════════════════════════════════════════════════════
 
-@shared_task(name='erp.ai.tasks.retrain_late_payment_model')
+@shared_task(
+    name='erp.ai.tasks.retrain_late_payment_model',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def retrain_late_payment_model():
     """Weekly: retrain the late-payment classifier."""
     from erp.ai.services.finance import LatePaymentPredictor
@@ -95,7 +109,14 @@ def retrain_late_payment_model():
     _for_each_tenant_company(run, 'Late-payment training')
 
 
-@shared_task(name='erp.ai.tasks.score_open_invoices')
+@shared_task(
+    name='erp.ai.tasks.score_open_invoices',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def score_open_invoices():
     """Daily: score all open invoices for late-payment risk."""
     from erp.ai.services.finance import LatePaymentPredictor
@@ -108,7 +129,14 @@ def score_open_invoices():
     _for_each_tenant_company(run, 'Invoice scoring')
 
 
-@shared_task(name='erp.ai.tasks.detect_expense_anomalies')
+@shared_task(
+    name='erp.ai.tasks.detect_expense_anomalies',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def detect_expense_anomalies():
     """Daily: run expense anomaly detection."""
     from erp.ai.services.finance import ExpenseAnomalyDetector
@@ -121,7 +149,14 @@ def detect_expense_anomalies():
     _for_each_tenant_company(run, 'Expense anomaly detection')
 
 
-@shared_task(name='erp.ai.tasks.forecast_cash_flow')
+@shared_task(
+    name='erp.ai.tasks.forecast_cash_flow',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def forecast_cash_flow():
     """Weekly: generate cash-flow projections."""
     from erp.ai.services.finance import CashFlowForecaster
@@ -138,7 +173,14 @@ def forecast_cash_flow():
 #  CRM
 # ════════════════════════════════════════════════════════════════════════════
 
-@shared_task(name='erp.ai.tasks.retrain_lead_scoring_model')
+@shared_task(
+    name='erp.ai.tasks.retrain_lead_scoring_model',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def retrain_lead_scoring_model():
     """Weekly: retrain lead scoring model."""
     from erp.ai.services.crm import LeadScorer
@@ -150,7 +192,14 @@ def retrain_lead_scoring_model():
     _for_each_tenant_company(run, 'Lead scoring training')
 
 
-@shared_task(name='erp.ai.tasks.score_active_leads')
+@shared_task(
+    name='erp.ai.tasks.score_active_leads',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def score_active_leads():
     """Daily: score all active leads."""
     from erp.ai.services.crm import LeadScorer
@@ -167,7 +216,14 @@ def score_active_leads():
 #  HR
 # ════════════════════════════════════════════════════════════════════════════
 
-@shared_task(name='erp.ai.tasks.retrain_attrition_model')
+@shared_task(
+    name='erp.ai.tasks.retrain_attrition_model',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def retrain_attrition_model():
     """Monthly: retrain attrition predictor."""
     from erp.ai.services.hr import AttritionPredictor
@@ -179,7 +235,14 @@ def retrain_attrition_model():
     _for_each_tenant_company(run, 'Attrition training')
 
 
-@shared_task(name='erp.ai.tasks.score_employee_attrition')
+@shared_task(
+    name='erp.ai.tasks.score_employee_attrition',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def score_employee_attrition():
     """Weekly: score active employees for attrition risk."""
     from erp.ai.services.hr import AttritionPredictor
@@ -192,7 +255,14 @@ def score_employee_attrition():
     _for_each_tenant_company(run, 'Attrition scoring')
 
 
-@shared_task(name='erp.ai.tasks.detect_attendance_anomalies')
+@shared_task(
+    name='erp.ai.tasks.detect_attendance_anomalies',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def detect_attendance_anomalies():
     """Weekly: detect attendance anomalies."""
     from erp.ai.services.hr import AttendanceAnomalyDetector
@@ -209,7 +279,14 @@ def detect_attendance_anomalies():
 #  KPI Anomaly Detection
 # ════════════════════════════════════════════════════════════════════════════
 
-@shared_task(name='erp.ai.tasks.run_kpi_checks')
+@shared_task(
+    name='erp.ai.tasks.run_kpi_checks',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def run_kpi_checks():
     """Daily: run KPI anomaly checks."""
     from erp.ai.services.kpi import KPIAnomalyDetector
@@ -226,7 +303,14 @@ def run_kpi_checks():
 #  Explainable AI (XAI)
 # ════════════════════════════════════════════════════════════════════════════
 
-@shared_task(name='erp.ai.tasks.generate_xai_explanations')
+@shared_task(
+    name='erp.ai.tasks.generate_xai_explanations',
+    autoretry_for=(Exception,),
+    max_retries=2,
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+)
 def generate_xai_explanations():
     """Weekly: generate SHAP explanations for recent high-risk predictions."""
     from erp.ai.services.explainability import ExplainabilityService

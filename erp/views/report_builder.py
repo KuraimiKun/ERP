@@ -213,7 +213,8 @@ def report_builder_generate(request, pk):
         status=GeneratedReport.Status.PENDING,
     )
 
-    generate_report.delay(generated.pk)
+    from tenants.routers import get_current_db_alias
+    generate_report.delay(generated.pk, db_alias=get_current_db_alias())
 
     return JsonResponse({
         'id': generated.pk,

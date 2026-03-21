@@ -21,10 +21,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gettext \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY requirements.txt requirements-prod.txt ./
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt \
-    && pip install xhtml2pdf gunicorn
+    && pip install -r requirements-prod.txt
 
 # Source code is bind-mounted in development; copied in production builds
 COPY . .

@@ -1,0 +1,31 @@
+# ── ML / AI worker dependencies ────────────────────────────────────────────
+# Heavy data-science stack loaded ONLY by the dedicated Celery ML worker.
+# These packages are never imported by Gunicorn web workers or the standard
+# Celery worker — keeping those processes lean (~300-400 MB lighter per worker).
+#
+# Install AFTER the environment-appropriate base requirements:
+#   Production ML worker : pip install -r requirements-prod.txt -r requirements-ml.txt
+#   Development ML worker: pip install -r requirements-dev.txt  -r requirements-ml.txt
+#
+# Routed tasks (see erpproject/celery.py → task_routes):
+#   erp.ai.tasks.*  →  queue: ml
+# ──────────────────────────────────────────────────────────────────────────
+
+# Core ML
+scikit-learn>=1.4.0
+numpy>=1.26.0
+scipy>=1.12.0
+joblib>=1.3.0
+
+# Tabular data manipulation
+pandas>=2.0.0
+
+# Time-series forecasting
+prophet>=1.1.5
+
+# Explainability (SHAP + LIME)
+shap>=0.45.0
+lime>=0.2.0.1
+
+# Visualisation (used only inside ML tasks for training-report figures)
+matplotlib>=3.8.0

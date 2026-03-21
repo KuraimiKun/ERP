@@ -22,25 +22,25 @@
 \contentsline {subsection}{\numberline {2.3.2}Multi-Tenancy in Django}{12}{subsection.2.3.2}%
 \contentsline {section}{\numberline {2.4}Machine Learning in Enterprise Systems}{13}{section.2.4}%
 \contentsline {subsection}{\numberline {2.4.1}Overview of ML in Business Applications}{13}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Lead Scoring with Gradient Boosting}{13}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.2}Lead Scoring with Logistic Regression}{13}{subsection.2.4.2}%
 \contentsline {subsection}{\numberline {2.4.3}Payment Risk Prediction with Gradient Boosting}{14}{subsection.2.4.3}%
 \contentsline {subsection}{\numberline {2.4.4}Employee Attrition Prediction with Random Forest}{14}{subsection.2.4.4}%
-\contentsline {subsection}{\numberline {2.4.5}Anomaly Detection with Isolation Forest}{14}{subsection.2.4.5}%
+\contentsline {subsection}{\numberline {2.4.5}Anomaly Detection with Isolation Forest}{15}{subsection.2.4.5}%
 \contentsline {subsection}{\numberline {2.4.6}Time-Series Forecasting with Prophet}{15}{subsection.2.4.6}%
 \contentsline {subsection}{\numberline {2.4.7}Statistical Process Control for KPI Monitoring}{15}{subsection.2.4.7}%
-\contentsline {section}{\numberline {2.5}Explainable Artificial Intelligence (XAI)}{15}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}The Need for Explainability}{15}{subsection.2.5.1}%
+\contentsline {section}{\numberline {2.5}Explainable Artificial Intelligence (XAI)}{16}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}The Need for Explainability}{16}{subsection.2.5.1}%
 \contentsline {subsection}{\numberline {2.5.2}Taxonomy of XAI Methods}{16}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}SHAP: SHapley Additive exPlanations}{16}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.3}SHAP: SHapley Additive exPlanations}{17}{subsection.2.5.3}%
 \contentsline {subsection}{\numberline {2.5.4}LIME: Local Interpretable Model-agnostic Explanations}{17}{subsection.2.5.4}%
 \contentsline {subsection}{\numberline {2.5.5}SHAP vs.\ LIME: Complementary Strengths}{18}{subsection.2.5.5}%
-\contentsline {subsection}{\numberline {2.5.6}XAI as a Model Validation Tool}{18}{subsection.2.5.6}%
+\contentsline {subsection}{\numberline {2.5.6}XAI as a Model Validation Tool}{19}{subsection.2.5.6}%
 \contentsline {section}{\numberline {2.6}Related Work}{19}{section.2.6}%
 \contentsline {subsection}{\numberline {2.6.1}AI-Enhanced ERP Systems}{19}{subsection.2.6.1}%
 \contentsline {subsection}{\numberline {2.6.2}XAI in Business Decision Systems}{19}{subsection.2.6.2}%
 \contentsline {subsection}{\numberline {2.6.3}Multi-Tenant Django Applications}{20}{subsection.2.6.3}%
 \contentsline {subsection}{\numberline {2.6.4}ML for Demand Forecasting in Supply Chain}{20}{subsection.2.6.4}%
-\contentsline {section}{\numberline {2.7}Gap Analysis}{20}{section.2.7}%
+\contentsline {section}{\numberline {2.7}Gap Analysis}{21}{section.2.7}%
 \contentsline {section}{\numberline {2.8}Summary}{21}{section.2.8}%
 \contentsline {chapter}{\numberline {3}Methodology}{23}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Introduction}{23}{section.3.1}%
@@ -97,22 +97,21 @@
 \contentsline {section}{\numberline {6.2}ML Model Performance}{52}{section.6.2}%
 \contentsline {section}{\numberline {6.3}Global SHAP Feature Importance}{53}{section.6.3}%
 \contentsline {subsection}{\numberline {6.3.1}Late Payment Prediction}{53}{subsection.6.3.1}%
-\contentsline {subsection}{\numberline {6.3.2}Lead Scoring --- Data Leakage Detected}{54}{subsection.6.3.2}%
-\contentsline {subsection}{\numberline {6.3.3}Employee Attrition --- Data Leakage Detected}{55}{subsection.6.3.3}%
-\contentsline {subsection}{\numberline {6.3.4}Summary of Data-Leakage Findings}{57}{subsection.6.3.4}%
-\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{57}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{58}{subsection.6.4.1}%
-\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{59}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Discussion of Research Questions}{60}{section.6.6}%
-\contentsline {subsection}{\numberline {6.6.1}RQ1: Multi-Tenant Architecture}{60}{subsection.6.6.1}%
-\contentsline {subsection}{\numberline {6.6.2}RQ2: ML Model Accuracy}{60}{subsection.6.6.2}%
-\contentsline {subsection}{\numberline {6.6.3}RQ3: XAI for Data-Quality Validation}{60}{subsection.6.6.3}%
-\contentsline {subsection}{\numberline {6.6.4}RQ4: SHAP vs.\ LIME Agreement}{61}{subsection.6.6.4}%
-\contentsline {subsection}{\numberline {6.6.5}RQ5: Software Architecture for ML + XAI Integration}{61}{subsection.6.6.5}%
-\contentsline {subsection}{\numberline {6.6.6}RQ6: Agile Methodology}{61}{subsection.6.6.6}%
-\contentsline {section}{\numberline {6.7}Summary}{62}{section.6.7}%
-\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{63}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Summary of Contributions}{63}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Limitations}{63}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Future Work}{64}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Concluding Remarks}{65}{section.7.4}%
+\contentsline {subsection}{\numberline {6.3.2}Lead Scoring}{54}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}Employee Attrition}{55}{subsection.6.3.3}%
+\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{56}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{57}{subsection.6.4.1}%
+\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{58}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Discussion of Research Questions}{59}{section.6.6}%
+\contentsline {subsection}{\numberline {6.6.1}RQ1: Multi-Tenant Architecture}{59}{subsection.6.6.1}%
+\contentsline {subsection}{\numberline {6.6.2}RQ2: ML Model Accuracy}{59}{subsection.6.6.2}%
+\contentsline {subsection}{\numberline {6.6.3}RQ3: XAI for Data-Quality Validation}{59}{subsection.6.6.3}%
+\contentsline {subsection}{\numberline {6.6.4}RQ4: SHAP vs.\ LIME Agreement}{60}{subsection.6.6.4}%
+\contentsline {subsection}{\numberline {6.6.5}RQ5: Software Architecture for ML + XAI Integration}{60}{subsection.6.6.5}%
+\contentsline {subsection}{\numberline {6.6.6}RQ6: Agile Methodology}{60}{subsection.6.6.6}%
+\contentsline {section}{\numberline {6.7}Summary}{61}{section.6.7}%
+\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{62}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Summary of Contributions}{62}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Limitations}{62}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Future Work}{63}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Concluding Remarks}{64}{section.7.4}%

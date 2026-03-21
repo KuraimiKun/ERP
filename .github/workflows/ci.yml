@@ -62,7 +62,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # requirements-dev.txt = requirements.txt + psycopg2-binary + dev tools.
+        # Using psycopg2-binary avoids needing libpq-dev in CI and keeps install fast.
+        pip install -r requirements-dev.txt
         pip install ruff
 
     - name: Lint with ruff
@@ -159,6 +161,6 @@ jobs:
           python manage.py compilemessages
 
           echo "--- Restarting services ---"
-          systemctl restart erp-gunicorn erp-celery-worker erp-celery-beat
+          systemctl restart erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat
 
           echo "--- Deploy complete ---"

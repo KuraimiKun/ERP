@@ -6,7 +6,7 @@ from decimal import Decimal
 from datetime import timedelta
 
 from django.http import JsonResponse
-from django.db.models import Sum, Count
+from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
@@ -49,28 +49,29 @@ def dashboard(request):
     }
 
     if company:
-        # Revenue metrics
-        monthly_revenue = Invoice.objects.filter(
-            company=company,
-            invoice_date__gte=start_of_month,
-            status__in=['sent', 'partial', 'paid']
-        ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
-
-        yearly_revenue = Invoice.objects.filter(
-            company=company,
-            invoice_date__gte=start_of_year,
-            status__in=['sent', 'partial', 'paid']
-        ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
-
-        outstanding_receivables = Invoice.objects.filter(
-            company=company,
-            status__in=['sent', 'partial', 'overdue']
-        ).aggregate(total=Sum('balance_due'))['total'] or Decimal('0')
-
-        overdue_invoices = Invoice.objects.filter(
-            company=company,
-            status='overdue'
-        ).count()
+        # Revenue / receivables metrics — single DB round-trip via conditional
+        # aggregation instead of four separate queries.
+        _revenue_statuses = ['sent', 'partial', 'paid']
+        _open_statuses = ['sent', 'partial', 'overdue']
+        inv_stats = Invoice.objects.filter(company=company).aggregate(
+            monthly_revenue=Sum(
+                'total_amount',
+                filter=Q(invoice_date__gte=start_of_month, status__in=_revenue_statuses),
+            ),
+            yearly_revenue=Sum(
+                'total_amount',
+                filter=Q(invoice_date__gte=start_of_year, status__in=_revenue_statuses),
+            ),
+            outstanding_receivables=Sum(
+                'balance_due',
+                filter=Q(status__in=_open_statuses),
+            ),
+            overdue_count=Count('id', filter=Q(status='overdue')),
+        )
+        monthly_revenue = inv_stats['monthly_revenue'] or Decimal('0')
+        yearly_revenue = inv_stats['yearly_revenue'] or Decimal('0')
+        outstanding_receivables = inv_stats['outstanding_receivables'] or Decimal('0')
+        overdue_invoices = inv_stats['overdue_count'] or 0
 
         monthly_expenses = Expense.objects.filter(
             company=company,

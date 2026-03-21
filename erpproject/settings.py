@@ -18,14 +18,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
+# DEBUG is resolved first so the secret-key checks below can gate on it.
+# Defaults to False so a missing .env in production never accidentally
+# enables the debug error page.
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
+
 # SECURITY WARNING: keep the secret key used in production secret!
 _secret = os.getenv('SECRET_KEY', '')
 if not _secret:
+    if not DEBUG:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(
+            'SECRET_KEY is not set. The application refuses to start in production '
+            '(DEBUG=False) without it. Generate one with: '
+            'python -c "from django.core.management.utils import get_random_secret_key; '
+            'print(get_random_secret_key())"'
+        )
     import warnings
-    _secret = 'django-insecure-change-this-in-production-please!'
+    _secret = 'django-insecure-development-only-do-not-deploy!'
     warnings.warn(
-        'SECRET_KEY is not set! Using an insecure default. '
-        'Set the SECRET_KEY environment variable before deploying.',
+        'SECRET_KEY is not set — using an insecure fallback. '
+        'Add SECRET_KEY to your .env file.',
         stacklevel=1,
     )
 SECRET_KEY = _secret
@@ -33,18 +46,20 @@ SECRET_KEY = _secret
 # ── Field-level encryption key (Fernet, base64url-encoded 32-byte key) ──
 _enc_key = os.getenv('FIELD_ENCRYPTION_KEY', '')
 if not _enc_key:
+    if not DEBUG:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(
+            'FIELD_ENCRYPTION_KEY is not set. The application refuses to start in '
+            'production (DEBUG=False) without it. Generate one with: '
+            'python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"'
+        )
     import warnings
     warnings.warn(
-        'FIELD_ENCRYPTION_KEY is not set! Encrypted model fields will fail. '
-        'Generate a key with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"',
+        'FIELD_ENCRYPTION_KEY is not set — encrypted model fields will fail. '
+        'Add FIELD_ENCRYPTION_KEY to your .env file.',
         stacklevel=1,
     )
 FIELD_ENCRYPTION_KEY = _enc_key
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# Defaults to False so a missing .env in production does NOT accidentally
-# expose debug pages.
-DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,10.0.2.2').split(',')
 
@@ -290,18 +305,14 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 # ── Cache (used for rate-limiting and sessions) ────────────────────────────
 _redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/1')
 
-# Probe Redis availability so the app can start without it during development.
-def _redis_available(url):
-    try:
-        import redis as _r
-        c = _r.Redis.from_url(url, socket_connect_timeout=1)
-        c.ping()
-        c.close()
-        return True
-    except Exception:
-        return False
-
-if _redis_available(_redis_url):
+if not DEBUG:
+    # Production: always connect to Redis.  Do NOT probe at startup and silently
+    # fall back — a Redis micro-outage at Gunicorn restart time would cause the
+    # entire fleet to degrade to LocMemCache, breaking:
+    #   • rate limiters (each worker counts independently → trivially bypassable)
+    #   • session state (logged-out users across workers)
+    #   • any cross-process coordination that relies on shared cache
+    # Let the error surface immediately so it is noticed and fixed.
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
@@ -309,17 +320,37 @@ if _redis_available(_redis_url):
         }
     }
 else:
-    import warnings
-    warnings.warn(
-        f'Redis not reachable at {_redis_url} – falling back to local-memory cache. '
-        'Run "docker compose up -d" to start Redis.',
-        stacklevel=1,
-    )
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    # Development only: probe Redis and degrade gracefully when it is not running.
+    # This lets developers work on non-caching features without Docker.
+    def _redis_available(url):
+        try:
+            import redis as _r
+            c = _r.Redis.from_url(url, socket_connect_timeout=1)
+            c.ping()
+            c.close()
+            return True
+        except Exception:
+            return False
+
+    if _redis_available(_redis_url):
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                'LOCATION': _redis_url,
+            }
         }
-    }
+    else:
+        import warnings
+        warnings.warn(
+            f'Redis not reachable at {_redis_url} – falling back to LocMemCache. '
+            'Run "docker compose up -d redis" to start Redis.',
+            stacklevel=1,
+        )
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            }
+        }
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -386,8 +417,10 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'logs' / 'erp.log',
+            'maxBytes': 10 * 1024 * 1024,  # 10 MB per file
+            'backupCount': 5,
             'formatter': 'verbose',
         },
         'console': {

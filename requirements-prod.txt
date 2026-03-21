@@ -1,0 +1,16 @@
+# ── Production web dependencies ────────────────────────────────────────────
+# Extends requirements.txt with the compiled psycopg2 driver.
+#
+# Requires system packages (installed by deploy.sh Section 1):
+#   libpq-dev, build-essential
+#
+# Usage:
+#   pip install -r requirements-prod.txt
+
+-r requirements.txt
+
+# PostgreSQL driver — compiled against the system libpq.
+# The official psycopg2 maintainers recommend this over psycopg2-binary
+# for production because it links against the OS-managed libpq, avoids
+# bundled library conflicts, and handles high-concurrency threading correctly.
+psycopg2>=2.9.9

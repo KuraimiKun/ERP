@@ -119,6 +119,7 @@ class ERPAssistant:
                 ],
                 temperature=0,
                 max_tokens=1024,
+                timeout=30,
             )
             code = response.choices[0].message.content.strip()
         except Exception as exc:
@@ -238,7 +239,9 @@ class ERPAssistant:
             'company': self.company,
             'timezone': timezone,
             'Decimal': Decimal,
-            # Built-ins (restricted)
+            # Built-ins (minimal safe set — no higher-order callables that
+            # could be used to traverse the object hierarchy or escape the
+            # sandbox via __class__.__subclasses__() chains).
             'range': range,
             'len': len,
             'str': str,
@@ -246,11 +249,6 @@ class ERPAssistant:
             'float': float,
             'list': list,
             'dict': dict,
-            'round': round,
-            'sorted': sorted,
-            'abs': abs,
-            'min': min,
-            'max': max,
             'result': None,
         }
 

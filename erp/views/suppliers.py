@@ -80,7 +80,7 @@ def supplier_detail(request, pk):
         'invoices': supplier.invoices.order_by('-invoice_date')[:10],
         'payments': supplier.payments.order_by('-payment_date')[:10],
         'contacts': supplier.contacts.all(),
-        'documents': supplier.documents.order_by('-created_at'),
+        'documents': supplier.documents.order_by('-created_at')[:50],
     })
 
 

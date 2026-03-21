@@ -3,12 +3,17 @@ from django.utils.translation import gettext_lazy as _
 Financial/Accounting models for the ERP system.
 """
 
-from django.db import models
+import logging
+import uuid
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.validators import MinValueValidator
-from decimal import Decimal
+from django.db import models, transaction
+
 from .base import ERPBaseModel, TimeStampedModel
-import uuid
+
+_logger = logging.getLogger('erp.finance')
 
 
 def invoice_attachment_path(instance, filename):
@@ -351,13 +356,19 @@ class Invoice(ERPBaseModel):
         return f"{self.invoice_number} - {self.customer.name}"
 
     def calculate_totals(self):
-        """Calculate invoice totals from line items."""
-        lines = self.lines.all()
-        self.subtotal = sum(line.line_total for line in lines)
-        self.tax_amount = sum(line.tax_amount for line in lines)
+        """Calculate invoice totals from line items using a single DB aggregate."""
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        ZERO = Decimal('0')
+        agg = self.lines.aggregate(
+            subtotal=Coalesce(Sum('line_total'), ZERO),
+            tax_amount=Coalesce(Sum('tax_amount'), ZERO),
+        )
+        self.subtotal = agg['subtotal']
+        self.tax_amount = agg['tax_amount']
         self.total_amount = self.subtotal + self.tax_amount - self.discount_amount
         self.balance_due = self.total_amount - self.paid_amount
-        
+
         # Update status
         if self.paid_amount >= self.total_amount:
             self.status = self.Status.PAID
@@ -367,11 +378,21 @@ class Invoice(ERPBaseModel):
     def save(self, *args, **kwargs):
         self.balance_due = self.total_amount - self.paid_amount
         super().save(*args, **kwargs)
-        # Keep customer balance in sync
-        try:
-            self.customer.recalculate_balance()
-        except Exception:
-            pass  # Never block invoice save due to balance update error
+        # Defer balance recalculation until *after* the surrounding transaction
+        # commits.  This ensures the worker always reads a consistent, committed
+        # invoice row and eliminates the race condition where two concurrent
+        # saves each see a stale balance_due before either commits.
+        customer_pk = self.customer_id
+
+        def _recalc():
+            try:
+                Customer.objects.get(pk=customer_pk).recalculate_balance()
+            except Exception:
+                _logger.exception(
+                    'Failed to recalculate balance for customer %s', customer_pk
+                )
+
+        transaction.on_commit(_recalc)
 
 
 class InvoiceLine(TimeStampedModel):
@@ -856,7 +877,10 @@ class JournalEntryLine(TimeStampedModel):
         return f"{self.account.code} - دائن: {self.credit_amount}"
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        # Update journal entry totals
-        self.journal_entry.calculate_totals()
-        self.journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        # Wrap in atomic so concurrent line saves for the same JournalEntry
+        # can't interleave their calculate_totals() reads and produce an
+        # inconsistent debit/credit total on the parent.
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            self.journal_entry.calculate_totals()
+            self.journal_entry.save(update_fields=['total_debit', 'total_credit'])

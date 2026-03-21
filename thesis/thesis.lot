@@ -19,9 +19,8 @@
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {6.1}{\ignorespaces ML model performance metrics}}{52}{table.caption.20}%
 \contentsline {table}{\numberline {6.2}{\ignorespaces Late Payment Prediction --- Top 10 global SHAP feature importance}}{54}{table.caption.22}%
-\contentsline {table}{\numberline {6.3}{\ignorespaces Lead Scoring --- Global SHAP feature importance (leakage detected)}}{55}{table.caption.24}%
-\contentsline {table}{\numberline {6.4}{\ignorespaces Employee Attrition --- Global SHAP feature importance (leakage detected)}}{56}{table.caption.26}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces Data-leakage detection via SHAP analysis}}{57}{table.caption.28}%
-\contentsline {table}{\numberline {6.6}{\ignorespaces Instance-level SHAP explanation for a high-risk invoice}}{58}{table.caption.30}%
-\contentsline {table}{\numberline {6.7}{\ignorespaces SHAP vs.\ LIME top-5 feature overlap across models}}{59}{table.caption.32}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Lead Scoring --- Global SHAP feature importance}}{55}{table.caption.24}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Employee Attrition --- Global SHAP feature importance}}{56}{table.caption.26}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Instance-level SHAP explanation for a high-risk invoice}}{57}{table.caption.28}%
+\contentsline {table}{\numberline {6.6}{\ignorespaces SHAP vs.\ LIME top-5 feature overlap across models}}{58}{table.caption.30}%
 \addvspace {10\p@ }
