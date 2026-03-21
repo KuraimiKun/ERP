@@ -31,6 +31,84 @@ services:
       timeout: 5s
       retries: 5
 
+  web:
+    build: .
+    container_name: erp_web
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app          # bind-mount for live code reload
+      - media:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    # Override host names so services reach each other by container name
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      REDIS_URL: "redis://redis:6379/1"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-worker:
+    build: .
+    container_name: erp_celery_worker
+    restart: unless-stopped
+    command: >
+      celery -A erpproject worker
+        --loglevel=info
+        --concurrency=4
+    volumes:
+      - .:/app
+      - media:/app/media
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      REDIS_URL: "redis://redis:6379/1"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    build: .
+    container_name: erp_celery_beat
+    restart: unless-stopped
+    # DatabaseScheduler lets you edit schedules in Django admin without redeploying
+    command: >
+      celery -A erpproject beat
+        --loglevel=info
+        --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      REDIS_URL: "redis://redis:6379/1"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started   # migrations must run before beat creates schedule tables
+
 volumes:
   pgdata:
   redisdata:
+  media:

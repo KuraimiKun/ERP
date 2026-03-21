@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Point of Sale (POS) models for the ERP system.
 
@@ -32,13 +33,13 @@ class POSTerminal(ERPBaseModel):
         'erp.Warehouse',
         on_delete=models.PROTECT,
         related_name='pos_terminals',
-        help_text='Warehouse to deduct stock from on sales',
+        help_text=_('Warehouse to deduct stock from on sales'),
     )
     allowed_employees = models.ManyToManyField(
         'erp.Employee',
         blank=True,
         related_name='pos_terminals',
-        help_text='Leave empty to allow all POS-permitted employees',
+        help_text=_('Leave empty to allow all POS-permitted employees'),
     )
     default_customer = models.ForeignKey(
         'erp.Customer',
@@ -46,14 +47,14 @@ class POSTerminal(ERPBaseModel):
         null=True,
         blank=True,
         related_name='default_pos_terminals',
-        help_text='Walk-in customer used when no customer is selected',
+        help_text=_('Walk-in customer used when no customer is selected'),
     )
-    receipt_header = models.TextField(blank=True, help_text='Text printed at top of receipt')
-    receipt_footer = models.TextField(blank=True, help_text='Text printed at bottom of receipt')
+    receipt_header = models.TextField(blank=True, help_text=_('Text printed at top of receipt'))
+    receipt_footer = models.TextField(blank=True, help_text=_('Text printed at bottom of receipt'))
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'POS Terminal'
+        verbose_name=_('POS Terminal')
         verbose_name_plural = 'POS Terminals'
         unique_together = ['company', 'code']
         ordering = ['code']
@@ -87,7 +88,7 @@ class POSSession(ERPBaseModel):
     )
     opening_balance = models.DecimalField(
         max_digits=15, decimal_places=2, default=0,
-        help_text='Cash in drawer when opening',
+        help_text=_('Cash in drawer when opening'),
     )
     opened_at = models.DateTimeField(auto_now_add=True)
 
@@ -101,15 +102,15 @@ class POSSession(ERPBaseModel):
     )
     closing_balance = models.DecimalField(
         max_digits=15, decimal_places=2, default=0,
-        help_text='Actual cash counted at close',
+        help_text=_('Actual cash counted at close'),
     )
     expected_cash = models.DecimalField(
         max_digits=15, decimal_places=2, default=0,
-        help_text='Calculated: opening + cash sales - cash refunds',
+        help_text=_('Calculated: opening + cash sales - cash refunds'),
     )
     cash_difference = models.DecimalField(
         max_digits=15, decimal_places=2, default=0,
-        help_text='closing_balance - expected_cash (+ over, - short)',
+        help_text=_('closing_balance - expected_cash (+ over, - short)'),
     )
     closed_at = models.DateTimeField(null=True, blank=True)
     closing_notes = models.TextField(blank=True)
@@ -126,7 +127,7 @@ class POSSession(ERPBaseModel):
     total_orders = models.PositiveIntegerField(default=0)
 
     class Meta:
-        verbose_name = 'POS Session'
+        verbose_name=_('POS Session')
         verbose_name_plural = 'POS Sessions'
         ordering = ['-opened_at']
 
@@ -224,7 +225,7 @@ class POSOrder(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'POS Order'
+        verbose_name=_('POS Order')
         verbose_name_plural = 'POS Orders'
         ordering = ['-order_date']
         indexes = [
@@ -282,7 +283,7 @@ class POSOrderLine(TimeStampedModel):
     line_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     class Meta:
-        verbose_name = 'POS Order Line'
+        verbose_name=_('POS Order Line')
         verbose_name_plural = 'POS Order Lines'
         ordering = ['id']
 
@@ -321,19 +322,19 @@ class POSPayment(TimeStampedModel):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     tendered = models.DecimalField(
         max_digits=15, decimal_places=2, default=0,
-        help_text='Amount given by customer (for cash: may exceed amount)',
+        help_text=_('Amount given by customer (for cash: may exceed amount)'),
     )
     change_amount = models.DecimalField(
         max_digits=15, decimal_places=2, default=0,
-        help_text='Change returned to customer (cash only)',
+        help_text=_('Change returned to customer (cash only)'),
     )
     reference = models.CharField(
         max_length=100, blank=True,
-        help_text='Card auth code, cheque number, etc.',
+        help_text=_('Card auth code, cheque number, etc.'),
     )
 
     class Meta:
-        verbose_name = 'POS Payment'
+        verbose_name=_('POS Payment')
         verbose_name_plural = 'POS Payments'
         ordering = ['id']
 

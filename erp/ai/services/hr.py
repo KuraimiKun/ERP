@@ -36,7 +36,7 @@ class AttritionPredictor:
         'employment_type_code', 'department_turnover_rate',
         'has_reports_to', 'leave_balance_ratio',
         'avg_overtime_hours', 'salary_vs_dept_avg',
-        'attendance_rate', 'payroll_months',
+        'attendance_rate',
         'avg_gross_pay', 'comp_vs_dept_avg', 'absence_rate',
     ]
 
@@ -352,7 +352,6 @@ class AttritionPredictor:
             float(avg_ot),
             salary_vs_dept,
             att_rate,
-            payroll_months,
             avg_gross_pay,
             comp_vs_dept,
             absence_rate,

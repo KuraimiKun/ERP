@@ -96,6 +96,9 @@ INSTALLED_APPS = [
     
     # Task scheduling
     'django_celery_beat',
+
+    # Cloud / local media storage (django-storages)
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -211,18 +214,68 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # In production collectstatic produces hashed filenames (style.abc123.css)
 # and pre-compresses them with gzip + Brotli.  Browsers that send
 # Accept-Encoding get the compressed version with zero runtime cost.
+
+# ── Cloud / Local Media Storage ──────────────────────────────────────────────
+# Set CLOUD_STORAGE_PROVIDER=s3|gcs|azure in .env to route all FileField /
+# ImageField uploads to a cloud bucket.  Leave unset (or empty) to keep files
+# on the local filesystem (fine for single-server deployments managed by
+# deploy.sh, where /opt/erpdjango/media is on a persistent volume).
+_CLOUD_STORAGE_PROVIDER = os.getenv('CLOUD_STORAGE_PROVIDER', '').lower()
+
+if _CLOUD_STORAGE_PROVIDER == 's3':
+    _DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+elif _CLOUD_STORAGE_PROVIDER == 'gcs':
+    _DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+elif _CLOUD_STORAGE_PROVIDER == 'azure':
+    _DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+else:
+    _DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
 STORAGES = {
     'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'BACKEND': _DEFAULT_FILE_STORAGE,
     },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
 
-# Media files
-MEDIA_URL = 'media/'
+# Media files — local fallback (overridden per-provider below)
+MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ── AWS S3 ────────────────────────────────────────────────────────────────────
+if _CLOUD_STORAGE_PROVIDER == 's3':
+    AWS_ACCESS_KEY_ID        = os.getenv('AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY    = os.getenv('AWS_SECRET_ACCESS_KEY', '')
+    AWS_STORAGE_BUCKET_NAME  = os.getenv('AWS_STORAGE_BUCKET_NAME', '')
+    AWS_S3_REGION_NAME       = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
+    AWS_S3_FILE_OVERWRITE    = False   # keep original filename on collision
+    AWS_DEFAULT_ACL          = None    # honour bucket policy; no per-object ACLs
+    AWS_QUERYSTRING_AUTH     = False   # serve public (unsigned) URLs
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    MEDIA_URL = (
+        f'https://{AWS_STORAGE_BUCKET_NAME}'
+        f'.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/'
+    )
+
+# ── Google Cloud Storage ──────────────────────────────────────────────────────
+elif _CLOUD_STORAGE_PROVIDER == 'gcs':
+    GS_BUCKET_NAME    = os.getenv('GCS_BUCKET_NAME', '')
+    GS_DEFAULT_ACL    = None
+    GS_FILE_OVERWRITE = False
+    MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/media/'
+
+# ── Azure Blob Storage ────────────────────────────────────────────────────────
+elif _CLOUD_STORAGE_PROVIDER == 'azure':
+    AZURE_ACCOUNT_NAME    = os.getenv('AZURE_ACCOUNT_NAME', '')
+    AZURE_ACCOUNT_KEY     = os.getenv('AZURE_ACCOUNT_KEY', '')
+    AZURE_CONTAINER       = os.getenv('AZURE_CONTAINER', 'media')
+    AZURE_OVERWRITE_FILES = False
+    MEDIA_URL = (
+        f'https://{os.getenv("AZURE_ACCOUNT_NAME", "")}'
+        f'.blob.core.windows.net/{os.getenv("AZURE_CONTAINER", "media")}/'
+    )
 
 
 # Default primary key field type

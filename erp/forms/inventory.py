@@ -8,6 +8,8 @@ Forms and formsets for:
   CycleCount, CycleCountLine, PickList, PickListLine,
   ShipmentNote, ShipmentLine, ReorderRule, InventoryValuationConfig
 """
+from django.utils.translation import gettext_lazy as _
+
 
 from django import forms
 

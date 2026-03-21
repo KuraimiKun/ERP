@@ -4,6 +4,8 @@ ERP Forms – Fixed Assets Management
 Forms for asset categories, assets, depreciation, disposal,
 transfers, revaluations, and maintenance logs.
 """
+from django.utils.translation import gettext_lazy as _
+
 
 from django import forms
 
@@ -151,5 +153,5 @@ class GenerateDepreciationForm(BootstrapFormMixin, forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     periods = forms.IntegerField(
         min_value=1, max_value=600,
-        help_text='Number of monthly periods to generate',
+        help_text=_('Number of monthly periods to generate'),
     )

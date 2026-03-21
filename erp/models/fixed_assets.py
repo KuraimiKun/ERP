@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Fixed Assets Management models for the ERP system.
 
@@ -51,11 +52,11 @@ class AssetCategory(ERPBaseModel):
     )
     useful_life_months = models.PositiveIntegerField(
         default=60,
-        help_text='Default useful life in months',
+        help_text=_('Default useful life in months'),
     )
     salvage_value_percent = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal('0.00'),
-        help_text='Default salvage value as % of cost',
+        help_text=_('Default salvage value as % of cost'),
     )
 
     # Default GL accounts (linked to Chart of Accounts)
@@ -63,55 +64,55 @@ class AssetCategory(ERPBaseModel):
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_asset',
-        help_text='Fixed Asset account (e.g. 1500 – Equipment)',
+        help_text=_('Fixed Asset account (e.g. 1500 – Equipment)'),
     )
     depreciation_expense_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_depr_expense',
-        help_text='Depreciation Expense account',
+        help_text=_('Depreciation Expense account'),
     )
     accumulated_depreciation_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_accum_depr',
-        help_text='Accumulated Depreciation account (contra-asset)',
+        help_text=_('Accumulated Depreciation account (contra-asset)'),
     )
     disposal_gain_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_disposal_gain',
-        help_text='Gain on Disposal (income)',
+        help_text=_('Gain on Disposal (income)'),
     )
     disposal_loss_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_disposal_loss',
-        help_text='Loss on Disposal (expense)',
+        help_text=_('Loss on Disposal (expense)'),
     )
     acquisition_source_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_acq_source',
-        help_text='Cash / Bank / AP account credited on acquisition',
+        help_text=_('Cash / Bank / AP account credited on acquisition'),
     )
     disposal_proceeds_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_disposal_proceeds',
-        help_text='Cash / Receivable account debited on disposal sale',
+        help_text=_('Cash / Receivable account debited on disposal sale'),
     )
     revaluation_surplus_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='asset_category_reval_surplus',
-        help_text='Revaluation Surplus account (equity)',
+        help_text=_('Revaluation Surplus account (equity)'),
     )
 
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Asset Category'
+        verbose_name=_('Asset Category')
         verbose_name_plural = 'Asset Categories'
         ordering = ['name']
         unique_together = [('company', 'code')]
@@ -177,7 +178,7 @@ class FixedAsset(ERPBaseModel):
         'erp.Department', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='fixed_assets',
     )
-    location = models.CharField(max_length=255, blank=True, help_text='Physical location')
+    location = models.CharField(max_length=255, blank=True, help_text=_('Physical location'))
     custodian = models.ForeignKey(
         'erp.Employee', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='custodian_assets',
@@ -225,7 +226,7 @@ class FixedAsset(ERPBaseModel):
         'erp.Account', on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='fixed_asset_acq_source',
-        help_text='Cash / Bank / AP account credited on acquisition',
+        help_text=_('Cash / Bank / AP account credited on acquisition'),
     )
 
     status = models.CharField(
@@ -240,15 +241,15 @@ class FixedAsset(ERPBaseModel):
     # Optional: units-of-production fields
     total_estimated_units = models.PositiveIntegerField(
         null=True, blank=True,
-        help_text='Total estimated units for units-of-production method',
+        help_text=_('Total estimated units for units-of-production method'),
     )
     units_produced = models.PositiveIntegerField(
         default=0,
-        help_text='Cumulative units produced so far',
+        help_text=_('Cumulative units produced so far'),
     )
 
     class Meta:
-        verbose_name = 'Fixed Asset'
+        verbose_name=_('Fixed Asset')
         verbose_name_plural = 'Fixed Assets'
         ordering = ['-acquisition_date']
         indexes = [
@@ -407,11 +408,11 @@ class DepreciationSchedule(TimeStampedModel):
         FixedAsset, on_delete=models.CASCADE,
         related_name='depreciation_schedule',
     )
-    period_date = models.DateField(help_text='End of depreciation period')
+    period_date = models.DateField(help_text=_('End of depreciation period'))
     depreciation_amount = models.DecimalField(max_digits=15, decimal_places=2)
     accumulated_total = models.DecimalField(
         max_digits=15, decimal_places=2, default=Decimal('0.00'),
-        help_text='Running total after this period',
+        help_text=_('Running total after this period'),
     )
     book_value_after = models.DecimalField(
         max_digits=15, decimal_places=2, default=Decimal('0.00'),
@@ -431,7 +432,7 @@ class DepreciationSchedule(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Depreciation Schedule'
+        verbose_name=_('Depreciation Schedule')
         verbose_name_plural = 'Depreciation Schedules'
         ordering = ['asset', 'period_date']
         unique_together = [('asset', 'period_date')]
@@ -554,7 +555,7 @@ class AssetDisposal(ERPBaseModel):
     )
     gain_loss = models.DecimalField(
         max_digits=15, decimal_places=2, default=Decimal('0.00'),
-        help_text='Positive = gain, negative = loss',
+        help_text=_('Positive = gain, negative = loss'),
     )
 
     journal_entry = models.ForeignKey(
@@ -563,7 +564,7 @@ class AssetDisposal(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'Asset Disposal'
+        verbose_name=_('Asset Disposal')
         verbose_name_plural = 'Asset Disposals'
         ordering = ['-disposal_date']
 
@@ -708,7 +709,7 @@ class AssetTransfer(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'Asset Transfer'
+        verbose_name=_('Asset Transfer')
         verbose_name_plural = 'Asset Transfers'
         ordering = ['-transfer_date']
 
@@ -750,7 +751,7 @@ class AssetRevaluation(ERPBaseModel):
         validators=[MinValueValidator(Decimal('0.01'))],
     )
     reason = models.TextField(blank=True)
-    appraiser = models.CharField(max_length=255, blank=True, help_text='Name of appraiser / valuer')
+    appraiser = models.CharField(max_length=255, blank=True, help_text=_('Name of appraiser / valuer'))
 
     journal_entry = models.ForeignKey(
         'erp.JournalEntry', on_delete=models.SET_NULL,
@@ -758,7 +759,7 @@ class AssetRevaluation(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'Asset Revaluation'
+        verbose_name=_('Asset Revaluation')
         verbose_name_plural = 'Asset Revaluations'
         ordering = ['-revaluation_date']
 
@@ -883,7 +884,7 @@ class AssetMaintenanceLog(ERPBaseModel):
     cost = models.DecimalField(
         max_digits=15, decimal_places=2, default=Decimal('0.00'),
     )
-    vendor = models.CharField(max_length=255, blank=True, help_text='Service provider name')
+    vendor = models.CharField(max_length=255, blank=True, help_text=_('Service provider name'))
     performed_by = models.ForeignKey(
         'erp.Employee', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='asset_maintenance_performed',
@@ -900,7 +901,7 @@ class AssetMaintenanceLog(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'Asset Maintenance Log'
+        verbose_name=_('Asset Maintenance Log')
         verbose_name_plural = 'Asset Maintenance Logs'
         ordering = ['-scheduled_date']
 

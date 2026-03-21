@@ -3,6 +3,8 @@ ERP Forms - POS (Point of Sale)
 
 Forms for POS Terminal management in the admin panel.
 """
+from django.utils.translation import gettext_lazy as _
+
 
 from django import forms
 

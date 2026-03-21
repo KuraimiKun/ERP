@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Inventory & Warehouse Management models for the ERP system.
 
@@ -51,12 +52,12 @@ class UnitOfMeasure(TimeStampedModel):
     )
     is_base = models.BooleanField(
         default=False,
-        help_text='Base UoM for its category (conversion factor = 1)',
+        help_text=_('Base UoM for its category (conversion factor = 1)'),
     )
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Unit of Measure'
+        verbose_name=_('Unit of Measure')
         verbose_name_plural = 'Units of Measure'
         unique_together = ['company', 'abbreviation']
         ordering = ['category', 'name']
@@ -78,11 +79,11 @@ class UnitOfMeasureConversion(TimeStampedModel):
     )
     factor = models.DecimalField(
         max_digits=15, decimal_places=6, default=1,
-        help_text='Multiply from_uom quantity by this factor to get to_uom quantity',
+        help_text=_('Multiply from_uom quantity by this factor to get to_uom quantity'),
     )
 
     class Meta:
-        verbose_name = 'UoM Conversion'
+        verbose_name=_('UoM Conversion')
         verbose_name_plural = 'UoM Conversions'
         unique_together = ['company', 'from_uom', 'to_uom']
 
@@ -113,7 +114,7 @@ class Warehouse(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Warehouse'
+        verbose_name=_('Warehouse')
         verbose_name_plural = 'Warehouses'
         unique_together = ['company', 'code']
         ordering = ['code']
@@ -150,7 +151,7 @@ class WarehouseZone(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Warehouse Zone'
+        verbose_name=_('Warehouse Zone')
         verbose_name_plural = 'Warehouse Zones'
         unique_together = ['warehouse', 'code']
         ordering = ['code']
@@ -169,12 +170,12 @@ class WarehouseBin(TimeStampedModel):
     barcode = models.CharField(max_length=50, blank=True)
     max_capacity = models.DecimalField(
         max_digits=12, decimal_places=2, default=0,
-        help_text='Max storage capacity (0 = unlimited)',
+        help_text=_('Max storage capacity (0 = unlimited)'),
     )
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Warehouse Bin'
+        verbose_name=_('Warehouse Bin')
         verbose_name_plural = 'Warehouse Bins'
         unique_together = ['zone', 'code']
         ordering = ['code']
@@ -205,7 +206,7 @@ class LotBatch(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Lot / Batch'
+        verbose_name=_('Lot / Batch')
         verbose_name_plural = 'Lots / Batches'
         unique_together = ['company', 'product', 'lot_number']
         ordering = ['expiry_date', 'lot_number']
@@ -256,7 +257,7 @@ class SerialNumber(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Serial Number'
+        verbose_name=_('Serial Number')
         verbose_name_plural = 'Serial Numbers'
         unique_together = ['company', 'product', 'serial_number']
         ordering = ['serial_number']
@@ -302,18 +303,18 @@ class StockItem(TimeStampedModel):
     on_hand = models.DecimalField(max_digits=14, decimal_places=4, default=0)
     allocated = models.DecimalField(
         max_digits=14, decimal_places=4, default=0,
-        help_text='Reserved for outbound orders',
+        help_text=_('Reserved for outbound orders'),
     )
     in_transit = models.DecimalField(
         max_digits=14, decimal_places=4, default=0,
-        help_text='In-transit from another warehouse',
+        help_text=_('In-transit from another warehouse'),
     )
 
     # Cost tracking (for weighted-average valuation)
     unit_cost = models.DecimalField(max_digits=14, decimal_places=4, default=0)
 
     class Meta:
-        verbose_name = 'Stock Item'
+        verbose_name=_('Stock Item')
         verbose_name_plural = 'Stock Items'
         unique_together = ['company', 'product', 'warehouse', 'bin', 'lot']
         ordering = ['product__sku', 'warehouse__code']
@@ -392,7 +393,7 @@ class StockMovement(TimeStampedModel):
     # Generic reference to the originating document
     reference_type = models.CharField(
         max_length=40, blank=True,
-        help_text='e.g. goods_receipt, stock_transfer, stock_adjustment, cycle_count, invoice',
+        help_text=_('e.g. goods_receipt, stock_transfer, stock_adjustment, cycle_count, invoice'),
     )
     reference_id = models.PositiveIntegerField(null=True, blank=True)
     reference_number = models.CharField(max_length=50, blank=True)
@@ -404,7 +405,7 @@ class StockMovement(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Stock Movement'
+        verbose_name=_('Stock Movement')
         verbose_name_plural = 'Stock Movements'
         ordering = ['-movement_date', '-id']
         indexes = [
@@ -465,7 +466,7 @@ class GoodsReceiptNote(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Goods Receipt Note'
+        verbose_name=_('Goods Receipt Note')
         verbose_name_plural = 'Goods Receipt Notes'
         ordering = ['-receipt_date', '-id']
         indexes = [
@@ -494,7 +495,7 @@ class GoodsReceiptLine(TimeStampedModel):
     quantity_received = models.DecimalField(max_digits=12, decimal_places=4, default=0)
     quantity_accepted = models.DecimalField(
         max_digits=12, decimal_places=4, default=0,
-        help_text='Accepted after QC inspection',
+        help_text=_('Accepted after QC inspection'),
     )
     quantity_rejected = models.DecimalField(max_digits=12, decimal_places=4, default=0)
     unit_cost = models.DecimalField(max_digits=14, decimal_places=4, default=0)
@@ -509,7 +510,7 @@ class GoodsReceiptLine(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Goods Receipt Line'
+        verbose_name=_('Goods Receipt Line')
         verbose_name_plural = 'Goods Receipt Lines'
         ordering = ['id']
 
@@ -551,7 +552,7 @@ class StockTransfer(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Stock Transfer'
+        verbose_name=_('Stock Transfer')
         verbose_name_plural = 'Stock Transfers'
         ordering = ['-transfer_date', '-id']
         indexes = [
@@ -588,7 +589,7 @@ class StockTransferLine(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Stock Transfer Line'
+        verbose_name=_('Stock Transfer Line')
         verbose_name_plural = 'Stock Transfer Lines'
         ordering = ['id']
 
@@ -638,7 +639,7 @@ class StockAdjustment(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Stock Adjustment'
+        verbose_name=_('Stock Adjustment')
         verbose_name_plural = 'Stock Adjustments'
         ordering = ['-adjustment_date', '-id']
         indexes = [
@@ -671,7 +672,7 @@ class StockAdjustmentLine(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Stock Adjustment Line'
+        verbose_name=_('Stock Adjustment Line')
         verbose_name_plural = 'Stock Adjustment Lines'
         ordering = ['id']
 
@@ -709,7 +710,7 @@ class CycleCount(ERPBaseModel):
     )
     variance_posted = models.BooleanField(
         default=False,
-        help_text='True once the variance has been posted as a stock adjustment',
+        help_text=_('True once the variance has been posted as a stock adjustment'),
     )
     counted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
@@ -718,7 +719,7 @@ class CycleCount(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Cycle Count'
+        verbose_name=_('Cycle Count')
         verbose_name_plural = 'Cycle Counts'
         ordering = ['-count_date', '-id']
         indexes = [
@@ -748,15 +749,15 @@ class CycleCountLine(TimeStampedModel):
     )
     system_quantity = models.DecimalField(
         max_digits=12, decimal_places=4, default=0,
-        help_text='Quantity in the system at the time of count',
+        help_text=_('Quantity in the system at the time of count'),
     )
     counted_quantity = models.DecimalField(
         max_digits=12, decimal_places=4, null=True, blank=True,
-        help_text='Actual physical count',
+        help_text=_('Actual physical count'),
     )
 
     class Meta:
-        verbose_name = 'Cycle Count Line'
+        verbose_name=_('Cycle Count Line')
         verbose_name_plural = 'Cycle Count Lines'
         ordering = ['id']
 
@@ -807,7 +808,7 @@ class PickList(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Pick List'
+        verbose_name=_('Pick List')
         verbose_name_plural = 'Pick Lists'
         ordering = ['-pick_date', '-id']
         indexes = [
@@ -840,7 +841,7 @@ class PickListLine(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Pick List Line'
+        verbose_name=_('Pick List Line')
         verbose_name_plural = 'Pick List Lines'
         ordering = ['id']
 
@@ -882,7 +883,7 @@ class ShipmentNote(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Shipment Note'
+        verbose_name=_('Shipment Note')
         verbose_name_plural = 'Shipment Notes'
         ordering = ['-shipment_date', '-id']
         indexes = [
@@ -911,7 +912,7 @@ class ShipmentLine(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Shipment Line'
+        verbose_name=_('Shipment Line')
         verbose_name_plural = 'Shipment Lines'
         ordering = ['id']
 
@@ -939,22 +940,22 @@ class ReorderRule(TimeStampedModel):
     )
     reorder_point = models.DecimalField(
         max_digits=12, decimal_places=2, default=0,
-        help_text='Trigger reorder when available qty falls below this',
+        help_text=_('Trigger reorder when available qty falls below this'),
     )
     safety_stock = models.DecimalField(
         max_digits=12, decimal_places=2, default=0,
-        help_text='Minimum buffer stock to always keep on hand',
+        help_text=_('Minimum buffer stock to always keep on hand'),
     )
     min_order_qty = models.DecimalField(
         max_digits=12, decimal_places=2, default=1,
-        help_text='Minimum quantity per purchase order line',
+        help_text=_('Minimum quantity per purchase order line'),
     )
     max_order_qty = models.DecimalField(
         max_digits=12, decimal_places=2, default=0,
-        help_text='Maximum quantity per order (0 = unlimited)',
+        help_text=_('Maximum quantity per order (0 = unlimited)'),
     )
     lead_time_days = models.PositiveIntegerField(
-        default=0, help_text='Expected supplier lead time',
+        default=0, help_text=_('Expected supplier lead time'),
     )
     preferred_supplier = models.ForeignKey(
         'erp.Supplier', on_delete=models.SET_NULL, null=True, blank=True,
@@ -963,7 +964,7 @@ class ReorderRule(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Reorder Rule'
+        verbose_name=_('Reorder Rule')
         verbose_name_plural = 'Reorder Rules'
         unique_together = ['company', 'product', 'warehouse']
         ordering = ['product__sku']
@@ -994,27 +995,27 @@ class InventoryValuationConfig(TimeStampedModel):
     # GL account mappings
     inventory_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', help_text='DR on receipt, CR on issue (default 1500)',
+        related_name='+', help_text=_('DR on receipt, CR on issue (default 1500)'),
     )
     cogs_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', help_text='DR on sales issue (default 5100)',
+        related_name='+', help_text=_('DR on sales issue (default 5100)'),
     )
     grni_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', help_text='Goods Received Not Invoiced (default 1400)',
+        related_name='+', help_text=_('Goods Received Not Invoiced (default 1400)'),
     )
     adjustment_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', help_text='Inventory adjustment gains/losses (default 6200)',
+        related_name='+', help_text=_('Inventory adjustment gains/losses (default 6200)'),
     )
     write_off_account = models.ForeignKey(
         'erp.Account', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='+', help_text='Write-off / scrap expense (default 6300)',
+        related_name='+', help_text=_('Write-off / scrap expense (default 6300)'),
     )
 
     class Meta:
-        verbose_name = 'Inventory Valuation Config'
+        verbose_name=_('Inventory Valuation Config')
         verbose_name_plural = 'Inventory Valuation Configs'
 
     def __str__(self):

@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Reporting and Analytics models for the ERP system.
 """
@@ -47,17 +48,17 @@ class ReportTemplate(TimeStampedModel):
     description = models.TextField(blank=True)
     
     # Configuration (JSON)
-    configuration = models.JSONField(default=dict, blank=True, help_text='Report configuration as JSON')
+    configuration = models.JSONField(default=dict, blank=True, help_text=_('Report configuration as JSON'))
     
     # Default format
     default_format = models.CharField(max_length=10, choices=OutputFormat.choices, default=OutputFormat.PDF)
     
     # Access control
-    is_public = models.BooleanField(default=False, help_text='Available to all users')
-    allowed_roles = models.JSONField(default=list, blank=True, help_text='List of roles that can access this report')
+    is_public = models.BooleanField(default=False, help_text=_('Available to all users'))
+    allowed_roles = models.JSONField(default=list, blank=True, help_text=_('List of roles that can access this report'))
     
     is_active = models.BooleanField(default=True)
-    is_system = models.BooleanField(default=False, help_text='System reports cannot be deleted')
+    is_system = models.BooleanField(default=False, help_text=_('System reports cannot be deleted'))
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -68,7 +69,7 @@ class ReportTemplate(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Report Template'
+        verbose_name=_('Report Template')
         verbose_name_plural = 'Report Templates'
         ordering = ['report_type', 'name']
 
@@ -120,7 +121,7 @@ class GeneratedReport(TimeStampedModel):
     celery_task_id = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        verbose_name = 'Generated Report'
+        verbose_name=_('Generated Report')
         verbose_name_plural = 'Generated Reports'
         ordering = ['-created_at']
         indexes = [
@@ -157,14 +158,14 @@ class Dashboard(TimeStampedModel):
     )
     
     # Layout configuration
-    layout = models.JSONField(default=dict, blank=True, help_text='Dashboard layout configuration')
+    layout = models.JSONField(default=dict, blank=True, help_text=_('Dashboard layout configuration'))
     
     # Access
-    is_default = models.BooleanField(default=False, help_text='Show as default dashboard')
-    is_public = models.BooleanField(default=False, help_text='Visible to all users')
+    is_default = models.BooleanField(default=False, help_text=_('Show as default dashboard'))
+    is_public = models.BooleanField(default=False, help_text=_('Visible to all users'))
 
     class Meta:
-        verbose_name = 'Dashboard'
+        verbose_name=_('Dashboard')
         verbose_name_plural = 'Dashboards'
         ordering = ['name']
 
@@ -202,14 +203,14 @@ class DashboardWidget(TimeStampedModel):
     height = models.PositiveSmallIntegerField(default=1)
     
     # Configuration
-    configuration = models.JSONField(default=dict, blank=True, help_text='Widget configuration')
+    configuration = models.JSONField(default=dict, blank=True, help_text=_('Widget configuration'))
     
     # Data source
-    data_source = models.CharField(max_length=255, blank=True, help_text='API endpoint or query identifier')
-    refresh_interval = models.PositiveIntegerField(default=0, help_text='Refresh interval in seconds (0 = no auto-refresh)')
+    data_source = models.CharField(max_length=255, blank=True, help_text=_('API endpoint or query identifier'))
+    refresh_interval = models.PositiveIntegerField(default=0, help_text=_('Refresh interval in seconds (0 = no auto-refresh)'))
 
     class Meta:
-        verbose_name = 'Dashboard Widget'
+        verbose_name=_('Dashboard Widget')
         verbose_name_plural = 'Dashboard Widgets'
         ordering = ['row', 'column']
 
@@ -239,8 +240,8 @@ class KPI(TimeStampedModel):
     description = models.TextField(blank=True)
     
     # Calculation
-    calculation_query = models.TextField(blank=True, help_text='SQL or calculation logic')
-    unit = models.CharField(max_length=50, blank=True, help_text='e.g., %, $, count')
+    calculation_query = models.TextField(blank=True, help_text=_('SQL or calculation logic'))
+    unit = models.CharField(max_length=50, blank=True, help_text=_('e.g., %, $, count'))
     
     # Targets
     target_value = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
@@ -253,7 +254,7 @@ class KPI(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'KPI'
+        verbose_name=_('KPI')
         verbose_name_plural = 'KPIs'
         ordering = ['kpi_type', 'name']
 
@@ -278,7 +279,7 @@ class KPIValue(TimeStampedModel):
     change_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
     class Meta:
-        verbose_name = 'KPI Value'
+        verbose_name=_('KPI Value')
         verbose_name_plural = 'KPI Values'
         ordering = ['-period_end']
         unique_together = ['kpi', 'period_start', 'period_end']

@@ -4,6 +4,8 @@ ERP Forms - Supplier
 Forms for Supplier, SupplierContact, PurchaseOrder, PurchaseOrderLine,
 SupplierInvoice, SupplierInvoiceLine, SupplierPayment.
 """
+from django.utils.translation import gettext_lazy as _
+
 
 from django import forms
 
@@ -17,7 +19,7 @@ from .mixins import BootstrapFormMixin, CompanyFilterMixin
 class SupplierForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
     """Form for Supplier model."""
 
-    website = forms.CharField(max_length=200, required=False, help_text='مثال: www.example.com')
+    website = forms.CharField(max_length=200, required=False, help_text=_('مثال: www.example.com'))
 
     class Meta:
         model = Supplier
@@ -171,7 +173,7 @@ class SupplierPaymentForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelFor
     supplier_invoice = forms.ModelChoiceField(
         queryset=SupplierInvoice.objects.none(),
         required=False,
-        label='فاتورة المورد',
+        label=_('فاتورة المورد'),
     )
 
     class Meta:

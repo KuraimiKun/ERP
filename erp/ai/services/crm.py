@@ -33,7 +33,7 @@ class LeadScorer:
     """ML-driven lead conversion scoring."""
 
     FEATURE_COLS = [
-        'estimated_value', 'value_log', 'days_since_created',
+        'estimated_value', 'value_log',
         'activity_count', 'call_count', 'email_count',
         'meeting_count', 'note_count',
         'source_code', 'has_company', 'has_email', 'has_phone',
@@ -81,9 +81,6 @@ class LeadScorer:
             df.loc[df['_ref_date'].isna(), '_created']
             + pd.Timedelta(days=30)
         )
-        df['days_since_created'] = (
-            df['_ref_date'] - df['_created']
-        ).dt.days.clip(lower=0)
 
         # Activity counts
         activity_counts = dict(
@@ -266,7 +263,6 @@ class LeadScorer:
         Used by both score_lead() and the XAI explainability service.
         """
         now = timezone.now()
-        days = (now - lead.created_at).days if lead.created_at else 0
 
         activities = LeadActivity.objects.filter(lead=lead)
         activity_count = activities.count()
@@ -292,7 +288,6 @@ class LeadScorer:
         return np.array([[
             float(lead.estimated_value or 0),
             np.log1p(float(lead.estimated_value or 0)),
-            days,
             activity_count,
             call_count,
             email_count,

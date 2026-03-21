@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Service/Product management models for the ERP system.
 Tracks services offered, products, pricing, and packages.
@@ -45,7 +46,7 @@ class ServiceCategory(TimeStampedModel):
     sort_order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        verbose_name = 'Service Category'
+        verbose_name=_('Service Category')
         verbose_name_plural = 'Service Categories'
         ordering = ['sort_order', 'name']
 
@@ -68,7 +69,7 @@ class ServicePricing(ERPBaseModel):
     )
     
     # Link to website service (optional, for reference)
-    website_service_name = models.CharField(max_length=255, blank=True, help_text='Name of the service on website')
+    website_service_name = models.CharField(max_length=255, blank=True, help_text=_('Name of the service on website'))
     
     name = models.CharField(max_length=255)
     name_ar = models.CharField(max_length=255, blank=True)
@@ -91,7 +92,7 @@ class ServicePricing(ERPBaseModel):
         related_name='service_pricings'
     )
     base_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Our cost')
+    cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text=_('Our cost'))
     
     # Tax
     tax_rate = models.ForeignKey(
@@ -124,13 +125,13 @@ class ServicePricing(ERPBaseModel):
         max_digits=5,
         decimal_places=2,
         default=0,
-        help_text='Commission percentage for agents'
+        help_text=_('Commission percentage for agents')
     )
     
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Service Pricing'
+        verbose_name=_('Service Pricing')
         verbose_name_plural = 'Service Pricings'
         ordering = ['category', 'name']
         indexes = [
@@ -163,7 +164,7 @@ class PriceTier(TimeStampedModel):
     price = models.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
-        verbose_name = 'Price Tier'
+        verbose_name=_('Price Tier')
         verbose_name_plural = 'Price Tiers'
         ordering = ['min_quantity']
 
@@ -192,7 +193,7 @@ class ServicePackage(ERPBaseModel):
         related_name='service_packages'
     )
     regular_price = models.DecimalField(max_digits=12, decimal_places=2)
-    package_price = models.DecimalField(max_digits=12, decimal_places=2, help_text='Discounted package price')
+    package_price = models.DecimalField(max_digits=12, decimal_places=2, help_text=_('Discounted package price'))
     cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     
     # Validity
@@ -203,7 +204,7 @@ class ServicePackage(ERPBaseModel):
     is_featured = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Service Package'
+        verbose_name=_('Service Package')
         verbose_name_plural = 'Service Packages'
         ordering = ['name']
 
@@ -234,11 +235,11 @@ class PackageItem(TimeStampedModel):
         related_name='package_items'
     )
     quantity = models.PositiveIntegerField(default=1)
-    included_in_price = models.BooleanField(default=True, help_text='Is this included in package price or charged extra?')
+    included_in_price = models.BooleanField(default=True, help_text=_('Is this included in package price or charged extra?'))
     extra_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
-        verbose_name = 'Package Item'
+        verbose_name=_('Package Item')
         verbose_name_plural = 'Package Items'
         unique_together = ['package', 'service_pricing']
 
@@ -321,7 +322,7 @@ class Quote(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'Quote'
+        verbose_name=_('Quote')
         verbose_name_plural = 'Quotes'
         ordering = ['-quote_date', '-id']
         indexes = [
@@ -386,7 +387,7 @@ class QuoteLine(TimeStampedModel):
     line_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     class Meta:
-        verbose_name = 'Quote Line'
+        verbose_name=_('Quote Line')
         verbose_name_plural = 'Quote Lines'
         ordering = ['id']
 
@@ -432,7 +433,7 @@ class ProductCategory(TimeStampedModel):
     sort_order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        verbose_name = 'Product Category'
+        verbose_name=_('Product Category')
         verbose_name_plural = 'Product Categories'
         ordering = ['sort_order', 'name']
 
@@ -492,7 +493,7 @@ class Product(ERPBaseModel):
     cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     min_selling_price = models.DecimalField(
         max_digits=12, decimal_places=2, default=0,
-        help_text='Minimum price to preserve margin'
+        help_text=_('Minimum price to preserve margin')
     )
 
     # Tax
@@ -509,10 +510,10 @@ class Product(ERPBaseModel):
     quantity_on_hand = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     reorder_level = models.DecimalField(
         max_digits=12, decimal_places=2, default=0,
-        help_text='Alert when stock falls below this level'
+        help_text=_('Alert when stock falls below this level')
     )
     reorder_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    unit_of_measure = models.CharField(max_length=20, default='unit', help_text='e.g. unit, kg, m, litre')
+    unit_of_measure = models.CharField(max_length=20, default='unit', help_text=_('e.g. unit, kg, m, litre'))
 
     # Supplier link (preferred / default supplier for reordering)
     supplier = models.ForeignKey(
@@ -521,7 +522,7 @@ class Product(ERPBaseModel):
         null=True,
         blank=True,
         related_name='supplied_products',
-        help_text='Preferred supplier'
+        help_text=_('Preferred supplier')
     )
     supplier_sku = models.CharField(max_length=50, blank=True, help_text="Supplier's part number")
 
@@ -545,7 +546,7 @@ class Product(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Product'
+        verbose_name=_('Product')
         verbose_name_plural = 'Products'
         ordering = ['name']
         indexes = [
@@ -590,13 +591,13 @@ class ProductSupplier(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='product_supplier_prices'
     )
-    lead_time_days = models.PositiveIntegerField(default=0, help_text='Delivery lead time in days')
+    lead_time_days = models.PositiveIntegerField(default=0, help_text=_('Delivery lead time in days'))
     min_order_qty = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     is_preferred = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Product Supplier'
+        verbose_name=_('Product Supplier')
         verbose_name_plural = 'Product Suppliers'
         unique_together = ['product', 'supplier']
         ordering = ['-is_preferred', 'supplier__name']

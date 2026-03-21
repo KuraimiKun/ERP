@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Core/Company models for the ERP system.
 """
@@ -9,7 +10,7 @@ from tenants.fields import EncryptedCharField
 
 class Currency(TimeStampedModel):
     """Currency definitions for multi-currency support."""
-    code = models.CharField(max_length=3, unique=True, help_text='ISO 4217 code (e.g., SAR, USD)')
+    code = models.CharField(max_length=3, unique=True, help_text=_('ISO 4217 code (e.g., SAR, USD)'))
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
     symbol = models.CharField(max_length=10)
@@ -17,14 +18,14 @@ class Currency(TimeStampedModel):
         max_digits=12,
         decimal_places=6,
         default=1,
-        help_text='Exchange rate relative to base currency'
+        help_text=_('Exchange rate relative to base currency')
     )
-    is_base = models.BooleanField(default=False, help_text='Is this the base currency?')
+    is_base = models.BooleanField(default=False, help_text=_('Is this the base currency?'))
     is_active = models.BooleanField(default=True)
     decimal_places = models.PositiveSmallIntegerField(default=2)
 
     class Meta:
-        verbose_name = 'Currency'
+        verbose_name=_('Currency')
         verbose_name_plural = 'Currencies'
         ordering = ['-is_base', 'code']
 
@@ -45,7 +46,7 @@ class Company(ERPBaseModel):
     legal_name = models.CharField(max_length=255, blank=True)
     
     # Registration
-    tax_number = models.CharField(max_length=50, blank=True, help_text='VAT/Tax registration number')
+    tax_number = models.CharField(max_length=50, blank=True, help_text=_('VAT/Tax registration number'))
     commercial_register = models.CharField(max_length=50, blank=True)
     license_number = models.CharField(max_length=50, blank=True)
     
@@ -72,7 +73,7 @@ class Company(ERPBaseModel):
         on_delete=models.PROTECT,
         related_name='companies'
     )
-    fiscal_year_start = models.PositiveSmallIntegerField(default=1, help_text='Month (1-12)')
+    fiscal_year_start = models.PositiveSmallIntegerField(default=1, help_text=_('Month (1-12)'))
     
     # Bank Details
     bank_name = models.CharField(max_length=255, blank=True)
@@ -83,19 +84,19 @@ class Company(ERPBaseModel):
     # AI / ML Configuration (per-tenant)
     openai_api_key = EncryptedCharField(
         max_length=512, blank=True,
-        help_text='Your OpenAI API key (sk-…). Encrypted at rest.',
+        help_text=_('Your OpenAI API key (sk-…). Encrypted at rest.'),
     )
     openai_model = models.CharField(
         max_length=100, blank=True, default='gpt-4o-mini',
-        help_text='OpenAI model to use (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).',
+        help_text=_('OpenAI model to use (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).'),
     )
     ai_enabled = models.BooleanField(
         default=True,
-        help_text='Enable or disable AI features for this company.',
+        help_text=_('Enable or disable AI features for this company.'),
     )
 
     class Meta:
-        verbose_name = 'Company'
+        verbose_name=_('Company')
         verbose_name_plural = 'Companies'
 
     def __str__(self):
@@ -130,7 +131,7 @@ class Department(ERPBaseModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Department'
+        verbose_name=_('Department')
         verbose_name_plural = 'Departments'
         ordering = ['name']
         indexes = [
@@ -175,7 +176,7 @@ class Branch(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'Branch'
+        verbose_name=_('Branch')
         verbose_name_plural = 'Branches'
         ordering = ['-is_headquarters', 'name']
         indexes = [
@@ -200,7 +201,7 @@ class FiscalYear(ERPBaseModel):
     is_current = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Fiscal Year'
+        verbose_name=_('Fiscal Year')
         verbose_name_plural = 'Fiscal Years'
         ordering = ['-start_date']
         indexes = [
@@ -254,7 +255,7 @@ class Sequence(TimeStampedModel):
     prefix = models.CharField(max_length=20, blank=True)
     suffix = models.CharField(max_length=20, blank=True)
     next_number = models.PositiveIntegerField(default=1)
-    padding = models.PositiveSmallIntegerField(default=5, help_text='Number of digits to pad')
+    padding = models.PositiveSmallIntegerField(default=5, help_text=_('Number of digits to pad'))
     reset_period = models.CharField(
         max_length=20,
         choices=[
@@ -267,7 +268,7 @@ class Sequence(TimeStampedModel):
     last_reset = models.DateField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Sequence'
+        verbose_name=_('Sequence')
         verbose_name_plural = 'Sequences'
         unique_together = ['company', 'sequence_type']
 

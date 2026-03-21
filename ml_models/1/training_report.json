@@ -1,64 +1,46 @@
 {
   "company_id": 1,
   "company_name": "Maines",
-  "timestamp": "2026-03-10T13:12:02.698715",
+  "timestamp": "2026-03-17T16:19:40.250794",
   "results": {
     "lead_scoring": {
       "status": "trained",
-      "auc": 0.998,
+      "auc": 0.9448,
       "samples": 4112,
-      "evaluation": {
-        "leads_scored": 150,
-        "hot": 150,
-        "warm": 0,
-        "cold": 0
-      },
-      "elapsed_seconds": 15.2
+      "elapsed_seconds": 9.96
     },
     "late_payment": {
       "status": "trained",
-      "auc": 0.6366,
+      "auc": 0.6358,
       "samples": 97638,
       "late_ratio": 0.094,
       "feature_importance": {
-        "invoice_amount": 0.0961,
-        "amount_log": 0.1177,
-        "days_to_due": 0.231,
-        "invoice_month": 0.0285,
-        "month_sin": 0.0268,
-        "month_cos": 0.0453,
-        "invoice_day_of_week": 0.0241,
-        "invoice_quarter": 0.0164,
-        "cust_total_invoices": 0.0051,
-        "cust_avg_amount": 0.0328,
-        "cust_avg_days_to_due": 0.0061,
-        "cust_payment_delay_mean": 0.0174,
-        "cust_late_ratio": 0.0109,
-        "customer_type_code": 0.0082,
-        "amount_vs_cust_avg": 0.0232,
-        "amount_percentile": 0.0947,
-        "is_large_invoice": 0.0034,
-        "payment_term_bucket": 0.2125
+        "invoice_amount": 0.1131,
+        "amount_log": 0.1071,
+        "days_to_due": 0.2271,
+        "invoice_month": 0.0293,
+        "month_sin": 0.0249,
+        "month_cos": 0.0494,
+        "invoice_day_of_week": 0.0233,
+        "invoice_quarter": 0.0138,
+        "cust_total_invoices": 0.0047,
+        "cust_avg_amount": 0.036,
+        "cust_avg_days_to_due": 0.0051,
+        "cust_payment_delay_mean": 0.0154,
+        "cust_late_ratio": 0.0077,
+        "customer_type_code": 0.012,
+        "amount_vs_cust_avg": 0.0205,
+        "amount_percentile": 0.1002,
+        "is_large_invoice": 0.0027,
+        "payment_term_bucket": 0.2077
       },
-      "evaluation": {
-        "invoices_scored": 9513,
-        "high_risk": 1209,
-        "medium_risk": 8166,
-        "low_risk": 138
-      },
-      "elapsed_seconds": 138.34
+      "elapsed_seconds": 125.26
     },
     "attrition": {
       "status": "trained",
-      "auc": 1.0,
+      "auc": 0.9761,
       "samples": 1720,
-      "evaluation": {
-        "employees_scored": 1483,
-        "high_risk": 0,
-        "medium_risk": 0,
-        "low_risk": 1483
-      },
-      "elapsed_seconds": 52.24
+      "elapsed_seconds": 2.88
     },
     "expense_anomaly": {
       "status": "completed",
@@ -113,7 +95,7 @@
         "recall": 0.3146,
         "f1_score": 0.1721
       },
-      "elapsed_seconds": 1.32
+      "elapsed_seconds": 3.7
     },
     "attendance_anomaly": {
       "status": "completed",
@@ -170,84 +152,38 @@
           "total_days": 128
         }
       ],
-      "elapsed_seconds": 0.05
+      "elapsed_seconds": 0.13
     },
     "demand_forecast": {
-      "status": "completed",
-      "rules_updated": 62,
-      "results": [
-        {
-          "product": "SKU-003616B8",
-          "warehouse": "WH-MAIN",
-          "old_reorder_point": 251.69,
-          "new_reorder_point": 251.55,
-          "old_safety_stock": 17.85,
-          "new_safety_stock": 17.71,
-          "avg_daily_demand": 11.1351
-        },
-        {
-          "product": "SKU-024EE385",
-          "warehouse": "WH-MAIN",
-          "old_reorder_point": 17.46,
-          "new_reorder_point": 17.48,
-          "old_safety_stock": 2.37,
-          "new_safety_stock": 2.39,
-          "avg_daily_demand": 2.5159
-        },
-        {
-          "product": "SKU-049C99A7",
-          "warehouse": "WH-MAIN",
-          "old_reorder_point": 150.45,
-          "new_reorder_point": 150.61,
-          "old_safety_stock": 15.8,
-          "new_safety_stock": 15.96,
-          "avg_daily_demand": 7.4806
-        },
-        {
-          "product": "SKU-0E13EE1F",
-          "warehouse": "WH-MAIN",
-          "old_reorder_point": 369.37,
-          "new_reorder_point": 369.69,
-          "old_safety_stock": 31.28,
-          "new_safety_stock": 31.6,
-          "avg_daily_demand": 21.1309
-        },
-        {
-          "product": "SKU-0E30DF62",
-          "warehouse": "WH-MAIN",
-          "old_reorder_point": 164.18,
-          "new_reorder_point": 164.16,
-          "old_safety_stock": 21.01,
-          "new_safety_stock": 20.99,
-          "avg_daily_demand": 7.1587
-        }
-      ],
-      "elapsed_seconds": 120.51
+      "status": "skipped",
+      "rules_updated": 0,
+      "results": [],
+      "elapsed_seconds": 1.13
     },
     "cash_flow": {
       "status": "completed",
       "summary": {
         "30d": {
-          "inflows": 720997.58,
-          "outflows": 684749.79,
-          "net": 36247.79,
-          "cumulative": 36247.79
+          "inflows": 725087.99,
+          "outflows": 645578.63,
+          "net": 79509.36,
+          "cumulative": 79509.36
         },
         "60d": {
-          "inflows": 1057000.62,
-          "outflows": 1161570.99,
-          "net": -104570.37,
-          "cumulative": -104570.37
+          "inflows": 871773.69,
+          "outflows": 1180971.22,
+          "net": -309197.53,
+          "cumulative": -309197.53
         },
         "90d": {
-          "inflows": 1057000.62,
-          "outflows": 1671564.78,
-          "net": -614564.16,
-          "cumulative": -614564.16
+          "inflows": 871773.69,
+          "outflows": 1575560.75,
+          "net": -703787.06,
+          "cumulative": -703787.06
         }
       },
       "data_points": 90,
-      "elapsed_seconds": 0.03
+      "elapsed_seconds": 0.06
     },
     "kpi_anomaly": {
       "status": "completed",
@@ -261,14 +197,14 @@
         {
           "check": "Inventory Movements",
           "severity": "critical",
-          "check_value": 65,
-          "mean": 61.21,
-          "std": 1.17,
-          "z_score": 3.24
+          "check_value": 0,
+          "mean": 61.23,
+          "std": 1.22,
+          "z_score": -50.25
         }
       ],
       "alert_count": 2,
-      "elapsed_seconds": 0.09
+      "elapsed_seconds": 0.15
     }
   }
 }

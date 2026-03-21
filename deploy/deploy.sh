@@ -10,13 +10,14 @@
 #   3. Run:  sudo bash deploy/deploy.sh
 #
 # What it does:
-#   - Installs system packages (Python 3.12, PostgreSQL 15, Nginx, Certbot, Docker)
+#   - Installs system packages (Python 3.12, PostgreSQL 15, Nginx, Certbot, Docker, Redis)
 #   - Creates a dedicated 'erp' system user
 #   - Sets up the project under /opt/erpdjango
 #   - Creates a Python virtualenv + installs deps
 #   - Creates the main PostgreSQL database + user
 #   - Runs Django migrations, collectstatic, createsuperuser
 #   - Configures Gunicorn as a systemd service
+#   - Configures Celery worker and beat scheduler as systemd services
 #   - Configures Nginx with SSL (Let's Encrypt) or self-signed
 #   - Configures UFW firewall
 #   - Sets up automatic certificate renewal
@@ -63,6 +64,7 @@ SECRET_KEY="${SECRET_KEY:?SECRET_KEY must be set in .env.production}"
 ENABLE_SSL="${ENABLE_SSL:-true}"
 SSL_EMAIL="${SSL_EMAIL:-}"
 GUNICORN_WORKERS="${GUNICORN_WORKERS:-3}"
+CELERY_CONCURRENCY="${CELERY_CONCURRENCY:-4}"
 TIMEZONE="${TIMEZONE:-UTC}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.12}"
 PG_VERSION="${PG_VERSION:-15}"
@@ -71,11 +73,12 @@ echo ""
 echo "═══════════════════════════════════════════════════════════════"
 echo "  ERP Django — VPS Deployment"
 echo "═══════════════════════════════════════════════════════════════"
-echo "  Domain  : ${DOMAIN}"
-echo "  App Dir : ${APP_DIR}"
-echo "  DB      : ${DB_NAME} (user: ${DB_USER})"
-echo "  SSL     : ${ENABLE_SSL}"
-echo "  Workers : ${GUNICORN_WORKERS}"
+echo "  Domain      : ${DOMAIN}"
+echo "  App Dir     : ${APP_DIR}"
+echo "  DB          : ${DB_NAME} (user: ${DB_USER})"
+echo "  SSL         : ${ENABLE_SSL}"
+echo "  Workers     : ${GUNICORN_WORKERS}"
+echo "  Celery conc : ${CELERY_CONCURRENCY}"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
 
@@ -129,6 +132,16 @@ fi
 apt-get install -yqq "postgresql-${PG_VERSION}" "postgresql-contrib-${PG_VERSION}"
 systemctl enable --now postgresql
 ok "PostgreSQL ${PG_VERSION} installed"
+
+# ─── Redis ─────────────────────────────────────────────────────────────────
+info "Installing Redis (Celery broker/result backend)..."
+apt-get install -yqq redis-server
+# Bind to localhost only for security
+sed -i 's/^bind .*/bind 127.0.0.1 ::1/' /etc/redis/redis.conf
+# Persist to disk so beat schedule survives restarts
+sed -i 's/^# save /save /' /etc/redis/redis.conf
+systemctl enable --now redis-server
+ok "Redis $(redis-server --version | awk '{print $3}') installed"
 
 # ─── Nginx ─────────────────────────────────────────────────────────────────
 info "Installing Nginx..."
@@ -219,6 +232,11 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
 EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
 DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@${DOMAIN}}
+
+# ── Celery / Redis ───────────────────────────────────────────────────────────
+REDIS_URL=redis://127.0.0.1:6379/1
+CELERY_BROKER_URL=redis://127.0.0.1:6379/0
+CELERY_RESULT_BACKEND=redis://127.0.0.1:6379/0
 ENVEOF
 chmod 600 "${APP_DIR}/.env"
 ok ".env written"
@@ -237,6 +255,8 @@ pip install -r "${APP_DIR}/requirements.txt" -q
 pip install xhtml2pdf -q
 # Gunicorn for production
 pip install gunicorn -q
+# Celery + Redis client (idempotent — safe to run even if already in requirements.txt)
+pip install "celery[redis]" redis -q
 ok "Python dependencies installed"
 
 ###############################################################################
@@ -327,7 +347,7 @@ cat > /etc/systemd/system/erp-gunicorn.service <<SVCEOF
 [Unit]
 Description=ERP Django Gunicorn Daemon
 Requires=erp-gunicorn.socket
-After=network.target postgresql.service docker.service
+After=network.target postgresql.service redis-server.service docker.service
 
 [Service]
 User=${APP_USER}
@@ -377,7 +397,73 @@ systemctl restart erp-gunicorn.service
 ok "Gunicorn service active"
 
 ###############################################################################
-# 10. Nginx Configuration
+# 10. Celery Worker & Beat Scheduler systemd Services
+###############################################################################
+info "Configuring Celery worker service..."
+cat > /etc/systemd/system/erp-celery-worker.service <<CELWEOF
+[Unit]
+Description=ERP Django Celery Worker
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=forking
+User=${APP_USER}
+Group=${APP_USER}
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${APP_DIR}/.env
+PIDFile=${APP_DIR}/run/celery-worker.pid
+ExecStart=${APP_DIR}/venv/bin/celery \\
+    -A erpproject worker \\
+    --concurrency=${CELERY_CONCURRENCY} \\
+    --loglevel=info \\
+    --logfile=${APP_DIR}/logs/celery-worker.log \\
+    --pidfile=${APP_DIR}/run/celery-worker.pid \\
+    --detach
+ExecStop=${APP_DIR}/venv/bin/celery multi stopwait worker \\
+    --pidfile=${APP_DIR}/run/celery-worker.pid \\
+    --logfile=${APP_DIR}/logs/celery-worker.log
+ExecReload=/bin/kill -s HUP \$MAINPID
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+CELWEOF
+
+info "Configuring Celery beat scheduler service..."
+cat > /etc/systemd/system/erp-celery-beat.service <<CELBEOF
+[Unit]
+Description=ERP Django Celery Beat Scheduler
+After=network.target postgresql.service redis-server.service erp-celery-worker.service
+
+[Service]
+Type=simple
+User=${APP_USER}
+Group=${APP_USER}
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${APP_DIR}/.env
+# --scheduler django_celery_beat.schedulers:DatabaseScheduler allows editing
+# schedules via Django admin; falls back to the static beat_schedule in celery.py
+ExecStart=${APP_DIR}/venv/bin/celery \\
+    -A erpproject beat \\
+    --loglevel=info \\
+    --logfile=${APP_DIR}/logs/celery-beat.log \\
+    --pidfile=${APP_DIR}/run/celery-beat.pid \\
+    --scheduler django_celery_beat.schedulers:DatabaseScheduler
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+CELBEOF
+
+systemctl daemon-reload
+systemctl enable --now erp-celery-worker.service
+systemctl enable --now erp-celery-beat.service
+ok "Celery worker and beat services active"
+
+###############################################################################
+# 11. Nginx Configuration
 ###############################################################################
 info "Configuring Nginx..."
 
@@ -485,7 +571,7 @@ systemctl restart nginx
 ok "Nginx configured"
 
 ###############################################################################
-# 11. SSL Certificate (Let's Encrypt)
+# 12. SSL Certificate (Let's Encrypt)
 ###############################################################################
 if [[ "$ENABLE_SSL" == "true" && -n "$SSL_EMAIL" ]]; then
     info "Obtaining Let's Encrypt certificate..."
@@ -501,7 +587,7 @@ if [[ "$ENABLE_SSL" == "true" && -n "$SSL_EMAIL" ]]; then
 fi
 
 ###############################################################################
-# 12. Firewall (UFW)
+# 13. Firewall (UFW)
 ###############################################################################
 info "Configuring firewall..."
 ufw --force reset >/dev/null 2>&1
@@ -509,12 +595,12 @@ ufw default deny incoming
 ufw default allow outgoing
 ufw allow ssh
 ufw allow 'Nginx Full'
-# PostgreSQL only on localhost (no external access)
+# PostgreSQL and Redis only on localhost (no external access)
 ufw --force enable
 ok "Firewall enabled (SSH + HTTP/HTTPS)"
 
 ###############################################################################
-# 13. Log Rotation
+# 14. Log Rotation
 ###############################################################################
 info "Setting up log rotation..."
 cat > /etc/logrotate.d/erpdjango <<LOGEOF
@@ -528,13 +614,15 @@ ${APP_DIR}/logs/*.log {
     create 0640 ${APP_USER} ${APP_USER}
     postrotate
         systemctl reload erp-gunicorn 2>/dev/null || true
+        systemctl kill -s HUP erp-celery-worker 2>/dev/null || true
+        systemctl restart erp-celery-beat 2>/dev/null || true
     endscript
 }
 LOGEOF
 ok "Log rotation configured"
 
 ###############################################################################
-# 14. Maintenance Cron Jobs
+# 15. Maintenance Cron Jobs
 ###############################################################################
 info "Setting up cron jobs..."
 CRON_FILE="/etc/cron.d/erpdjango"
@@ -560,7 +648,7 @@ chown root:root /opt/backups
 ok "Cron jobs configured"
 
 ###############################################################################
-# 15. Final Health Check
+# 16. Final Health Check
 ###############################################################################
 info "Running final health check..."
 sleep 2
@@ -568,6 +656,18 @@ if systemctl is-active --quiet erp-gunicorn; then
     ok "Gunicorn is running"
 else
     warn "Gunicorn is not running — check: journalctl -u erp-gunicorn"
+fi
+
+if systemctl is-active --quiet erp-celery-worker; then
+    ok "Celery worker is running"
+else
+    warn "Celery worker is not running — check: journalctl -u erp-celery-worker"
+fi
+
+if systemctl is-active --quiet erp-celery-beat; then
+    ok "Celery beat is running"
+else
+    warn "Celery beat is not running — check: journalctl -u erp-celery-beat"
 fi
 
 if systemctl is-active --quiet nginx; then
@@ -580,6 +680,12 @@ if systemctl is-active --quiet postgresql; then
     ok "PostgreSQL is running"
 else
     warn "PostgreSQL is not running"
+fi
+
+if systemctl is-active --quiet redis-server; then
+    ok "Redis is running"
+else
+    warn "Redis is not running"
 fi
 
 if systemctl is-active --quiet docker; then
@@ -602,9 +708,20 @@ echo "  Logs       : ${APP_DIR}/logs/"
 echo "  .env       : ${APP_DIR}/.env"
 echo ""
 echo "  Useful commands:"
-echo "    systemctl status  erp-gunicorn   # App status"
-echo "    systemctl restart erp-gunicorn   # Restart app"
-echo "    journalctl -u erp-gunicorn -f    # Live logs"
+echo "    systemctl status  erp-gunicorn        # App status"
+echo "    systemctl restart erp-gunicorn        # Restart app"
+echo "    journalctl -u erp-gunicorn -f         # Live app logs"
+echo ""
+echo "    systemctl status  erp-celery-worker   # Celery worker status"
+echo "    systemctl restart erp-celery-worker   # Restart worker"
+echo "    journalctl -u erp-celery-worker -f    # Live worker logs"
+echo "    tail -f ${APP_DIR}/logs/celery-worker.log"
+echo ""
+echo "    systemctl status  erp-celery-beat     # Beat scheduler status"
+echo "    systemctl restart erp-celery-beat     # Restart beat"
+echo "    journalctl -u erp-celery-beat -f      # Live beat logs"
+echo "    tail -f ${APP_DIR}/logs/celery-beat.log"
+echo ""
 echo "    sudo -u ${APP_USER} ${APP_DIR}/venv/bin/python ${APP_DIR}/manage.py <cmd>"
 echo ""
 echo "  Re-deploy after code changes:"

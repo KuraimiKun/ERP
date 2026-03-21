@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Audit and System Configuration models for the ERP system.
 """
@@ -46,7 +47,7 @@ class AuditLog(TimeStampedModel):
     object_repr = models.CharField(max_length=255, blank=True)
     
     # Changes
-    changes = models.JSONField(default=dict, blank=True, help_text='Before/after values')
+    changes = models.JSONField(default=dict, blank=True, help_text=_('Before/after values'))
     
     # Request info
     ip_address = models.GenericIPAddressField(null=True, blank=True)
@@ -56,7 +57,7 @@ class AuditLog(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Audit Log'
+        verbose_name=_('Audit Log')
         verbose_name_plural = 'Audit Logs'
         ordering = ['-created_at']
         indexes = [
@@ -89,14 +90,14 @@ class SystemSetting(TimeStampedModel):
     value = models.TextField()
     setting_type = models.CharField(max_length=20, choices=SettingType.choices, default=SettingType.STRING)
     
-    category = models.CharField(max_length=100, blank=True, help_text='Setting category for grouping')
+    category = models.CharField(max_length=100, blank=True, help_text=_('Setting category for grouping'))
     description = models.TextField(blank=True)
     
     is_encrypted = models.BooleanField(default=False)
     is_editable = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'System Setting'
+        verbose_name=_('System Setting')
         verbose_name_plural = 'System Settings'
         unique_together = ['company', 'key']
         ordering = ['category', 'key']
@@ -161,7 +162,7 @@ class Notification(TimeStampedModel):
     email_sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Notification'
+        verbose_name=_('Notification')
         verbose_name_plural = 'Notifications'
         ordering = ['-created_at']
         indexes = [
@@ -181,25 +182,25 @@ class EmailTemplate(TimeStampedModel):
     )
     
     name = models.CharField(max_length=100)
-    code = models.CharField(max_length=50, help_text='Unique template identifier')
+    code = models.CharField(max_length=50, help_text=_('Unique template identifier'))
     subject = models.CharField(max_length=255)
     
     # Content
-    body_html = models.TextField(help_text='HTML content with placeholders')
-    body_text = models.TextField(blank=True, help_text='Plain text fallback')
+    body_html = models.TextField(help_text=_('HTML content with placeholders'))
+    body_text = models.TextField(blank=True, help_text=_('Plain text fallback'))
     
     # Available placeholders
     available_placeholders = models.JSONField(
         default=list,
         blank=True,
-        help_text='List of available placeholder variables'
+        help_text=_('List of available placeholder variables')
     )
     
     is_active = models.BooleanField(default=True)
     is_system = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Email Template'
+        verbose_name=_('Email Template')
         verbose_name_plural = 'Email Templates'
         unique_together = ['company', 'code']
         ordering = ['name']
@@ -237,7 +238,7 @@ class FileAttachment(TimeStampedModel):
     description = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'File Attachment'
+        verbose_name=_('File Attachment')
         verbose_name_plural = 'File Attachments'
         ordering = ['-created_at']
         indexes = [
@@ -274,8 +275,8 @@ class ScheduledTask(TimeStampedModel):
     task_type = models.CharField(max_length=100)
     
     # Schedule
-    cron_expression = models.CharField(max_length=100, blank=True, help_text='Cron expression for recurring tasks')
-    scheduled_at = models.DateTimeField(null=True, blank=True, help_text='One-time execution')
+    cron_expression = models.CharField(max_length=100, blank=True, help_text=_('Cron expression for recurring tasks'))
+    scheduled_at = models.DateTimeField(null=True, blank=True, help_text=_('One-time execution'))
     
     # Parameters
     parameters = models.JSONField(default=dict, blank=True)
@@ -292,7 +293,7 @@ class ScheduledTask(TimeStampedModel):
     is_enabled = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Scheduled Task'
+        verbose_name=_('Scheduled Task')
         verbose_name_plural = 'Scheduled Tasks'
         ordering = ['next_run']
 
@@ -335,7 +336,7 @@ class IntegrationLog(TimeStampedModel):
     duration_ms = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Integration Log'
+        verbose_name=_('Integration Log')
         verbose_name_plural = 'Integration Logs'
         ordering = ['-created_at']
         indexes = [

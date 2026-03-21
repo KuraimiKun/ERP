@@ -4,6 +4,8 @@ ERP Forms - Finance
 Forms for Customer, Invoice, InvoiceLine, Payment, Expense, Account,
 TaxRate, PaymentMethod, ExpenseCategory.
 """
+from django.utils.translation import gettext_lazy as _
+
 
 from django import forms
 
@@ -74,8 +76,8 @@ class PaymentForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
     invoice = forms.ModelChoiceField(
         queryset=Invoice.objects.none(),
         required=False,
-        label='الفاتورة',
-        help_text='اختر فاتورة لربط الدفعة بها (اختياري)',
+        label=_('الفاتورة'),
+        help_text=_('اختر فاتورة لربط الدفعة بها (اختياري)'),
     )
 
     class Meta:

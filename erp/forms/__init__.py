@@ -4,6 +4,8 @@ ERP Forms Package
 Re-exports every form class and formset for backward compatibility.
 Usage:  from erp.forms import CustomerForm   (still works)
 """
+from django.utils.translation import gettext_lazy as _
+
 
 # ── Mixins ──────────────────────────────────────────────────────
 from .mixins import CompanyFilterMixin, BootstrapFormMixin

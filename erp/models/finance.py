@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Financial/Accounting models for the ERP system.
 """
@@ -51,17 +52,17 @@ class Account(ERPBaseModel):
     )
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
-    is_system = models.BooleanField(default=False, help_text='System accounts cannot be deleted')
+    is_system = models.BooleanField(default=False, help_text=_('System accounts cannot be deleted'))
     
     # Balance tracking
     opening_balance = models.DecimalField(
         max_digits=15, decimal_places=2, default=0,
-        help_text='الرصيد الافتتاحي للحساب'
+        help_text=_('الرصيد الافتتاحي للحساب')
     )
     current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     class Meta:
-        verbose_name = 'Account'
+        verbose_name=_('Account')
         verbose_name_plural = 'Accounts'
         unique_together = ['company', 'code']
         ordering = ['code']
@@ -123,7 +124,7 @@ class TaxRate(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Tax Rate'
+        verbose_name=_('Tax Rate')
         verbose_name_plural = 'Tax Rates'
         ordering = ['rate']
 
@@ -154,7 +155,7 @@ class PaymentMethod(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Payment Method'
+        verbose_name=_('Payment Method')
         verbose_name_plural = 'Payment Methods'
         ordering = ['name']
 
@@ -236,13 +237,13 @@ class Customer(ERPBaseModel):
         blank=True,
         related_name='customers'
     )
-    payment_terms = models.PositiveIntegerField(default=0, help_text='Payment terms in days')
+    payment_terms = models.PositiveIntegerField(default=0, help_text=_('Payment terms in days'))
     
     is_active = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Customer'
+        verbose_name=_('Customer')
         verbose_name_plural = 'Customers'
         ordering = ['name']
         indexes = [
@@ -312,7 +313,7 @@ class Invoice(ERPBaseModel):
     due_date = models.DateField()
     
     # Reference
-    reference = models.CharField(max_length=100, blank=True, help_text='PO number or reference')
+    reference = models.CharField(max_length=100, blank=True, help_text=_('PO number or reference'))
     
     # Amounts
     currency = models.ForeignKey(
@@ -332,11 +333,11 @@ class Invoice(ERPBaseModel):
     
     # Notes
     notes = models.TextField(blank=True)
-    terms = models.TextField(blank=True, help_text='Payment terms and conditions')
+    terms = models.TextField(blank=True, help_text=_('Payment terms and conditions'))
     internal_notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Invoice'
+        verbose_name=_('Invoice')
         verbose_name_plural = 'Invoices'
         ordering = ['-invoice_date', '-id']
         indexes = [
@@ -425,7 +426,7 @@ class InvoiceLine(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Invoice Line'
+        verbose_name=_('Invoice Line')
         verbose_name_plural = 'Invoice Lines'
         ordering = ['id']
 
@@ -496,7 +497,7 @@ class Payment(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Payment'
+        verbose_name=_('Payment')
         verbose_name_plural = 'Payments'
         ordering = ['-payment_date', '-id']
         indexes = [
@@ -527,7 +528,7 @@ class PaymentAllocation(TimeStampedModel):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
 
     class Meta:
-        verbose_name = 'Payment Allocation'
+        verbose_name=_('Payment Allocation')
         verbose_name_plural = 'Payment Allocations'
         unique_together = ['payment', 'invoice']
 
@@ -624,7 +625,7 @@ class Expense(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Expense'
+        verbose_name=_('Expense')
         verbose_name_plural = 'Expenses'
         ordering = ['-expense_date', '-id']
         indexes = [
@@ -668,7 +669,7 @@ class ExpenseCategory(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = 'Expense Category'
+        verbose_name=_('Expense Category')
         verbose_name_plural = 'Expense Categories'
         ordering = ['name']
 
@@ -687,7 +688,7 @@ class ExpenseAttachment(TimeStampedModel):
     description = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        verbose_name = 'Expense Attachment'
+        verbose_name=_('Expense Attachment')
         verbose_name_plural = 'Expense Attachments'
 
     def __str__(self):
@@ -723,7 +724,7 @@ class JournalEntry(ERPBaseModel):
     entry_type = models.CharField(max_length=20, choices=EntryType.choices, default=EntryType.MANUAL)
     
     description = models.TextField(blank=True)
-    reference = models.CharField(max_length=100, blank=True, help_text='رقم مرجعي خارجي')
+    reference = models.CharField(max_length=100, blank=True, help_text=_('رقم مرجعي خارجي'))
     
     fiscal_year = models.ForeignKey(
         'erp.FiscalYear',
@@ -759,7 +760,7 @@ class JournalEntry(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'قيد يومية'
+        verbose_name=_('قيد يومية')
         verbose_name_plural = 'القيود اليومية'
         unique_together = ['company', 'entry_number']
         ordering = ['-entry_date', '-entry_number']
@@ -842,7 +843,7 @@ class JournalEntryLine(TimeStampedModel):
     reference_id = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'سطر قيد'
+        verbose_name=_('سطر قيد')
         verbose_name_plural = 'سطور القيد'
         ordering = ['id']
         indexes = [

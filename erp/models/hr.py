@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Human Resources (HR) models for the ERP system.
 """
@@ -133,15 +134,15 @@ class Employee(ERPBaseModel):
         max_length=20,
         choices=ApprovalStatus.choices,
         default=ApprovalStatus.APPROVED,
-        help_text='Employees created by owner are auto-approved; self-registered start as pending.',
+        help_text=_('Employees created by owner are auto-approved; self-registered start as pending.'),
     )
     registered_via = models.CharField(
         max_length=64, blank=True,
-        help_text='Invite token used during self-registration.',
+        help_text=_('Invite token used during self-registration.'),
     )
     registration_password_hash = models.CharField(
         max_length=255, blank=True,
-        help_text='Temporary password hash stored until owner approves.',
+        help_text=_('Temporary password hash stored until owner approves.'),
     )
 
     # ── Portal Permissions ──────────────────────────────────────────────
@@ -149,42 +150,42 @@ class Employee(ERPBaseModel):
     # section.  Defaults to True so existing employees keep full access.
     portal_can_scan_qr = models.BooleanField(
         default=True,
-        verbose_name='Can Scan QR',
-        help_text='Allow the employee to use the QR attendance scanner.',
+        verbose_name=_('Can Scan QR'),
+        help_text=_('Allow the employee to use the QR attendance scanner.'),
     )
     portal_can_view_attendance = models.BooleanField(
         default=True,
-        verbose_name='Can View Attendance',
-        help_text='Allow the employee to see their attendance history.',
+        verbose_name=_('Can View Attendance'),
+        help_text=_('Allow the employee to see their attendance history.'),
     )
     portal_can_manage_leaves = models.BooleanField(
         default=True,
-        verbose_name='Can Manage Leaves',
-        help_text='Allow the employee to view and submit leave requests.',
+        verbose_name=_('Can Manage Leaves'),
+        help_text=_('Allow the employee to view and submit leave requests.'),
     )
     portal_can_view_payslips = models.BooleanField(
         default=True,
-        verbose_name='Can View Payslips',
-        help_text='Allow the employee to view their payslips.',
+        verbose_name=_('Can View Payslips'),
+        help_text=_('Allow the employee to view their payslips.'),
     )
     portal_can_edit_profile = models.BooleanField(
         default=True,
-        verbose_name='Can Edit Profile',
-        help_text='Allow the employee to edit their personal profile.',
+        verbose_name=_('Can Edit Profile'),
+        help_text=_('Allow the employee to edit their personal profile.'),
     )
     portal_can_view_tasks = models.BooleanField(
         default=True,
-        verbose_name='Can View Tasks',
-        help_text='Allow the employee to see tasks assigned to them.',
+        verbose_name=_('Can View Tasks'),
+        help_text=_('Allow the employee to see tasks assigned to them.'),
     )
     portal_can_use_pos = models.BooleanField(
         default=False,
-        verbose_name='Can Use POS',
-        help_text='Allow the employee to access the Point of Sale terminal.',
+        verbose_name=_('Can Use POS'),
+        help_text=_('Allow the employee to access the Point of Sale terminal.'),
     )
 
     class Meta:
-        verbose_name = 'Employee'
+        verbose_name=_('Employee')
         verbose_name_plural = 'Employees'
         ordering = ['first_name', 'last_name']
         indexes = [
@@ -231,7 +232,7 @@ class EmployeeDocument(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Employee Document'
+        verbose_name=_('Employee Document')
         verbose_name_plural = 'Employee Documents'
         ordering = ['-created_at']
 
@@ -244,13 +245,13 @@ class LeaveType(TimeStampedModel):
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
     code = models.CharField(max_length=20, unique=True)
-    days_allowed = models.PositiveIntegerField(default=0, help_text='Annual days allowed (0 = unlimited)')
+    days_allowed = models.PositiveIntegerField(default=0, help_text=_('Annual days allowed (0 = unlimited)'))
     is_paid = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-    color = models.CharField(max_length=7, default='#3498db', help_text='Hex color for calendar')
+    color = models.CharField(max_length=7, default='#3498db', help_text=_('Hex color for calendar'))
 
     class Meta:
-        verbose_name = 'Leave Type'
+        verbose_name=_('Leave Type')
         verbose_name_plural = 'Leave Types'
         ordering = ['name']
 
@@ -294,7 +295,7 @@ class LeaveRequest(ERPBaseModel):
     approval_notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Leave Request'
+        verbose_name=_('Leave Request')
         verbose_name_plural = 'Leave Requests'
         ordering = ['-created_at']
         indexes = [
@@ -330,7 +331,7 @@ class Attendance(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Attendance'
+        verbose_name=_('Attendance')
         verbose_name_plural = 'Attendances'
         unique_together = ['employee', 'date']
         ordering = ['-date', 'employee']
@@ -401,7 +402,7 @@ class Payroll(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Payroll'
+        verbose_name=_('Payroll')
         verbose_name_plural = 'Payrolls'
         unique_together = ['employee', 'period_start', 'period_end']
         ordering = ['-period_end', 'employee']
@@ -647,7 +648,7 @@ class PayrollEarning(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Payroll Earning'
+        verbose_name=_('Payroll Earning')
         verbose_name_plural = 'Payroll Earnings'
         ordering = ['id']
 
@@ -691,7 +692,7 @@ class PayrollDeduction(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Payroll Deduction'
+        verbose_name=_('Payroll Deduction')
         verbose_name_plural = 'Payroll Deductions'
         ordering = ['id']
 
@@ -735,11 +736,11 @@ class AttendanceDevice(ERPBaseModel):
         related_name='attendance_devices',
     )
     name = models.CharField(max_length=100, help_text='e.g. "Main Office TV"')
-    location = models.CharField(max_length=255, blank=True, help_text='Physical location')
+    location = models.CharField(max_length=255, blank=True, help_text=_('Physical location'))
     device_secret = models.CharField(
         max_length=64,
         default=_generate_device_secret,
-        help_text='HMAC secret for signing QR codes (auto-generated).',
+        help_text=_('HMAC secret for signing QR codes (auto-generated).'),
     )
 
     # ── Physical-device binding ──────────────────────────────────────────
@@ -748,45 +749,45 @@ class AttendanceDevice(ERPBaseModel):
         blank=True,
         default='',
         db_index=True,
-        help_text='Cookie token assigned to the physical device.',
+        help_text=_('Cookie token assigned to the physical device.'),
     )
     is_device_approved = models.BooleanField(
         default=False,
-        help_text='Whether the physical device has been approved by the owner.',
+        help_text=_('Whether the physical device has been approved by the owner.'),
     )
     device_user_agent = models.TextField(
         blank=True,
         default='',
-        help_text='User-Agent string of the physical device.',
+        help_text=_('User-Agent string of the physical device.'),
     )
     device_ip = models.GenericIPAddressField(
         null=True,
         blank=True,
-        help_text='IP address of the physical device.',
+        help_text=_('IP address of the physical device.'),
     )
     approval_requested_at = models.DateTimeField(
         null=True,
         blank=True,
-        help_text='When the device first connected and requested approval.',
+        help_text=_('When the device first connected and requested approval.'),
     )
 
     # ── Attendance configuration ─────────────────────────────────────────
-    work_start_time = models.TimeField(default='08:00', help_text='Expected work start time')
-    work_end_time = models.TimeField(default='17:00', help_text='Expected work end time')
+    work_start_time = models.TimeField(default='08:00', help_text=_('Expected work start time'))
+    work_end_time = models.TimeField(default='17:00', help_text=_('Expected work end time'))
     late_threshold_minutes = models.PositiveIntegerField(
         default=15,
-        help_text='Minutes after start time before marking as late',
+        help_text=_('Minutes after start time before marking as late'),
     )
     qr_refresh_seconds = models.PositiveIntegerField(
         default=30,
-        help_text='How often the QR code refreshes on the kiosk (seconds)',
+        help_text=_('How often the QR code refreshes on the kiosk (seconds)'),
     )
 
     is_active = models.BooleanField(default=True)
     last_heartbeat = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Attendance Device'
+        verbose_name=_('Attendance Device')
         verbose_name_plural = 'Attendance Devices'
         ordering = ['name']
 

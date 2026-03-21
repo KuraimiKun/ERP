@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 Supplier/Vendor management models for the ERP system.
 """
@@ -78,23 +79,23 @@ class Supplier(ERPBaseModel):
         blank=True,
         related_name='suppliers'
     )
-    payment_terms = models.PositiveIntegerField(default=30, help_text='Payment terms in days')
+    payment_terms = models.PositiveIntegerField(default=30, help_text=_('Payment terms in days'))
     credit_limit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='Amount owed to supplier')
+    current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text=_('Amount owed to supplier'))
     
     # Rating
     rating = models.PositiveSmallIntegerField(
         null=True,
         blank=True,
         validators=[MinValueValidator(1)],
-        help_text='Rating 1-5'
+        help_text=_('Rating 1-5')
     )
     
     is_active = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Supplier'
+        verbose_name=_('Supplier')
         verbose_name_plural = 'Suppliers'
         ordering = ['name']
         indexes = [
@@ -123,7 +124,7 @@ class SupplierContact(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Supplier Contact'
+        verbose_name=_('Supplier Contact')
         verbose_name_plural = 'Supplier Contacts'
         ordering = ['-is_primary', 'name']
 
@@ -153,7 +154,7 @@ class SupplierDocument(TimeStampedModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Supplier Document'
+        verbose_name=_('Supplier Document')
         verbose_name_plural = 'Supplier Documents'
         ordering = ['-created_at']
 
@@ -185,7 +186,7 @@ class PurchaseOrder(ERPBaseModel):
     
     po_number = models.CharField(max_length=50, unique=True)
     po_date = models.DateField()
-    expected_date = models.DateField(null=True, blank=True, help_text='Expected delivery/completion date')
+    expected_date = models.DateField(null=True, blank=True, help_text=_('Expected delivery/completion date'))
     
     # Reference
     reference = models.CharField(max_length=100, blank=True)
@@ -221,7 +222,7 @@ class PurchaseOrder(ERPBaseModel):
     terms = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Purchase Order'
+        verbose_name=_('Purchase Order')
         verbose_name_plural = 'Purchase Orders'
         ordering = ['-po_date', '-id']
         indexes = [
@@ -279,7 +280,7 @@ class PurchaseOrderLine(TimeStampedModel):
     received_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
-        verbose_name = 'Purchase Order Line'
+        verbose_name=_('Purchase Order Line')
         verbose_name_plural = 'Purchase Order Lines'
         ordering = ['id']
 
@@ -348,7 +349,7 @@ class SupplierInvoice(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Supplier Invoice'
+        verbose_name=_('Supplier Invoice')
         verbose_name_plural = 'Supplier Invoices'
         unique_together = ['company', 'invoice_number']
         ordering = ['-invoice_date', '-id']
@@ -412,7 +413,7 @@ class SupplierInvoiceLine(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Supplier Invoice Line'
+        verbose_name=_('Supplier Invoice Line')
         verbose_name_plural = 'Supplier Invoice Lines'
         ordering = ['id']
 
@@ -464,7 +465,7 @@ class SupplierPayment(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Supplier Payment'
+        verbose_name=_('Supplier Payment')
         verbose_name_plural = 'Supplier Payments'
         ordering = ['-payment_date', '-id']
         indexes = [
@@ -495,7 +496,7 @@ class SupplierPaymentAllocation(TimeStampedModel):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
 
     class Meta:
-        verbose_name = 'Supplier Payment Allocation'
+        verbose_name=_('Supplier Payment Allocation')
         verbose_name_plural = 'Supplier Payment Allocations'
         unique_together = ['payment', 'invoice']
 

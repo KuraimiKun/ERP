@@ -70,4 +70,8 @@ openpyxl>=3.1.0
 # APM / Monitoring
 newrelic>=10.0.0
 
+# Cloud media storage (S3 / GCS / Azure via CLOUD_STORAGE_PROVIDER env var)
+# [s3] pulls in boto3. Swap for [gcs] or [azure] if using a different provider.
+django-storages[s3]>=1.14.0
+
 

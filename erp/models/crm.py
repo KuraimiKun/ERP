@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 """
 CRM (Customer Relationship Management) models for the ERP system.
 """
@@ -60,13 +61,13 @@ class Lead(ERPBaseModel):
     country = models.CharField(max_length=100, blank=True)
     
     # Opportunity
-    service_interest = models.CharField(max_length=255, blank=True, help_text='Service the lead is interested in')
+    service_interest = models.CharField(max_length=255, blank=True, help_text=_('Service the lead is interested in'))
     estimated_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     expected_close_date = models.DateField(null=True, blank=True)
     probability = models.PositiveSmallIntegerField(
         default=10,
         validators=[MinValueValidator(0)],
-        help_text='Probability of conversion (0-100%)'
+        help_text=_('Probability of conversion (0-100%)')
     )
     
     # Assignment
@@ -95,7 +96,7 @@ class Lead(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Lead'
+        verbose_name=_('Lead')
         verbose_name_plural = 'Leads'
         ordering = ['-created_at']
         indexes = [
@@ -147,7 +148,7 @@ class LeadActivity(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Lead Activity'
+        verbose_name=_('Lead Activity')
         verbose_name_plural = 'Lead Activities'
         ordering = ['-activity_date']
         indexes = [
@@ -196,7 +197,7 @@ class CustomerInteraction(TimeStampedModel):
     is_follow_up_complete = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Customer Interaction'
+        verbose_name=_('Customer Interaction')
         verbose_name_plural = 'Customer Interactions'
         ordering = ['-interaction_date']
         indexes = [
@@ -242,7 +243,7 @@ class Campaign(ERPBaseModel):
     end_date = models.DateField(null=True, blank=True)
     
     # Target
-    target_audience = models.TextField(blank=True, help_text='Description of target audience')
+    target_audience = models.TextField(blank=True, help_text=_('Description of target audience'))
     
     # Budget
     currency = models.ForeignKey(
@@ -276,7 +277,7 @@ class Campaign(ERPBaseModel):
     )
 
     class Meta:
-        verbose_name = 'Campaign'
+        verbose_name=_('Campaign')
         verbose_name_plural = 'Campaigns'
         ordering = ['-start_date']
         indexes = [
@@ -309,7 +310,7 @@ class CampaignLead(TimeStampedModel):
     )
 
     class Meta:
-        verbose_name = 'Campaign Lead'
+        verbose_name=_('Campaign Lead')
         verbose_name_plural = 'Campaign Leads'
         unique_together = ['campaign', 'lead']
 
@@ -377,7 +378,7 @@ class Task(ERPBaseModel):
     reminder_sent = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Task'
+        verbose_name=_('Task')
         verbose_name_plural = 'Tasks'
         ordering = ['-created_at']
         indexes = [
@@ -405,7 +406,7 @@ class TaskComment(TimeStampedModel):
     content = models.TextField()
 
     class Meta:
-        verbose_name = 'Task Comment'
+        verbose_name=_('Task Comment')
         verbose_name_plural = 'Task Comments'
         ordering = ['created_at']
 
