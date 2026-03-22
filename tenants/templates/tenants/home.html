@@ -1,73 +1,998 @@
 {% extends 'tenants/base.html' %}
 
-{% block title %}Welcome - ERP System{% endblock %}
+{% block title %}Kuraimi ERP — Enterprise Resource Planning{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ====================================================
+   TOORSTA LANDING PAGE — v2 Modern SaaS
+   ==================================================== */
+
+/* ---- Reset & globals ---- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif; color: #0f172a; overflow-x: hidden; }
+
+/* ---- Design tokens ---- */
+:root {
+    --c-primary:      #6366f1;
+    --c-primary-h:    #4f46e5;
+    --c-violet:       #8b5cf6;
+    --c-cyan:         #06b6d4;
+    --c-success:      #10b981;
+    --c-warning:      #f59e0b;
+    --c-danger:       #ef4444;
+    --c-dark:         #0f172a;
+    --c-dark-2:       #1e293b;
+    --c-dark-3:       #334155;
+    --c-muted:        #64748b;
+    --c-border:       #e2e8f0;
+    --c-surface:      #f8fafc;
+    --grad-primary:   linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --grad-hero:      linear-gradient(135deg, #0f1729 0%, #1a2540 50%, #0f172a 100%);
+    --grad-cta:       linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --shadow-sm:      0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-md:      0 4px 6px rgba(15,23,42,.05), 0 2px 4px rgba(15,23,42,.04);
+    --shadow-lg:      0 10px 15px rgba(15,23,42,.06), 0 4px 6px rgba(15,23,42,.04);
+    --shadow-xl:      0 20px 25px rgba(15,23,42,.08), 0 10px 10px rgba(15,23,42,.04);
+    --shadow-primary: 0 4px 14px rgba(99,102,241,.35);
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+    --r-pill: 9999px;
+}
+
+/* ---- NAVBAR ---- */
+.lp-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    transition: background .25s, box-shadow .25s, backdrop-filter .25s;
+}
+.lp-nav.scrolled {
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 var(--c-border);
+}
+.lp-nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.lp-logo {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    text-decoration: none;
+}
+.lp-logo-icon {
+    width: 38px; height: 38px;
+    border-radius: var(--r-sm);
+    background: var(--grad-primary);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.2rem;
+    box-shadow: var(--shadow-primary);
+}
+.lp-logo-text { font-weight: 800; font-size: 1.1rem; color: #fff; letter-spacing: -.01em; }
+.lp-nav.scrolled .lp-logo-text { color: var(--c-dark); }
+.lp-nav-links { display: flex; align-items: center; gap: 2rem; }
+.lp-nav-links a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .875rem; font-weight: 500; transition: color .15s; }
+.lp-nav-links a:hover { color: #fff; }
+.lp-nav.scrolled .lp-nav-links a { color: var(--c-muted); }
+.lp-nav.scrolled .lp-nav-links a:hover { color: var(--c-primary); }
+.lp-nav-actions { display: flex; align-items: center; gap: .75rem; }
+.btn-nav-ghost {
+    padding: .4rem .9rem; border-radius: var(--r-pill);
+    border: 1px solid rgba(255,255,255,.25); color: rgba(255,255,255,.9);
+    background: none; font-size: .82rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; transition: all .15s;
+}
+.btn-nav-ghost:hover { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.45); }
+.lp-nav.scrolled .btn-nav-ghost { border-color: var(--c-border); color: var(--c-dark-3); }
+.lp-nav.scrolled .btn-nav-ghost:hover { background: var(--c-surface); }
+.btn-nav-primary {
+    padding: .4rem 1rem; border-radius: var(--r-pill);
+    background: var(--grad-primary); border: none; color: #fff;
+    font-size: .82rem; font-weight: 700; cursor: pointer;
+    text-decoration: none; box-shadow: var(--shadow-primary);
+    transition: opacity .15s, transform .15s, box-shadow .15s;
+}
+.btn-nav-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,.4); color: #fff; }
+
+/* ---- HERO ---- */
+.hero {
+    min-height: 100vh;
+    background: var(--grad-hero);
+    display: flex; align-items: center;
+    padding: 7rem 2rem 5rem;
+    position: relative;
+    overflow: hidden;
+}
+/* Dot grid */
+.hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.055) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+}
+/* Glow orbs */
+.hero-orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); pointer-events: none;
+}
+.hero-orb-1 { width: 500px; height: 500px; background: rgba(99,102,241,.18); top: -100px; right: -100px; }
+.hero-orb-2 { width: 400px; height: 400px; background: rgba(139,92,246,.12); bottom: -50px; left: -80px; }
+.hero-orb-3 { width: 300px; height: 300px; background: rgba(6,182,212,.08); top: 40%; left: 35%; }
+
+.hero-inner {
+    max-width: 1200px; margin: 0 auto; width: 100%;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    position: relative; z-index: 1;
+}
+@media (max-width: 900px) { .hero-inner { grid-template-columns: 1fr; text-align: center; } }
+
+/* Hero badge */
+.hero-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.3);
+    border-radius: var(--r-pill); padding: .35rem .85rem;
+    color: #a5b4fc; font-size: .78rem; font-weight: 600;
+    margin-bottom: 1.25rem; letter-spacing: .02em;
+}
+.hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #a5b4fc; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.hero-headline {
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    font-weight: 800; line-height: 1.1;
+    letter-spacing: -.03em; color: #fff; margin: 0 0 1.25rem;
+}
+.hero-headline .gradient-word {
+    background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 50%, #67e8f9 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-sub {
+    font-size: 1.05rem; color: rgba(255,255,255,.65);
+    line-height: 1.7; margin-bottom: 2.25rem; max-width: 500px;
+}
+@media (max-width: 900px) { .hero-sub { margin-left: auto; margin-right: auto; } }
+
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+@media (max-width: 900px) { .hero-actions { justify-content: center; } }
+
+.btn-hero-primary {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .8rem 1.75rem; border-radius: var(--r-pill);
+    background: var(--grad-primary); border: none; color: #fff;
+    font-size: .95rem; font-weight: 700; cursor: pointer; text-decoration: none;
+    box-shadow: var(--shadow-primary), 0 0 0 4px rgba(99,102,241,.2);
+    transition: all .2s;
+}
+.btn-hero-primary:hover { opacity: .9; transform: translateY(-2px); color: #fff; box-shadow: 0 8px 24px rgba(99,102,241,.5), 0 0 0 4px rgba(99,102,241,.2); }
+.btn-hero-ghost {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .8rem 1.75rem; border-radius: var(--r-pill);
+    border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.85);
+    background: rgba(255,255,255,.06); font-size: .95rem; font-weight: 600;
+    text-decoration: none; transition: all .2s; cursor: pointer;
+}
+.btn-hero-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.35); color: #fff; }
+
+.hero-trust {
+    margin-top: 2.5rem; display: flex; align-items: center; gap: .75rem;
+    flex-wrap: wrap;
+}
+@media (max-width: 900px) { .hero-trust { justify-content: center; } }
+.trust-avatars { display: flex; }
+.trust-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.2);
+    background: var(--grad-primary);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: .65rem; font-weight: 700;
+    margin-inline-end: -8px;
+}
+.trust-text { font-size: .8rem; color: rgba(255,255,255,.6); }
+.trust-text strong { color: rgba(255,255,255,.9); }
+
+/* ---- DASHBOARD MOCKUP ---- */
+.hero-visual { position: relative; }
+.dashboard-mockup {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.05);
+    backdrop-filter: blur(10px);
+}
+.mockup-topbar {
+    background: rgba(255,255,255,.05);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: .75rem 1rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mockup-dot-r { background: #ef4444; }
+.mockup-dot-y { background: #f59e0b; }
+.mockup-dot-g { background: #10b981; }
+.mockup-title-bar { flex: 1; text-align: center; font-size: .72rem; color: rgba(255,255,255,.4); }
+
+.mockup-body { padding: 1.25rem; }
+
+/* Stat mini-cards inside mockup */
+.mockup-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: .6rem; margin-bottom: 1rem; }
+.mockup-stat {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+    border-radius: var(--r-sm); padding: .75rem .85rem;
+}
+.mockup-stat-val { font-size: 1.1rem; font-weight: 800; color: #fff; line-height: 1; }
+.mockup-stat-lbl { font-size: .65rem; color: rgba(255,255,255,.45); margin-top: 3px; }
+.mockup-stat-trend { font-size: .62rem; color: #10b981; margin-top: 5px; }
+
+/* Mini chart bars */
+.mockup-chart { background: rgba(255,255,255,.04); border-radius: var(--r-sm); padding: .75rem; margin-bottom: .75rem; }
+.mockup-chart-label { font-size: .65rem; color: rgba(255,255,255,.4); margin-bottom: .6rem; }
+.mockup-bars { display: flex; align-items: flex-end; gap: 4px; height: 48px; }
+.mockup-bar { flex: 1; border-radius: 3px 3px 0 0; }
+.mockup-bar--primary { background: rgba(99,102,241,.7); }
+.mockup-bar--violet  { background: rgba(139,92,246,.5); }
+
+/* Mini table */
+.mockup-table { width: 100%; border-collapse: collapse; }
+.mockup-table th { font-size: .6rem; color: rgba(255,255,255,.35); padding: .3rem .5rem; text-align: start; border-bottom: 1px solid rgba(255,255,255,.06); }
+.mockup-table td { font-size: .65rem; color: rgba(255,255,255,.7); padding: .35rem .5rem; border-bottom: 1px solid rgba(255,255,255,.04); }
+.mockup-pill {
+    display: inline-block; padding: .15rem .45rem; border-radius: 999px;
+    font-size: .58rem; font-weight: 600;
+}
+.mockup-pill--green { background: rgba(16,185,129,.2); color: #6ee7b7; }
+.mockup-pill--yellow{ background: rgba(245,158,11,.2); color: #fcd34d; }
+.mockup-pill--red   { background: rgba(239,68,68,.2);  color: #fca5a5; }
+
+/* Floating badge on mockup */
+.mockup-float-badge {
+    position: absolute;
+    bottom: -16px; left: -24px;
+    background: #fff;
+    border-radius: var(--r-md);
+    padding: .75rem 1rem;
+    box-shadow: var(--shadow-xl);
+    display: flex; align-items: center; gap: .65rem;
+    white-space: nowrap;
+}
+.mockup-float-icon {
+    width: 36px; height: 36px; border-radius: var(--r-sm);
+    background: var(--grad-primary);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1rem;
+}
+.mockup-float-text { font-size: .78rem; }
+.mockup-float-text strong { display: block; color: var(--c-dark); font-weight: 700; }
+.mockup-float-text span { color: var(--c-muted); font-size: .72rem; }
+
+/* Second floating badge */
+.mockup-float-badge-2 {
+    position: absolute; top: -16px; right: -20px;
+    background: #fff; border-radius: var(--r-md);
+    padding: .6rem .9rem; box-shadow: var(--shadow-xl);
+    display: flex; align-items: center; gap: .5rem;
+}
+.mfb2-icon { width: 30px; height: 30px; border-radius: 50%; background: rgba(16,185,129,.15); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: .9rem; }
+.mfb2-text { font-size: .75rem; color: var(--c-dark); font-weight: 700; }
+.mfb2-sub  { font-size: .68rem; color: var(--c-muted); }
+
+/* ---- STATS BAR ---- */
+.stats-bar {
+    background: var(--c-dark); border-top: 1px solid rgba(255,255,255,.06);
+    padding: 2.5rem 2rem;
+}
+.stats-bar-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 2rem;
+    text-align: center;
+}
+@media (max-width: 768px) { .stats-bar-inner { grid-template-columns: repeat(2,1fr); } }
+.stat-num { font-size: 2.2rem; font-weight: 800; letter-spacing: -.03em; background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-lbl { font-size: .82rem; color: rgba(255,255,255,.5); margin-top: .25rem; }
+
+/* ---- SECTION COMMONS ---- */
+section { padding: 5rem 2rem; }
+.section-inner { max-width: 1200px; margin: 0 auto; }
+.section-eyebrow {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--c-primary); background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.1));
+    border: 1px solid rgba(99,102,241,.2);
+    border-radius: var(--r-pill); padding: .3rem .85rem;
+    color: var(--c-primary); font-size: .75rem; font-weight: 700;
+    letter-spacing: .05em; text-transform: uppercase; margin-bottom: 1rem;
+}
+.section-title {
+    font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 800;
+    letter-spacing: -.03em; color: var(--c-dark); margin: 0 0 1rem;
+    line-height: 1.15;
+}
+.section-sub { font-size: 1rem; color: var(--c-muted); line-height: 1.7; max-width: 540px; }
+.section-header-centered { text-align: center; }
+.section-header-centered .section-sub { margin: 0 auto; }
+
+/* ---- FEATURES GRID ---- */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem; margin-top: 3.5rem;
+}
+@media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 540px) { .features-grid { grid-template-columns: 1fr; } }
+
+.feature-card {
+    background: #fff; border: 1px solid var(--c-border);
+    border-radius: var(--r-lg); padding: 1.75rem;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+    position: relative; overflow: hidden;
+}
+.feature-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--card-gradient, var(--grad-primary));
+    opacity: 0; transition: opacity .25s;
+}
+.feature-card:hover { border-color: transparent; box-shadow: 0 12px 32px rgba(15,23,42,.1); transform: translateY(-4px); }
+.feature-card:hover::after { opacity: 1; }
+
+.feature-icon {
+    width: 52px; height: 52px; border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; margin-bottom: 1.25rem;
+    background: var(--icon-bg, rgba(99,102,241,.1));
+    color: var(--icon-color, #6366f1);
+    transition: background .25s, transform .25s;
+}
+.feature-card:hover .feature-icon { transform: scale(1.08); background: var(--icon-bg-hover, rgba(99,102,241,.15)); }
+
+.feature-title { font-size: 1.05rem; font-weight: 700; color: var(--c-dark); margin: 0 0 .5rem; }
+.feature-desc  { font-size: .875rem; color: var(--c-muted); line-height: 1.65; margin: 0 0 1.25rem; }
+.feature-tags  { display: flex; flex-wrap: wrap; gap: .4rem; }
+.feature-tag {
+    font-size: .7rem; font-weight: 600; padding: .2rem .55rem;
+    border-radius: var(--r-pill); background: var(--c-surface);
+    color: var(--c-muted); border: 1px solid var(--c-border);
+}
+
+/* ---- WHY SECTION ---- */
+.why-section { background: var(--c-surface); }
+.why-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+}
+@media (max-width: 768px) { .why-grid { grid-template-columns: 1fr; gap: 3rem; } }
+.why-list { list-style: none; padding: 0; margin: 2rem 0 0; display: flex; flex-direction: column; gap: 1.25rem; }
+.why-item { display: flex; gap: 1rem; }
+.why-item-icon {
+    width: 40px; height: 40px; border-radius: var(--r-sm); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+}
+.why-item-body h4 { font-size: .95rem; font-weight: 700; color: var(--c-dark); margin: 0 0 .25rem; }
+.why-item-body p  { font-size: .855rem; color: var(--c-muted); margin: 0; line-height: 1.6; }
+
+/* Right side: feature card visual */
+.why-visual {
+    background: var(--c-dark);
+    border-radius: var(--r-xl); padding: 2rem;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow-xl);
+}
+.why-visual::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+.why-module-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; position: relative; z-index: 1; }
+.why-module {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+    border-radius: var(--r-sm); padding: 1rem .85rem; text-align: center;
+    transition: background .2s;
+}
+.why-module:hover { background: rgba(99,102,241,.15); border-color: rgba(99,102,241,.3); }
+.why-module i { font-size: 1.4rem; display: block; margin-bottom: .4rem; }
+.why-module span { font-size: .7rem; color: rgba(255,255,255,.6); font-weight: 500; }
+
+/* ---- HOW IT WORKS ---- */
+.steps-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; margin-top: 3.5rem;
+    position: relative;
+}
+.steps-grid::before {
+    content: ''; position: absolute; top: 28px; left: calc(16.6% + 28px); right: calc(16.6% + 28px);
+    height: 2px; background: linear-gradient(90deg, var(--c-primary), var(--c-violet));
+    z-index: 0;
+}
+@media (max-width: 768px) { .steps-grid { grid-template-columns: 1fr; } .steps-grid::before { display: none; } }
+
+.step-card { text-align: center; position: relative; z-index: 1; }
+.step-number {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--grad-primary);
+    color: #fff; font-size: 1.1rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    box-shadow: var(--shadow-primary);
+}
+.step-title { font-size: 1rem; font-weight: 700; color: var(--c-dark); margin-bottom: .5rem; }
+.step-desc  { font-size: .875rem; color: var(--c-muted); line-height: 1.65; }
+
+/* ---- MODULES STRIP ---- */
+.modules-strip { background: var(--c-dark); padding: 4rem 2rem; overflow: hidden; }
+.modules-strip-label { text-align: center; font-size: .78rem; color: rgba(255,255,255,.35); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 2rem; }
+.modules-scroll { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.module-chip {
+    display: flex; align-items: center; gap: .5rem;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+    border-radius: var(--r-pill); padding: .5rem 1rem;
+    color: rgba(255,255,255,.7); font-size: .82rem; font-weight: 500;
+    transition: all .2s;
+}
+.module-chip:hover { background: rgba(99,102,241,.2); border-color: rgba(99,102,241,.4); color: #fff; }
+.module-chip i { font-size: .95rem; }
+
+/* ---- CTA SECTION ---- */
+.cta-section {
+    padding: 6rem 2rem;
+    background: var(--grad-cta);
+    text-align: center;
+    position: relative; overflow: hidden;
+}
+.cta-section::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+.cta-inner { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+.cta-title { font-size: clamp(1.8rem, 3.5vw, 2.75rem); font-weight: 800; color: #fff; letter-spacing: -.03em; line-height: 1.15; margin-bottom: 1rem; }
+.cta-sub   { font-size: 1rem; color: rgba(255,255,255,.75); line-height: 1.7; margin-bottom: 2.5rem; }
+.cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn-cta-white {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .85rem 2rem; border-radius: var(--r-pill);
+    background: #fff; color: var(--c-primary); font-size: .95rem; font-weight: 700;
+    text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    transition: all .2s;
+}
+.btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); color: var(--c-primary-h); }
+.btn-cta-outline {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .85rem 2rem; border-radius: var(--r-pill);
+    border: 2px solid rgba(255,255,255,.35); color: rgba(255,255,255,.9);
+    background: none; font-size: .95rem; font-weight: 600;
+    text-decoration: none; transition: all .2s;
+}
+.btn-cta-outline:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.6); color: #fff; }
+
+/* ---- FOOTER ---- */
+.lp-footer { background: var(--c-dark); padding: 4rem 2rem 2rem; color: rgba(255,255,255,.6); }
+.footer-inner { max-width: 1200px; margin: 0 auto; }
+.footer-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+@media (max-width: 768px) { .footer-top { grid-template-columns: 1fr 1fr; gap: 2rem; } }
+@media (max-width: 480px) { .footer-top { grid-template-columns: 1fr; } }
+.footer-brand-desc { font-size: .855rem; line-height: 1.7; margin-top: .75rem; color: rgba(255,255,255,.45); }
+.footer-col h6 { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.35); margin-bottom: 1rem; }
+.footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .55rem; }
+.footer-col ul li a { color: rgba(255,255,255,.6); text-decoration: none; font-size: .855rem; transition: color .15s; }
+.footer-col ul li a:hover { color: #fff; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,.06); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: .78rem; flex-wrap: wrap; gap: 1rem; }
+.footer-socials { display: flex; gap: .75rem; }
+.footer-social { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.6); text-decoration: none; font-size: .9rem; transition: all .2s; }
+.footer-social:hover { background: var(--c-primary); color: #fff; }
+
+/* ---- ANIMATIONS ---- */
+.fade-up {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .5s ease, transform .5s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+.fade-up-d1 { transition-delay: .1s; }
+.fade-up-d2 { transition-delay: .2s; }
+.fade-up-d3 { transition-delay: .3s; }
+.fade-up-d4 { transition-delay: .4s; }
+.fade-up-d5 { transition-delay: .5s; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center align-items-center min-vh-100">
-        <div class="col-md-8 text-center">
-            <h1 class="display-4 mb-4">
-                <i class="bi bi-briefcase-fill text-primary"></i>
-                Welcome to ERP System
+
+<!-- ══════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════ -->
+<nav class="lp-nav" id="lpNav">
+    <div class="lp-nav-inner">
+        <a href="#" class="lp-logo">
+            <div class="lp-logo-icon"><i class="bi bi-building-fill"></i></div>
+            <span class="lp-logo-text">Kuraimi ERP</span>
+        </a>
+        <div class="lp-nav-links d-none d-lg-flex">
+            <a href="#features">Features</a>
+            <a href="#why">Why Kuraimi</a>
+            <a href="#how">How It Works</a>
+            <a href="#modules">Modules</a>
+        </div>
+        <div class="lp-nav-actions">
+            <a href="{% url 'tenants:login' %}" class="btn-nav-ghost">Sign In</a>
+            <a href="{% url 'tenants:signup' %}" class="btn-nav-primary">Start Free Trial</a>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section class="hero">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+
+    <div class="hero-inner">
+        <!-- Left: Copy -->
+        <div class="hero-copy">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                Now with AI-powered forecasting
+            </div>
+            <h1 class="hero-headline">
+                The ERP built for<br>
+                <span class="gradient-word">modern businesses</span>
             </h1>
-            <p class="lead mb-5">
-                A powerful multi-tenant Enterprise Resource Planning solution
-                for managing your business operations.
+            <p class="hero-sub">
+                Manage finance, HR, inventory, sales and more — all in one elegant platform.
+                Multi-tenant, multi-currency, and fully RTL-ready for Arabic.
             </p>
-            
-            <div class="d-grid gap-3 d-md-flex justify-content-center">
-                <a href="{% url 'tenants:login' %}" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            <div class="hero-actions">
+                <a href="{% url 'tenants:signup' %}" class="btn-hero-primary">
+                    <i class="bi bi-lightning-charge-fill"></i> Start Free Trial
                 </a>
-                <a href="{% url 'tenants:signup' %}" class="btn btn-outline-primary btn-lg px-5">
-                    <i class="bi bi-person-plus me-2"></i>Sign Up
+                <a href="{% url 'tenants:login' %}" class="btn-hero-ghost">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
                 </a>
             </div>
-            
-            <hr class="my-5">
-            
-            <div class="row text-start">
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="bi bi-graph-up text-success"></i> Finance
-                            </h5>
-                            <p class="card-text">
-                                Complete financial management including invoicing,
-                                payments, and accounting.
-                            </p>
-                        </div>
-                    </div>
+            <div class="hero-trust">
+                <div class="trust-avatars">
+                    <div class="trust-avatar">أ</div>
+                    <div class="trust-avatar" style="background: linear-gradient(135deg,#10b981,#059669);">م</div>
+                    <div class="trust-avatar" style="background: linear-gradient(135deg,#f59e0b,#d97706);">خ</div>
+                    <div class="trust-avatar" style="background: linear-gradient(135deg,#06b6d4,#0891b2);">ف</div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="bi bi-people text-primary"></i> HR Management
-                            </h5>
-                            <p class="card-text">
-                                Employee management, attendance tracking,
-                                and leave management.
-                            </p>
-                        </div>
-                    </div>
+                <p class="trust-text"><strong>500+</strong> businesses already using Kuraimi ERP</p>
+            </div>
+        </div>
+
+        <!-- Right: Dashboard Mockup -->
+        <div class="hero-visual">
+            <div class="mockup-float-badge-2">
+                <div class="mfb2-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                <div>
+                    <div class="mfb2-text">+24.5% Revenue</div>
+                    <div class="mfb2-sub">vs last month</div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="bi bi-funnel text-info"></i> CRM
-                            </h5>
-                            <p class="card-text">
-                                Lead management, customer tracking,
-                                and campaign management.
-                            </p>
+            </div>
+
+            <div class="dashboard-mockup">
+                <div class="mockup-topbar">
+                    <div class="mockup-dot mockup-dot-r"></div>
+                    <div class="mockup-dot mockup-dot-y"></div>
+                    <div class="mockup-dot mockup-dot-g"></div>
+                    <div class="mockup-title-bar">Kuraimi ERP — Dashboard</div>
+                </div>
+                <div class="mockup-body">
+                    <div class="mockup-stats">
+                        <div class="mockup-stat">
+                            <div class="mockup-stat-val">$128k</div>
+                            <div class="mockup-stat-lbl">Revenue</div>
+                            <div class="mockup-stat-trend">↑ 12.3%</div>
+                        </div>
+                        <div class="mockup-stat">
+                            <div class="mockup-stat-val">342</div>
+                            <div class="mockup-stat-lbl">Customers</div>
+                            <div class="mockup-stat-trend">↑ 8.1%</div>
+                        </div>
+                        <div class="mockup-stat">
+                            <div class="mockup-stat-val">94%</div>
+                            <div class="mockup-stat-lbl">Collection</div>
+                            <div class="mockup-stat-trend">↑ 2.4%</div>
                         </div>
                     </div>
+                    <div class="mockup-chart">
+                        <div class="mockup-chart-label">Revenue — Last 6 months</div>
+                        <div class="mockup-bars">
+                            <div class="mockup-bar mockup-bar--primary" style="height:55%"></div>
+                            <div class="mockup-bar mockup-bar--primary" style="height:65%"></div>
+                            <div class="mockup-bar mockup-bar--primary" style="height:48%"></div>
+                            <div class="mockup-bar mockup-bar--primary" style="height:75%"></div>
+                            <div class="mockup-bar mockup-bar--primary" style="height:60%"></div>
+                            <div class="mockup-bar mockup-bar--primary" style="height:90%"></div>
+                            <div class="mockup-bar mockup-bar--violet"  style="height:42%"></div>
+                            <div class="mockup-bar mockup-bar--violet"  style="height:55%"></div>
+                            <div class="mockup-bar mockup-bar--violet"  style="height:38%"></div>
+                            <div class="mockup-bar mockup-bar--violet"  style="height:62%"></div>
+                            <div class="mockup-bar mockup-bar--violet"  style="height:45%"></div>
+                            <div class="mockup-bar mockup-bar--violet"  style="height:70%"></div>
+                        </div>
+                    </div>
+                    <table class="mockup-table">
+                        <thead>
+                            <tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>INV-2401</td><td>Al-Rashid Co.</td><td>$4,200</td><td><span class="mockup-pill mockup-pill--green">Paid</span></td></tr>
+                            <tr><td>INV-2402</td><td>Gulf Trading</td><td>$8,750</td><td><span class="mockup-pill mockup-pill--yellow">Pending</span></td></tr>
+                            <tr><td>INV-2403</td><td>MENA Corp</td><td>$2,300</td><td><span class="mockup-pill mockup-pill--red">Overdue</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mockup-float-badge">
+                <div class="mockup-float-icon"><i class="bi bi-shield-check"></i></div>
+                <div class="mockup-float-text">
+                    <strong>Bank-grade Security</strong>
+                    <span>256-bit encryption · SOC 2</span>
                 </div>
             </div>
         </div>
     </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     STATS BAR
+══════════════════════════════════════════ -->
+<div class="stats-bar">
+    <div class="stats-bar-inner">
+        <div>
+            <div class="stat-num">500+</div>
+            <div class="stat-lbl">Active Businesses</div>
+        </div>
+        <div>
+            <div class="stat-num">12</div>
+            <div class="stat-lbl">ERP Modules</div>
+        </div>
+        <div>
+            <div class="stat-num">3</div>
+            <div class="stat-lbl">Languages Supported</div>
+        </div>
+        <div>
+            <div class="stat-num">99.9%</div>
+            <div class="stat-lbl">Uptime SLA</div>
+        </div>
+    </div>
 </div>
+
+
+<!-- ══════════════════════════════════════════
+     FEATURES GRID
+══════════════════════════════════════════ -->
+<section id="features">
+    <div class="section-inner">
+        <div class="section-header-centered fade-up">
+            <div class="section-eyebrow"><i class="bi bi-stars"></i> Core Modules</div>
+            <h2 class="section-title">Everything your business needs</h2>
+            <p class="section-sub">From invoicing to payroll — a complete suite of tools built for modern enterprises in the MENA region and beyond.</p>
+        </div>
+
+        <div class="features-grid">
+            <!-- Finance -->
+            <div class="feature-card fade-up fade-up-d1"
+                 style="--card-gradient: linear-gradient(90deg,#6366f1,#8b5cf6); --icon-bg: rgba(99,102,241,.1); --icon-color: #6366f1; --icon-bg-hover: rgba(99,102,241,.15);">
+                <div class="feature-icon"><i class="bi bi-bank"></i></div>
+                <div class="feature-title">Finance & Accounting</div>
+                <div class="feature-desc">Full double-entry accounting, invoicing, payments, expenses, bank reconciliation, and financial reports.</div>
+                <div class="feature-tags">
+                    <span class="feature-tag">Invoices</span>
+                    <span class="feature-tag">Payments</span>
+                    <span class="feature-tag">P&L</span>
+                    <span class="feature-tag">Balance Sheet</span>
+                </div>
+            </div>
+
+            <!-- HR -->
+            <div class="feature-card fade-up fade-up-d2"
+                 style="--card-gradient: linear-gradient(90deg,#10b981,#059669); --icon-bg: rgba(16,185,129,.1); --icon-color: #10b981; --icon-bg-hover: rgba(16,185,129,.15);">
+                <div class="feature-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="feature-title">Human Resources</div>
+                <div class="feature-desc">Employee lifecycle management, attendance tracking, leave requests, payroll, and department org charts.</div>
+                <div class="feature-tags">
+                    <span class="feature-tag">Payroll</span>
+                    <span class="feature-tag">Attendance</span>
+                    <span class="feature-tag">Leave</span>
+                    <span class="feature-tag">Departments</span>
+                </div>
+            </div>
+
+            <!-- CRM -->
+            <div class="feature-card fade-up fade-up-d3"
+                 style="--card-gradient: linear-gradient(90deg,#f59e0b,#d97706); --icon-bg: rgba(245,158,11,.1); --icon-color: #f59e0b; --icon-bg-hover: rgba(245,158,11,.15);">
+                <div class="feature-icon"><i class="bi bi-funnel-fill"></i></div>
+                <div class="feature-title">CRM & Sales</div>
+                <div class="feature-desc">Manage leads through the pipeline, run marketing campaigns, generate quotes, and track customer lifecycles.</div>
+                <div class="feature-tags">
+                    <span class="feature-tag">Leads</span>
+                    <span class="feature-tag">Campaigns</span>
+                    <span class="feature-tag">Quotes</span>
+                    <span class="feature-tag">Customers</span>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="feature-card fade-up fade-up-d1"
+                 style="--card-gradient: linear-gradient(90deg,#06b6d4,#0891b2); --icon-bg: rgba(6,182,212,.1); --icon-color: #06b6d4; --icon-bg-hover: rgba(6,182,212,.15);">
+                <div class="feature-icon"><i class="bi bi-boxes"></i></div>
+                <div class="feature-title">Inventory & Warehouse</div>
+                <div class="feature-desc">Multi-warehouse stock control, goods receipts, transfers, adjustments, pick lists, shipments, and reorder alerts.</div>
+                <div class="feature-tags">
+                    <span class="feature-tag">Stock Levels</span>
+                    <span class="feature-tag">GRN</span>
+                    <span class="feature-tag">Transfers</span>
+                    <span class="feature-tag">Lots/Serial</span>
+                </div>
+            </div>
+
+            <!-- Fixed Assets -->
+            <div class="feature-card fade-up fade-up-d2"
+                 style="--card-gradient: linear-gradient(90deg,#8b5cf6,#7c3aed); --icon-bg: rgba(139,92,246,.1); --icon-color: #8b5cf6; --icon-bg-hover: rgba(139,92,246,.15);">
+                <div class="feature-icon"><i class="bi bi-building-gear"></i></div>
+                <div class="feature-title">Fixed Assets</div>
+                <div class="feature-desc">Asset register with automated depreciation schedules, disposals, revaluations, transfers, and maintenance logs.</div>
+                <div class="feature-tags">
+                    <span class="feature-tag">Depreciation</span>
+                    <span class="feature-tag">Disposals</span>
+                    <span class="feature-tag">Maintenance</span>
+                </div>
+            </div>
+
+            <!-- POS -->
+            <div class="feature-card fade-up fade-up-d3"
+                 style="--card-gradient: linear-gradient(90deg,#ef4444,#dc2626); --icon-bg: rgba(239,68,68,.1); --icon-color: #ef4444; --icon-bg-hover: rgba(239,68,68,.15);">
+                <div class="feature-icon"><i class="bi bi-shop"></i></div>
+                <div class="feature-title">Point of Sale</div>
+                <div class="feature-desc">Multi-terminal POS with session management, integrated inventory deduction, and real-time sales reporting.</div>
+                <div class="feature-tags">
+                    <span class="feature-tag">Terminals</span>
+                    <span class="feature-tag">Sessions</span>
+                    <span class="feature-tag">Orders</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     WHY TOORSTA
+══════════════════════════════════════════ -->
+<section id="why" class="why-section">
+    <div class="section-inner">
+        <div class="why-grid">
+            <div>
+                <div class="section-eyebrow fade-up"><i class="bi bi-award"></i> Why Kuraimi</div>
+                <h2 class="section-title fade-up">Built for the MENA region</h2>
+                <p class="section-sub fade-up">Most ERPs are built for western markets and retrofitted for Arabic. Kuraimi was designed from day one for bilingual, RTL-first enterprises.</p>
+                <ul class="why-list">
+                    <li class="why-item fade-up fade-up-d1">
+                        <div class="why-item-icon" style="background: rgba(99,102,241,.1); color: #6366f1;"><i class="bi bi-translate"></i></div>
+                        <div class="why-item-body">
+                            <h4>Full Arabic RTL Support</h4>
+                            <p>Native right-to-left layout with Arabic, English, and Indonesian. Switch languages in one click — no page reload.</p>
+                        </div>
+                    </li>
+                    <li class="why-item fade-up fade-up-d2">
+                        <div class="why-item-icon" style="background: rgba(16,185,129,.1); color: #10b981;"><i class="bi bi-cloud-check"></i></div>
+                        <div class="why-item-body">
+                            <h4>Multi-Tenant Cloud</h4>
+                            <p>Each company gets its own isolated database. Your data never mixes with other tenants. Fully cloud-hosted with 99.9% SLA.</p>
+                        </div>
+                    </li>
+                    <li class="why-item fade-up fade-up-d3">
+                        <div class="why-item-icon" style="background: rgba(245,158,11,.1); color: #f59e0b;"><i class="bi bi-robot"></i></div>
+                        <div class="why-item-body">
+                            <h4>AI-Powered Insights</h4>
+                            <p>Built-in machine learning for revenue forecasting, anomaly detection, and demand planning using Prophet and scikit-learn.</p>
+                        </div>
+                    </li>
+                    <li class="why-item fade-up fade-up-d4">
+                        <div class="why-item-icon" style="background: rgba(6,182,212,.1); color: #06b6d4;"><i class="bi bi-phone"></i></div>
+                        <div class="why-item-body">
+                            <h4>Mobile App Included</h4>
+                            <p>Flutter mobile app for field teams. Access dashboards, approve leave, check inventory, and manage tasks on the go.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Visual grid -->
+            <div class="why-visual fade-up fade-up-d2">
+                <div class="why-module-grid">
+                    <div class="why-module"><i class="bi bi-bank" style="color:#a5b4fc;"></i><span>Finance</span></div>
+                    <div class="why-module"><i class="bi bi-people-fill" style="color:#6ee7b7;"></i><span>HR</span></div>
+                    <div class="why-module"><i class="bi bi-funnel-fill" style="color:#fcd34d;"></i><span>CRM</span></div>
+                    <div class="why-module"><i class="bi bi-boxes" style="color:#67e8f9;"></i><span>Inventory</span></div>
+                    <div class="why-module"><i class="bi bi-building-gear" style="color:#c4b5fd;"></i><span>Assets</span></div>
+                    <div class="why-module"><i class="bi bi-shop" style="color:#fca5a5;"></i><span>POS</span></div>
+                    <div class="why-module"><i class="bi bi-cart3" style="color:#a5b4fc;"></i><span>Purchases</span></div>
+                    <div class="why-module"><i class="bi bi-box-seam" style="color:#6ee7b7;"></i><span>Products</span></div>
+                    <div class="why-module"><i class="bi bi-robot" style="color:#fcd34d;"></i><span>AI / ML</span></div>
+                    <div class="why-module"><i class="bi bi-graph-up" style="color:#67e8f9;"></i><span>Reports</span></div>
+                    <div class="why-module"><i class="bi bi-phone" style="color:#c4b5fd;"></i><span>Mobile</span></div>
+                    <div class="why-module"><i class="bi bi-shield-check" style="color:#fca5a5;"></i><span>Security</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     HOW IT WORKS
+══════════════════════════════════════════ -->
+<section id="how">
+    <div class="section-inner">
+        <div class="section-header-centered fade-up">
+            <div class="section-eyebrow"><i class="bi bi-arrow-right-circle"></i> How It Works</div>
+            <h2 class="section-title">Up and running in minutes</h2>
+            <p class="section-sub">No complex setup, no IT team required. Sign up, configure your company, and start managing your business immediately.</p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card fade-up fade-up-d1">
+                <div class="step-number">1</div>
+                <div class="step-title">Create Your Account</div>
+                <div class="step-desc">Sign up with your company name and email. Our team reviews and approves your account — usually within 24 hours.</div>
+            </div>
+            <div class="step-card fade-up fade-up-d2">
+                <div class="step-number">2</div>
+                <div class="step-title">Configure Your Company</div>
+                <div class="step-desc">Set your base currency, fiscal year, chart of accounts, tax rates, and invite your team members via secure links.</div>
+            </div>
+            <div class="step-card fade-up fade-up-d3">
+                <div class="step-number">3</div>
+                <div class="step-title">Start Managing</div>
+                <div class="step-desc">Create invoices, manage employees, track inventory and sales — everything updates in real time across all devices.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     MODULES STRIP
+══════════════════════════════════════════ -->
+<div id="modules" class="modules-strip">
+    <div class="modules-strip-label">All modules included — no add-on pricing</div>
+    <div class="modules-scroll">
+        <div class="module-chip"><i class="bi bi-bank"></i> Finance</div>
+        <div class="module-chip"><i class="bi bi-receipt"></i> Invoicing</div>
+        <div class="module-chip"><i class="bi bi-credit-card"></i> Payments</div>
+        <div class="module-chip"><i class="bi bi-people-fill"></i> HR</div>
+        <div class="module-chip"><i class="bi bi-cash-coin"></i> Payroll</div>
+        <div class="module-chip"><i class="bi bi-clock-history"></i> Attendance</div>
+        <div class="module-chip"><i class="bi bi-funnel-fill"></i> CRM</div>
+        <div class="module-chip"><i class="bi bi-megaphone"></i> Campaigns</div>
+        <div class="module-chip"><i class="bi bi-boxes"></i> Inventory</div>
+        <div class="module-chip"><i class="bi bi-truck"></i> Shipments</div>
+        <div class="module-chip"><i class="bi bi-building-gear"></i> Fixed Assets</div>
+        <div class="module-chip"><i class="bi bi-shop"></i> POS</div>
+        <div class="module-chip"><i class="bi bi-cart3"></i> Purchasing</div>
+        <div class="module-chip"><i class="bi bi-graph-up"></i> Reports</div>
+        <div class="module-chip"><i class="bi bi-robot"></i> AI Forecasting</div>
+        <div class="module-chip"><i class="bi bi-phone"></i> Mobile App</div>
+        <div class="module-chip"><i class="bi bi-globe2"></i> Multi-Currency</div>
+        <div class="module-chip"><i class="bi bi-shield-check"></i> Audit Log</div>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CTA
+══════════════════════════════════════════ -->
+<section class="cta-section">
+    <div class="cta-inner">
+        <h2 class="cta-title fade-up">Ready to transform your business?</h2>
+        <p class="cta-sub fade-up fade-up-d1">Join 500+ businesses already running on Kuraimi ERP. No credit card required. Full access from day one.</p>
+        <div class="cta-actions fade-up fade-up-d2">
+            <a href="{% url 'tenants:signup' %}" class="btn-cta-white">
+                <i class="bi bi-lightning-charge-fill"></i> Start Free Trial
+            </a>
+            <a href="{% url 'tenants:login' %}" class="btn-cta-outline">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="lp-footer">
+    <div class="footer-inner">
+        <div class="footer-top">
+            <div>
+                <a href="#" class="lp-logo" style="margin-bottom: .75rem;">
+                    <div class="lp-logo-icon"><i class="bi bi-building-fill"></i></div>
+                    <span class="lp-logo-text">Kuraimi ERP</span>
+                </a>
+                <p class="footer-brand-desc">A complete multi-tenant ERP platform built for modern enterprises in the MENA region. Arabic-first, cloud-native, AI-powered.</p>
+            </div>
+            <div class="footer-col">
+                <h6>Product</h6>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#modules">Modules</a></li>
+                    <li><a href="#how">How It Works</a></li>
+                    <li><a href="{% url 'tenants:signup' %}">Start Free Trial</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h6>Modules</h6>
+                <ul>
+                    <li><a href="#">Finance & Accounting</a></li>
+                    <li><a href="#">HR & Payroll</a></li>
+                    <li><a href="#">CRM & Sales</a></li>
+                    <li><a href="#">Inventory</a></li>
+                    <li><a href="#">Fixed Assets</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h6>Company</h6>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="{% url 'tenants:tenant_ticket_list' %}">Support</a></li>
+                    <li><a href="{% url 'tenants:login' %}">Sign In</a></li>
+                    <li><a href="{% url 'tenants:signup' %}">Sign Up</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; {% now "Y" %} Kuraimi ERP. All rights reserved.</span>
+            <div class="footer-socials">
+                <a href="#" class="footer-social"><i class="bi bi-twitter-x"></i></a>
+                <a href="#" class="footer-social"><i class="bi bi-linkedin"></i></a>
+                <a href="#" class="footer-social"><i class="bi bi-github"></i></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    // ── Navbar scroll effect ──
+    const nav = document.getElementById('lpNav');
+    window.addEventListener('scroll', function() {
+        nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ── Scroll-triggered fade-up ──
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-up').forEach(function(el) {
+        observer.observe(el);
+    });
+})();
+</script>
 {% endblock %}

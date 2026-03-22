@@ -1,89 +1,136 @@
 {% extends 'tenants/base.html' %}
 
-{% block title %}Sign Up - ERP System{% endblock %}
+{% block title %}Start Free Trial — Kuraimi ERP{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card auth-card">
-        <div class="brand-header">
-            <h2 class="mb-0">
-                <i class="bi bi-briefcase-fill me-2"></i>ERP System
-            </h2>
-            <p class="mb-0 mt-2">Create your account</p>
+<div class="auth-layout">
+
+    <!-- ── Left brand panel ── -->
+    <div class="auth-brand-panel">
+        <div class="brand-panel-content">
+            <div class="brand-panel-logo">
+                <div class="brand-panel-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="brand-panel-logo-text">Kuraimi ERP</span>
+            </div>
+
+            <h1 class="brand-headline">
+                Start managing<br>smarter today.
+            </h1>
+            <p class="brand-subline">
+                Get full access to all modules — finance, HR, inventory, CRM and more. No credit card required.
+            </p>
+
+            <ul class="brand-features">
+                <li><i class="bi bi-check-circle-fill"></i> 12 modules — all included</li>
+                <li><i class="bi bi-check-circle-fill"></i> Multi-currency & multi-language</li>
+                <li><i class="bi bi-check-circle-fill"></i> AI-powered forecasting</li>
+                <li><i class="bi bi-check-circle-fill"></i> Mobile app for your team</li>
+                <li><i class="bi bi-check-circle-fill"></i> 99.9% uptime SLA</li>
+            </ul>
         </div>
-        <div class="card-body p-4">
+
+        <div class="brand-panel-footer">
+            &copy; {% now "Y" %} Kuraimi ERP. All rights reserved.
+        </div>
+    </div>
+
+    <!-- ── Right form panel ── -->
+    <div class="auth-form-panel" style="align-items: flex-start; padding-top: 3rem; overflow-y: auto;">
+        <div class="auth-form-inner" style="max-width: 400px; padding-bottom: 3rem;">
+
+            <div class="auth-form-logo d-lg-none">
+                <div class="auth-form-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="auth-form-logo-text">Kuraimi ERP</span>
+            </div>
+
+            <h2 class="auth-heading">Create your account</h2>
+            <p class="auth-subheading">Free trial — no credit card needed</p>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
             <form method="post" novalidate>
                 {% csrf_token %}
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_first_name" class="form-label">First Name *</label>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.75rem;">
+                    <div>
+                        <label for="id_first_name" class="form-label">First Name <span style="color:#ef4444;">*</span></label>
                         {{ form.first_name }}
                         {% if form.first_name.errors %}
-                        <div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>
+                        <div class="invalid-feedback d-block" style="font-size:.75rem;">{{ form.first_name.errors.0 }}</div>
                         {% endif %}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_last_name" class="form-label">Last Name *</label>
+                    <div>
+                        <label for="id_last_name" class="form-label">Last Name <span style="color:#ef4444;">*</span></label>
                         {{ form.last_name }}
                         {% if form.last_name.errors %}
-                        <div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>
+                        <div class="invalid-feedback d-block" style="font-size:.75rem;">{{ form.last_name.errors.0 }}</div>
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
-                    <label for="id_email" class="form-label">Email Address *</label>
+                    <label for="id_email" class="form-label">Work Email <span style="color:#ef4444;">*</span></label>
                     {{ form.email }}
                     {% if form.email.errors %}
-                    <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                    <div class="invalid-feedback d-block" style="font-size:.75rem;">{{ form.email.errors.0 }}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="id_company_name" class="form-label">Company Name</label>
                     {{ form.company_name }}
                     {% if form.company_name.errors %}
-                    <div class="invalid-feedback d-block">{{ form.company_name.errors.0 }}</div>
+                    <div class="invalid-feedback d-block" style="font-size:.75rem;">{{ form.company_name.errors.0 }}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="id_phone" class="form-label">Phone Number</label>
                     {{ form.phone }}
                     {% if form.phone.errors %}
-                    <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                    <div class="invalid-feedback d-block" style="font-size:.75rem;">{{ form.phone.errors.0 }}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="mb-3">
-                    <label for="id_password1" class="form-label">Password *</label>
+                    <label for="id_password1" class="form-label">Password <span style="color:#ef4444;">*</span></label>
                     {{ form.password1 }}
                     {% if form.password1.errors %}
-                    <div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>
+                    <div class="invalid-feedback d-block" style="font-size:.75rem;">{{ form.password1.errors.0 }}</div>
                     {% endif %}
                 </div>
-                
-                <div class="mb-3">
-                    <label for="id_password2" class="form-label">Confirm Password *</label>
+
+                <div class="mb-4">
+                    <label for="id_password2" class="form-label">Confirm Password <span style="color:#ef4444;">*</span></label>
                     {{ form.password2 }}
                     {% if form.password2.errors %}
-                    <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                    <div class="invalid-feedback d-block" style="font-size:.75rem;">{{ form.password2.errors.0 }}</div>
                     {% endif %}
                 </div>
-                
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-person-plus me-2"></i>Create Account
-                    </button>
-                </div>
-                
-                <p class="text-center text-muted mb-0">
-                    Already have an account? 
-                    <a href="{% url 'tenants:login' %}">Sign in</a>
+
+                <button type="submit" class="btn-auth mb-3">
+                    <i class="bi bi-person-plus me-2"></i>Create Account
+                </button>
+
+                <p style="font-size:.75rem; color:#94a3b8; text-align:center; line-height:1.5; margin-bottom:1rem;">
+                    By signing up you agree to our Terms of Service and Privacy Policy. Your account will be reviewed and activated within 24 hours.
                 </p>
             </form>
+
+            <div class="auth-footer-link">
+                Already have an account? <a href="{% url 'tenants:login' %}">Sign in</a>
+            </div>
         </div>
     </div>
+
 </div>
 {% endblock %}

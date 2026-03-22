@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {{ company.name|default:"تورستا" }}</title>
+    <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {{ company.name|default:"Kuraimi" }}</title>
 
     <!-- Bootstrap 5 CSS -->
     {% if LANGUAGE_BIDI %}
@@ -127,7 +127,7 @@
                 <i class="bi bi-building-fill"></i>
             </div>
             <div class="brand-text">
-                <span class="brand-name">تورستا ERP</span>
+                <span class="brand-name">Kuraimi ERP</span>
                 {% if company %}<small class="brand-company">{{ company.name }}</small>{% endif %}
             </div>
         </div>
