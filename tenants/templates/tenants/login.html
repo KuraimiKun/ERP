@@ -1,56 +1,94 @@
 {% extends 'tenants/base.html' %}
 
-{% block title %}Sign In - ERP System{% endblock %}
+{% block title %}Sign In — Toorsta ERP{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card auth-card">
-        <div class="brand-header">
-            <h2 class="mb-0">
-                <i class="bi bi-briefcase-fill me-2"></i>ERP System
-            </h2>
-            <p class="mb-0 mt-2">Sign in to your account</p>
+<div class="auth-layout">
+
+    <!-- ── Left brand panel ── -->
+    <div class="auth-brand-panel">
+        <div class="brand-panel-content">
+            <div class="brand-panel-logo">
+                <div class="brand-panel-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="brand-panel-logo-text">تورستا ERP</span>
+            </div>
+
+            <h1 class="brand-headline">
+                Run your business<br>smarter, faster.
+            </h1>
+            <p class="brand-subline">
+                A complete ERP platform for finance, HR, inventory, sales and more — all in one place.
+            </p>
+
+            <ul class="brand-features">
+                <li><i class="bi bi-check-circle-fill"></i> Real-time financial reporting</li>
+                <li><i class="bi bi-check-circle-fill"></i> Multi-currency & multi-tenant</li>
+                <li><i class="bi bi-check-circle-fill"></i> AI-powered forecasting</li>
+                <li><i class="bi bi-check-circle-fill"></i> Arabic & RTL support</li>
+                <li><i class="bi bi-check-circle-fill"></i> Mobile app included</li>
+            </ul>
         </div>
-        <div class="card-body p-4">
-            <form method="post" novalidate>
-                {% csrf_token %}
-                
-                {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.non_field_errors %}
-                    {{ error }}
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <div class="mb-3">
-                    <label for="id_username" class="form-label">Email Address</label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                    <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-4">
-                    <label for="id_password" class="form-label">Password</label>
-                    {{ form.password }}
-                    {% if form.password.errors %}
-                    <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
-                    {% endif %}
-                </div>
-                
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
-                    </button>
-                </div>
-                
-                <p class="text-center text-muted mb-0">
-                    Don't have an account? 
-                    <a href="{% url 'tenants:signup' %}">Sign up</a>
-                </p>
-            </form>
+
+        <div class="brand-panel-footer">
+            &copy; {% now "Y" %} Toorsta ERP. All rights reserved.
         </div>
     </div>
+
+    <!-- ── Right form panel ── -->
+    <div class="auth-form-panel">
+        <div class="auth-form-inner">
+
+            <!-- Logo (shown on mobile where brand panel is hidden) -->
+            <div class="auth-form-logo d-lg-none">
+                <div class="auth-form-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="auth-form-logo-text">تورستا ERP</span>
+            </div>
+
+            <h2 class="auth-heading">Welcome back</h2>
+            <p class="auth-subheading">Sign in to your account to continue</p>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Email / Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="id_password" class="form-label mb-0">Password</label>
+                    </div>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn-auth mb-3">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+            </form>
+
+            <div class="auth-footer-link">
+                Don't have an account? <a href="{% url 'tenants:signup' %}">Create one</a>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

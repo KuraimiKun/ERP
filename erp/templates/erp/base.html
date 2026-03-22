@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {{ company.name|default:"تورستا" }}</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     {% if LANGUAGE_BIDI %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -18,27 +18,27 @@
 
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts - Arabic -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
+    <!-- ERP Design System -->
+    <link rel="stylesheet" href="{% static 'erp.css' %}">
+
     <style>
+        /* ---- LAYOUT STRUCTURE (RTL-aware, kept inline) ---- */
         :root {
-            --sidebar-width: 260px;
-            --header-height: 60px;
-            --primary-color: #0d6efd;
-            --sidebar-bg: #1e293b;
-            --sidebar-text: #94a3b8;
-            --sidebar-active: #ffffff;
+            --sidebar-width: 264px;
+            --sidebar-collapsed-width: 68px;
+            --header-height: 64px;
         }
-        
+
         body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #f1f5f9;
+            font-family: 'Tajawal', 'Inter', sans-serif;
+            background-color: var(--bg-body);
             direction: {% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %};
         }
-        
+
         /* Sidebar */
         .erp-sidebar {
             position: fixed;
@@ -46,74 +46,34 @@
             top: 0;
             bottom: 0;
             width: var(--sidebar-width);
-            background: var(--sidebar-bg);
-            color: var(--sidebar-text);
             z-index: 1000;
             overflow-y: auto;
-            transition: transform 0.3s ease;
+            overflow-x: hidden;
+            transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .erp-sidebar-brand {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .erp-sidebar-brand h4 {
-            color: #fff;
-            margin: 0;
-            font-weight: 700;
-        }
-        
-        .erp-sidebar-nav {
-            padding: 1rem 0;
-        }
-        
-        .erp-nav-section {
-            padding: 0.5rem 1.5rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-            font-weight: 700;
-        }
-        
-        .erp-nav-link {
-            display: flex;
-            align-items: center;
-            padding: 0.625rem 1.5rem;
-            color: var(--sidebar-text);
-            text-decoration: none;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-        
-        .erp-nav-link:hover {
-            color: var(--sidebar-active);
-            background: rgba(255,255,255,0.05);
-        }
-        
+
+        /* Active nav link border side */
         .erp-nav-link.active {
-            color: var(--sidebar-active);
-            background: rgba(255,255,255,0.1);
-            {% if LANGUAGE_BIDI %}border-right: 3px solid var(--primary-color);{% else %}border-left: 3px solid var(--primary-color);{% endif %}
+            {% if LANGUAGE_BIDI %}border-right: 3px solid var(--sidebar-active-border);{% else %}border-left: 3px solid var(--sidebar-active-border);{% endif %}
         }
-        
-        .erp-nav-link i {
-            width: 24px;
-            {% if LANGUAGE_BIDI %}margin-left: 0.75rem;{% else %}margin-right: 0.75rem;{% endif %}
-            font-size: 1.1rem;
+        .erp-nav-sub.active {
+            {% if LANGUAGE_BIDI %}border-right: 3px solid var(--sidebar-active-border);{% else %}border-left: 3px solid var(--sidebar-active-border);{% endif %}
         }
-        
-        /* Main Content */
+
+        /* Main content */
         .erp-main {
             {% if LANGUAGE_BIDI %}margin-right: var(--sidebar-width);{% else %}margin-left: var(--sidebar-width);{% endif %}
             min-height: 100vh;
+            transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
+        .erp-main.sidebar-collapsed {
+            {% if LANGUAGE_BIDI %}margin-right: var(--sidebar-collapsed-width);{% else %}margin-left: var(--sidebar-collapsed-width);{% endif %}
+        }
+
+        /* Header */
         .erp-header {
             height: var(--header-height);
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -123,519 +83,429 @@
             z-index: 999;
         }
 
-        
         .erp-content {
             padding: 1.5rem;
         }
-        
-        /* Cards */
-        .erp-card {
-            background: #fff;
-            border-radius: 0.5rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        
-        .erp-card-header {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .erp-card-body {
-            padding: 1.25rem;
-        }
-        
-        /* Stat Cards */
-        .stat-card {
-            padding: 1.25rem;
-            border-radius: 0.5rem;
-            background: #fff;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .stat-card .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-        
-        .stat-card .stat-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-        
-        .stat-card .stat-label {
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-        
-        .stat-card .stat-change {
-            font-size: 0.75rem;
-        }
-        
-        /* Tables */
-        .erp-table {
-            margin: 0;
-        }
-        
-        .erp-table th {
-            font-weight: 600;
-            color: #475569;
-            font-size: 0.8rem;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .erp-table td {
-            vertical-align: middle;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #f1f5f9;
-        }
 
-        /* Sortable column headers */
-        .erp-sort-link {
-            color: #475569;
-            text-decoration: none;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        .erp-sort-link:hover { color: #1e40af; }
-        .erp-sort-link.active { color: #1e3a8a; font-weight: 700; }
-        .erp-sort-icon-idle { opacity: 0; transition: opacity .15s; font-size: 0.7rem; }
-        th:hover .erp-sort-icon-idle { opacity: .45; }
-        
-        /* Status Badges */
-        .badge-status {
-            font-size: 0.8rem;
-            font-weight: 500;
-            padding: 0.375rem 0.625rem;
-            border-radius: 0.25rem;
-        }
-        
-        .badge-paid { background: #dcfce7; color: #166534; }
-        .badge-sent { background: #dbeafe; color: #1e40af; }
-        .badge-draft { background: #f1f5f9; color: #475569; }
-        .badge-overdue { background: #fee2e2; color: #991b1b; }
-        .badge-partial { background: #fef3c7; color: #92400e; }
-        .badge-posted { background: #dcfce7; color: #166534; }
-        .badge-cancelled { background: #fee2e2; color: #991b1b; }
-        
-        /* Responsive */
+        /* Mobile */
         @media (max-width: 991.98px) {
             .erp-sidebar {
                 transform: {% if LANGUAGE_BIDI %}translateX(100%){% else %}translateX(-100%){% endif %};
+                width: var(--sidebar-width) !important;
             }
-            
             .erp-sidebar.show {
                 transform: translateX(0);
             }
-            
-            .erp-main {
+            .erp-main, .erp-main.sidebar-collapsed {
                 {% if LANGUAGE_BIDI %}margin-right: 0;{% else %}margin-left: 0;{% endif %}
             }
         }
-        
-        /* Quick Actions */
-        .quick-action {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            background: #f8fafc;
-            text-decoration: none;
-            color: #475569;
-            transition: all 0.2s;
+
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.45);
+            z-index: 999;
+            backdrop-filter: blur(2px);
         }
-        
-        .quick-action:hover {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-        
-        .quick-action i {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .quick-action span {
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        /* Form styles */
-        .form-label {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-control, .form-select {
-            border-radius: 0.375rem;
-        }
-        
-        /* Table responsive */
-        .table-responsive {
-            border-radius: 0.5rem;
-        }
-        
-        /* Button styles */
-        .btn {
-            font-weight: 500;
-        }
+        .sidebar-overlay.show { display: block; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- الشريط الجانبي -->
+    <!-- Mobile overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ===== SIDEBAR ===== -->
     <aside class="erp-sidebar" id="erpSidebar">
+
+        <!-- Brand -->
         <div class="erp-sidebar-brand">
-            <h4><i class="bi bi-building ms-2"></i>تورستا ERP</h4>
-            {% if company %}
-            <small class="text-muted">{{ company.name }}</small>
-            {% endif %}
+            <div class="brand-logo">
+                <i class="bi bi-building-fill"></i>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">تورستا ERP</span>
+                {% if company %}<small class="brand-company">{{ company.name }}</small>{% endif %}
+            </div>
         </div>
-        
+
+        <!-- Desktop collapse toggle -->
+        <button class="sidebar-toggle-btn d-none d-lg-flex" id="sidebarCollapseBtn" title="{% trans 'Toggle sidebar' %}">
+            <i class="bi bi-layout-sidebar-reverse"></i>
+            <span class="toggle-label">{% trans "Collapse" %}</span>
+        </button>
+
         <nav class="erp-sidebar-nav">
-            <div class="erp-nav-section">{% trans "Main" %}</div>
+
+            <!-- MAIN -->
             <a href="{% url 'erp:dashboard' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <i class="bi bi-grid-1x2"></i>
-                {% trans "Dashboard" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Sales & Customers" %}</div>
-            <a href="{% url 'erp:customer_list' %}" class="erp-nav-link {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-people"></i>
-                {% trans "Customers" %}
-            </a>
-            <a href="{% url 'erp:lead_list' %}" class="erp-nav-link {% if 'lead' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-funnel"></i>
-                {% trans "Leads" %}
-            </a>
-            <a href="{% url 'erp:campaign_list' %}" class="erp-nav-link {% if 'campaign' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-megaphone"></i>
-                {% trans "Campaigns" %}
-            </a>
-            <a href="{% url 'erp:quote_list' %}" class="erp-nav-link {% if 'quote' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-file-earmark-text"></i>
-                {% trans "Quotes" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Finance" %}</div>
-            <a href="{% url 'erp:invoice_list' %}" class="erp-nav-link {% if 'invoice' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-receipt"></i>
-                {% trans "Invoices" %}
-            </a>
-            <a href="{% url 'erp:payment_list' %}" class="erp-nav-link {% if 'payment_' in request.resolver_match.url_name and 'method' not in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-credit-card"></i>
-                {% trans "Payments" %}
-            </a>
-            <a href="{% url 'erp:expense_list' %}" class="erp-nav-link {% if 'expense_list' in request.resolver_match.url_name or 'expense_create' in request.resolver_match.url_name or 'expense_edit' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-wallet2"></i>
-                {% trans "Expenses" %}
-            </a>
-            <a href="{% url 'erp:journal_entry_list' %}" class="erp-nav-link {% if 'journal_entry' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-journal-bookmark"></i>
-                {% trans "Journal Entries" %}
-            </a>
-            <a href="{% url 'erp:account_list' %}" class="erp-nav-link {% if 'account_list' in request.resolver_match.url_name or 'account_create' in request.resolver_match.url_name or 'account_edit' in request.resolver_match.url_name or 'account_delete' in request.resolver_match.url_name or 'account_detail' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-journal-text"></i>
-                {% trans "Chart of Accounts" %}
-            </a>
-            <a href="{% url 'erp:financial_reports' %}" class="erp-nav-link {% if 'financial_reports' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-graph-up"></i>
-                {% trans "Financial Reports" %}
-            </a>
-            <a href="{% url 'erp:trial_balance' %}" class="erp-nav-link {% if 'trial_balance' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-balance-scale"></i>
-                {% trans "Trial Balance" %}
-            </a>
-            <a href="{% url 'erp:profit_and_loss' %}" class="erp-nav-link {% if 'profit_and_loss' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-bar-chart-line"></i>
-                {% trans "Profit & Loss" %}
-            </a>
-            <a href="{% url 'erp:balance_sheet' %}" class="erp-nav-link {% if 'balance_sheet' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-file-earmark-spreadsheet"></i>
-                {% trans "Balance Sheet" %}
-            </a>
-            <a href="{% url 'erp:cash_flow' %}" class="erp-nav-link {% if 'cash_flow' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-currency-exchange"></i>
-                {% trans "Cash Flow" %}
-            </a>
-            <a href="{% url 'erp:aging_receivables' %}" class="erp-nav-link {% if 'aging_receivables' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-clock-history"></i>
-                {% trans "Aging Receivables" %}
-            </a>
-            <a href="{% url 'erp:aging_payables' %}" class="erp-nav-link {% if 'aging_payables' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-hourglass-split"></i>
-                {% trans "Aging Payables" %}
-            </a>
-            <a href="{% url 'erp:tax_report' %}" class="erp-nav-link {% if 'tax_report' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-file-earmark-ruled"></i>
-                {% trans "Tax Report" %}
-            </a>
-            <a href="{% url 'erp:report_builder_list' %}" class="erp-nav-link {% if 'report_builder' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-tools"></i>
-                {% trans "Report Builder" %}
-            </a>
-            <a href="{% url 'erp:generated_report_list' %}" class="erp-nav-link {% if 'generated_report' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-file-earmark-arrow-down"></i>
-                {% trans "Generated Reports" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Purchases" %}</div>
-            <a href="{% url 'erp:supplier_list' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_detail' or request.resolver_match.url_name == 'supplier_edit' or request.resolver_match.url_name == 'supplier_delete' %}active{% endif %}">
-                <i class="bi bi-truck"></i>
-                {% trans "Suppliers" %}
-            </a>
-            <a href="{% url 'erp:purchase_order_list' %}" class="erp-nav-link {% if 'purchase_order' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-cart3"></i>
-                {% trans "Purchase Orders" %}
-            </a>
-            <a href="{% url 'erp:supplier_invoice_list' %}" class="erp-nav-link {% if 'supplier_invoice' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-receipt"></i>
-                {% trans "Supplier Invoices" %}
-            </a>
-            <a href="{% url 'erp:supplier_payment_list' %}" class="erp-nav-link {% if 'supplier_payment' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-credit-card-2-back"></i>
-                {% trans "Supplier Payments" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Products & Services" %}</div>
-            <a href="{% url 'erp:product_list' %}" class="erp-nav-link {% if 'product_list' in request.resolver_match.url_name or 'product_create' in request.resolver_match.url_name or 'product_detail' in request.resolver_match.url_name or 'product_edit' in request.resolver_match.url_name or 'product_delete' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-box-seam"></i>
-                {% trans "Products" %}
-            </a>
-            <a href="{% url 'erp:product_category_list' %}" class="erp-nav-link {% if 'product_category' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-folder2"></i>
-                {% trans "Product Categories" %}
-            </a>
-            <a href="{% url 'erp:service_list' %}" class="erp-nav-link {% if 'service_list' in request.resolver_match.url_name or 'service_create' in request.resolver_match.url_name or 'service_detail' in request.resolver_match.url_name or 'service_edit' in request.resolver_match.url_name or 'service_delete' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-gear-wide-connected"></i>
-                {% trans "Services" %}
-            </a>
-            <a href="{% url 'erp:service_category_list' %}" class="erp-nav-link {% if 'service_category' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-tags-fill"></i>
-                {% trans "Service Categories" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Inventory & Warehouse" %}</div>
-            <a href="{% url 'erp:warehouse_list' %}" class="erp-nav-link {% if 'warehouse' in request.resolver_match.url_name or 'zone' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-building"></i>
-                {% trans "Warehouses" %}
-            </a>
-            <a href="{% url 'erp:stock_levels' %}" class="erp-nav-link {% if 'stock_levels' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-boxes"></i>
-                {% trans "Stock Levels" %}
-            </a>
-            <a href="{% url 'erp:stock_movement_list' %}" class="erp-nav-link {% if 'stock_movement' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-arrow-left-right"></i>
-                {% trans "Stock Movements" %}
-            </a>
-            <a href="{% url 'erp:grn_list' %}" class="erp-nav-link {% if 'grn' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-box-arrow-in-down"></i>
-                {% trans "Goods Receipts" %}
-            </a>
-            <a href="{% url 'erp:transfer_list' %}" class="erp-nav-link {% if 'transfer' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-shuffle"></i>
-                {% trans "Transfers" %}
-            </a>
-            <a href="{% url 'erp:adjustment_list' %}" class="erp-nav-link {% if 'adjustment' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-pencil-square"></i>
-                {% trans "Adjustments" %}
-            </a>
-            <a href="{% url 'erp:cycle_count_list' %}" class="erp-nav-link {% if 'cycle_count' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-clipboard-check"></i>
-                {% trans "Cycle Counts" %}
-            </a>
-            <a href="{% url 'erp:pick_list_list' %}" class="erp-nav-link {% if 'pick_list' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-card-checklist"></i>
-                {% trans "Pick Lists" %}
-            </a>
-            <a href="{% url 'erp:shipment_list' %}" class="erp-nav-link {% if 'shipment' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-truck"></i>
-                {% trans "Shipments" %}
-            </a>
-            <a href="{% url 'erp:reorder_rule_list' %}" class="erp-nav-link {% if 'reorder_rule' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-arrow-repeat"></i>
-                {% trans "Reorder Rules" %}
-            </a>
-            <a href="{% url 'erp:reorder_suggestions' %}" class="erp-nav-link {% if 'reorder_suggestions' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-exclamation-triangle"></i>
-                {% trans "Reorder Alerts" %}
-            </a>
-            <a href="{% url 'erp:uom_list' %}" class="erp-nav-link {% if 'uom' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-rulers"></i>
-                {% trans "Units of Measure" %}
-            </a>
-            <a href="{% url 'erp:lot_list' %}" class="erp-nav-link {% if 'lot' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-upc-scan"></i>
-                {% trans "Lots / Batches" %}
-            </a>
-            <a href="{% url 'erp:serial_list' %}" class="erp-nav-link {% if 'serial' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-hash"></i>
-                {% trans "Serial Numbers" %}
-            </a>
-            <a href="{% url 'erp:valuation_config' %}" class="erp-nav-link {% if 'valuation_config' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-sliders"></i>
-                {% trans "Valuation Config" %}
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>{% trans "Dashboard" %}</span>
             </a>
 
-            <div class="erp-nav-section mt-3">{% trans "Point of Sale" %}</div>
-            <a href="{% url 'erp:pos_terminal_list' %}" class="erp-nav-link {% if 'pos_terminal' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-shop"></i>
-                {% trans "Terminals" %}
-            </a>
-            <a href="{% url 'erp:pos_session_list' %}" class="erp-nav-link {% if 'pos_session' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-clock-history"></i>
-                {% trans "Sessions" %}
-            </a>
-            <a href="{% url 'erp:pos_order_list' %}" class="erp-nav-link {% if 'pos_order' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-receipt"></i>
-                {% trans "POS Orders" %}
-            </a>
+            <!-- SALES & CUSTOMERS -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navSales"
+                    aria-expanded="{% if 'customer' in request.resolver_match.url_name or 'lead' in request.resolver_match.url_name or 'campaign' in request.resolver_match.url_name or 'quote' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>{% trans "Sales & CRM" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'customer' in request.resolver_match.url_name or 'lead' in request.resolver_match.url_name or 'campaign' in request.resolver_match.url_name or 'quote' in request.resolver_match.url_name %}show{% endif %}" id="navSales">
+                    <a href="{% url 'erp:customer_list' %}" class="erp-nav-link erp-nav-sub {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-people"></i><span>{% trans "Customers" %}</span>
+                    </a>
+                    <a href="{% url 'erp:lead_list' %}" class="erp-nav-link erp-nav-sub {% if 'lead' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-funnel"></i><span>{% trans "Leads" %}</span>
+                    </a>
+                    <a href="{% url 'erp:campaign_list' %}" class="erp-nav-link erp-nav-sub {% if 'campaign' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-megaphone"></i><span>{% trans "Campaigns" %}</span>
+                    </a>
+                    <a href="{% url 'erp:quote_list' %}" class="erp-nav-link erp-nav-sub {% if 'quote' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-file-earmark-text"></i><span>{% trans "Quotes" %}</span>
+                    </a>
+                </div>
+            </div>
 
-            <div class="erp-nav-section mt-3">{% trans "Fixed Assets" %}</div>
-            <a href="{% url 'erp:asset_list' %}" class="erp-nav-link {% if 'asset_list' == request.resolver_match.url_name or 'asset_detail' == request.resolver_match.url_name or 'asset_create' == request.resolver_match.url_name or 'asset_edit' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-building-gear"></i>
-                {% trans "Asset Register" %}
-            </a>
-            <a href="{% url 'erp:asset_category_list' %}" class="erp-nav-link {% if 'asset_category' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-folder2-open"></i>
-                {% trans "Asset Categories" %}
-            </a>
-            <a href="{% url 'erp:depreciation_list' %}" class="erp-nav-link {% if 'depreciation' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-graph-down-arrow"></i>
-                {% trans "Depreciation" %}
-            </a>
-            <a href="{% url 'erp:disposal_list' %}" class="erp-nav-link {% if 'disposal' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-x-circle"></i>
-                {% trans "Disposals" %}
-            </a>
-            <a href="{% url 'erp:transfer_fa_list' %}" class="erp-nav-link {% if 'transfer_fa' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-arrow-left-right"></i>
-                {% trans "Asset Transfers" %}
-            </a>
-            <a href="{% url 'erp:revaluation_list' %}" class="erp-nav-link {% if 'revaluation' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-arrow-up-down"></i>
-                {% trans "Revaluations" %}
-            </a>
-            <a href="{% url 'erp:maintenance_list' %}" class="erp-nav-link {% if 'maintenance' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-wrench"></i>
-                {% trans "Maintenance Logs" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Operations" %}</div>
+            <!-- FINANCE -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navFinance"
+                    aria-expanded="{% if 'invoice' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name or 'expense' in request.resolver_match.url_name or 'journal' in request.resolver_match.url_name or 'account' in request.resolver_match.url_name or 'financial' in request.resolver_match.url_name or 'trial_balance' in request.resolver_match.url_name or 'profit' in request.resolver_match.url_name or 'balance_sheet' in request.resolver_match.url_name or 'cash_flow' in request.resolver_match.url_name or 'aging' in request.resolver_match.url_name or 'tax_report' in request.resolver_match.url_name or 'report_builder' in request.resolver_match.url_name or 'generated_report' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-bank"></i>
+                    <span>{% trans "Finance" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'invoice' in request.resolver_match.url_name or 'payment' in request.resolver_match.url_name or 'expense' in request.resolver_match.url_name or 'journal' in request.resolver_match.url_name or 'account' in request.resolver_match.url_name or 'financial' in request.resolver_match.url_name or 'trial_balance' in request.resolver_match.url_name or 'profit' in request.resolver_match.url_name or 'balance_sheet' in request.resolver_match.url_name or 'cash_flow' in request.resolver_match.url_name or 'aging' in request.resolver_match.url_name or 'tax_report' in request.resolver_match.url_name or 'report_builder' in request.resolver_match.url_name or 'generated_report' in request.resolver_match.url_name %}show{% endif %}" id="navFinance">
+                    <a href="{% url 'erp:invoice_list' %}" class="erp-nav-link erp-nav-sub {% if 'invoice' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-receipt"></i><span>{% trans "Invoices" %}</span>
+                    </a>
+                    <a href="{% url 'erp:payment_list' %}" class="erp-nav-link erp-nav-sub {% if 'payment_' in request.resolver_match.url_name and 'method' not in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-credit-card"></i><span>{% trans "Payments" %}</span>
+                    </a>
+                    <a href="{% url 'erp:expense_list' %}" class="erp-nav-link erp-nav-sub {% if 'expense_list' in request.resolver_match.url_name or 'expense_create' in request.resolver_match.url_name or 'expense_edit' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-wallet2"></i><span>{% trans "Expenses" %}</span>
+                    </a>
+                    <a href="{% url 'erp:journal_entry_list' %}" class="erp-nav-link erp-nav-sub {% if 'journal_entry' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-journal-bookmark"></i><span>{% trans "Journal Entries" %}</span>
+                    </a>
+                    <a href="{% url 'erp:account_list' %}" class="erp-nav-link erp-nav-sub {% if 'account_list' in request.resolver_match.url_name or 'account_create' in request.resolver_match.url_name or 'account_edit' in request.resolver_match.url_name or 'account_detail' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-journal-text"></i><span>{% trans "Chart of Accounts" %}</span>
+                    </a>
+                    <a href="{% url 'erp:financial_reports' %}" class="erp-nav-link erp-nav-sub {% if 'financial_reports' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-graph-up"></i><span>{% trans "Financial Reports" %}</span>
+                    </a>
+                    <a href="{% url 'erp:trial_balance' %}" class="erp-nav-link erp-nav-sub {% if 'trial_balance' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-balance-scale"></i><span>{% trans "Trial Balance" %}</span>
+                    </a>
+                    <a href="{% url 'erp:profit_and_loss' %}" class="erp-nav-link erp-nav-sub {% if 'profit_and_loss' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-bar-chart-line"></i><span>{% trans "Profit & Loss" %}</span>
+                    </a>
+                    <a href="{% url 'erp:balance_sheet' %}" class="erp-nav-link erp-nav-sub {% if 'balance_sheet' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-file-earmark-spreadsheet"></i><span>{% trans "Balance Sheet" %}</span>
+                    </a>
+                    <a href="{% url 'erp:cash_flow' %}" class="erp-nav-link erp-nav-sub {% if 'cash_flow' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-currency-exchange"></i><span>{% trans "Cash Flow" %}</span>
+                    </a>
+                    <a href="{% url 'erp:aging_receivables' %}" class="erp-nav-link erp-nav-sub {% if 'aging_receivables' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i><span>{% trans "Aging Receivables" %}</span>
+                    </a>
+                    <a href="{% url 'erp:aging_payables' %}" class="erp-nav-link erp-nav-sub {% if 'aging_payables' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-hourglass-split"></i><span>{% trans "Aging Payables" %}</span>
+                    </a>
+                    <a href="{% url 'erp:tax_report' %}" class="erp-nav-link erp-nav-sub {% if 'tax_report' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-file-earmark-ruled"></i><span>{% trans "Tax Report" %}</span>
+                    </a>
+                    <a href="{% url 'erp:report_builder_list' %}" class="erp-nav-link erp-nav-sub {% if 'report_builder' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-tools"></i><span>{% trans "Report Builder" %}</span>
+                    </a>
+                    <a href="{% url 'erp:generated_report_list' %}" class="erp-nav-link erp-nav-sub {% if 'generated_report' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-file-earmark-arrow-down"></i><span>{% trans "Generated Reports" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PURCHASES -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navPurchases"
+                    aria-expanded="{% if 'supplier' in request.resolver_match.url_name or 'purchase_order' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-cart3"></i>
+                    <span>{% trans "Purchases" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'supplier' in request.resolver_match.url_name or 'purchase_order' in request.resolver_match.url_name %}show{% endif %}" id="navPurchases">
+                    <a href="{% url 'erp:supplier_list' %}" class="erp-nav-link erp-nav-sub {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_detail' or request.resolver_match.url_name == 'supplier_edit' or request.resolver_match.url_name == 'supplier_delete' %}active{% endif %}">
+                        <i class="bi bi-truck"></i><span>{% trans "Suppliers" %}</span>
+                    </a>
+                    <a href="{% url 'erp:purchase_order_list' %}" class="erp-nav-link erp-nav-sub {% if 'purchase_order' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-bag-plus"></i><span>{% trans "Purchase Orders" %}</span>
+                    </a>
+                    <a href="{% url 'erp:supplier_invoice_list' %}" class="erp-nav-link erp-nav-sub {% if 'supplier_invoice' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-receipt"></i><span>{% trans "Supplier Invoices" %}</span>
+                    </a>
+                    <a href="{% url 'erp:supplier_payment_list' %}" class="erp-nav-link erp-nav-sub {% if 'supplier_payment' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-credit-card-2-back"></i><span>{% trans "Supplier Payments" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PRODUCTS & SERVICES -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navProducts"
+                    aria-expanded="{% if 'product' in request.resolver_match.url_name or 'service' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-box-seam"></i>
+                    <span>{% trans "Products & Services" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'product' in request.resolver_match.url_name or 'service' in request.resolver_match.url_name %}show{% endif %}" id="navProducts">
+                    <a href="{% url 'erp:product_list' %}" class="erp-nav-link erp-nav-sub {% if 'product_list' in request.resolver_match.url_name or 'product_create' in request.resolver_match.url_name or 'product_detail' in request.resolver_match.url_name or 'product_edit' in request.resolver_match.url_name or 'product_delete' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-box-seam"></i><span>{% trans "Products" %}</span>
+                    </a>
+                    <a href="{% url 'erp:product_category_list' %}" class="erp-nav-link erp-nav-sub {% if 'product_category' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-folder2"></i><span>{% trans "Product Categories" %}</span>
+                    </a>
+                    <a href="{% url 'erp:service_list' %}" class="erp-nav-link erp-nav-sub {% if 'service_list' in request.resolver_match.url_name or 'service_create' in request.resolver_match.url_name or 'service_detail' in request.resolver_match.url_name or 'service_edit' in request.resolver_match.url_name or 'service_delete' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-gear-wide-connected"></i><span>{% trans "Services" %}</span>
+                    </a>
+                    <a href="{% url 'erp:service_category_list' %}" class="erp-nav-link erp-nav-sub {% if 'service_category' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-tags-fill"></i><span>{% trans "Service Categories" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- INVENTORY -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navInventory"
+                    aria-expanded="{% if 'warehouse' in request.resolver_match.url_name or 'stock' in request.resolver_match.url_name or 'grn' in request.resolver_match.url_name or 'transfer' in request.resolver_match.url_name or 'adjustment' in request.resolver_match.url_name or 'cycle_count' in request.resolver_match.url_name or 'pick_list' in request.resolver_match.url_name or 'shipment' in request.resolver_match.url_name or 'reorder' in request.resolver_match.url_name or 'uom' in request.resolver_match.url_name or 'lot' in request.resolver_match.url_name or 'serial' in request.resolver_match.url_name or 'valuation' in request.resolver_match.url_name or 'zone' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-boxes"></i>
+                    <span>{% trans "Inventory" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'warehouse' in request.resolver_match.url_name or 'stock' in request.resolver_match.url_name or 'grn' in request.resolver_match.url_name or 'transfer' in request.resolver_match.url_name or 'adjustment' in request.resolver_match.url_name or 'cycle_count' in request.resolver_match.url_name or 'pick_list' in request.resolver_match.url_name or 'shipment' in request.resolver_match.url_name or 'reorder' in request.resolver_match.url_name or 'uom' in request.resolver_match.url_name or 'lot' in request.resolver_match.url_name or 'serial' in request.resolver_match.url_name or 'valuation' in request.resolver_match.url_name or 'zone' in request.resolver_match.url_name %}show{% endif %}" id="navInventory">
+                    <a href="{% url 'erp:warehouse_list' %}" class="erp-nav-link erp-nav-sub {% if 'warehouse' in request.resolver_match.url_name or 'zone' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-building"></i><span>{% trans "Warehouses" %}</span>
+                    </a>
+                    <a href="{% url 'erp:stock_levels' %}" class="erp-nav-link erp-nav-sub {% if 'stock_levels' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-boxes"></i><span>{% trans "Stock Levels" %}</span>
+                    </a>
+                    <a href="{% url 'erp:stock_movement_list' %}" class="erp-nav-link erp-nav-sub {% if 'stock_movement' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-arrow-left-right"></i><span>{% trans "Stock Movements" %}</span>
+                    </a>
+                    <a href="{% url 'erp:grn_list' %}" class="erp-nav-link erp-nav-sub {% if 'grn' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-box-arrow-in-down"></i><span>{% trans "Goods Receipts" %}</span>
+                    </a>
+                    <a href="{% url 'erp:transfer_list' %}" class="erp-nav-link erp-nav-sub {% if 'transfer' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-shuffle"></i><span>{% trans "Transfers" %}</span>
+                    </a>
+                    <a href="{% url 'erp:adjustment_list' %}" class="erp-nav-link erp-nav-sub {% if 'adjustment' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-pencil-square"></i><span>{% trans "Adjustments" %}</span>
+                    </a>
+                    <a href="{% url 'erp:cycle_count_list' %}" class="erp-nav-link erp-nav-sub {% if 'cycle_count' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-clipboard-check"></i><span>{% trans "Cycle Counts" %}</span>
+                    </a>
+                    <a href="{% url 'erp:pick_list_list' %}" class="erp-nav-link erp-nav-sub {% if 'pick_list' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-card-checklist"></i><span>{% trans "Pick Lists" %}</span>
+                    </a>
+                    <a href="{% url 'erp:shipment_list' %}" class="erp-nav-link erp-nav-sub {% if 'shipment' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-truck"></i><span>{% trans "Shipments" %}</span>
+                    </a>
+                    <a href="{% url 'erp:reorder_rule_list' %}" class="erp-nav-link erp-nav-sub {% if 'reorder_rule' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-arrow-repeat"></i><span>{% trans "Reorder Rules" %}</span>
+                    </a>
+                    <a href="{% url 'erp:reorder_suggestions' %}" class="erp-nav-link erp-nav-sub {% if 'reorder_suggestions' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-exclamation-triangle"></i><span>{% trans "Reorder Alerts" %}</span>
+                    </a>
+                    <a href="{% url 'erp:uom_list' %}" class="erp-nav-link erp-nav-sub {% if 'uom' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-rulers"></i><span>{% trans "Units of Measure" %}</span>
+                    </a>
+                    <a href="{% url 'erp:lot_list' %}" class="erp-nav-link erp-nav-sub {% if 'lot' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-upc-scan"></i><span>{% trans "Lots / Batches" %}</span>
+                    </a>
+                    <a href="{% url 'erp:serial_list' %}" class="erp-nav-link erp-nav-sub {% if 'serial' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-hash"></i><span>{% trans "Serial Numbers" %}</span>
+                    </a>
+                    <a href="{% url 'erp:valuation_config' %}" class="erp-nav-link erp-nav-sub {% if 'valuation_config' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-sliders"></i><span>{% trans "Valuation Config" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- POS -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navPOS"
+                    aria-expanded="{% if 'pos' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-shop"></i>
+                    <span>{% trans "Point of Sale" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'pos' in request.resolver_match.url_name %}show{% endif %}" id="navPOS">
+                    <a href="{% url 'erp:pos_terminal_list' %}" class="erp-nav-link erp-nav-sub {% if 'pos_terminal' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-display"></i><span>{% trans "Terminals" %}</span>
+                    </a>
+                    <a href="{% url 'erp:pos_session_list' %}" class="erp-nav-link erp-nav-sub {% if 'pos_session' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i><span>{% trans "Sessions" %}</span>
+                    </a>
+                    <a href="{% url 'erp:pos_order_list' %}" class="erp-nav-link erp-nav-sub {% if 'pos_order' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-receipt"></i><span>{% trans "POS Orders" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- FIXED ASSETS -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navAssets"
+                    aria-expanded="{% if 'asset' in request.resolver_match.url_name or 'depreciation' in request.resolver_match.url_name or 'disposal' in request.resolver_match.url_name or 'transfer_fa' in request.resolver_match.url_name or 'revaluation' in request.resolver_match.url_name or 'maintenance' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-building-gear"></i>
+                    <span>{% trans "Fixed Assets" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'asset' in request.resolver_match.url_name or 'depreciation' in request.resolver_match.url_name or 'disposal' in request.resolver_match.url_name or 'transfer_fa' in request.resolver_match.url_name or 'revaluation' in request.resolver_match.url_name or 'maintenance' in request.resolver_match.url_name %}show{% endif %}" id="navAssets">
+                    <a href="{% url 'erp:asset_list' %}" class="erp-nav-link erp-nav-sub {% if 'asset_list' == request.resolver_match.url_name or 'asset_detail' == request.resolver_match.url_name or 'asset_create' == request.resolver_match.url_name or 'asset_edit' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-building-gear"></i><span>{% trans "Asset Register" %}</span>
+                    </a>
+                    <a href="{% url 'erp:asset_category_list' %}" class="erp-nav-link erp-nav-sub {% if 'asset_category' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-folder2-open"></i><span>{% trans "Asset Categories" %}</span>
+                    </a>
+                    <a href="{% url 'erp:depreciation_list' %}" class="erp-nav-link erp-nav-sub {% if 'depreciation' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-graph-down-arrow"></i><span>{% trans "Depreciation" %}</span>
+                    </a>
+                    <a href="{% url 'erp:disposal_list' %}" class="erp-nav-link erp-nav-sub {% if 'disposal' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-x-circle"></i><span>{% trans "Disposals" %}</span>
+                    </a>
+                    <a href="{% url 'erp:transfer_fa_list' %}" class="erp-nav-link erp-nav-sub {% if 'transfer_fa' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-arrow-left-right"></i><span>{% trans "Asset Transfers" %}</span>
+                    </a>
+                    <a href="{% url 'erp:revaluation_list' %}" class="erp-nav-link erp-nav-sub {% if 'revaluation' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-arrow-up-down"></i><span>{% trans "Revaluations" %}</span>
+                    </a>
+                    <a href="{% url 'erp:maintenance_list' %}" class="erp-nav-link erp-nav-sub {% if 'maintenance' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-wrench"></i><span>{% trans "Maintenance Logs" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- OPERATIONS -->
             <a href="{% url 'erp:task_list' %}" class="erp-nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-check2-square"></i>
-                {% trans "Tasks" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Human Resources" %}</div>
-            <a href="{% url 'erp:employee_list' %}" class="erp-nav-link {% if 'employee' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-badge"></i>
-                {% trans "Employees" %}
-            </a>
-            <a href="{% url 'erp:department_list' %}" class="erp-nav-link {% if 'department' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-diagram-3"></i>
-                {% trans "Departments" %}
-            </a>
-            <a href="{% url 'erp:attendance_list' %}" class="erp-nav-link {% if request.resolver_match.url_name == 'attendance_list' or request.resolver_match.url_name == 'attendance_create' or request.resolver_match.url_name == 'attendance_edit' %}active{% endif %}">
-                <i class="bi bi-clock-history"></i>
-                {% trans "Attendance" %}
-            </a>
-            <a href="{% url 'erp:device_list' %}" class="erp-nav-link {% if 'device' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-qr-code"></i>
-                {% trans "Attendance Devices" %}
-            </a>
-            <a href="{% url 'erp:leave_request_list' %}" class="erp-nav-link {% if 'leave_request' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-calendar-x"></i>
-                {% trans "Leave Requests" %}
-            </a>
-            <a href="{% url 'erp:payroll_list' %}" class="erp-nav-link {% if 'payroll' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-cash-coin"></i>
-                {% trans "Payroll" %}
-            </a>
-            <a href="{% url 'erp:invite_link_list' %}" class="erp-nav-link {% if 'invite_link' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-link-45deg"></i>
-                {% trans "Invite Links" %}
-            </a>
-            <a href="{% url 'erp:pending_employees' %}" class="erp-nav-link {% if 'pending_employees' == request.resolver_match.url_name or 'approve_employee' == request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-person-check"></i>
-                {% trans "Pending Approvals" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Settings" %}</div>
-            <a href="{% url 'erp:tax_rate_list' %}" class="erp-nav-link {% if 'tax_rate' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-percent"></i>
-                {% trans "Tax Rates" %}
-            </a>
-            <a href="{% url 'erp:payment_method_list' %}" class="erp-nav-link {% if 'payment_method' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-cash-stack"></i>
-                {% trans "Payment Methods" %}
-            </a>
-            <a href="{% url 'erp:expense_category_list' %}" class="erp-nav-link {% if 'expense_category' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-tags"></i>
-                {% trans "Expense Categories" %}
-            </a>
-            <a href="{% url 'erp:currency_list' %}" class="erp-nav-link {% if 'currency' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-currency-exchange"></i>
-                {% trans "Currencies" %}
-            </a>
-            <a href="{% url 'erp:fiscal_year_list' %}" class="erp-nav-link {% if 'fiscal_year' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-calendar-range"></i>
-                {% trans "Fiscal Years" %}
-            </a>
-            
-            <div class="erp-nav-section mt-3">{% trans "Support" %}</div>
-            <a href="{% url 'erp:support_ticket_list' %}" class="erp-nav-link {% if 'support_ticket' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-headset"></i>
-                {% trans "Support Tickets" %}
+                <span>{% trans "Tasks" %}</span>
             </a>
 
-            <div class="erp-nav-section mt-3">{% trans "Administration" %}</div>
-            <a href="{% url 'erp:notification_list' %}" class="erp-nav-link {% if 'notification' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-bell"></i>
-                {% trans "Notifications" %}
-            </a>
-            <a href="{% url 'erp:audit_log_list' %}" class="erp-nav-link {% if 'audit_log' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-clock-history"></i>
-                {% trans "Audit Log" %}
-            </a>
-            <a href="{% url 'admin:index' %}" class="erp-nav-link">
-                <i class="bi bi-gear"></i>
-                {% trans "Admin Panel" %}
-            </a>
-            <a href="/" class="erp-nav-link">
-                <i class="bi bi-globe"></i>
-                {% trans "Main Site" %}
-            </a>
+            <!-- HUMAN RESOURCES -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navHR"
+                    aria-expanded="{% if 'employee' in request.resolver_match.url_name or 'department' in request.resolver_match.url_name or 'attendance' in request.resolver_match.url_name or 'device' in request.resolver_match.url_name or 'leave_request' in request.resolver_match.url_name or 'payroll' in request.resolver_match.url_name or 'invite_link' in request.resolver_match.url_name or 'pending_employees' == request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>{% trans "Human Resources" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'employee' in request.resolver_match.url_name or 'department' in request.resolver_match.url_name or 'attendance' in request.resolver_match.url_name or 'device' in request.resolver_match.url_name or 'leave_request' in request.resolver_match.url_name or 'payroll' in request.resolver_match.url_name or 'invite_link' in request.resolver_match.url_name or 'pending_employees' == request.resolver_match.url_name %}show{% endif %}" id="navHR">
+                    <a href="{% url 'erp:employee_list' %}" class="erp-nav-link erp-nav-sub {% if 'employee' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-person-badge"></i><span>{% trans "Employees" %}</span>
+                    </a>
+                    <a href="{% url 'erp:department_list' %}" class="erp-nav-link erp-nav-sub {% if 'department' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-diagram-3"></i><span>{% trans "Departments" %}</span>
+                    </a>
+                    <a href="{% url 'erp:attendance_list' %}" class="erp-nav-link erp-nav-sub {% if request.resolver_match.url_name == 'attendance_list' or request.resolver_match.url_name == 'attendance_create' or request.resolver_match.url_name == 'attendance_edit' %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i><span>{% trans "Attendance" %}</span>
+                    </a>
+                    <a href="{% url 'erp:device_list' %}" class="erp-nav-link erp-nav-sub {% if 'device' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-qr-code"></i><span>{% trans "Attendance Devices" %}</span>
+                    </a>
+                    <a href="{% url 'erp:leave_request_list' %}" class="erp-nav-link erp-nav-sub {% if 'leave_request' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-calendar-x"></i><span>{% trans "Leave Requests" %}</span>
+                    </a>
+                    <a href="{% url 'erp:payroll_list' %}" class="erp-nav-link erp-nav-sub {% if 'payroll' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-cash-coin"></i><span>{% trans "Payroll" %}</span>
+                    </a>
+                    <a href="{% url 'erp:invite_link_list' %}" class="erp-nav-link erp-nav-sub {% if 'invite_link' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-link-45deg"></i><span>{% trans "Invite Links" %}</span>
+                    </a>
+                    <a href="{% url 'erp:pending_employees' %}" class="erp-nav-link erp-nav-sub {% if 'pending_employees' == request.resolver_match.url_name or 'approve_employee' == request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-person-check"></i><span>{% trans "Pending Approvals" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- SETTINGS -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navSettings"
+                    aria-expanded="{% if 'tax_rate' in request.resolver_match.url_name or 'payment_method' in request.resolver_match.url_name or 'expense_category' in request.resolver_match.url_name or 'currency' in request.resolver_match.url_name or 'fiscal_year' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-sliders"></i>
+                    <span>{% trans "Settings" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'tax_rate' in request.resolver_match.url_name or 'payment_method' in request.resolver_match.url_name or 'expense_category' in request.resolver_match.url_name or 'currency' in request.resolver_match.url_name or 'fiscal_year' in request.resolver_match.url_name %}show{% endif %}" id="navSettings">
+                    <a href="{% url 'erp:tax_rate_list' %}" class="erp-nav-link erp-nav-sub {% if 'tax_rate' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-percent"></i><span>{% trans "Tax Rates" %}</span>
+                    </a>
+                    <a href="{% url 'erp:payment_method_list' %}" class="erp-nav-link erp-nav-sub {% if 'payment_method' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-cash-stack"></i><span>{% trans "Payment Methods" %}</span>
+                    </a>
+                    <a href="{% url 'erp:expense_category_list' %}" class="erp-nav-link erp-nav-sub {% if 'expense_category' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-tags"></i><span>{% trans "Expense Categories" %}</span>
+                    </a>
+                    <a href="{% url 'erp:currency_list' %}" class="erp-nav-link erp-nav-sub {% if 'currency' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-currency-exchange"></i><span>{% trans "Currencies" %}</span>
+                    </a>
+                    <a href="{% url 'erp:fiscal_year_list' %}" class="erp-nav-link erp-nav-sub {% if 'fiscal_year' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-calendar-range"></i><span>{% trans "Fiscal Years" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- SUPPORT & ADMIN -->
+            <div class="erp-nav-group">
+                <button class="erp-nav-group-toggle" data-bs-toggle="collapse" data-bs-target="#navAdmin"
+                    aria-expanded="{% if 'support_ticket' in request.resolver_match.url_name or 'notification' in request.resolver_match.url_name or 'audit_log' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="bi bi-shield-check"></i>
+                    <span>{% trans "Administration" %}</span>
+                    <i class="bi bi-chevron-down group-arrow"></i>
+                </button>
+                <div class="collapse {% if 'support_ticket' in request.resolver_match.url_name or 'notification' in request.resolver_match.url_name or 'audit_log' in request.resolver_match.url_name %}show{% endif %}" id="navAdmin">
+                    <a href="{% url 'erp:support_ticket_list' %}" class="erp-nav-link erp-nav-sub {% if 'support_ticket' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-headset"></i><span>{% trans "Support Tickets" %}</span>
+                    </a>
+                    <a href="{% url 'erp:notification_list' %}" class="erp-nav-link erp-nav-sub {% if 'notification' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-bell"></i><span>{% trans "Notifications" %}</span>
+                    </a>
+                    <a href="{% url 'erp:audit_log_list' %}" class="erp-nav-link erp-nav-sub {% if 'audit_log' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i><span>{% trans "Audit Log" %}</span>
+                    </a>
+                    <a href="{% url 'admin:index' %}" class="erp-nav-link erp-nav-sub">
+                        <i class="bi bi-gear"></i><span>{% trans "Admin Panel" %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bottom spacing -->
+            <div style="height: 2rem;"></div>
         </nav>
     </aside>
-    
-    <!-- المحتوى الرئيسي -->
-    <main class="erp-main">
-        <!-- الرأس -->
+
+    <!-- ===== MAIN ===== -->
+    <main class="erp-main" id="erpMain">
+
+        <!-- HEADER -->
         <header class="erp-header">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-link d-lg-none p-0 ms-3" id="sidebarToggle">
+            <div class="d-flex align-items-center gap-2">
+                <!-- Mobile sidebar toggle -->
+                <button class="btn d-lg-none p-1 me-1" id="sidebarToggle" style="color: var(--clr-gray-600);">
                     <i class="bi bi-list fs-4"></i>
                 </button>
-                <h5 class="mb-0">{% block page_title %}لوحة التحكم{% endblock %}</h5>
+                <!-- Page title -->
+                <h5 class="page-heading">{% block page_title %}{% trans "Dashboard" %}{% endblock %}</h5>
             </div>
-            
-            <div class="d-flex align-items-center gap-3">
+
+            <div class="d-flex align-items-center gap-2">
                 <!-- Language Switcher -->
                 <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center">
                     {% csrf_token %}
                     <input name="next" type="hidden" value="{{ redirect_to }}">
-                    <select name="language" class="form-select form-select-sm border-0 bg-transparent" onchange="this.form.submit()" style="width: auto; cursor: pointer;">
+                    <select name="language" class="form-select form-select-sm"
+                        onchange="this.form.submit()"
+                        style="width:auto; cursor:pointer; border-radius: var(--border-radius-pill); font-size:0.78rem; padding:0.25rem 0.6rem; border-color: var(--border-color);">
                         {% get_current_language as LANGUAGE_CODE %}
                         {% get_available_languages as LANGUAGES %}
                         {% get_language_info_list for LANGUAGES as languages %}
@@ -647,94 +517,120 @@
                     </select>
                 </form>
 
+                <!-- Quick Add -->
                 <div class="dropdown">
-                    <button class="btn btn-light btn-sm" data-bs-toggle="dropdown">
-                        <i class="bi bi-plus-lg ms-1"></i> {% trans "Quick Add" %}
+                    <button class="btn-quick-add" data-bs-toggle="dropdown">
+                        <i class="bi bi-plus-lg"></i> {% trans "New" %}
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-start">
-                        <li><a class="dropdown-item" href="{% url 'erp:customer_create' %}"><i class="bi bi-person-plus ms-2"></i>{% trans "New Customer" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:invoice_create' %}"><i class="bi bi-receipt ms-2"></i>{% trans "New Invoice" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:journal_entry_create' %}"><i class="bi bi-journal-plus ms-2"></i>{% trans "Journal Entry" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:lead_create' %}"><i class="bi bi-funnel ms-2"></i>{% trans "New Lead" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:task_create' %}"><i class="bi bi-check2-square ms-2"></i>{% trans "New Task" %}</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'erp:customer_create' %}"><i class="bi bi-person-plus"></i> {% trans "New Customer" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:invoice_create' %}"><i class="bi bi-receipt"></i> {% trans "New Invoice" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:journal_entry_create' %}"><i class="bi bi-journal-plus"></i> {% trans "Journal Entry" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:lead_create' %}"><i class="bi bi-funnel"></i> {% trans "New Lead" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:task_create' %}"><i class="bi bi-check2-square"></i> {% trans "New Task" %}</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:product_create' %}"><i class="bi bi-box-seam ms-2"></i>{% trans "New Product" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url 'erp:service_create' %}"><i class="bi bi-gear-wide-connected ms-2"></i>{% trans "New Service" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:product_create' %}"><i class="bi bi-box-seam"></i> {% trans "New Product" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'erp:service_create' %}"><i class="bi bi-gear-wide-connected"></i> {% trans "New Service" %}</a></li>
                     </ul>
                 </div>
 
                 <!-- Notification Bell -->
                 <div class="dropdown">
-                    <button class="btn btn-link p-0 position-relative" data-bs-toggle="dropdown" id="notifBell">
-                        <i class="bi bi-bell fs-5 text-secondary"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notifCount" style="font-size:.65rem"></span>
+                    <button class="notif-btn" data-bs-toggle="dropdown" id="notifBell">
+                        <i class="bi bi-bell fs-6"></i>
+                        <span class="notif-badge d-none" id="notifCount"></span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-start shadow" style="width:360px; max-height:420px; overflow-y:auto;" id="notifDropdown">
+                    <div class="dropdown-menu dropdown-menu-end shadow" style="width:360px; max-height:420px; overflow-y:auto;" id="notifDropdown">
                         <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                            <h6 class="mb-0">{% trans "Notifications" %}</h6>
-                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn">{% trans "Mark all as read" %}</button>
+                            <h6 class="mb-0 fw-semibold" style="font-size:0.9rem;">{% trans "Notifications" %}</h6>
+                            <button class="btn btn-sm btn-link p-0 text-muted" id="markAllReadBtn" style="font-size:0.78rem;">{% trans "Mark all read" %}</button>
                         </div>
                         <div id="notifList" class="py-1">
                             <div class="text-center text-muted py-3"><small>{% trans "Loading..." %}</small></div>
                         </div>
                         <div class="border-top text-center py-2">
-                            <a href="{% url 'erp:notification_list' %}" class="text-decoration-none small">{% trans "View all notifications" %}</a>
+                            <a href="{% url 'erp:notification_list' %}" class="text-decoration-none" style="font-size:0.8rem; color: var(--clr-primary);">{% trans "View all notifications" %}</a>
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- User Menu -->
                 <div class="dropdown">
-                    <button class="btn btn-link p-0" data-bs-toggle="dropdown">
-                        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=0d6efd&color=fff" 
-                             alt="{{ user.username }}" 
-                             class="rounded-circle" 
-                             width="36" height="36">
+                    <button class="user-avatar-btn" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=6366f1&color=fff"
+                             alt="{{ user.username }}" class="rounded-circle" width="32" height="32">
+                        <span class="d-none d-md-block" style="font-size:0.83rem; font-weight:600; color: var(--clr-gray-700);">{{ user.get_full_name|default:user.username }}</span>
+                        <i class="bi bi-chevron-down d-none d-md-block" style="font-size:0.65rem; color: var(--clr-gray-400);"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-start">
-                        <li class="dropdown-header">{{ user.get_full_name|default:user.username }}</li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear ms-2"></i>{% trans "Settings" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url 'tenants:logout' %}"><i class="bi bi-box-arrow-left ms-2"></i>{% trans "Logout" %}</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li class="px-3 py-2 border-bottom">
+                            <div style="font-size:0.85rem; font-weight:600; color: var(--clr-gray-800);">{{ user.get_full_name|default:user.username }}</div>
+                            <div style="font-size:0.75rem; color: var(--clr-gray-500);">{{ user.email }}</div>
+                        </li>
+                        <li><a class="dropdown-item mt-1" href="{% url 'admin:index' %}"><i class="bi bi-gear"></i> {% trans "Settings" %}</a></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'tenants:logout' %}"><i class="bi bi-box-arrow-left"></i> {% trans "Logout" %}</a></li>
                     </ul>
                 </div>
             </div>
         </header>
-        
-        <!-- محتوى الصفحة -->
+
+        <!-- PAGE CONTENT -->
         <div class="erp-content">
             {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             {% endfor %}
             {% endif %}
-            
+
             {% block content %}{% endblock %}
         </div>
     </main>
-    
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-        // Sidebar toggle for mobile
-        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.getElementById('erpSidebar').classList.toggle('show');
+    (function() {
+        // ── Mobile sidebar toggle ──
+        const sidebar    = document.getElementById('erpSidebar');
+        const main       = document.getElementById('erpMain');
+        const overlay    = document.getElementById('sidebarOverlay');
+        const mobileBtn  = document.getElementById('sidebarToggle');
+        const collapseBtn= document.getElementById('sidebarCollapseBtn');
+
+        mobileBtn?.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
         });
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('erpSidebar');
-            const toggle = document.getElementById('sidebarToggle');
-            if (window.innerWidth < 992 && sidebar.classList.contains('show') && 
-                !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                sidebar.classList.remove('show');
-            }
+        overlay?.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
         });
 
-        // Notification bell – load dropdown
+        // ── Desktop collapse ──
+        const COLLAPSED_KEY = 'erpSidebarCollapsed';
+        function applyCollapsed(collapsed) {
+            if (collapsed) {
+                sidebar.classList.add('collapsed');
+                main.classList.add('sidebar-collapsed');
+            } else {
+                sidebar.classList.remove('collapsed');
+                main.classList.remove('sidebar-collapsed');
+            }
+        }
+        // Restore state
+        applyCollapsed(localStorage.getItem(COLLAPSED_KEY) === '1');
+
+        collapseBtn?.addEventListener('click', function() {
+            const isNowCollapsed = !sidebar.classList.contains('collapsed');
+            applyCollapsed(isNowCollapsed);
+            localStorage.setItem(COLLAPSED_KEY, isNowCollapsed ? '1' : '0');
+        });
+
+        // ── Notification bell ──
         function loadNotifications() {
             fetch('{% url "erp:notification_dropdown" %}')
                 .then(r => r.json())
@@ -748,21 +644,21 @@
                     }
                     const list = document.getElementById('notifList');
                     if (!data.items.length) {
-                        list.innerHTML = '<div class="text-center text-muted py-3"><i class="bi bi-bell-slash d-block fs-4 mb-1"></i><small>{% trans "No notifications" %}</small></div>';
+                        list.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-bell-slash d-block fs-3 mb-2"></i><small>{% trans "No notifications" %}</small></div>';
                         return;
                     }
                     list.innerHTML = data.items.map(n => {
                         const icon = n.type === 'success' ? 'check-circle-fill text-success'
                             : n.type === 'warning' ? 'exclamation-triangle-fill text-warning'
-                            : n.type === 'error' ? 'x-circle-fill text-danger'
+                            : n.type === 'error'   ? 'x-circle-fill text-danger'
                             : 'info-circle-fill text-primary';
-                        const bg = n.is_read ? '' : 'bg-light';
-                        const fw = n.is_read ? '' : 'fw-bold';
+                        const bg = n.is_read ? '' : 'bg-primary bg-opacity-10';
+                        const fw = n.is_read ? '' : 'fw-semibold';
                         const url = n.action_url || '#';
                         return `<a href="${url}" class="dropdown-item d-flex gap-2 align-items-start py-2 ${bg} border-bottom">
-                            <i class="bi bi-${icon} mt-1"></i>
-                            <div class="text-wrap" style="min-width:0">
-                                <div class="${fw} small">${n.title}</div>
+                            <i class="bi bi-${icon} mt-1 flex-shrink-0"></i>
+                            <div style="min-width:0">
+                                <div class="${fw}" style="font-size:.82rem">${n.title}</div>
                                 <div class="text-muted" style="font-size:.75rem">${n.message}</div>
                                 <div class="text-muted" style="font-size:.7rem">${n.created_at}</div>
                             </div>
@@ -771,18 +667,17 @@
                 }).catch(() => {});
         }
         document.getElementById('notifBell')?.addEventListener('click', loadNotifications);
-        // Initial load
         loadNotifications();
 
-        // Mark all as read
         document.getElementById('markAllReadBtn')?.addEventListener('click', function() {
             fetch('{% url "erp:notification_mark_all_read" %}', {
-                method:'POST',
-                headers:{'X-CSRFToken':'{{ csrf_token }}','X-Requested-With':'XMLHttpRequest'}
+                method: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest'}
             }).then(() => loadNotifications());
         });
+    })();
     </script>
-    
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

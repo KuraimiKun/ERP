@@ -7,127 +7,143 @@
 {% block page_title %}{% trans "Dashboard" %}{% endblock %}
 
 {% block content %}
-<!-- Welcome Section -->
-<div class="mb-4">
-    <h4 class="mb-1">{% trans "Welcome" %}, {{ user.first_name|default:user.username }}!</h4>
-    <p class="text-muted mb-0">{% trans "Here is a summary of your business activities today." %}</p>
+<!-- Welcome Banner -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="mb-1 fw-bold" style="color: var(--clr-gray-900);">
+            {% trans "Welcome back" %}, {{ user.first_name|default:user.username }}!
+        </h4>
+        <p class="text-muted mb-0" style="font-size:0.875rem;">{% trans "Here is a summary of your business activities today." %}</p>
+    </div>
+    <div class="d-none d-md-flex align-items-center gap-2">
+        <span class="badge" style="background: var(--clr-primary-light); color: var(--clr-primary); border-radius: var(--border-radius-pill); font-size:0.78rem; padding: 0.4rem 0.8rem;">
+            <i class="bi bi-calendar3 me-1"></i>{% now "j F Y" %}
+        </span>
+    </div>
 </div>
 
-<!-- KPIs -->
+<!-- Primary KPIs -->
 <div class="row g-3 mb-4">
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card--primary">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value text-primary">{{ company.base_currency.symbol|default:"$" }}{{ monthly_revenue|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-value">{{ company.base_currency.symbol|default:"$" }}{{ monthly_revenue|floatformat:0|default:"0"|intcomma }}</div>
                     <div class="stat-label">{% trans "Monthly Revenue" %}</div>
+                    {% if new_customers_month %}
+                    <div class="stat-trend" style="color: var(--clr-success);">
+                        <i class="bi bi-arrow-up-short"></i>{% trans "Growing" %}
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                <div class="stat-icon">
                     <i class="bi bi-graph-up-arrow"></i>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card--warning">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value text-warning">{{ company.base_currency.symbol|default:"$" }}{{ outstanding_receivables|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-value">{{ company.base_currency.symbol|default:"$" }}{{ outstanding_receivables|floatformat:0|default:"0"|intcomma }}</div>
                     <div class="stat-label">{% trans "Outstanding Receivables" %}</div>
+                    {% if overdue_invoices %}
+                    <div class="stat-trend mt-1">
+                        <span class="badge" style="background: var(--clr-danger-light); color: var(--clr-danger-dark); border-radius: var(--border-radius-pill); font-size:0.7rem;">
+                            {{ overdue_invoices }} {% trans "Overdue" %}
+                        </span>
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                <div class="stat-icon">
                     <i class="bi bi-cash-stack"></i>
                 </div>
             </div>
-            {% if overdue_invoices %}
-            <div class="mt-2">
-                <span class="badge bg-danger">{{ overdue_invoices }} {% trans "Overdue" %}</span>
-            </div>
-            {% endif %}
         </div>
     </div>
-    
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card--success">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value text-success">{{ total_customers }}</div>
+                    <div class="stat-value">{{ total_customers }}</div>
                     <div class="stat-label">{% trans "Active Customers" %}</div>
+                    {% if new_customers_month %}
+                    <div class="stat-trend" style="color: var(--clr-success);">
+                        <i class="bi bi-arrow-up-short"></i>+{{ new_customers_month }} {% trans "This Month" %}
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="stat-icon bg-success bg-opacity-10 text-success">
-                    <i class="bi bi-people"></i>
+                <div class="stat-icon">
+                    <i class="bi bi-people-fill"></i>
                 </div>
             </div>
-            {% if new_customers_month %}
-            <div class="mt-2">
-                <span class="stat-change text-success">
-                    <i class="bi bi-arrow-up-short"></i>+{{ new_customers_month }} {% trans "This Month" %}
-                </span>
-            </div>
-            {% endif %}
         </div>
     </div>
-    
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card--info">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value text-info">{{ total_leads }}</div>
+                    <div class="stat-value">{{ total_leads }}</div>
                     <div class="stat-label">{% trans "Leads" %}</div>
+                    {% if new_leads_month %}
+                    <div class="stat-trend" style="color: var(--clr-success);">
+                        <i class="bi bi-arrow-up-short"></i>+{{ new_leads_month }} {% trans "This Month" %}
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="stat-icon bg-info bg-opacity-10 text-info">
-                    <i class="bi bi-funnel"></i>
+                <div class="stat-icon">
+                    <i class="bi bi-funnel-fill"></i>
                 </div>
             </div>
-            {% if new_leads_month %}
-            <div class="mt-2">
-                <span class="stat-change text-success">
-                    <i class="bi bi-arrow-up-short"></i>+{{ new_leads_month }} {% trans "This Month" %}
-                </span>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Secondary Stats -->
+<!-- Secondary KPIs -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="stat-label">{% trans "Pending Quotes" %}</div>
-                    <div class="stat-value fs-4">{{ pending_quotes }}</div>
+                    <div class="stat-value fs-3 mt-1">{{ pending_quotes }}</div>
                     <small class="text-muted">{% trans "Value" %}: {{ company.base_currency.symbol|default:"$" }}{{ quotes_value|floatformat:0|default:"0"|intcomma }}</small>
                 </div>
-                <i class="bi bi-file-earmark-text text-primary fs-2"></i>
+                <div style="width:44px; height:44px; border-radius: var(--border-radius-sm); background: var(--clr-primary-light); display:flex; align-items:center; justify-content:center; font-size:1.4rem; color: var(--clr-primary);">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
             </div>
         </div>
     </div>
-    
     <div class="col-md-4">
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="stat-label">{% trans "Active Tasks" %}</div>
-                    <div class="stat-value fs-4">{{ active_tasks }}</div>
+                    <div class="stat-value fs-3 mt-1">{{ active_tasks }}</div>
                     <small class="text-muted">{{ overdue_tasks }} {% trans "Overdue Task" %}</small>
                 </div>
-                <i class="bi bi-check2-square text-success fs-2"></i>
+                <div style="width:44px; height:44px; border-radius: var(--border-radius-sm); background: var(--clr-success-light); display:flex; align-items:center; justify-content:center; font-size:1.4rem; color: var(--clr-success);">
+                    <i class="bi bi-check2-square"></i>
+                </div>
             </div>
         </div>
     </div>
-    
     <div class="col-md-4">
         <div class="stat-card">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="stat-label">{% trans "Pending Leave Requests" %}</div>
-                    <div class="stat-value fs-4">{{ pending_leaves }}</div>
+                    <div class="stat-value fs-3 mt-1">{{ pending_leaves }}</div>
                     <small class="text-muted">{% trans "Needs Review" %}</small>
                 </div>
-                <i class="bi bi-calendar-x text-warning fs-2"></i>
+                <div style="width:44px; height:44px; border-radius: var(--border-radius-sm); background: var(--clr-warning-light); display:flex; align-items:center; justify-content:center; font-size:1.4rem; color: var(--clr-warning);">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -135,44 +151,47 @@
 
 <!-- Quick Actions -->
 <div class="erp-card mb-4">
-    <div class="erp-card-header">
-        <h6 class="mb-0"><i class="bi bi-lightning ms-2"></i>{% trans "Quick Actions" %}</h6>
+    <div class="erp-card-header d-flex align-items-center gap-2">
+        <div style="width:28px; height:28px; border-radius:6px; background: var(--gradient-primary); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.85rem;">
+            <i class="bi bi-lightning-fill"></i>
+        </div>
+        <h6 class="mb-0">{% trans "Quick Actions" %}</h6>
     </div>
     <div class="erp-card-body">
-        <div class="row g-3">
-            <div class="col-6 col-md-3 col-lg-2">
+        <div class="row g-2">
+            <div class="col-6 col-md-4 col-lg-2">
                 <a href="{% url 'erp:invoice_create' %}" class="quick-action">
-                    <i class="bi bi-receipt text-primary"></i>
+                    <i class="bi bi-receipt" style="color: var(--clr-primary);"></i>
                     <span>{% trans "New Invoice" %}</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3 col-lg-2">
+            <div class="col-6 col-md-4 col-lg-2">
                 <a href="{% url 'erp:customer_create' %}" class="quick-action">
-                    <i class="bi bi-person-plus text-success"></i>
+                    <i class="bi bi-person-plus" style="color: var(--clr-success);"></i>
                     <span>{% trans "New Customer" %}</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3 col-lg-2">
+            <div class="col-6 col-md-4 col-lg-2">
                 <a href="{% url 'erp:journal_entry_create' %}" class="quick-action">
-                    <i class="bi bi-journal-plus text-info"></i>
+                    <i class="bi bi-journal-plus" style="color: var(--clr-info);"></i>
                     <span>{% trans "Journal Entry" %}</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3 col-lg-2">
+            <div class="col-6 col-md-4 col-lg-2">
                 <a href="{% url 'erp:lead_create' %}" class="quick-action">
-                    <i class="bi bi-funnel text-warning"></i>
+                    <i class="bi bi-funnel" style="color: var(--clr-warning);"></i>
                     <span>{% trans "New Lead" %}</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3 col-lg-2">
+            <div class="col-6 col-md-4 col-lg-2">
                 <a href="{% url 'erp:expense_create' %}" class="quick-action">
-                    <i class="bi bi-wallet2 text-danger"></i>
+                    <i class="bi bi-wallet2" style="color: var(--clr-danger);"></i>
                     <span>{% trans "New Expense" %}</span>
                 </a>
             </div>
-            <div class="col-6 col-md-3 col-lg-2">
+            <div class="col-6 col-md-4 col-lg-2">
                 <a href="{% url 'erp:task_create' %}" class="quick-action">
-                    <i class="bi bi-check2-square text-secondary"></i>
+                    <i class="bi bi-check2-square" style="color: var(--clr-violet);"></i>
                     <span>{% trans "New Task" %}</span>
                 </a>
             </div>
@@ -180,13 +199,16 @@
     </div>
 </div>
 
-<!-- Main Content -->
-<div class="row g-4">
+<!-- Recent Tables -->
+<div class="row g-4 mb-4">
     <!-- Recent Invoices -->
     <div class="col-lg-6">
         <div class="erp-card h-100">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-receipt ms-2"></i>{% trans "Recent Invoices" %}</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-receipt" style="color: var(--clr-primary);"></i>
+                    <h6 class="mb-0">{% trans "Recent Invoices" %}</h6>
+                </div>
                 <a href="{% url 'erp:invoice_list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
             </div>
             <div class="erp-card-body p-0">
@@ -194,7 +216,7 @@
                     <table class="table table-hover erp-table mb-0">
                         <thead>
                             <tr>
-                                <th>{% trans "Invoice Number" %}</th>
+                                <th>{% trans "Invoice #" %}</th>
                                 <th>{% trans "Customer" %}</th>
                                 <th>{% trans "Amount" %}</th>
                                 <th>{% trans "Status" %}</th>
@@ -204,12 +226,12 @@
                             {% for invoice in recent_invoices %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="text-decoration-none">
+                                    <a href="{% url 'erp:invoice_detail' invoice.pk %}" class="text-decoration-none fw-semibold" style="color: var(--clr-primary);">
                                         {{ invoice.invoice_number }}
                                     </a>
                                 </td>
                                 <td>{{ invoice.customer.name|truncatechars:20 }}</td>
-                                <td>{{ company.base_currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                                <td class="fw-semibold">{{ company.base_currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
                                 <td>
                                     {% if invoice.status == 'paid' %}
                                     <span class="badge badge-status badge-paid">{% trans "Paid" %}</span>
@@ -226,7 +248,12 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">{% trans "No invoices found" %}</td>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="bi bi-receipt"></i>
+                                        <p class="mb-0">{% trans "No invoices found" %}</p>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -235,12 +262,15 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Recent Leads -->
     <div class="col-lg-6">
         <div class="erp-card h-100">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-funnel ms-2"></i>{% trans "Recent Leads" %}</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-funnel" style="color: var(--clr-warning);"></i>
+                    <h6 class="mb-0">{% trans "Recent Leads" %}</h6>
+                </div>
                 <a href="{% url 'erp:lead_list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
             </div>
             <div class="erp-card-body p-0">
@@ -251,36 +281,41 @@
                                 <th>{% trans "Name" %}</th>
                                 <th>{% trans "Source" %}</th>
                                 <th>{% trans "Status" %}</th>
-                                <th>{% trans "Estimated Value" %}</th>
+                                <th>{% trans "Value" %}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for lead in recent_leads %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'erp:lead_detail' lead.pk %}" class="text-decoration-none">
+                                    <a href="{% url 'erp:lead_detail' lead.pk %}" class="text-decoration-none fw-semibold" style="color: var(--clr-primary);">
                                         {{ lead.full_name }}
                                     </a>
                                 </td>
                                 <td>{{ lead.get_source_display }}</td>
                                 <td>
                                     {% if lead.status == 'new' %}
-                                    <span class="badge bg-info">{% trans "New" %}</span>
+                                    <span class="badge badge-status badge-sent">{% trans "New" %}</span>
                                     {% elif lead.status == 'contacted' %}
-                                    <span class="badge bg-primary">{% trans "Contacted" %}</span>
+                                    <span class="badge badge-status badge-partial">{% trans "Contacted" %}</span>
                                     {% elif lead.status == 'qualified' %}
-                                    <span class="badge bg-success">{% trans "Qualified" %}</span>
+                                    <span class="badge badge-status badge-paid">{% trans "Qualified" %}</span>
                                     {% elif lead.status == 'converted' %}
-                                    <span class="badge bg-dark">{% trans "Converted" %}</span>
+                                    <span class="badge badge-status badge-posted">{% trans "Converted" %}</span>
                                     {% else %}
-                                    <span class="badge bg-secondary">{{ lead.get_status_display }}</span>
+                                    <span class="badge badge-status badge-draft">{{ lead.get_status_display }}</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ company.base_currency.symbol|default:"$" }}{{ lead.estimated_value|floatformat:0|default:"0" }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">{% trans "No leads found" %}</td>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="bi bi-funnel"></i>
+                                        <p class="mb-0">{% trans "No leads found" %}</p>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -292,95 +327,106 @@
 </div>
 
 <!-- Charts -->
-<div class="row g-4 mt-2">
-    <!-- Revenue Chart -->
+<div class="row g-4 mb-4">
     <div class="col-lg-8">
         <div class="erp-card">
-            <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-bar-chart ms-2"></i>{% trans "Revenue & Expenses" %}</h6>
+            <div class="erp-card-header d-flex align-items-center gap-2">
+                <i class="bi bi-bar-chart-fill" style="color: var(--clr-primary);"></i>
+                <h6 class="mb-0">{% trans "Revenue & Expenses" %}</h6>
             </div>
             <div class="erp-card-body">
-                <canvas id="revenueChart" height="250"></canvas>
+                <canvas id="revenueChart" height="240"></canvas>
             </div>
         </div>
     </div>
-    
-    <!-- Invoice Status Chart -->
     <div class="col-lg-4">
         <div class="erp-card">
-            <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-pie-chart ms-2"></i>{% trans "Invoice Status" %}</h6>
+            <div class="erp-card-header d-flex align-items-center gap-2">
+                <i class="bi bi-pie-chart-fill" style="color: var(--clr-violet);"></i>
+                <h6 class="mb-0">{% trans "Invoice Status" %}</h6>
             </div>
             <div class="erp-card-body">
-                <canvas id="invoiceStatusChart" height="250"></canvas>
+                <canvas id="invoiceStatusChart" height="240"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Upcoming Tasks -->
-<div class="row g-4 mt-2">
+<!-- Tasks & Activity -->
+<div class="row g-4">
     <div class="col-lg-6">
         <div class="erp-card">
             <div class="erp-card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-check2-square ms-2"></i>{% trans "Upcoming Tasks" %}</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-check2-square" style="color: var(--clr-success);"></i>
+                    <h6 class="mb-0">{% trans "Upcoming Tasks" %}</h6>
+                </div>
                 <a href="{% url 'erp:task_list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
             </div>
             <div class="erp-card-body p-0">
                 <ul class="list-group list-group-flush">
                     {% for task in upcoming_tasks %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <a href="{% url 'erp:task_detail' task.pk %}" class="text-decoration-none fw-bold">
-                                {{ task.title }}
-                            </a>
-                            <br>
-                            <small class="text-muted">{{ task.assigned_to.full_name }}</small>
-                        </div>
-                        <div class="text-end">
-                            {% if task.priority == 'high' %}
-                            <span class="badge bg-danger">{% trans "High" %}</span>
-                            {% elif task.priority == 'medium' %}
-                            <span class="badge bg-warning">{% trans "Medium" %}</span>
-                            {% else %}
-                            <span class="badge bg-secondary">{% trans "Normal" %}</span>
-                            {% endif %}
-                            <br>
-                            <small class="text-muted">{{ task.due_date|date:"Y/m/d" }}</small>
+                    <li class="list-group-item px-4 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{% url 'erp:task_detail' task.pk %}" class="text-decoration-none fw-semibold" style="font-size:0.875rem; color: var(--clr-gray-800);">
+                                    {{ task.title }}
+                                </a>
+                                <br>
+                                <small class="text-muted">{{ task.assigned_to.full_name }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if task.priority == 'high' %}
+                                <span class="badge badge-status badge-overdue">{% trans "High" %}</span>
+                                {% elif task.priority == 'medium' %}
+                                <span class="badge badge-status badge-partial">{% trans "Medium" %}</span>
+                                {% else %}
+                                <span class="badge badge-status badge-draft">{% trans "Normal" %}</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted">{{ task.due_date|date:"Y/m/d" }}</small>
+                            </div>
                         </div>
                     </li>
                     {% empty %}
-                    <li class="list-group-item text-center text-muted py-4">{% trans "No upcoming tasks" %}</li>
+                    <li class="list-group-item">
+                        <div class="empty-state py-3">
+                            <i class="bi bi-check2-all"></i>
+                            <p class="mb-0">{% trans "No upcoming tasks" %}</p>
+                        </div>
+                    </li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
     </div>
-    
+
     <!-- Recent Activity -->
     <div class="col-lg-6">
         <div class="erp-card">
-            <div class="erp-card-header">
-                <h6 class="mb-0"><i class="bi bi-clock-history ms-2"></i>{% trans "Recent Activity" %}</h6>
+            <div class="erp-card-header d-flex align-items-center gap-2">
+                <i class="bi bi-activity" style="color: var(--clr-info);"></i>
+                <h6 class="mb-0">{% trans "Recent Activity" %}</h6>
             </div>
             <div class="erp-card-body">
-                <div class="timeline">
-                    {% for payment in recent_payments %}
-                    <div class="d-flex mb-3">
-                        <div class="flex-shrink-0">
-                            <div class="bg-success bg-opacity-10 rounded-circle p-2">
-                                <i class="bi bi-credit-card text-success"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 me-3">
-                            <p class="mb-0 fw-bold">{% trans "New Payment" %}</p>
-                            <small class="text-muted">{{ company.base_currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }} - {{ payment.payment_date|date:"Y/m/d" }}</small>
-                        </div>
+                {% for payment in recent_payments %}
+                <div class="timeline-item">
+                    <div class="timeline-dot timeline-dot--success">
+                        <i class="bi bi-credit-card"></i>
                     </div>
-                    {% empty %}
-                    <p class="text-center text-muted">{% trans "No recent activity" %}</p>
-                    {% endfor %}
+                    <div class="flex-grow-1">
+                        <p class="mb-0 fw-semibold" style="font-size:0.855rem;">{% trans "New Payment" %}</p>
+                        <small class="text-muted">
+                            {{ company.base_currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }} &mdash; {{ payment.payment_date|date:"Y/m/d" }}
+                        </small>
+                    </div>
                 </div>
+                {% empty %}
+                <div class="empty-state py-3">
+                    <i class="bi bi-clock-history"></i>
+                    <p class="mb-0">{% trans "No recent activity" %}</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -396,29 +442,34 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(revenueCtx, {
             type: 'bar',
             data: {
-                labels: ['{% trans "Jan" %}', '{% trans "Feb" %}', '{% trans "Mar" %}', '{% trans "Apr" %}', '{% trans "May" %}', '{% trans "Jun" %}', '{% trans "Jul" %}', '{% trans "Aug" %}', '{% trans "Sep" %}', '{% trans "Oct" %}', '{% trans "Nov" %}', '{% trans "Dec" %}'],
+                labels: ['{% trans "Jan" %}','{% trans "Feb" %}','{% trans "Mar" %}','{% trans "Apr" %}','{% trans "May" %}','{% trans "Jun" %}','{% trans "Jul" %}','{% trans "Aug" %}','{% trans "Sep" %}','{% trans "Oct" %}','{% trans "Nov" %}','{% trans "Dec" %}'],
                 datasets: [{
                     label: '{% trans "Revenue" %}',
                     data: {{ monthly_revenue_data|safe }},
-                    backgroundColor: 'rgba(13, 110, 253, 0.5)',
-                    borderColor: 'rgb(13, 110, 253)',
-                    borderWidth: 1
-                },
-                {
+                    backgroundColor: 'rgba(99,102,241,0.65)',
+                    borderColor: '#6366f1',
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }, {
                     label: '{% trans "Expenses" %}',
                     data: {{ monthly_expenses_data|safe }},
-                    backgroundColor: 'rgba(220, 53, 69, 0.5)',
-                    borderColor: 'rgb(220, 53, 69)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(239,68,68,0.55)',
+                    borderColor: '#ef4444',
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    borderSkipped: false,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    }
+                    legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12 } } }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                    y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 11 } } }
                 }
             }
         });
@@ -433,21 +484,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: ['{% trans "Paid" %}', '{% trans "Unpaid" %}', '{% trans "Overdue" %}'],
                 datasets: [{
                     data: {{ invoice_status_data|safe }},
-                    backgroundColor: [
-                        'rgb(25, 135, 84)',
-                        'rgb(255, 193, 7)',
-                        'rgb(220, 53, 69)'
-                    ],
-                    hoverOffset: 4
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    hoverOffset: 6,
+                    borderWidth: 2,
+                    borderColor: '#fff',
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '70%',
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                    }
+                    legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12 }, padding: 16 } }
                 }
             }
         });
