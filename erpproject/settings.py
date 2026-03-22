@@ -61,7 +61,17 @@ if not _enc_key:
     )
 FIELD_ENCRYPTION_KEY = _enc_key
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,10.0.2.2').split(',')
+_allowed_hosts_raw = os.getenv('ALLOWED_HOSTS', '')
+if not _allowed_hosts_raw:
+    if not DEBUG:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(
+            'ALLOWED_HOSTS is not set. The application refuses to start in production '
+            '(DEBUG=False) without it. Set it to your domain, e.g.: '
+            'ALLOWED_HOSTS=erp.example.com'
+        )
+    _allowed_hosts_raw = 'localhost,127.0.0.1,10.0.2.2'
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_raw.split(',') if h.strip()]
 
 # ── Upload size limits ──────────────────────────────────────────────────────
 # Max size of a POST body (covers form data + file uploads processed in memory)
@@ -77,12 +87,25 @@ if not DEBUG:
     # reverse-proxy (Nginx) already handles HTTP→HTTPS.
     SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Strict'
     CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_SAMESITE = 'Strict'
     # 1 year HSTS; remove includeSubDomains if subdomains don't use HTTPS
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    # Prevent the Referer header from leaking the full URL to cross-origin
+    # destinations (e.g. third-party analytics, CDN images).
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# ── Session lifetime ────────────────────────────────────────────────────────
+# ERP sessions expire after 8 hours of inactivity (or at browser close).
+# The 2-week Django default is too long for a system with financial data.
+SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', str(8 * 3600)))  # 8 hours
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 # Application definition
@@ -120,6 +143,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    # CSP headers — only active when django-csp is installed and
+    # CSP_ENABLED=true is set in the environment.  Install with:
+    #   pip install django-csp
+    # then set CSP_ENABLED=true and tune the directives below.
+    *(['csp.middleware.CSPMiddleware'] if os.getenv('CSP_ENABLED', '').lower() in ('true', '1', 'yes') else []),
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Added for i18n support
     'django.middleware.common.CommonMiddleware',
@@ -169,6 +197,11 @@ DATABASES = {
         'DISABLE_SERVER_SIDE_CURSORS': True,
         'CONN_MAX_AGE': int(os.getenv('CONN_MAX_AGE', '600')),
         'CONN_HEALTH_CHECKS': True,
+        # Kill runaway queries after 30 s to prevent table locks and
+        # connection starvation from slow AI aggregations or bad reports.
+        'OPTIONS': {
+            'options': f"-c statement_timeout={os.getenv('DB_STATEMENT_TIMEOUT_MS', '30000')}",
+        },
     }
 }
 
@@ -317,6 +350,9 @@ if not DEBUG:
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': _redis_url,
+            # Prefix all keys with a version tag so rolling deployments with
+            # incompatible cache structures never serve stale data across restarts.
+            'KEY_PREFIX': os.getenv('CACHE_KEY_PREFIX', 'erp_v1'),
         }
     }
 else:
@@ -369,6 +405,8 @@ REST_FRAMEWORK = {
         'burst': '60/min',
         'sustained': '1000/day',
         'login': '3/min',
+        # CPU/memory-intensive on-demand operations (AI triggers, ML training)
+        'heavy': '10/hour',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
@@ -376,6 +414,8 @@ REST_FRAMEWORK = {
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:8000').split(',')
+# Cache CORS preflight responses for 1 hour to reduce OPTIONS request overhead.
+CORS_PREFLIGHT_MAX_AGE = 3600
 
 
 # Login/Logout URLs
@@ -484,3 +524,59 @@ NEW_RELIC_ENABLED = (
     not DEBUG
     and bool(NEW_RELIC_LICENSE_KEY)
 )
+
+# ── Sentry Error Tracking ────────────────────────────────────────────────────
+# Set SENTRY_DSN in .env to enable real-time error alerting for both Django
+# request handling and Celery task failures.  When left empty (the default)
+# the Sentry SDK is not initialised and has zero runtime overhead.
+# ── Content Security Policy ─────────────────────────────────────────────────
+# Activated only when django-csp is installed AND CSP_ENABLED=true.
+# Start in report-only mode (CSP_REPORT_ONLY=true) to observe violations
+# before enforcing.  Tighten directives incrementally.
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")   # tighten once you add nonces
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_IMG_SRC = ("'self'", "data:", "blob:")
+CSP_FONT_SRC = ("'self'", "data:")
+CSP_CONNECT_SRC = ("'self'",)
+CSP_MEDIA_SRC = ("'self'",)
+CSP_OBJECT_SRC = ("'none'",)
+CSP_FRAME_ANCESTORS = ("'none'",)           # same as X-Frame-Options: DENY
+CSP_FORM_ACTION = ("'self'",)
+CSP_REPORT_URI = os.getenv('CSP_REPORT_URI', '')
+# Set CSP_REPORT_ONLY=true to receive violation reports without blocking
+CSP_REPORT_ONLY = os.getenv('CSP_REPORT_ONLY', 'false').lower() in ('true', '1', 'yes')
+
+# ── Sentry Error Tracking ────────────────────────────────────────────────────
+SENTRY_DSN = os.getenv('SENTRY_DSN', '')
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+        from sentry_sdk.integrations.celery import CeleryIntegration
+        from sentry_sdk.integrations.logging import LoggingIntegration
+        import logging as _logging
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[
+                DjangoIntegration(transaction_style='url'),
+                CeleryIntegration(monitor_beat_tasks=True),
+                LoggingIntegration(
+                    level=_logging.WARNING,   # breadcrumbs from WARNING+
+                    event_level=_logging.ERROR,  # send event for ERROR+
+                ),
+            ],
+            # Sample 100 % of errors; lower for very high-traffic deployments.
+            traces_sample_rate=float(os.getenv('SENTRY_TRACES_SAMPLE_RATE', '0.0')),
+            send_default_pii=False,          # never send passwords / tokens
+            environment='production' if not DEBUG else 'development',
+            release=os.getenv('GIT_COMMIT', ''),
+        )
+    except ImportError:
+        import warnings
+        warnings.warn(
+            'SENTRY_DSN is set but sentry-sdk is not installed. '
+            'Add sentry-sdk to requirements.txt to enable error tracking.',
+            stacklevel=1,
+        )

@@ -18,3 +18,8 @@ django-debug-toolbar>=4.2.0
 
 # Test data generation
 factory-boy>=3.3.0
+
+# Linting & static analysis (also used in CI)
+ruff>=0.4.0
+mypy>=1.10.0
+django-stubs>=5.0.0

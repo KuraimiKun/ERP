@@ -2,7 +2,11 @@
 ERP API ViewSets – Inventory & Warehouse Management
 """
 
+import logging
+
 from rest_framework.decorators import action
+
+logger = logging.getLogger('erp.api.inventory')
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -77,7 +81,7 @@ class WarehouseViewSet(ERPBaseViewSet):
 
 
 class WarehouseZoneViewSet(ERPBaseViewSet):
-    queryset = WarehouseZone.objects.all()
+    queryset = WarehouseZone.objects.select_related('warehouse')
     serializer_class = WarehouseZoneSerializer
     search_fields = ['name', 'code']
     filterset_fields = ['warehouse', 'zone_type', 'is_active']
@@ -91,7 +95,7 @@ class WarehouseZoneViewSet(ERPBaseViewSet):
 
 
 class WarehouseBinViewSet(ERPBaseViewSet):
-    queryset = WarehouseBin.objects.all()
+    queryset = WarehouseBin.objects.select_related('zone', 'zone__warehouse')
     serializer_class = WarehouseBinSerializer
     search_fields = ['code', 'name']
     filterset_fields = ['is_active']
@@ -186,7 +190,8 @@ class GoodsReceiptNoteViewSet(ERPBaseViewSet):
             grn.refresh_from_db()
             return Response(GoodsReceiptNoteSerializer(grn).data)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception("Inventory action failed: %s", e)
+            return Response({'error': 'Operation failed.'}, status=400)
 
 
 # ── Stock Transfer ─────────────────────────────────────────────
@@ -210,7 +215,8 @@ class StockTransferViewSet(ERPBaseViewSet):
             transfer.refresh_from_db()
             return Response(StockTransferSerializer(transfer).data)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception("Inventory action failed: %s", e)
+            return Response({'error': 'Operation failed.'}, status=400)
 
     @action(detail=True, methods=['post'])
     def receive(self, request, pk=None):
@@ -221,7 +227,8 @@ class StockTransferViewSet(ERPBaseViewSet):
             transfer.refresh_from_db()
             return Response(StockTransferSerializer(transfer).data)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception("Inventory action failed: %s", e)
+            return Response({'error': 'Operation failed.'}, status=400)
 
 
 # ── Stock Adjustment ───────────────────────────────────────────
@@ -243,7 +250,8 @@ class StockAdjustmentViewSet(ERPBaseViewSet):
             adj.refresh_from_db()
             return Response(StockAdjustmentSerializer(adj).data)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception("Inventory action failed: %s", e)
+            return Response({'error': 'Operation failed.'}, status=400)
 
 
 # ── Cycle Count ────────────────────────────────────────────────
@@ -265,7 +273,8 @@ class CycleCountViewSet(ERPBaseViewSet):
             cc.refresh_from_db()
             return Response(CycleCountSerializer(cc).data)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception("Inventory action failed: %s", e)
+            return Response({'error': 'Operation failed.'}, status=400)
 
 
 # ── Pick List ──────────────────────────────────────────────────
@@ -287,7 +296,8 @@ class PickListViewSet(ERPBaseViewSet):
             pick.refresh_from_db()
             return Response(PickListSerializer(pick).data)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception("Inventory action failed: %s", e)
+            return Response({'error': 'Operation failed.'}, status=400)
 
 
 # ── Shipment ───────────────────────────────────────────────────
@@ -311,7 +321,8 @@ class ShipmentNoteViewSet(ERPBaseViewSet):
             shipment.refresh_from_db()
             return Response(ShipmentNoteSerializer(shipment).data)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            logger.exception("Inventory action failed: %s", e)
+            return Response({'error': 'Operation failed.'}, status=400)
 
 
 # ── Reorder Rule ───────────────────────────────────────────────

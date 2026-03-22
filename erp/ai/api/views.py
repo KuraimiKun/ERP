@@ -4,11 +4,14 @@ AI API Views – REST endpoints for the AI / ML module.
 
 import logging
 from rest_framework import viewsets, mixins
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
+
+from erp.ratelimit import HeavyOperationThrottle
+from erp.api.permissions import IsCompanyUser, IsAIEnabled
 
 from erp.views._common import get_user_company
 from erp.ai.models import MLModel, PredictionLog, AIInsight, ExplanationResult
@@ -23,7 +26,7 @@ logger = logging.getLogger('erp.ai.api')
 class MLModelViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only viewset for ML model registry."""
     serializer_class = MLModelSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCompanyUser, IsAIEnabled]
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -33,7 +36,7 @@ class MLModelViewSet(viewsets.ReadOnlyModelViewSet):
 class PredictionLogViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only viewset for prediction audit logs."""
     serializer_class = PredictionLogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCompanyUser, IsAIEnabled]
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -59,7 +62,7 @@ class AIInsightViewSet(mixins.ListModelMixin,
                        viewsets.GenericViewSet):
     """Insight management – list, read, dismiss."""
     serializer_class = AIInsightSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCompanyUser, IsAIEnabled]
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -94,7 +97,8 @@ class AIInsightViewSet(mixins.ListModelMixin,
 # ════════════════════════════════════════════════════════════════════════════
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
+@throttle_classes([HeavyOperationThrottle])
 def trigger_lead_scoring(request):
     """Trigger lead scoring on demand."""
     from erp.ai.services.crm import LeadScorer
@@ -109,7 +113,8 @@ def trigger_lead_scoring(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
+@throttle_classes([HeavyOperationThrottle])
 def trigger_invoice_scoring(request):
     """Trigger late-payment scoring on demand."""
     from erp.ai.services.finance import LatePaymentPredictor
@@ -124,7 +129,8 @@ def trigger_invoice_scoring(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
+@throttle_classes([HeavyOperationThrottle])
 def trigger_expense_anomaly(request):
     """Trigger expense anomaly detection on demand."""
     from erp.ai.services.finance import ExpenseAnomalyDetector
@@ -139,7 +145,8 @@ def trigger_expense_anomaly(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
+@throttle_classes([HeavyOperationThrottle])
 def trigger_demand_forecast(request):
     """Trigger demand forecasting on demand."""
     from erp.ai.services.demand import DemandForecaster
@@ -154,7 +161,8 @@ def trigger_demand_forecast(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
+@throttle_classes([HeavyOperationThrottle])
 def trigger_attrition_scoring(request):
     """Trigger attrition scoring on demand."""
     from erp.ai.services.hr import AttritionPredictor
@@ -169,7 +177,7 @@ def trigger_attrition_scoring(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
 @cache_page(60 * 60)  # 1 hour
 @vary_on_cookie
 def cash_flow_forecast(request):
@@ -183,7 +191,8 @@ def cash_flow_forecast(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
+@throttle_classes([HeavyOperationThrottle])
 def trigger_kpi_checks(request):
     """Run KPI anomaly checks on demand."""
     from erp.ai.services.kpi import KPIAnomalyDetector
@@ -198,7 +207,8 @@ def trigger_kpi_checks(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
+@throttle_classes([HeavyOperationThrottle])
 def ai_assistant_query(request):
     """Process a natural-language ERP query."""
     serializer = AssistantQuerySerializer(data=request.data)
@@ -216,7 +226,7 @@ def ai_assistant_query(request):
 # ════════════════════════════════════════════════════════════════════════════
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
 @cache_page(60 * 10)  # 10 minutes
 @vary_on_cookie
 def ai_dashboard_summary(request):
@@ -270,7 +280,7 @@ def ai_dashboard_summary(request):
 class ExplanationResultViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only viewset for stored explanation results."""
     serializer_class = ExplanationResultSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCompanyUser, IsAIEnabled]
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -295,7 +305,7 @@ class ExplanationResultViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
 def xai_explain(request):
     """Generate an XAI explanation for a single prediction."""
     serializer = ExplainRequestSerializer(data=request.data)
@@ -314,7 +324,7 @@ def xai_explain(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsCompanyUser, IsAIEnabled])
 @cache_page(60 * 30)  # 30 minutes
 @vary_on_cookie
 def xai_global_importance(request, model_type):

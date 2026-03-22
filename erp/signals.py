@@ -96,11 +96,15 @@ def audit_pre_save(sender, instance, **kwargs):
     if instance.pk is None:
         return  # new object – nothing to compare against
 
+    key = (_model_label(instance), instance.pk)
     try:
         old = sender.all_objects.get(pk=instance.pk)
-        _pre_save_state[(_model_label(instance), instance.pk)] = old
+        # Overwrite any stale entry left by a previous failed save so the dict
+        # does not accumulate unbounded entries on transaction rollbacks.
+        _pre_save_state[key] = old
     except sender.DoesNotExist:
-        pass
+        # Row was deleted between pre_save and here; discard any stale entry.
+        _pre_save_state.pop(key, None)
 
 
 @receiver(post_save)
@@ -162,6 +166,61 @@ def audit_post_delete(sender, instance, **kwargs):
         )
     except Exception:
         logger.exception('Failed to write audit delete log for %s pk=%s', sender.__name__, instance.pk)
+
+
+# ---------------------------------------------------------------------------
+# Finance: keep Invoice totals in sync when lines are edited
+# ---------------------------------------------------------------------------
+
+_invoice_line_fields = ['line_total', 'tax_amount', 'quantity', 'unit_price',
+                        'discount_percent', 'tax_rate_id']
+
+
+@receiver(post_save, sender='erp.InvoiceLine')
+def sync_invoice_totals_on_line_save(sender, instance, **kwargs):
+    """Recalculate parent Invoice totals whenever a line is created or updated.
+
+    InvoiceLine.save() updates line_total and tax_amount on the line itself,
+    but the parent Invoice.subtotal / total_amount / balance_due only get
+    updated if Invoice.calculate_totals() is explicitly called.  Without this
+    signal, editing a line via the API leaves the invoice totals stale.
+    """
+    from django.db import transaction
+    invoice = instance.invoice
+    try:
+        with transaction.atomic():
+            # Re-fetch with a row-lock so concurrent line edits serialise here.
+            invoice = invoice.__class__.objects.select_for_update().get(
+                pk=invoice.pk
+            )
+            invoice.calculate_totals()
+            invoice.save(update_fields=[
+                'subtotal', 'tax_amount', 'total_amount', 'balance_due', 'status'
+            ])
+    except Exception:
+        logger.exception(
+            'Failed to sync Invoice pk=%s totals after line save', invoice.pk
+        )
+
+
+@receiver(post_delete, sender='erp.InvoiceLine')
+def sync_invoice_totals_on_line_delete(sender, instance, **kwargs):
+    """Recalculate parent Invoice totals when a line is deleted."""
+    from django.db import transaction
+    invoice = instance.invoice
+    try:
+        with transaction.atomic():
+            invoice = invoice.__class__.objects.select_for_update().get(
+                pk=invoice.pk
+            )
+            invoice.calculate_totals()
+            invoice.save(update_fields=[
+                'subtotal', 'tax_amount', 'total_amount', 'balance_due', 'status'
+            ])
+    except Exception:
+        logger.exception(
+            'Failed to sync Invoice pk=%s totals after line delete', invoice.pk
+        )
 
 
 # ---------------------------------------------------------------------------

@@ -3,12 +3,24 @@ from django.utils.translation import gettext_lazy as _
 Audit and System Configuration models for the ERP system.
 """
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from .base import TimeStampedModel
 import json
+
+# Maximum file size for any single attachment (10 MB)
+_MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
+
+# Allowed file extensions for attachments.  Executables and server-side
+# scripts are intentionally excluded regardless of content-type header.
+_ALLOWED_EXTENSIONS = {
+    'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp',
+    'xlsx', 'xls', 'csv', 'docx', 'doc',
+    'txt', 'zip',
+}
 
 
 class AuditLog(TimeStampedModel):
@@ -211,11 +223,13 @@ class EmailTemplate(TimeStampedModel):
 
 class FileAttachment(TimeStampedModel):
     """Generic file attachments for any model."""
-    
+
     def attachment_path(instance, filename):
-        import uuid
-        ext = filename.split('.')[-1]
-        new_filename = f"{uuid.uuid4()}.{ext}"
+        import secrets
+        ext = filename.rsplit('.', 1)[-1] if '.' in filename else 'bin'
+        # Use a cryptographically random name so stored filenames are not
+        # guessable even if the storage bucket is misconfigured as public.
+        new_filename = f"{secrets.token_urlsafe(32)}.{ext}"
         return f'erp/attachments/{instance.content_type.model}/{new_filename}'
     
     uploaded_by = models.ForeignKey(
@@ -248,11 +262,33 @@ class FileAttachment(TimeStampedModel):
     def __str__(self):
         return self.original_filename
 
+    def clean(self):
+        if self.file:
+            # Enforce size limit
+            size = getattr(self.file, 'size', 0)
+            if size > _MAX_ATTACHMENT_BYTES:
+                raise ValidationError(
+                    f'File size {size // (1024 * 1024)} MB exceeds the '
+                    f'{_MAX_ATTACHMENT_BYTES // (1024 * 1024)} MB limit.'
+                )
+            # Enforce extension whitelist (uses the original name, not the
+            # UUID-renamed storage path, to catch .php → .pdf renames).
+            name = self.original_filename or getattr(self.file, 'name', '')
+            ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+            if ext not in _ALLOWED_EXTENSIONS:
+                raise ValidationError(
+                    f'File type ".{ext}" is not allowed. '
+                    f'Permitted types: {", ".join(sorted(_ALLOWED_EXTENSIONS))}.'
+                )
+
     def save(self, *args, **kwargs):
         if self.file and not self.original_filename:
             self.original_filename = self.file.name
         if self.file:
             self.file_size = self.file.size
+        # Validation is enforced via clean() which Django forms call automatically.
+        # Calling full_clean() here would double-validate on form submissions and
+        # also run validators that require a DB hit before the row is committed.
         super().save(*args, **kwargs)
 
 

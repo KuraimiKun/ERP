@@ -33,12 +33,16 @@ class Currency(TimeStampedModel):
         return f"{self.code} - {self.name}"
 
     def save(self, *args, **kwargs):
-        # Atomic block prevents two concurrent requests from both setting
-        # is_base=True and leaving the database with duplicate base currencies.
+        # select_for_update() inside atomic() serialises concurrent writes so
+        # two requests cannot both set is_base=True on different currencies.
         from django.db import transaction
         with transaction.atomic():
             if self.is_base:
-                Currency.objects.filter(is_base=True).exclude(pk=self.pk).update(is_base=False)
+                # Lock existing base-currency rows before clearing them so a
+                # second concurrent request blocks here rather than racing.
+                Currency.objects.select_for_update().filter(
+                    is_base=True
+                ).exclude(pk=self.pk).update(is_base=False)
             super().save(*args, **kwargs)
 
 
@@ -279,30 +283,38 @@ class Sequence(TimeStampedModel):
         return f"{self.company.name} - {self.get_sequence_type_display()}"
 
     def get_next(self):
-        """Get the next sequence number."""
+        """Get the next sequence number (thread-safe via row-level lock)."""
+        from django.db import transaction
         from django.utils import timezone
-        
-        # Check if reset is needed
-        today = timezone.now().date()
-        should_reset = False
-        
-        if self.reset_period == 'yearly' and self.last_reset:
-            if self.last_reset.year != today.year:
-                should_reset = True
-        elif self.reset_period == 'monthly' and self.last_reset:
-            if self.last_reset.month != today.month or self.last_reset.year != today.year:
-                should_reset = True
-        
-        if should_reset:
-            self.next_number = 1
-            self.last_reset = today
-        
-        # Generate number
-        number = str(self.next_number).zfill(self.padding)
-        result = f"{self.prefix}{number}{self.suffix}"
-        
-        # Increment
-        self.next_number += 1
-        self.save()
-        
+
+        with transaction.atomic():
+            # Re-fetch with a row lock so concurrent callers block here rather
+            # than racing to read/increment the same counter simultaneously.
+            obj = Sequence.objects.select_for_update().get(pk=self.pk)
+
+            today = timezone.now().date()
+            should_reset = False
+
+            if obj.reset_period == 'yearly' and obj.last_reset:
+                if obj.last_reset.year != today.year:
+                    should_reset = True
+            elif obj.reset_period == 'monthly' and obj.last_reset:
+                if obj.last_reset.month != today.month or obj.last_reset.year != today.year:
+                    should_reset = True
+
+            if should_reset:
+                obj.next_number = 1
+                obj.last_reset = today
+
+            # Generate formatted number
+            number = str(obj.next_number).zfill(obj.padding)
+            result = f"{obj.prefix}{number}{obj.suffix}"
+
+            # Increment and persist atomically
+            obj.next_number += 1
+            obj.save(update_fields=['next_number', 'last_reset'])
+
+        # Reflect the updated state onto self so callers don't see stale data
+        self.next_number = obj.next_number
+        self.last_reset = obj.last_reset
         return result

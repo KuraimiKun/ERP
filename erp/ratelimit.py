@@ -151,6 +151,26 @@ class LoginRateThrottle(SimpleRateThrottle):
         }
 
 
+class HeavyOperationThrottle(SimpleRateThrottle):
+    """Strict per-user limit for CPU/memory-intensive endpoints.
+
+    Applied to on-demand AI trigger endpoints (lead scoring, ML training,
+    anomaly detection, etc.) so a single user cannot flood the ML worker
+    queue.  Rate is configurable via DEFAULT_THROTTLE_RATES['heavy'].
+    Defaults to 10 per hour if not set.
+    """
+    scope = "heavy"
+
+    def get_cache_key(self, request, view):
+        # Key by authenticated user ID rather than IP so the limit is
+        # per-account, not per-network egress point.
+        if request.user and request.user.is_authenticated:
+            ident = str(request.user.pk)
+        else:
+            ident = self.get_ident(request)
+        return self.cache_format % {"scope": self.scope, "ident": ident}
+
+
 # ---------------------------------------------------------------------------
 # Account lockout — failed-login tracking
 # ---------------------------------------------------------------------------

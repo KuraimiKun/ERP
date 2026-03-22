@@ -8,10 +8,14 @@ Start the beat scheduler with:
     celery -A erpproject beat --loglevel=info
 """
 
+import logging
 import os
+
 from celery import Celery
 from celery.schedules import crontab
 from celery.signals import before_task_publish, task_postrun, task_prerun
+
+logger = logging.getLogger(__name__)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erpproject.settings')
 
@@ -56,6 +60,18 @@ def _inject_tenant_db_alias(headers, **kwargs):
         db_alias = get_current_db_alias()
         if db_alias and db_alias != 'default':
             headers['tenant_db_alias'] = db_alias
+        else:
+            # A task dispatched without a tenant context will silently fall
+            # back to the default (infrastructure) database in the worker.
+            # This is almost certainly a bug for tasks that touch tenant data.
+            task_name = kwargs.get('sender', '<unknown>')
+            logger.warning(
+                'Task %s dispatched without a tenant db_alias. '
+                'Worker will use the default database. '
+                'If this task reads/writes tenant data, set the tenant context '
+                'before dispatching.',
+                task_name,
+            )
     except Exception:
         pass  # Never block task dispatch due to context wiring
 

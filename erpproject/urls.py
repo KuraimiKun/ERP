@@ -10,11 +10,24 @@ from tenants import views as tenant_views
 
 from django.conf.urls.i18n import i18n_patterns
 
+from .views import health_check
+
 urlpatterns = [
-    # Admin site - keep outside i18n if desired, or inside. Usually admin is fine outside.
+    # ── Infrastructure ────────────────────────────────────────────────────────
+    # No i18n prefix, no authentication — safe for load-balancer / Docker probes.
+    path('health/', health_check, name='health_check'),
+
+    # ── Admin & i18n ──────────────────────────────────────────────────────────
     path('admin/', admin.site.urls),
-    # Internationalization
     path('i18n/', include('django.conf.urls.i18n')),
+
+    # ── Versioned REST API (no i18n prefix — clients use Accept-Language) ─────
+    # v1 canonical path — all new integrations should target /api/v1/.
+    path('api/v1/', include('erp.api.urls')),
+    # Legacy unversioned alias kept for backward compatibility with existing
+    # clients.  Will be deprecated in a future release.
+    path('api/', include('erp.api.urls')),
+
     # Mobile API - outside i18n_patterns (uses Accept-Language header instead)
     path('api/mobile/', include('erp.api.mobile_urls')),
 ]
@@ -23,13 +36,9 @@ urlpatterns += i18n_patterns(
     # Tenant/Auth URLs
     path('', tenant_views.home, name='home'),
     path('accounts/', include('tenants.urls')),
-    
+
     # ERP application URLs (protected by tenant middleware)
     path('erp/', include('erp.urls')),
-    
-    # API URLs - generally APIs don't need i18n prefix unless required. Keeping it inside for consistency or outside if preferred.
-    # The user asked for "whole website" so i18n patterns makes sense.
-    path('api/', include('erp.api.urls')),
 )
 
 

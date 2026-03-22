@@ -4,11 +4,16 @@ ERP API ViewSets
 Django REST Framework ViewSets for the ERP system.
 """
 
+import logging
+
 from rest_framework import viewsets, status, filters
+
+logger = logging.getLogger('erp.api')
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .permissions import IsCompanyUser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum, Count
 from django.utils import timezone
@@ -70,16 +75,16 @@ from .serializers import (
 
 class ERPBaseViewSet(viewsets.ModelViewSet):
     """Base ViewSet with common functionality for ERP views."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCompanyUser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    
+
     def get_company(self):
         """Get the current user's company, or raise 403 if they have no profile."""
         user = self.request.user
         if hasattr(user, 'employee_profile') and user.employee_profile:
             return user.employee_profile.company
         raise PermissionDenied('No employee profile found for this user.')
-    
+
     def get_queryset(self):
         """Filter queryset by company."""
         queryset = super().get_queryset()
@@ -87,6 +92,14 @@ class ERPBaseViewSet(viewsets.ModelViewSet):
         if company and hasattr(queryset.model, 'company'):
             return queryset.filter(company=company)
         return queryset
+
+    def perform_destroy(self, instance):
+        """Soft-delete instead of hard-delete for all ERPBaseModel instances."""
+        from erp.models.base import ERPBaseModel
+        if isinstance(instance, ERPBaseModel):
+            instance.soft_delete(self.request.user)
+        else:
+            instance.delete()
 
 
 # =============================================================================
@@ -97,12 +110,17 @@ class CurrencyViewSet(viewsets.ModelViewSet):
     """API endpoint for currencies."""
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['code', 'name']
     filterset_fields = ['is_active', 'is_base']
     ordering_fields = ['code', 'name', 'exchange_rate']
     ordering = ['code']
+
+    def get_permissions(self):
+        # Currencies are global system config; only admins may write.
+        if self.action in ('list', 'retrieve'):
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
@@ -196,6 +214,12 @@ class LeaveTypeViewSet(ERPBaseViewSet):
     filterset_fields = ['is_active', 'is_paid', 'requires_approval']
     ordering_fields = ['name', 'days_allowed']
     ordering = ['name']
+
+    def get_permissions(self):
+        # Leave types are global lookup data; only admins may write.
+        if self.action in ('list', 'retrieve'):
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
 
 
 class LeaveRequestViewSet(ERPBaseViewSet):
@@ -361,7 +385,7 @@ class CustomerViewSet(ERPBaseViewSet):
 
 class InvoiceViewSet(ERPBaseViewSet):
     """API endpoint for invoices."""
-    queryset = Invoice.objects.select_related('customer', 'currency')
+    queryset = Invoice.objects.select_related('customer', 'currency').prefetch_related('lines')
     serializer_class = InvoiceSerializer
     search_fields = ['invoice_number', 'customer__name', 'reference']
     filterset_fields = ['customer', 'status', 'invoice_type']
@@ -535,26 +559,28 @@ class LeadViewSet(ERPBaseViewSet):
     @action(detail=True, methods=['post'])
     def convert(self, request, pk=None):
         """Convert a lead to a customer."""
+        from django.db import transaction as db_transaction
         lead = self.get_object()
         if lead.status == 'won':
             return Response({'detail': 'Lead already converted.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Create customer from lead data
-        customer = Customer.objects.create(
-            company=lead.company,
-            name=f"{lead.first_name} {lead.last_name}",
-            email=lead.email,
-            phone=lead.phone,
-            mobile=lead.mobile,
-            notes=lead.notes,
-        )
-        
-        # Update lead
-        lead.status = 'won'
-        lead.converted_customer = customer
-        lead.converted_at = timezone.now()
-        lead.save()
-        
+
+        with db_transaction.atomic():
+            # Create customer from lead data
+            customer = Customer.objects.create(
+                company=lead.company,
+                name=f"{lead.first_name} {lead.last_name}",
+                email=lead.email,
+                phone=lead.phone,
+                mobile=lead.mobile,
+                notes=lead.notes,
+            )
+
+            # Update lead
+            lead.status = 'won'
+            lead.converted_customer = customer
+            lead.converted_at = timezone.now()
+            lead.save()
+
         return Response({
             'lead': LeadSerializer(lead).data,
             'customer': CustomerSerializer(customer).data,
@@ -682,15 +708,20 @@ class TaskViewSet(ERPBaseViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class TaskCommentViewSet(viewsets.ModelViewSet):
+class TaskCommentViewSet(ERPBaseViewSet):
     """API endpoint for task comments."""
     queryset = TaskComment.objects.select_related('task', 'author')
     serializer_class = TaskCommentSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['task']
     ordering_fields = ['created_at']
     ordering = ['created_at']
+
+    def get_queryset(self):
+        company = self.get_company()
+        return TaskComment.objects.select_related('task', 'author').filter(
+            task__company=company
+        )
 
 
 # =============================================================================
@@ -927,7 +958,8 @@ class ReportTemplateViewSet(ERPBaseViewSet):
             result = execute_to_list(config, template.company, limit=50)
             return Response(result)
         except Exception as exc:
-            return Response({'error': str(exc)}, status=400)
+            logger.exception("Report preview failed: %s", exc)
+            return Response({'error': 'Preview failed.'}, status=400)
 
     @action(detail=True, methods=['post'])
     def generate(self, request, pk=None):

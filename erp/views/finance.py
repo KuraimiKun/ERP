@@ -6,6 +6,7 @@ Payment Methods, Expense Categories, Currencies, Fiscal Years, and
 Financial Reports.
 """
 
+from django.db import transaction
 from django.db.models import Sum, Q
 from django.utils import timezone
 
@@ -83,24 +84,25 @@ def invoice_create(request):
         formset = InvoiceLineFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
-            invoice = form.save(commit=False)
-            invoice.company = company
-            invoice.invoice_number = get_invoice_number(company)
-            invoice.save()
+            with transaction.atomic():
+                invoice = form.save(commit=False)
+                invoice.company = company
+                invoice.invoice_number = get_invoice_number(company)
+                invoice.save()
 
-            formset.instance = invoice
-            formset.save()
+                formset.instance = invoice
+                formset.save()
 
-            invoice.calculate_totals()
-            invoice.save()
+                invoice.calculate_totals()
+                invoice.save()
 
-            # Adjust inventory for product lines
-            from erp.services.inventory import adjust_inventory_for_invoice
-            adjust_inventory_for_invoice(invoice, direction='out')
+                # Adjust inventory for product lines
+                from erp.services.inventory import adjust_inventory_for_invoice
+                adjust_inventory_for_invoice(invoice, direction='out')
 
-            # Auto-generate journal entry
-            from erp.services.accounting import create_invoice_journal_entry
-            create_invoice_journal_entry(invoice, request.user)
+                # Auto-generate journal entry
+                from erp.services.accounting import create_invoice_journal_entry
+                create_invoice_journal_entry(invoice, request.user)
 
             messages.success(request, f'Invoice {invoice.invoice_number} created successfully.')
             return redirect('erp:invoice_detail', pk=invoice.pk)
@@ -129,11 +131,12 @@ def invoice_edit(request, pk):
         formset = InvoiceLineFormSet(request.POST, instance=invoice)
 
         if form.is_valid() and formset.is_valid():
-            invoice = form.save()
-            formset.save()
+            with transaction.atomic():
+                invoice = form.save()
+                formset.save()
 
-            invoice.calculate_totals()
-            invoice.save()
+                invoice.calculate_totals()
+                invoice.save()
 
             messages.success(request, f'Invoice {invoice.invoice_number} updated successfully.')
             return redirect('erp:invoice_detail', pk=invoice.pk)

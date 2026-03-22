@@ -63,13 +63,6 @@ class ERPAssistant:
         'Quote', 'Attendance', 'Payroll', 'Account', 'JournalEntry',
     }
 
-    FORBIDDEN_PATTERNS = [
-        r'\bdelete\b', r'\bupdate\b', r'\bcreate\b', r'\bsave\b',
-        r'\braw\b', r'\bexecute\b', r'\bimport\b', r'\bexec\b',
-        r'\beval\b', r'\b__\b', r'\bos\b', r'\bsys\b', r'\bsubprocess\b',
-        r'\bopen\b', r'\bwrite\b', r'\brm\b',
-    ]
-
     def __init__(self, company, user=None):
         self.company = company
         self.user = user
@@ -143,7 +136,12 @@ class ERPAssistant:
             }
 
         # Execute safely
-        return self._execute(code)
+        result = self._execute(code)
+
+        # Audit: record every AI query regardless of outcome
+        self._audit_query(question, code, result.get('error'))
+
+        return result
 
     def _extract_code(self, text: str) -> str:
         """Strip markdown code fences."""
@@ -173,16 +171,13 @@ class ERPAssistant:
     def _validate_code(self, code: str) -> str | None:
         """Return a violation message if code is unsafe, else None.
 
-        Performs two layers of validation:
-        1. Regex pattern blocklist (fast reject).
-        2. AST whitelist – only explicitly allowed node types pass.
+        Uses an AST whitelist: only explicitly permitted node types are
+        allowed.  A regex blocklist was previously used as a "fast reject"
+        layer but was removed because keyword-based patterns are bypassable
+        (unicode tricks, whitespace, __import__ vs import) while the AST
+        whitelist already covers every dangerous construct comprehensively.
         """
-        # Layer 1: regex blocklist
-        for pattern in self.FORBIDDEN_PATTERNS:
-            if re.search(pattern, code, re.IGNORECASE):
-                return f'Forbidden pattern: {pattern}'
-
-        # Layer 2: parse and walk the AST
+        # Parse and walk the AST
         try:
             tree = ast.parse(code, mode='exec')
         except SyntaxError as exc:
@@ -275,6 +270,23 @@ class ERPAssistant:
             'code': code,
             'error': None,
         }
+
+    def _audit_query(self, question: str, code: str, error: str | None) -> None:
+        """Write an AuditLog entry for every AI assistant query."""
+        import hashlib
+        try:
+            from erp.models.audit import AuditLog
+            code_hash = hashlib.sha256(code.encode()).hexdigest()[:16] if code else ''
+            status = 'error' if error else 'ok'
+            AuditLog.objects.create(
+                user=self.user,
+                action=AuditLog.Action.VIEW,
+                object_repr=f'AI query [{status}] hash:{code_hash}',
+                notes=question[:500],
+                changes={'code_hash': code_hash, 'error': error},
+            )
+        except Exception:
+            logger.exception('Failed to write AI query audit log')
 
     def _serialise(self, obj):
         """Convert ORM / Decimal results to JSON-safe types."""

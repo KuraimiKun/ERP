@@ -5,7 +5,8 @@ CRM (Customer Relationship Management) models for the ERP system.
 
 from django.db import models
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import Q
 from .base import ERPBaseModel, TimeStampedModel
 
 
@@ -66,7 +67,7 @@ class Lead(ERPBaseModel):
     expected_close_date = models.DateField(null=True, blank=True)
     probability = models.PositiveSmallIntegerField(
         default=10,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text=_('Probability of conversion (0-100%)')
     )
     
@@ -104,6 +105,8 @@ class Lead(ERPBaseModel):
             models.Index(fields=['company', 'assigned_to'], name='idx_lead_company_assigned'),
             models.Index(fields=['company', 'source'], name='idx_lead_company_source'),
             models.Index(fields=['status', 'next_follow_up'], name='idx_lead_status_followup'),
+            # Rep workload view: filter by assigned_to + status + next_follow_up
+            models.Index(fields=['assigned_to', 'status', 'next_follow_up'], name='idx_lead_rep_workload'),
         ]
 
     def __str__(self):
@@ -385,6 +388,14 @@ class Task(ERPBaseModel):
             models.Index(fields=['company', 'status', 'priority'], name='idx_task_company_status_pri'),
             models.Index(fields=['assigned_to', 'status'], name='idx_task_assigned_status'),
             models.Index(fields=['status', 'due_date'], name='idx_task_status_due'),
+        ]
+        constraints = [
+            # A task may be linked to at most one related entity at a time
+            # (either a lead OR a customer, never both simultaneously).
+            models.CheckConstraint(
+                condition=Q(related_lead__isnull=True) | Q(related_customer__isnull=True),
+                name='task_single_related_object',
+            ),
         ]
 
     def __str__(self):

@@ -350,6 +350,10 @@ class Invoice(ERPBaseModel):
             models.Index(fields=['company', 'invoice_date'], name='idx_inv_company_date'),
             models.Index(fields=['customer', 'status'], name='idx_inv_customer_status'),
             models.Index(fields=['company', 'due_date', 'status'], name='idx_inv_company_due_status'),
+            # Overdue/unpaid report: filter by company + positive balance_due
+            models.Index(fields=['company', 'balance_due', 'status'], name='idx_inv_company_balance_status'),
+            # Aging report: customer × status × invoice_date
+            models.Index(fields=['customer', 'status', 'invoice_date'], name='idx_inv_customer_status_date'),
         ]
 
     def __str__(self):
@@ -420,8 +424,14 @@ class InvoiceLine(TimeStampedModel):
     )
     
     description = models.CharField(max_length=500)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)
-    unit_price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    quantity = models.DecimalField(
+        max_digits=10, decimal_places=2, default=1,
+        validators=[MinValueValidator(Decimal('0.01'))],
+    )
+    unit_price = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0,
+        validators=[MinValueValidator(Decimal('0'))],
+    )
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     
     # Tax
@@ -525,6 +535,12 @@ class Payment(ERPBaseModel):
             models.Index(fields=['company', 'payment_date'], name='idx_pay_company_date'),
             models.Index(fields=['customer', 'payment_date'], name='idx_pay_customer_date'),
         ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(amount__gt=0),
+                name='payment_amount_positive',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.payment_number} - {self.customer.name} ({self.amount})"
@@ -546,7 +562,10 @@ class PaymentAllocation(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name='payment_allocations'
     )
-    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    amount = models.DecimalField(
+        max_digits=15, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+    )
 
     class Meta:
         verbose_name=_('Payment Allocation')
@@ -608,10 +627,13 @@ class Expense(ERPBaseModel):
         on_delete=models.PROTECT,
         related_name='expenses'
     )
-    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    amount = models.DecimalField(
+        max_digits=15, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0'))],
+    )
     tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
+
     # Payment
     payment_method = models.ForeignKey(
         PaymentMethod,
@@ -877,10 +899,13 @@ class JournalEntryLine(TimeStampedModel):
         return f"{self.account.code} - دائن: {self.credit_amount}"
 
     def save(self, *args, **kwargs):
-        # Wrap in atomic so concurrent line saves for the same JournalEntry
-        # can't interleave their calculate_totals() reads and produce an
-        # inconsistent debit/credit total on the parent.
+        # Wrap in atomic and lock the parent row so concurrent line saves for
+        # the same JournalEntry serialise their calculate_totals() reads and
+        # never produce an inconsistent debit/credit total.
         with transaction.atomic():
+            locked_entry = JournalEntry.objects.select_for_update().get(
+                pk=self.journal_entry_id
+            )
             super().save(*args, **kwargs)
-            self.journal_entry.calculate_totals()
-            self.journal_entry.save(update_fields=['total_debit', 'total_credit'])
+            locked_entry.calculate_totals()
+            locked_entry.save(update_fields=['total_debit', 'total_credit'])

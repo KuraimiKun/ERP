@@ -55,7 +55,7 @@ class SoftDeleteManager(models.Manager):
 
 class SoftDeleteMixin(models.Model):
     """Mixin for soft delete functionality."""
-    is_deleted = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False, db_index=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
