@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python manage.py makemigrations erp --name=\"add_indexes_and_task_constraint\")"
+      "Bash(python manage.py makemigrations erp --name=\"add_indexes_and_task_constraint\")",
+      "Bash(python -c \":*)"
     ]
   }
 }

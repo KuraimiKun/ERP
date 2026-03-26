@@ -1,28 +1,134 @@
 {% extends 'tenants/base.html' %}
 
-{% block title %}No Database Assigned - ERP System{% endblock %}
+{% block title %}No Database Assigned — Kuraimi ERP{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card status-card text-center">
-        <div class="card-body py-5">
-            <div class="mb-4">
-                <i class="bi bi-database-exclamation text-info" style="font-size: 4rem;"></i>
+<div class="auth-layout" style="background: var(--clr-gray-50,#f1f5f9);">
+
+    <!-- Left brand panel -->
+    <div class="auth-brand-panel">
+        <div class="brand-panel-content">
+            <div class="brand-panel-logo">
+                <div class="brand-panel-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="brand-panel-logo-text">Kuraimi ERP</span>
             </div>
-            <h2 class="card-title mb-3">No Database Assigned</h2>
-            <p class="card-text text-muted mb-4">
-                Your account has been approved, but you haven't been assigned to a database yet.
+            <h1 class="brand-headline">
+                You're approved!<br>Almost ready.
+            </h1>
+            <p class="brand-subline">
+                Your account has been approved. Our team is assigning your workspace now — this usually takes just a few minutes.
             </p>
-            <p class="card-text">
-                An administrator will assign you to a database shortly.
-                Please check back later.
-            </p>
-            
-            <hr class="my-4">
-            <a href="{% url 'tenants:logout' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-box-arrow-left me-2"></i>Sign Out
-            </a>
+            <ul class="brand-features">
+                <li><i class="bi bi-check-circle-fill"></i> Account approved</li>
+                <li><i class="bi bi-database-fill"></i> Database being configured</li>
+                <li><i class="bi bi-clock-fill"></i> Typically ready within minutes</li>
+                <li><i class="bi bi-bell-fill"></i> You'll receive an email when ready</li>
+            </ul>
+        </div>
+        <div class="brand-panel-footer">
+            &copy; {% now "Y" %} Kuraimi ERP. All rights reserved.
         </div>
     </div>
+
+    <!-- Right status panel -->
+    <div class="auth-form-panel">
+        <div class="auth-form-inner" style="max-width: 440px;">
+
+            <div class="auth-form-logo d-lg-none">
+                <div class="auth-form-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="auth-form-logo-text">Kuraimi ERP</span>
+            </div>
+
+            <!-- Progress steps -->
+            <div class="progress-steps mb-5">
+                <div class="progress-step done">
+                    <div class="progress-step-circle">
+                        <i class="bi bi-check-lg" style="font-size:1rem;"></i>
+                    </div>
+                    <div class="progress-step-label">Sign Up</div>
+                </div>
+                <div class="progress-step done">
+                    <div class="progress-step-circle">
+                        <i class="bi bi-check-lg" style="font-size:1rem;"></i>
+                    </div>
+                    <div class="progress-step-label">Approved</div>
+                </div>
+                <div class="progress-step active">
+                    <div class="progress-step-circle">3</div>
+                    <div class="progress-step-label">Setup</div>
+                </div>
+            </div>
+
+            <!-- Icon -->
+            <div style="text-align:center; margin-bottom:2rem;">
+                <div style="
+                    width: 80px; height: 80px; border-radius: 50%;
+                    background: var(--clr-info-light, #cffafe);
+                    display: flex; align-items: center; justify-content: center;
+                    margin: 0 auto 1.25rem;
+                    animation: db-spin 4s ease-in-out infinite;
+                ">
+                    <i class="bi bi-database-fill-gear" style="font-size: 2rem; color: var(--clr-info, #06b6d4);"></i>
+                </div>
+                <h2 style="font-size:1.35rem; font-weight:700; color: var(--clr-gray-900, #0f172a); margin-bottom:0.5rem;">
+                    Setting Up Your Workspace
+                </h2>
+                <p style="font-size:0.9rem; color: var(--clr-gray-500, #64748b); margin-bottom:0;">
+                    Your account is approved. An administrator will assign your database shortly.
+                </p>
+            </div>
+
+            <!-- Status steps -->
+            <div style="
+                background: #fff;
+                border: 1.5px solid var(--clr-gray-200, #e2e8f0);
+                border-radius: 10px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.5rem;
+            ">
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0; border-bottom:1px solid var(--clr-gray-100,#f1f5f9);">
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--clr-success-light,#d1fae5);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-check-lg" style="color:var(--clr-success,#10b981);font-size:0.8rem;"></i>
+                    </div>
+                    <span style="font-size:0.855rem;color:var(--clr-gray-700,#334155);font-weight:500;">Account registration complete</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0; border-bottom:1px solid var(--clr-gray-100,#f1f5f9);">
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--clr-success-light,#d1fae5);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-check-lg" style="color:var(--clr-success,#10b981);font-size:0.8rem;"></i>
+                    </div>
+                    <span style="font-size:0.855rem;color:var(--clr-gray-700,#334155);font-weight:500;">Account approved by admin</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0;">
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--clr-info-light,#cffafe);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span style="width:10px;height:10px;border-radius:50%;background:var(--clr-info,#06b6d4);animation:pulse-dot 2s infinite;display:block;"></span>
+                    </div>
+                    <span style="font-size:0.855rem;color:var(--clr-gray-700,#334155);font-weight:500;">Database assignment pending…</span>
+                </div>
+            </div>
+
+            <a href="{% url 'tenants:logout' %}" class="btn-auth" style="
+                background: transparent;
+                border: 1.5px solid var(--clr-gray-200, #e2e8f0);
+                color: var(--clr-gray-700, #334155);
+                box-shadow: none;
+            ">
+                <i class="bi bi-box-arrow-left me-2"></i>Sign Out
+            </a>
+
+        </div>
+    </div>
+
 </div>
+
+<style>
+@keyframes db-spin {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25%       { transform: scale(1.06) rotate(-8deg); }
+    75%       { transform: scale(1.06) rotate(8deg); }
+}
+</style>
 {% endblock %}

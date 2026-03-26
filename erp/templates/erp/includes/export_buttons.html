@@ -1,19 +1,27 @@
 {% load i18n %}
 {# Include with: {% include "erp/includes/export_buttons.html" with export_entity="customers" %} #}
-<div class="d-flex justify-content-end mb-3">
-    <div class="btn-group">
-        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-download me-1"></i> {% trans "Export" %}
+<div class="data-toolbar">
+    <div class="dropdown">
+        <button type="button"
+                class="btn-export dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+            <i class="bi bi-download"></i>
+            {% trans "Export" %}
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
             <li>
-                <a class="dropdown-item" href="{% url 'erp:export_data' export_entity %}?format=csv{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                    <i class="bi bi-filetype-csv me-2"></i> {% trans "Export CSV" %}
+                <a class="dropdown-item"
+                   href="{% url 'erp:export_data' export_entity %}?format=csv{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    <i class="bi bi-filetype-csv me-2 text-success"></i>
+                    {% trans "Export CSV" %}
                 </a>
             </li>
             <li>
-                <a class="dropdown-item" href="{% url 'erp:export_data' export_entity %}?format=excel{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                    <i class="bi bi-file-earmark-spreadsheet me-2"></i> {% trans "Export Excel" %}
+                <a class="dropdown-item"
+                   href="{% url 'erp:export_data' export_entity %}?format=excel{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    <i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>
+                    {% trans "Export Excel" %}
                 </a>
             </li>
         </ul>

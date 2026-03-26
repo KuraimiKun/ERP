@@ -1,5 +1,6 @@
 {% load i18n %}
 {# Include with: {% include "erp/includes/import_button.html" with import_entity="customers" %} #}
-<a href="{% url 'erp:import_upload' %}?entity={{ import_entity }}" class="btn btn-outline-primary btn-sm">
-    <i class="bi bi-upload me-1"></i> {% trans "Import" %}
+<a href="{% url 'erp:import_upload' %}?entity={{ import_entity }}" class="btn-export">
+    <i class="bi bi-upload"></i>
+    {% trans "Import" %}
 </a>

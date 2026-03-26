@@ -1,40 +1,50 @@
 {% extends 'erp/employee_portal/base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Leave Requests" %} - {% trans "Employee Portal" %}{% endblock %}
+{% block title %}{% trans "Leave Requests" %}{% endblock %}
 
 {% block content %}
+
+<!-- Page header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0"><i class="bi bi-calendar-event text-primary me-2"></i>{% trans "Leave Requests" %}</h4>
+    <div>
+        <h4 class="portal-page-title">
+            <i class="bi bi-calendar-event title-icon"></i>{% trans "Leave Requests" %}
+        </h4>
+        <p class="portal-page-sub">{% trans "View and manage your leave requests." %}</p>
+    </div>
     <a href="{% url 'erp:employee_portal_leave_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> {% trans "New Request" %}
+        <i class="bi bi-plus-lg me-1"></i>{% trans "New Request" %}
     </a>
 </div>
 
-<!-- Leave Balances -->
+<!-- Leave balances -->
 {% if leave_balances %}
 <div class="row g-3 mb-4">
     {% for bal in leave_balances %}
     <div class="col-md-3 col-6">
-        <div class="stat-card">
-            <div class="d-flex align-items-center mb-2">
-                {% if bal.type.color %}
-                <span class="rounded-circle d-inline-block me-2" style="width:12px;height:12px;background:{{ bal.type.color }}"></span>
-                {% endif %}
-                <span class="fw-bold">{{ bal.type.name }}</span>
-            </div>
-            <div class="d-flex justify-content-between">
-                <div class="text-center">
-                    <div class="fs-5 fw-bold text-primary">{{ bal.allowed }}</div>
-                    <small class="text-muted">{% trans "Allowed" %}</small>
+        <div class="erp-card h-100">
+            <div class="erp-card-body text-center py-3">
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                    {% if bal.type.color %}
+                    {# leave-dot color must stay inline: it's dynamic from the DB #}
+                    <span class="leave-dot" style="background:{{ bal.type.color }};"></span>
+                    {% endif %}
+                    <span class="fw-semibold" style="font-size:0.855rem;">{{ bal.type.name }}</span>
                 </div>
-                <div class="text-center">
-                    <div class="fs-5 fw-bold text-warning">{{ bal.used }}</div>
-                    <small class="text-muted">{% trans "Used" %}</small>
-                </div>
-                <div class="text-center">
-                    <div class="fs-5 fw-bold text-success">{{ bal.remaining }}</div>
-                    <small class="text-muted">{% trans "Remaining" %}</small>
+                <div class="d-flex justify-content-around">
+                    <div>
+                        <div class="lb-value lb-value--primary">{{ bal.allowed }}</div>
+                        <div class="lb-label">{% trans "Allowed" %}</div>
+                    </div>
+                    <div>
+                        <div class="lb-value lb-value--warning">{{ bal.used }}</div>
+                        <div class="lb-label">{% trans "Used" %}</div>
+                    </div>
+                    <div>
+                        <div class="lb-value lb-value--success">{{ bal.remaining }}</div>
+                        <div class="lb-label">{% trans "Left" %}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -43,112 +53,109 @@
 </div>
 {% endif %}
 
-<!-- Filter -->
-<div class="erp-card mb-4">
-    <div class="erp-card-body py-2">
-        <div class="d-flex gap-2 flex-wrap">
-            <a href="{% url 'erp:employee_portal_leave_list' %}"
-               class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-                {% trans "All" %}
-            </a>
-            <a href="{% url 'erp:employee_portal_leave_list' %}?status=pending"
-               class="btn btn-sm {% if status_filter == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">
-                {% trans "Pending" %}
-            </a>
-            <a href="{% url 'erp:employee_portal_leave_list' %}?status=approved"
-               class="btn btn-sm {% if status_filter == 'approved' %}btn-success{% else %}btn-outline-success{% endif %}">
-                {% trans "Approved" %}
-            </a>
-            <a href="{% url 'erp:employee_portal_leave_list' %}?status=rejected"
-               class="btn btn-sm {% if status_filter == 'rejected' %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                {% trans "Rejected" %}
-            </a>
-            <a href="{% url 'erp:employee_portal_leave_list' %}?status=cancelled"
-               class="btn btn-sm {% if status_filter == 'cancelled' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
-                {% trans "Cancelled" %}
-            </a>
-        </div>
+<!-- Filter pill tabs -->
+<div class="list-filter-tabs">
+    <a href="{% url 'erp:employee_portal_leave_list' %}"
+       class="list-filter-tab {% if not status_filter %}active{% endif %}">
+        {% trans "All" %}
+    </a>
+    <a href="{% url 'erp:employee_portal_leave_list' %}?status=pending"
+       class="list-filter-tab {% if status_filter == 'pending' %}active{% endif %}">
+        <i class="bi bi-hourglass-split"></i>{% trans "Pending" %}
+    </a>
+    <a href="{% url 'erp:employee_portal_leave_list' %}?status=approved"
+       class="list-filter-tab {% if status_filter == 'approved' %}active{% endif %}">
+        <i class="bi bi-check-circle"></i>{% trans "Approved" %}
+    </a>
+    <a href="{% url 'erp:employee_portal_leave_list' %}?status=rejected"
+       class="list-filter-tab {% if status_filter == 'rejected' %}active{% endif %}">
+        <i class="bi bi-x-circle"></i>{% trans "Rejected" %}
+    </a>
+    <a href="{% url 'erp:employee_portal_leave_list' %}?status=cancelled"
+       class="list-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">
+        <i class="bi bi-slash-circle"></i>{% trans "Cancelled" %}
+    </a>
+</div>
+
+<!-- Leave table -->
+<div class="erp-card">
+    <div class="table-responsive">
+        <table class="table erp-table mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Type" %}</th>
+                    <th scope="col">{% trans "Start" %}</th>
+                    <th scope="col">{% trans "End" %}</th>
+                    <th scope="col">{% trans "Days" %}</th>
+                    <th scope="col">{% trans "Status" %}</th>
+                    <th scope="col">{% trans "Reason" %}</th>
+                    <th scope="col" aria-label="{% trans 'Actions' %}"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leaves %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if leave.leave_type.color %}
+                            {# leave-dot color must stay inline: dynamic from DB #}
+                            <span class="leave-dot" style="background:{{ leave.leave_type.color }};"></span>
+                            {% endif %}
+                            <span class="fw-medium">{{ leave.leave_type.name }}</span>
+                        </div>
+                    </td>
+                    <td class="td-muted">{{ leave.start_date|date:"d M Y" }}</td>
+                    <td class="td-muted">{{ leave.end_date|date:"d M Y" }}</td>
+                    <td><span class="fw-semibold td-primary">{{ leave.days_requested }}</span></td>
+                    <td>
+                        {% if leave.status == 'approved' %}
+                        <span class="badge-paid">{% trans "Approved" %}</span>
+                        {% elif leave.status == 'pending' %}
+                        <span class="badge-draft">{% trans "Pending" %}</span>
+                        {% elif leave.status == 'cancelled' %}
+                        <span class="badge-cancelled">{% trans "Cancelled" %}</span>
+                        {% else %}
+                        <span class="badge-overdue">{% trans "Rejected" %}</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="td-muted">{{ leave.reason|truncatewords:8 }}</small></td>
+                    <td>
+                        {% if leave.status == 'pending' %}
+                        <form method="post" action="{% url 'erp:employee_portal_leave_cancel' leave.pk %}"
+                              class="d-inline"
+                              onsubmit="return confirm('{% trans "Cancel this leave request?" %}')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="{% trans 'Cancel' %}">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if leave.status == 'rejected' and leave.approval_notes %}
+                        <button type="button" class="btn btn-sm btn-outline-info"
+                                data-bs-toggle="tooltip" title="{{ leave.approval_notes }}">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 td-muted">
+                        <i class="bi bi-calendar-x empty-icon-lg"></i>
+                        {% trans "No leave requests found." %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<!-- Leave Requests Table -->
-<div class="erp-card">
-    <div class="erp-card-body p-0">
-        <div class="table-responsive">
-            <table class="table erp-table mb-0">
-                <thead>
-                    <tr>
-                        <th>{% trans "Type" %}</th>
-                        <th>{% trans "Start Date" %}</th>
-                        <th>{% trans "End Date" %}</th>
-                        <th>{% trans "Days" %}</th>
-                        <th>{% trans "Status" %}</th>
-                        <th>{% trans "Reason" %}</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for leave in leaves %}
-                    <tr>
-                        <td>
-                            {% if leave.leave_type.color %}
-                            <span class="rounded-circle d-inline-block me-1" style="width:10px;height:10px;background:{{ leave.leave_type.color }}"></span>
-                            {% endif %}
-                            {{ leave.leave_type.name }}
-                        </td>
-                        <td>{{ leave.start_date|date:"d M Y" }}</td>
-                        <td>{{ leave.end_date|date:"d M Y" }}</td>
-                        <td>{{ leave.days_requested }}</td>
-                        <td>
-                            {% if leave.status == 'approved' %}
-                                <span class="badge bg-success">{% trans "Approved" %}</span>
-                            {% elif leave.status == 'pending' %}
-                                <span class="badge bg-warning text-dark">{% trans "Pending" %}</span>
-                            {% elif leave.status == 'cancelled' %}
-                                <span class="badge bg-secondary">{% trans "Cancelled" %}</span>
-                            {% else %}
-                                <span class="badge bg-danger">{% trans "Rejected" %}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <small class="text-muted">{{ leave.reason|truncatewords:8 }}</small>
-                        </td>
-                        <td>
-                            {% if leave.status == 'pending' %}
-                            <form method="post" action="{% url 'erp:employee_portal_leave_cancel' leave.pk %}"
-                                  class="d-inline" onsubmit="return confirm('{% trans "Cancel this leave request?" %}')">
-                                {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-danger" title="{% trans 'Cancel' %}">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </form>
-                            {% endif %}
-                            {% if leave.status == 'rejected' and leave.approval_notes %}
-                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip"
-                                    title="{{ leave.approval_notes }}">
-                                <i class="bi bi-info-circle"></i>
-                            </button>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
-                            <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
-                            {% trans "No leave requests found." %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+tooltipTriggerList.map(function(el) { return new bootstrap.Tooltip(el); });
 </script>
 {% endblock %}

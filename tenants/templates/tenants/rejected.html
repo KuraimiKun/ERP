@@ -1,36 +1,108 @@
 {% extends 'tenants/base.html' %}
 
-{% block title %}Application Rejected - ERP System{% endblock %}
+{% block title %}Application Rejected — Kuraimi ERP{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card status-card text-center">
-        <div class="card-body py-5">
-            <div class="mb-4">
-                <i class="bi bi-x-circle text-danger" style="font-size: 4rem;"></i>
+<div class="auth-layout" style="background: var(--clr-gray-50,#f1f5f9);">
+
+    <!-- Left brand panel -->
+    <div class="auth-brand-panel">
+        <div class="brand-panel-content">
+            <div class="brand-panel-logo">
+                <div class="brand-panel-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="brand-panel-logo-text">Kuraimi ERP</span>
             </div>
-            <h2 class="card-title mb-3">Application Rejected</h2>
-            <p class="card-text text-muted mb-4">
-                We're sorry, but your account application has been rejected.
+            <h1 class="brand-headline">
+                We're sorry<br>to hear that.
+            </h1>
+            <p class="brand-subline">
+                If you believe this decision was made in error, our support team is ready to assist you. Reapplying with additional details may help.
             </p>
-            
-            {% if reason %}
-            <div class="alert alert-secondary">
-                <strong>Reason:</strong><br>
-                {{ reason }}
-            </div>
-            {% endif %}
-            
-            <p class="card-text">
-                If you believe this was a mistake or have questions,
-                please contact our support team.
-            </p>
-            
-            <hr class="my-4">
-            <a href="{% url 'tenants:logout' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-box-arrow-left me-2"></i>Sign Out
-            </a>
+            <ul class="brand-features">
+                <li><i class="bi bi-envelope-fill"></i> Contact us via email</li>
+                <li><i class="bi bi-chat-dots-fill"></i> Live chat support available</li>
+                <li><i class="bi bi-arrow-repeat"></i> You may reapply with more info</li>
+            </ul>
+        </div>
+        <div class="brand-panel-footer">
+            &copy; {% now "Y" %} Kuraimi ERP. All rights reserved.
         </div>
     </div>
+
+    <!-- Right status panel -->
+    <div class="auth-form-panel">
+        <div class="auth-form-inner" style="max-width: 440px;">
+
+            <div class="auth-form-logo d-lg-none">
+                <div class="auth-form-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="auth-form-logo-text">Kuraimi ERP</span>
+            </div>
+
+            <!-- Icon -->
+            <div style="text-align:center; margin-bottom: 2rem;">
+                <div style="
+                    width: 80px; height: 80px; border-radius: 50%;
+                    background: var(--clr-danger-light, #fee2e2);
+                    display: flex; align-items: center; justify-content: center;
+                    margin: 0 auto 1.25rem;
+                ">
+                    <i class="bi bi-x-circle-fill" style="font-size: 2rem; color: var(--clr-danger, #ef4444);"></i>
+                </div>
+                <h2 style="font-size:1.35rem; font-weight:700; color: var(--clr-gray-900, #0f172a); margin-bottom:0.5rem;">
+                    Application Rejected
+                </h2>
+                <p style="font-size:0.9rem; color: var(--clr-gray-500, #64748b); margin-bottom:0;">
+                    Unfortunately your account application was not approved at this time.
+                </p>
+            </div>
+
+            {% if reason %}
+            <!-- Rejection reason -->
+            <div style="
+                background: var(--clr-danger-light, #fee2e2);
+                border: 1.5px solid rgba(239,68,68,0.2);
+                border-inline-start: 4px solid var(--clr-danger, #ef4444);
+                border-radius: 10px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1.5rem;
+            ">
+                <div style="font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--clr-danger-dark,#991b1b); margin-bottom:0.4rem;">
+                    <i class="bi bi-exclamation-circle me-1"></i>Reason
+                </div>
+                <p style="font-size:0.875rem; color:var(--clr-danger-dark,#991b1b); margin:0;">{{ reason }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Info box -->
+            <div style="
+                background: #fff;
+                border: 1.5px solid var(--clr-gray-200, #e2e8f0);
+                border-radius: 10px;
+                padding: 1.25rem;
+                margin-bottom: 1.5rem;
+                font-size: 0.875rem;
+                color: var(--clr-gray-600, #475569);
+                line-height: 1.6;
+            ">
+                <i class="bi bi-info-circle me-2" style="color:var(--clr-primary,#6366f1);"></i>
+                If you believe this was a mistake or have additional information that may support your application, please contact our support team.
+            </div>
+
+            <a href="{% url 'tenants:logout' %}" class="btn-auth" style="
+                background: transparent;
+                border: 1.5px solid var(--clr-gray-200, #e2e8f0);
+                color: var(--clr-gray-700, #334155);
+                box-shadow: none;
+            ">
+                <i class="bi bi-box-arrow-left me-2"></i>Sign Out
+            </a>
+
+        </div>
+    </div>
+
 </div>
 {% endblock %}

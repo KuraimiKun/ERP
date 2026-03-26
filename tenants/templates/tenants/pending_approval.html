@@ -1,31 +1,133 @@
 {% extends 'tenants/base.html' %}
 
-{% block title %}Pending Approval - ERP System{% endblock %}
+{% block title %}Account Pending — Kuraimi ERP{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card status-card text-center">
-        <div class="card-body py-5">
-            <div class="mb-4">
-                <i class="bi bi-hourglass-split text-warning" style="font-size: 4rem;"></i>
+<div class="auth-layout" style="background: var(--clr-gray-50, #f1f5f9);">
+
+    <!-- Left brand panel -->
+    <div class="auth-brand-panel">
+        <div class="brand-panel-content">
+            <div class="brand-panel-logo">
+                <div class="brand-panel-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="brand-panel-logo-text">Kuraimi ERP</span>
             </div>
-            <h2 class="card-title mb-3">Account Pending Approval</h2>
-            <p class="card-text text-muted mb-4">
-                Thank you for signing up, <strong>{{ user.get_full_name }}</strong>!
+            <h1 class="brand-headline">
+                Almost there!<br>Hang tight.
+            </h1>
+            <p class="brand-subline">
+                Your account is being reviewed. This usually takes less than 24 hours. We'll notify you by email once you're approved.
             </p>
-            <p class="card-text">
-                Your account is currently under review by our administrators.
-                You will receive access to the ERP system once your account has been approved.
-            </p>
-            <hr class="my-4">
-            <p class="text-muted small">
-                <i class="bi bi-clock me-1"></i>
-                Registered on {{ user.created_at|date:"F d, Y" }}
-            </p>
-            <a href="{% url 'tenants:logout' %}" class="btn btn-outline-secondary mt-3">
-                <i class="bi bi-box-arrow-left me-2"></i>Sign Out
-            </a>
+            <ul class="brand-features">
+                <li><i class="bi bi-check-circle-fill"></i> Full access to all 12 modules</li>
+                <li><i class="bi bi-check-circle-fill"></i> Dedicated onboarding support</li>
+                <li><i class="bi bi-check-circle-fill"></i> No credit card required</li>
+                <li><i class="bi bi-check-circle-fill"></i> Cancel anytime</li>
+            </ul>
+        </div>
+        <div class="brand-panel-footer">
+            &copy; {% now "Y" %} Kuraimi ERP. All rights reserved.
         </div>
     </div>
+
+    <!-- Right status panel -->
+    <div class="auth-form-panel">
+        <div class="auth-form-inner" style="max-width: 440px;">
+
+            <div class="auth-form-logo d-lg-none">
+                <div class="auth-form-logo-icon">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+                <span class="auth-form-logo-text">Kuraimi ERP</span>
+            </div>
+
+            <!-- Progress steps -->
+            <div class="progress-steps mb-5">
+                <div class="progress-step done">
+                    <div class="progress-step-circle">
+                        <i class="bi bi-check-lg" style="font-size:1rem;"></i>
+                    </div>
+                    <div class="progress-step-label">Sign Up</div>
+                </div>
+                <div class="progress-step active">
+                    <div class="progress-step-circle">2</div>
+                    <div class="progress-step-label">Review</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-step-circle">3</div>
+                    <div class="progress-step-label">Access</div>
+                </div>
+            </div>
+
+            <!-- Status card -->
+            <div style="text-align:center; margin-bottom: 2rem;">
+                <div style="
+                    width: 80px; height: 80px; border-radius: 50%;
+                    background: var(--clr-warning-light, #fef3c7);
+                    display: flex; align-items: center; justify-content: center;
+                    margin: 0 auto 1.25rem;
+                    animation: pending-pulse 3s ease-in-out infinite;
+                ">
+                    <i class="bi bi-hourglass-split" style="font-size: 2rem; color: var(--clr-warning, #f59e0b);"></i>
+                </div>
+
+                <h2 style="font-size:1.35rem; font-weight:700; color: var(--clr-gray-900, #0f172a); margin-bottom:0.5rem;">
+                    Account Under Review
+                </h2>
+                <p style="font-size:0.9rem; color: var(--clr-gray-500, #64748b); margin-bottom:0;">
+                    Hi <strong style="color: var(--clr-gray-800, #1e293b);">{{ user.get_full_name }}</strong>,
+                    your account is being reviewed by our team.
+                </p>
+            </div>
+
+            <!-- Info items -->
+            <div style="
+                background: #fff;
+                border: 1.5px solid var(--clr-gray-200, #e2e8f0);
+                border-radius: 10px;
+                padding: 1.25rem;
+                margin-bottom: 1.5rem;
+            ">
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0; border-bottom:1px solid var(--clr-gray-100, #f1f5f9);">
+                    <div style="width:32px;height:32px;border-radius:8px;background:var(--clr-primary-light,#eef2ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-envelope-fill" style="color:var(--clr-primary,#6366f1);font-size:0.85rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;font-weight:600;color:var(--clr-gray-500,#64748b);text-transform:uppercase;letter-spacing:0.05em;">Email</div>
+                        <div style="font-size:0.875rem;font-weight:500;color:var(--clr-gray-800,#1e293b);">{{ user.email }}</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:var(--clr-success-light,#d1fae5);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-calendar-check-fill" style="color:var(--clr-success,#10b981);font-size:0.85rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;font-weight:600;color:var(--clr-gray-500,#64748b);text-transform:uppercase;letter-spacing:0.05em;">Registered</div>
+                        <div style="font-size:0.875rem;font-weight:500;color:var(--clr-gray-800,#1e293b);">{{ user.date_joined|date:"F d, Y" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{% url 'tenants:logout' %}" class="btn-auth" style="
+                background: transparent;
+                border: 1.5px solid var(--clr-gray-200, #e2e8f0);
+                color: var(--clr-gray-700, #334155);
+                box-shadow: none;
+            ">
+                <i class="bi bi-box-arrow-left me-2"></i>Sign Out
+            </a>
+
+        </div>
+    </div>
+
 </div>
+
+<style>
+@keyframes pending-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245,158,11,0.2); }
+    50%       { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(245,158,11,0); }
+}
+</style>
 {% endblock %}

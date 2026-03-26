@@ -1,127 +1,203 @@
 {% extends 'tenants/base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "New Support Ticket" %} — ERP System{% endblock %}
+{% block title %}{% trans "New Support Ticket" %} — Kuraimi ERP{% endblock %}
 
 {% block extra_css %}
 <style>
-    .support-nav { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .support-nav .nav-link { color: rgba(255,255,255,.7); font-weight: 500; }
-    .support-nav .nav-link:hover { color: #fff; }
-    .create-card { border: none; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
-    .create-card .card-header { background: transparent; border-bottom: 2px solid #f1f5f9; padding: 1.25rem 1.5rem; }
-    .priority-radio { display: none; }
-    .priority-label {
-        display: inline-flex; align-items: center; gap: .35rem;
-        padding: .4rem .9rem; border-radius: 2rem; cursor: pointer;
-        border: 2px solid #e2e8f0; font-size: .85rem; font-weight: 500; transition: all .2s;
-    }
-    .priority-radio:checked + .priority-label.p-low { border-color: #22c55e; background: #f0fdf4; color: #15803d; }
-    .priority-radio:checked + .priority-label.p-medium { border-color: #f59e0b; background: #fffbeb; color: #b45309; }
-    .priority-radio:checked + .priority-label.p-high { border-color: #ef4444; background: #fef2f2; color: #dc2626; }
-    .priority-radio:checked + .priority-label.p-urgent { border-color: #7c3aed; background: #f5f3ff; color: #6d28d9; }
+.support-shell { min-height: 100vh; background: var(--clr-gray-50,#f1f5f9); }
+.support-topbar {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    padding: 1rem 0;
+    box-shadow: 0 2px 12px rgba(99,102,241,0.25);
+}
+.support-topbar .brand { color: #fff; font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+.support-topbar .back-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.855rem; display: flex; align-items: center; gap: 0.35rem; transition: color 0.2s; }
+.support-topbar .back-link:hover { color: #fff; }
+
+/* Priority radio pills */
+.priority-radio { display: none; }
+.priority-label {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.4rem 1rem; border-radius: 9999px; cursor: pointer;
+    border: 1.5px solid var(--clr-gray-200,#e2e8f0);
+    font-size: 0.82rem; font-weight: 600;
+    background: #fff; color: var(--clr-gray-600,#475569);
+    transition: all 0.2s;
+}
+.priority-label:hover { border-color: var(--clr-gray-400,#94a3b8); }
+.priority-radio:checked + .priority-label.p-low    { border-color: #10b981; background: #d1fae5; color: #065f46; }
+.priority-radio:checked + .priority-label.p-medium { border-color: #f59e0b; background: #fef3c7; color: #92400e; }
+.priority-radio:checked + .priority-label.p-high   { border-color: #ef4444; background: #fee2e2; color: #991b1b; }
+.priority-radio:checked + .priority-label.p-urgent { border-color: #7c3aed; background: #ede9fe; color: #5b21b6; }
+
+.create-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(15,23,42,0.07);
+    overflow: hidden;
+}
+.create-card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--clr-gray-100,#f1f5f9);
+    display: flex; align-items: center; gap: 0.75rem;
+}
+.create-card-header .header-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1rem;
+}
+.create-card-body { padding: 1.75rem; }
+.create-card-footer {
+    padding: 1rem 1.75rem;
+    border-top: 1px solid var(--clr-gray-100,#f1f5f9);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--clr-gray-50,#f8fafc);
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Top Navigation Bar -->
-<nav class="support-nav py-3 mb-4">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
+<div class="support-shell">
+
+    <!-- Top bar -->
+    <div class="support-topbar">
+        <div class="container">
             <div class="d-flex align-items-center gap-3">
-                <a href="{% url 'tenants:tenant_ticket_list' %}" class="text-white text-decoration-none">
-                    <i class="bi bi-arrow-left me-1"></i>{% trans "Back" %}
+                <a href="{% url 'tenants:tenant_ticket_list' %}" class="back-link">
+                    <i class="bi bi-arrow-start"></i>{% trans "My Tickets" %}
                 </a>
-                <h5 class="text-white mb-0"><i class="bi bi-headset me-2"></i>{% trans "Support Center" %}</h5>
+                <span style="color:rgba(255,255,255,0.3);">|</span>
+                <span class="brand"><i class="bi bi-headset"></i> {% trans "Support Center" %}</span>
             </div>
         </div>
     </div>
-</nav>
 
-<div class="container pb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="create-card card">
-                <div class="card-header">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2 text-primary"></i>{% trans "Create Support Ticket" %}</h5>
-                    <small class="text-muted">{% trans "Describe your issue and our team will get back to you quickly" %}</small>
-                </div>
-                <div class="card-body p-4">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
+    <div class="container py-4 pb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="create-card">
 
-                        <!-- Subject -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-pencil me-1 text-muted"></i>{% trans "Subject" %} <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="subject" value="{{ form.subject.value|default_if_none:'' }}"
-                                   class="form-control form-control-lg {% if form.subject.errors %}is-invalid{% endif %}"
-                                   placeholder="{% trans 'Brief summary of your issue' %}" required>
-                            {% for error in form.subject.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                    <!-- Header -->
+                    <div class="create-card-header">
+                        <div class="header-icon"><i class="bi bi-plus-lg"></i></div>
+                        <div>
+                            <h5 style="margin:0; font-weight:700; color:var(--clr-gray-900,#0f172a); font-size:1rem;">{% trans "Create Support Ticket" %}</h5>
+                            <small style="color:var(--clr-gray-500,#64748b);">{% trans "Describe your issue and we'll get back to you quickly" %}</small>
                         </div>
+                    </div>
 
-                        <!-- Category & Priority -->
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label class="form-label fw-semibold">
-                                    <i class="bi bi-tag me-1 text-muted"></i>{% trans "Category" %}
+                    <!-- Body -->
+                    <div class="create-card-body">
+                        <form method="post" enctype="multipart/form-data" id="ticketForm">
+                            {% csrf_token %}
+
+                            <!-- Subject -->
+                            <div class="mb-4">
+                                <label class="form-label" style="font-weight:600; font-size:0.855rem;">
+                                    <i class="bi bi-pencil me-1" style="opacity:0.5;"></i>{% trans "Subject" %} <span style="color:#ef4444;">*</span>
                                 </label>
-                                {{ form.category }}
-                                {% for error in form.category.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                <input type="text" name="subject"
+                                       value="{{ form.subject.value|default_if_none:'' }}"
+                                       class="form-control {% if form.subject.errors %}is-invalid{% endif %}"
+                                       placeholder="{% trans 'Brief summary of your issue' %}"
+                                       required>
+                                {% for error in form.subject.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">
-                                    <i class="bi bi-flag me-1 text-muted"></i>{% trans "Priority" %}
-                                </label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <input type="radio" name="priority" value="low" id="p_low" class="priority-radio" {% if form.priority.value == 'low' or not form.priority.value %}checked{% endif %}>
-                                    <label for="p_low" class="priority-label p-low"><i class="bi bi-arrow-down"></i>{% trans "Low" %}</label>
 
-                                    <input type="radio" name="priority" value="medium" id="p_medium" class="priority-radio" {% if form.priority.value == 'medium' %}checked{% endif %}>
-                                    <label for="p_medium" class="priority-label p-medium"><i class="bi bi-dash"></i>{% trans "Medium" %}</label>
+                            <!-- Category & Priority -->
+                            <div class="row mb-4 g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" style="font-weight:600; font-size:0.855rem;">
+                                        <i class="bi bi-tag me-1" style="opacity:0.5;"></i>{% trans "Category" %}
+                                    </label>
+                                    {{ form.category }}
+                                    {% for error in form.category.errors %}
+                                    <div class="invalid-feedback d-block" style="font-size:0.78rem;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" style="font-weight:600; font-size:0.855rem;">
+                                        <i class="bi bi-flag me-1" style="opacity:0.5;"></i>{% trans "Priority" %}
+                                    </label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <input type="radio" name="priority" value="low" id="p_low" class="priority-radio"
+                                               {% if form.priority.value == 'low' or not form.priority.value %}checked{% endif %}>
+                                        <label for="p_low" class="priority-label p-low">
+                                            <i class="bi bi-arrow-down"></i>{% trans "Low" %}
+                                        </label>
 
-                                    <input type="radio" name="priority" value="high" id="p_high" class="priority-radio" {% if form.priority.value == 'high' %}checked{% endif %}>
-                                    <label for="p_high" class="priority-label p-high"><i class="bi bi-arrow-up"></i>{% trans "High" %}</label>
+                                        <input type="radio" name="priority" value="medium" id="p_medium" class="priority-radio"
+                                               {% if form.priority.value == 'medium' %}checked{% endif %}>
+                                        <label for="p_medium" class="priority-label p-medium">
+                                            <i class="bi bi-dash"></i>{% trans "Medium" %}
+                                        </label>
 
-                                    <input type="radio" name="priority" value="urgent" id="p_urgent" class="priority-radio" {% if form.priority.value == 'urgent' %}checked{% endif %}>
-                                    <label for="p_urgent" class="priority-label p-urgent"><i class="bi bi-exclamation-triangle"></i>{% trans "Urgent" %}</label>
+                                        <input type="radio" name="priority" value="high" id="p_high" class="priority-radio"
+                                               {% if form.priority.value == 'high' %}checked{% endif %}>
+                                        <label for="p_high" class="priority-label p-high">
+                                            <i class="bi bi-arrow-up"></i>{% trans "High" %}
+                                        </label>
+
+                                        <input type="radio" name="priority" value="urgent" id="p_urgent" class="priority-radio"
+                                               {% if form.priority.value == 'urgent' %}checked{% endif %}>
+                                        <label for="p_urgent" class="priority-label p-urgent">
+                                            <i class="bi bi-exclamation-triangle"></i>{% trans "Urgent" %}
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Description -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-text-paragraph me-1 text-muted"></i>{% trans "Description" %} <span class="text-danger">*</span>
-                            </label>
-                            <textarea name="description" rows="6"
-                                      class="form-control {% if form.description.errors %}is-invalid{% endif %}"
-                                      placeholder="{% trans 'Provide detailed information about your issue...' %}" required>{{ form.description.value|default_if_none:'' }}</textarea>
-                            {% for error in form.description.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
-                        </div>
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label class="form-label" style="font-weight:600; font-size:0.855rem;">
+                                    <i class="bi bi-text-paragraph me-1" style="opacity:0.5;"></i>{% trans "Description" %} <span style="color:#ef4444;">*</span>
+                                </label>
+                                <textarea name="description" rows="6"
+                                          class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+                                          placeholder="{% trans 'Provide detailed information about your issue...' %}"
+                                          required>{{ form.description.value|default_if_none:'' }}</textarea>
+                                {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
 
-                        <!-- Attachment -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-paperclip me-1 text-muted"></i>{% trans "Attachment" %}
-                                <small class="text-muted fw-normal">({% trans "optional" %})</small>
-                            </label>
-                            <input type="file" name="attachment" class="form-control">
-                            <small class="text-muted">{% trans "Max 10MB. Images, PDFs, documents accepted." %}</small>
-                        </div>
+                            <!-- Attachment -->
+                            <div class="mb-2">
+                                <label class="form-label" style="font-weight:600; font-size:0.855rem;">
+                                    <i class="bi bi-paperclip me-1" style="opacity:0.5;"></i>{% trans "Attachment" %}
+                                    <span style="font-weight:400; color:var(--clr-gray-400,#94a3b8); font-size:0.8rem;">({% trans "optional" %})</span>
+                                </label>
+                                <input type="file" name="attachment" class="form-control">
+                                <div style="font-size:0.75rem; color:var(--clr-gray-400,#94a3b8); margin-top:0.3rem;">
+                                    {% trans "Max 10 MB — images, PDFs and documents accepted." %}
+                                </div>
+                            </div>
 
-                        <hr>
+                    </div><!-- /card-body (form continues into footer) -->
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{% url 'tenants:tenant_ticket_list' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-lg me-1"></i>{% trans "Cancel" %}
-                            </a>
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-send me-1"></i>{% trans "Submit Ticket" %}
-                            </button>
-                        </div>
-                    </form>
+                    <!-- Footer / actions -->
+                    <div class="create-card-footer">
+                        <a href="{% url 'tenants:tenant_ticket_list' %}" style="
+                            display:inline-flex; align-items:center; gap:0.4rem;
+                            font-size:0.835rem; font-weight:500;
+                            color:var(--clr-gray-600,#475569);
+                            background:transparent;
+                            border:1.5px solid var(--clr-gray-200,#e2e8f0);
+                            border-radius:9999px; padding:0.4rem 1rem;
+                            text-decoration:none; transition:all 0.2s;
+                        ">
+                            <i class="bi bi-x-lg"></i>{% trans "Cancel" %}
+                        </a>
+                        <button type="submit" class="btn-auth" style="width:auto; padding:0.5rem 1.5rem; font-size:0.875rem; margin:0;">
+                            <i class="bi bi-send me-2"></i>{% trans "Submit Ticket" %}
+                        </button>
+                    </div>
+
+                        </form>
                 </div>
             </div>
         </div>

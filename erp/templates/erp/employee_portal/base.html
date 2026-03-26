@@ -7,144 +7,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% trans "Employee Portal" %}{% endblock %}</title>
+    <title>{% block title %}{% trans "Employee Portal" %}{% endblock %} — Kuraimi ERP</title>
+
     {% if LANGUAGE_BIDI %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     {% else %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     {% endif %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'erp.css' %}">
+
     <style>
-        :root { --primary-color: #0d6efd; }
-        body { font-family: 'Tajawal', sans-serif; background: #f1f5f9; }
-        .portal-nav { background: #1e293b; }
-        .portal-nav .navbar-brand { color: #fff; font-weight: 700; }
-        .portal-nav .nav-link { color: #94a3b8; }
-        .portal-nav .nav-link:hover,
-        .portal-nav .nav-link.active { color: #fff; }
-        .erp-card { background: #fff; border-radius: .5rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-        .erp-card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; }
-        .erp-card-body { padding: 1.25rem; }
-        .stat-card { padding: 1.25rem; border-radius: .5rem; background: #fff; border: 1px solid #e2e8f0; }
-        .stat-card .stat-value { font-size: 1.75rem; font-weight: 700; }
-        .stat-card .stat-label { color: #64748b; font-size: .875rem; }
-        .stat-card .stat-icon { width: 48px; height: 48px; border-radius: .5rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .erp-table th { font-weight: 600; color: #475569; font-size: .8rem; background: #f8fafc; }
-        .erp-table td { vertical-align: middle; font-size: .9rem; }
-        .badge-status { font-size: .8rem; font-weight: 500; padding: .375rem .625rem; border-radius: .25rem; }
+        body {
+            font-family: {% if LANGUAGE_BIDI %}'Tajawal'{% else %}'Inter'{% endif %}, 'Tajawal', sans-serif;
+        }
     </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg portal-nav mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'erp:employee_portal' %}">
-                <i class="bi bi-person-badge ms-2"></i> {% trans "Employee Portal" %}
+
+    <!-- ── Portal Top Bar ── -->
+    <nav class="portal-topbar">
+        <div class="container-fluid px-3 d-flex align-items-center justify-content-between gap-3">
+
+            <!-- Brand -->
+            <a href="{% url 'erp:employee_portal' %}" class="portal-brand flex-shrink-0">
+                <div class="portal-brand-icon"><i class="bi bi-person-badge-fill"></i></div>
+                <span class="d-none d-sm-inline">Kuraimi <span style="opacity:0.6; font-weight:400;">Portal</span></span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#portalNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="portalNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'employee_portal' %}active{% endif %}"
-                           href="{% url 'erp:employee_portal' %}">
-                            <i class="bi bi-grid"></i> {% trans "Dashboard" %}
-                        </a>
-                    </li>
-                    {% if employee.portal_can_scan_qr %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'employee_portal_qr_scanner' %}active{% endif %}"
-                           href="{% url 'erp:employee_portal_qr_scanner' %}">
-                            <i class="bi bi-qr-code-scan"></i> {% trans "Scan QR" %}
-                        </a>
-                    </li>
+
+            <!-- Nav links (desktop) -->
+            <div class="portal-nav-links d-md-flex align-items-center gap-1" id="portalNavLinks">
+                <a class="portal-nav-link {% if request.resolver_match.url_name == 'employee_portal' %}active{% endif %}"
+                   href="{% url 'erp:employee_portal' %}">
+                    <i class="bi bi-grid-1x2"></i> {% trans "Dashboard" %}
+                </a>
+
+                {% if employee.portal_can_scan_qr %}
+                <a class="portal-nav-link {% if request.resolver_match.url_name == 'employee_portal_qr_scanner' %}active{% endif %}"
+                   href="{% url 'erp:employee_portal_qr_scanner' %}">
+                    <i class="bi bi-qr-code-scan"></i> {% trans "Scan QR" %}
+                </a>
+                {% endif %}
+
+                {% if employee.portal_can_view_attendance %}
+                <a class="portal-nav-link {% if request.resolver_match.url_name == 'employee_portal_attendance' %}active{% endif %}"
+                   href="{% url 'erp:employee_portal_attendance' %}">
+                    <i class="bi bi-clock-history"></i> {% trans "Attendance" %}
+                </a>
+                {% endif %}
+
+                {% if employee.portal_can_manage_leaves %}
+                <a class="portal-nav-link {% if 'leave' in request.resolver_match.url_name %}active{% endif %}"
+                   href="{% url 'erp:employee_portal_leave_list' %}">
+                    <i class="bi bi-calendar-event"></i> {% trans "Leave" %}
+                    {% if pending_leave_count %}
+                    <span class="badge">{{ pending_leave_count }}</span>
                     {% endif %}
-                    {% if employee.portal_can_view_attendance %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'employee_portal_attendance' %}active{% endif %}"
-                           href="{% url 'erp:employee_portal_attendance' %}">
-                            <i class="bi bi-clock-history"></i> {% trans "My Attendance" %}
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if employee.portal_can_manage_leaves %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'leave' in request.resolver_match.url_name %}active{% endif %}"
-                           href="{% url 'erp:employee_portal_leave_list' %}">
-                            <i class="bi bi-calendar-event"></i> {% trans "Leave Requests" %}
-                            {% if pending_leave_count %}<span class="badge bg-warning text-dark ms-1">{{ pending_leave_count }}</span>{% endif %}
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if employee.portal_can_view_payslips %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'payslip' in request.resolver_match.url_name %}active{% endif %}"
-                           href="{% url 'erp:employee_portal_payslip_list' %}">
-                            <i class="bi bi-cash-stack"></i> {% trans "My Payslips" %}
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if employee.portal_can_view_tasks %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}"
-                           href="{% url 'erp:employee_portal_task_list' %}">
-                            <i class="bi bi-list-task"></i> {% trans "My Tasks" %}
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if employee.portal_can_use_pos %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'pos' in request.resolver_match.url_name %}active{% endif %}"
-                           href="{% url 'erp:pos_terminal_select' %}">
-                            <i class="bi bi-shop"></i> {% trans "POS" %}
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}"
-                           href="{% url 'erp:employee_portal_profile' %}">
-                            <i class="bi bi-person"></i> {% trans "My Profile" %}
-                        </a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <img src="https://ui-avatars.com/api/?name={{ user.first_name }}+{{ user.last_name }}&background=0d6efd&color=fff"
-                                 class="rounded-circle" width="28" height="28" alt="">
-                            {{ user.get_full_name }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'erp:employee_portal_change_password' %}">
-                                <i class="bi bi-key ms-2"></i> {% trans "Change Password" %}
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'tenants:logout' %}">
-                                <i class="bi bi-box-arrow-left ms-2"></i> {% trans "Logout" %}
-                            </a></li>
-                        </ul>
-                    </li>
-                </ul>
+                </a>
+                {% endif %}
+
+                {% if employee.portal_can_view_payslips %}
+                <a class="portal-nav-link {% if 'payslip' in request.resolver_match.url_name %}active{% endif %}"
+                   href="{% url 'erp:employee_portal_payslip_list' %}">
+                    <i class="bi bi-cash-stack"></i> {% trans "Payslips" %}
+                </a>
+                {% endif %}
+
+                {% if employee.portal_can_view_tasks %}
+                <a class="portal-nav-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}"
+                   href="{% url 'erp:employee_portal_task_list' %}">
+                    <i class="bi bi-list-task"></i> {% trans "Tasks" %}
+                </a>
+                {% endif %}
+
+                {% if employee.portal_can_use_pos %}
+                <a class="portal-nav-link {% if 'pos' in request.resolver_match.url_name %}active{% endif %}"
+                   href="{% url 'erp:pos_terminal_select' %}">
+                    <i class="bi bi-shop"></i> {% trans "POS" %}
+                </a>
+                {% endif %}
+
+                <a class="portal-nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}"
+                   href="{% url 'erp:employee_portal_profile' %}">
+                    <i class="bi bi-person"></i> {% trans "Profile" %}
+                </a>
             </div>
+
+            <!-- Right: user + mobile toggle -->
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+
+                <!-- User dropdown -->
+                <div class="dropdown">
+                    <button type="button" class="portal-user-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ user.get_full_name }}">
+                        <div class="portal-avatar">
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
+                        <span class="d-none d-sm-inline portal-user-name">
+                            {{ user.get_full_name }}
+                        </span>
+                        <i class="bi bi-chevron-down portal-chevron"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end portal-dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'erp:employee_portal_change_password' %}">
+                                <i class="bi bi-key me-2"></i>{% trans "Change Password" %}
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{% url 'tenants:logout' %}">
+                                <i class="bi bi-box-arrow-left me-2"></i>{% trans "Logout" %}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Mobile toggle -->
+                <button type="button" class="portal-nav-toggle" id="portalNavToggle" aria-label="{% trans 'Toggle navigation' %}" title="{% trans 'Toggle navigation' %}">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
         </div>
     </nav>
 
-    <div class="container">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-        {% endif %}
+    <!-- ── Content shell ── -->
+    <div class="portal-shell">
+        <div class="container">
 
-        {% block content %}{% endblock %}
+            <!-- Django messages -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{% trans 'Close' %}"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Mobile nav toggle
+    const toggleBtn = document.getElementById('portalNavToggle');
+    const navLinks  = document.getElementById('portalNavLinks');
+    if (toggleBtn && navLinks) {
+        toggleBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('open');
+        });
+    }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
