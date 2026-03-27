@@ -3,7 +3,10 @@ from django.utils.translation import gettext_lazy as _
 Supplier/Vendor management models for the ERP system.
 """
 
+from decimal import Decimal
+
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from .base import ERPBaseModel, TimeStampedModel
 import uuid
@@ -362,11 +365,31 @@ class SupplierInvoice(ERPBaseModel):
     def __str__(self):
         return f"{self.invoice_number} - {self.supplier.name}"
 
+    def clean(self):
+        """Validate supplier invoice data."""
+        # due_date must not precede invoice_date
+        if self.invoice_date and self.due_date and self.due_date < self.invoice_date:
+            raise ValidationError({'due_date': _('تاريخ الاستحقاق لا يمكن أن يكون قبل تاريخ الفاتورة')})
+        # PO supplier must match invoice supplier
+        if self.purchase_order_id and self.supplier_id:
+            if self.purchase_order.supplier_id != self.supplier_id:
+                raise ValidationError({
+                    'purchase_order': _(
+                        'أمر الشراء المحدد يخص مورداً مختلفاً عن مورد الفاتورة.'
+                    )
+                })
+
     def calculate_totals(self):
-        """Calculate invoice totals from line items."""
-        lines = self.lines.all()
-        self.subtotal = sum(line.line_total for line in lines)
-        self.tax_amount = sum(line.tax_amount for line in lines)
+        """Calculate invoice totals from line items using a single DB aggregate."""
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        ZERO = Decimal('0')
+        agg = self.lines.aggregate(
+            subtotal=Coalesce(Sum('line_total'), ZERO),
+            tax_amount=Coalesce(Sum('tax_amount'), ZERO),
+        )
+        self.subtotal = agg['subtotal']
+        self.tax_amount = agg['tax_amount']
         self.total_amount = self.subtotal + self.tax_amount
         self.balance_due = self.total_amount - self.paid_amount
 

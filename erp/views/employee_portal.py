@@ -72,16 +72,32 @@ class _PortalLeaveForm(django_forms.ModelForm):
             'leave_type': django_forms.Select(attrs={'class': 'form-select'}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, employee=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.employee = employee
         self.fields['leave_type'].queryset = LeaveType.objects.filter(is_active=True)
 
     def clean(self):
         cd = super().clean()
         start = cd.get('start_date')
         end = cd.get('end_date')
-        if start and end and end < start:
-            raise django_forms.ValidationError('End date cannot be before start date.')
+        if start and end:
+            if end < start:
+                raise django_forms.ValidationError('End date cannot be before start date.')
+            # Check for overlapping non-cancelled/rejected leave requests
+            if self.employee:
+                qs = LeaveRequest.objects.filter(
+                    employee=self.employee,
+                    status__in=('pending', 'approved'),
+                    start_date__lte=end,
+                    end_date__gte=start,
+                )
+                if self.instance and self.instance.pk:
+                    qs = qs.exclude(pk=self.instance.pk)
+                if qs.exists():
+                    raise django_forms.ValidationError(
+                        'You already have a leave request that overlaps with these dates.'
+                    )
         return cd
 
 
@@ -377,7 +393,7 @@ def portal_leave_create(request):
         return _no_employee(request)
 
     if request.method == 'POST':
-        form = _PortalLeaveForm(request.POST)
+        form = _PortalLeaveForm(request.POST, employee=employee)
         if form.is_valid():
             leave = form.save(commit=False)
             leave.employee = employee
@@ -389,7 +405,7 @@ def portal_leave_create(request):
             messages.success(request, 'Leave request submitted successfully.')
             return redirect('erp:employee_portal_leave_list')
     else:
-        form = _PortalLeaveForm()
+        form = _PortalLeaveForm(employee=employee)
 
     ctx = _portal_context(employee)
     ctx['form'] = form

@@ -77,7 +77,7 @@ class PurchaseOrderForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm)
         model = PurchaseOrder
         fields = [
             'supplier', 'po_date', 'expected_date', 'reference',
-            'currency', 'status', 'notes', 'terms'
+            'currency', 'notes', 'terms'
         ]
         widgets = {
             'po_date': forms.DateInput(attrs={'type': 'date'}),

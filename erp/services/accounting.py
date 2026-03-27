@@ -42,9 +42,23 @@ from erp.models import JournalEntry, JournalEntryLine, Account, FiscalYear
 
 
 def _update_account_balances(journal_entry, db_alias):
-    """Update current_balance on all accounts affected by a posted journal entry."""
-    for line in journal_entry.lines.using(db_alias).select_related('account').all():
-        account = line.account
+    """Update current_balance on all accounts affected by a posted journal entry.
+
+    Acquires row-level locks on the affected accounts (sorted by PK to prevent
+    deadlocks) so that concurrent postings never overwrite each other's balance.
+    Must be called from within an active transaction.atomic() block.
+    """
+    lines = list(journal_entry.lines.using(db_alias).select_related('account').all())
+    if not lines:
+        return
+    # Lock accounts in a deterministic order to avoid deadlocks
+    account_ids = sorted({line.account_id for line in lines})
+    locked_accounts = {
+        acc.pk: acc
+        for acc in Account.objects.using(db_alias).select_for_update().filter(pk__in=account_ids)
+    }
+    for line in lines:
+        account = locked_accounts[line.account_id]
         account.update_balance(line.debit_amount, line.credit_amount)
         account.save(using=db_alias, update_fields=['current_balance'])
 

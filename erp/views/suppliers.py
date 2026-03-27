@@ -2,6 +2,9 @@
 ERP Views – Suppliers, Purchase Orders, Supplier Invoices & Payments
 """
 
+import logging
+
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
@@ -10,8 +13,10 @@ from django.views.decorators.vary import vary_on_cookie
 from erp.models import (
     Supplier, PurchaseOrder,
     SupplierInvoice, SupplierInvoiceLine, SupplierPayment, SupplierPaymentAllocation,
-    Product, TaxRate,
+    Product, TaxRate, JournalEntry, Account,
 )
+
+_logger = logging.getLogger('erp.finance')
 from erp.forms import (
     SupplierForm, SupplierContactFormSet,
     PurchaseOrderForm, PurchaseOrderLineFormSet,
@@ -222,14 +227,6 @@ def purchase_order_create(request):
             order.calculate_totals()
             order.save()
 
-            # If PO is created with approved status, adjust inventory
-            if order.status == PurchaseOrder.Status.APPROVED:
-                from erp.services.inventory import adjust_inventory_for_purchase_order
-                try:
-                    adjust_inventory_for_purchase_order(order)
-                except Exception as e:
-                    messages.warning(request, f'تم إنشاء الطلب لكن فشل تحديث المخزون: {e}')
-
             messages.success(request, f'Purchase Order {order.po_number} created successfully.')
             return redirect('erp:purchase_order_detail', pk=order.pk)
     else:
@@ -260,20 +257,11 @@ def purchase_order_edit(request, pk):
         formset = PurchaseOrderLineFormSet(request.POST, instance=order)
 
         if form.is_valid() and formset.is_valid():
-            old_status = PurchaseOrder.objects.get(pk=order.pk).status
             form.save()
             formset.save()
 
             order.calculate_totals()
             order.save()
-
-            # If status changed to approved, adjust inventory
-            if old_status != PurchaseOrder.Status.APPROVED and order.status == PurchaseOrder.Status.APPROVED:
-                from erp.services.inventory import adjust_inventory_for_purchase_order
-                try:
-                    adjust_inventory_for_purchase_order(order)
-                except Exception as e:
-                    messages.warning(request, f'تم تحديث الطلب لكن فشل تحديث المخزون: {e}')
 
             messages.success(request, f'Purchase Order {order.po_number} updated successfully.')
             return redirect('erp:purchase_order_detail', pk=order.pk)
@@ -328,7 +316,10 @@ def purchase_order_approve(request, pk):
             employee = Employee.objects.get(user=request.user, company=company)
             order.approved_by = employee
         except Employee.DoesNotExist:
-            pass
+            messages.warning(
+                request,
+                'لم يتم العثور على ملف موظف لحسابك — تم تسجيل الاعتماد بدون ربط بموظف.'
+            )
 
         order.approval_date = timezone.now()
         order.status = PurchaseOrder.Status.APPROVED
@@ -476,7 +467,8 @@ def supplier_invoice_create(request):
             try:
                 create_supplier_invoice_journal_entry(invoice, request.user)
             except Exception:
-                pass
+                _logger.exception('Failed to create journal entry for supplier invoice %s', invoice.invoice_number)
+                messages.warning(request, 'تحذير: تعذّر إنشاء القيد المحاسبي تلقائياً. يُرجى إنشاؤه يدوياً.')
 
             messages.success(request, f'تم إنشاء فاتورة المورد {invoice.invoice_number}.')
             return redirect('erp:supplier_invoice_detail', pk=invoice.pk)
@@ -537,8 +529,25 @@ def supplier_invoice_delete(request, pk):
     invoice = get_object_or_404(SupplierInvoice, pk=pk, company=company)
 
     if request.method == 'POST':
-        number = invoice.invoice_number
-        invoice.delete()
+        with transaction.atomic():
+            number = invoice.invoice_number
+            # Reverse and cancel all posted journal entries linked to this supplier invoice
+            for je in JournalEntry.objects.filter(
+                company=company,
+                reference=number,
+                status=JournalEntry.Status.POSTED,
+            ):
+                account_ids = sorted(je.lines.values_list('account_id', flat=True))
+                locked_accounts = {
+                    a.pk: a for a in Account.objects.select_for_update().filter(pk__in=account_ids)
+                }
+                for line in je.lines.select_related('account').all():
+                    acc = locked_accounts[line.account_id]
+                    acc.update_balance(line.credit_amount, line.debit_amount)
+                    acc.save(update_fields=['current_balance'])
+                je.status = JournalEntry.Status.CANCELLED
+                je.save(update_fields=['status'])
+            invoice.delete()
         messages.success(request, f'تم حذف فاتورة المورد {number}.')
         return redirect('erp:supplier_invoice_list')
 
@@ -642,7 +651,8 @@ def supplier_payment_create(request):
             try:
                 create_supplier_payment_journal_entry(payment, request.user)
             except Exception:
-                pass
+                _logger.exception('Failed to create journal entry for supplier payment %s', payment.payment_number)
+                messages.warning(request, 'تحذير: تعذّر إنشاء القيد المحاسبي تلقائياً. يُرجى إنشاؤه يدوياً.')
 
             messages.success(request, f'تم تسجيل دفعة المورد {payment.payment_number}.')
             return redirect('erp:supplier_payment_detail', pk=payment.pk)
@@ -674,15 +684,32 @@ def supplier_payment_delete(request, pk):
     payment = get_object_or_404(SupplierPayment, pk=pk, company=company)
 
     if request.method == 'POST':
-        # Reverse allocations before deletion
-        for alloc in payment.allocations.all():
-            inv = alloc.invoice
-            inv.paid_amount -= alloc.amount
-            inv.calculate_totals()
-            inv.save()
+        with transaction.atomic():
+            # Reverse allocations before deletion
+            for alloc in payment.allocations.all():
+                inv = alloc.invoice
+                inv.paid_amount -= alloc.amount
+                inv.calculate_totals()
+                inv.save()
 
-        number = payment.payment_number
-        payment.delete()
+            number = payment.payment_number
+            # Reverse and cancel all posted journal entries linked to this payment
+            for je in JournalEntry.objects.filter(
+                company=company,
+                reference=number,
+                status=JournalEntry.Status.POSTED,
+            ):
+                account_ids = sorted(je.lines.values_list('account_id', flat=True))
+                locked_accounts = {
+                    a.pk: a for a in Account.objects.select_for_update().filter(pk__in=account_ids)
+                }
+                for line in je.lines.select_related('account').all():
+                    acc = locked_accounts[line.account_id]
+                    acc.update_balance(line.credit_amount, line.debit_amount)
+                    acc.save(update_fields=['current_balance'])
+                je.status = JournalEntry.Status.CANCELLED
+                je.save(update_fields=['status'])
+            payment.delete()
         messages.success(request, f'تم حذف دفعة المورد {number}.')
         return redirect('erp:supplier_payment_list')
 

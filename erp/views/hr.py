@@ -398,6 +398,10 @@ def leave_request_approve(request, pk):
     leave_request = get_object_or_404(LeaveRequest, pk=pk, employee__company=company)
 
     if request.method == 'POST':
+        if leave_request.status != 'pending':
+            messages.error(request, 'يمكن الموافقة أو الرفض على الطلبات المعلقة فقط.')
+            return redirect('erp:leave_request_detail', pk=pk)
+
         action = request.POST.get('action')
         notes = request.POST.get('notes', '')
 
@@ -632,10 +636,9 @@ def payroll_approve(request, pk):
             messages.success(request, 'Payroll calculated successfully.')
 
         elif action == 'approve':
-            if payroll.status not in ('draft', 'calculated'):
-                messages.error(request, 'Cannot approve payroll in its current state.')
+            if payroll.status != 'calculated':
+                messages.error(request, 'Payroll must be in Calculated status before it can be approved.')
                 return redirect('erp:payroll_detail', pk=pk)
-            payroll.calculate_totals()
             payroll.status = Payroll.Status.APPROVED
             payroll.save()
             messages.success(request, 'Payroll approved.')

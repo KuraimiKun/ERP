@@ -8,12 +8,13 @@ Financial Reports.
 
 from django.db import transaction
 from django.db.models import Sum, Q
+from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
 from erp.models import (
     Invoice, Payment, PaymentAllocation, Expense, ExpenseCategory,
     Account, TaxRate, PaymentMethod, Currency, FiscalYear,
-    Product, ServicePricing,
+    Product, ServicePricing, JournalEntry,
 )
 from erp.services import get_invoice_number, get_payment_number, get_expense_number
 from erp.forms import (
@@ -162,8 +163,33 @@ def invoice_delete(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk, company=company)
 
     if request.method == 'POST':
-        number = invoice.invoice_number
-        invoice.delete()
+        if invoice.status not in (Invoice.Status.DRAFT, Invoice.Status.CANCELLED):
+            messages.error(
+                request,
+                f'لا يمكن حذف الفاتورة {invoice.invoice_number} لأن حالتها "{invoice.get_status_display()}". '
+                'يمكن حذف المسودات فقط — استخدم الإلغاء للفواتير المرسلة أو المدفوعة.'
+            )
+            return redirect('erp:invoice_detail', pk=pk)
+        with transaction.atomic():
+            number = invoice.invoice_number
+            # Reverse and cancel all posted journal entries linked to this invoice
+            for je in JournalEntry.objects.filter(
+                company=company,
+                reference=number,
+                status=JournalEntry.Status.POSTED,
+            ):
+                account_ids = sorted(je.lines.values_list('account_id', flat=True))
+                locked_accounts = {
+                    a.pk: a for a in Account.objects.select_for_update().filter(pk__in=account_ids)
+                }
+                for line in je.lines.select_related('account').all():
+                    acc = locked_accounts[line.account_id]
+                    # Reverse: swap debit/credit to undo the original posting
+                    acc.update_balance(line.credit_amount, line.debit_amount)
+                    acc.save(update_fields=['current_balance'])
+                je.status = JournalEntry.Status.CANCELLED
+                je.save(update_fields=['status'])
+            invoice.delete()
         messages.success(request, f'Invoice {number} deleted successfully.')
         return redirect('erp:invoice_list')
 
@@ -290,8 +316,44 @@ def payment_delete(request, pk):
     payment = get_object_or_404(Payment, pk=pk, company=company)
 
     if request.method == 'POST':
-        number = payment.payment_number
-        payment.delete()
+        with transaction.atomic():
+            number = payment.payment_number
+            today = timezone.now().date()
+            # Reverse all invoice allocations
+            for alloc in payment.allocations.select_related('invoice').all():
+                inv = alloc.invoice
+                inv.paid_amount = max(0, inv.paid_amount - alloc.amount)
+                inv.balance_due = max(0, inv.total_amount - inv.paid_amount)
+                if inv.paid_amount <= 0:
+                    inv.paid_amount = 0
+                    # Restore OVERDUE if the due date has passed, otherwise SENT
+                    if inv.due_date and inv.due_date < today:
+                        inv.status = Invoice.Status.OVERDUE
+                    else:
+                        inv.status = Invoice.Status.SENT
+                elif inv.balance_due > 0:
+                    inv.status = Invoice.Status.PARTIAL
+                # else: paid_amount >= total_amount stays PAID (shouldn't happen on delete)
+                inv.save()
+
+            # Reverse and cancel all posted journal entries linked to this payment
+            for je in JournalEntry.objects.filter(
+                company=company,
+                reference=number,
+                status=JournalEntry.Status.POSTED,
+            ):
+                account_ids = sorted(je.lines.values_list('account_id', flat=True))
+                locked_accounts = {
+                    a.pk: a for a in Account.objects.select_for_update().filter(pk__in=account_ids)
+                }
+                for line in je.lines.select_related('account').all():
+                    acc = locked_accounts[line.account_id]
+                    acc.update_balance(line.credit_amount, line.debit_amount)
+                    acc.save(update_fields=['current_balance'])
+                je.status = JournalEntry.Status.CANCELLED
+                je.save(update_fields=['status'])
+
+            payment.delete()
         messages.success(request, f'Payment {number} deleted successfully.')
         return redirect('erp:payment_list')
 
@@ -387,7 +449,25 @@ def expense_delete(request, pk):
     expense = get_object_or_404(Expense, pk=pk, company=company)
 
     if request.method == 'POST':
-        expense.delete()
+        with transaction.atomic():
+            number = expense.expense_number
+            # Reverse and cancel all posted journal entries linked to this expense
+            for je in JournalEntry.objects.filter(
+                company=company,
+                reference=number,
+                status=JournalEntry.Status.POSTED,
+            ):
+                account_ids = sorted(je.lines.values_list('account_id', flat=True))
+                locked_accounts = {
+                    a.pk: a for a in Account.objects.select_for_update().filter(pk__in=account_ids)
+                }
+                for line in je.lines.select_related('account').all():
+                    acc = locked_accounts[line.account_id]
+                    acc.update_balance(line.credit_amount, line.debit_amount)
+                    acc.save(update_fields=['current_balance'])
+                je.status = JournalEntry.Status.CANCELLED
+                je.save(update_fields=['status'])
+            expense.delete()
         messages.success(request, 'Expense deleted successfully.')
         return redirect('erp:expense_list')
 
@@ -639,8 +719,15 @@ def payment_method_delete(request, pk):
     payment_method = get_object_or_404(PaymentMethod, pk=pk, company=company)
 
     if request.method == 'POST':
-        payment_method.delete()
-        messages.success(request, 'Payment method deleted successfully.')
+        try:
+            payment_method.delete()
+            messages.success(request, 'Payment method deleted successfully.')
+        except ProtectedError:
+            messages.error(
+                request,
+                f'لا يمكن حذف طريقة الدفع "{payment_method.name}" لأنها مرتبطة بسجلات مدفوعات موجودة. '
+                'يُرجى إلغاء تفعيلها عوضاً عن حذفها.'
+            )
         return redirect('erp:payment_method_list')
 
     return render(request, 'erp/confirm_delete.html', {

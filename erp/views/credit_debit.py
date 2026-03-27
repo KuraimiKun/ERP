@@ -4,6 +4,7 @@ ERP Views – Credit/Debit Notes
 Issue credit or debit notes linked to existing invoices.
 """
 
+import logging
 from decimal import Decimal
 
 from django.db import transaction
@@ -12,10 +13,14 @@ from django.utils import timezone
 from erp.models import Invoice, InvoiceLine, JournalEntry, JournalEntryLine, Account
 from erp.models.core import FiscalYear
 from erp.services import get_invoice_number
+from erp.services.accounting import _get_or_create_account
 from erp.services.sequence import SequenceService
+from tenants.routers import get_current_db_alias
 from ._common import (
     render, get_object_or_404, redirect, messages, get_user_company, staff_member_required,
 )
+
+_logger = logging.getLogger('erp.finance')
 
 
 @staff_member_required
@@ -137,61 +142,57 @@ def debit_note_create(request, pk):
 
 
 def _create_credit_debit_journal(note, user, note_type='credit'):
-    """Create a journal entry for a credit or debit note.
+    """Create and post a journal entry for a credit or debit note.
 
     Credit Note (reverses a sale):
-        DR  Revenue / Accounts Receivable reduction
-        CR  Accounts Receivable / Revenue reduction
-      Effectively: DR 4000 (Revenue)  CR 1100 (AR) — reverses original invoice
+        DR  Sales Revenue (4000)       subtotal
+        DR  Tax Payable (2100)         tax_amount  [if any]
+        CR  Accounts Receivable (1200) total_amount
 
     Debit Note (additional charge):
-        DR  Accounts Receivable   CR  Revenue
+        DR  Accounts Receivable (1200) total_amount
+        CR  Tax Payable (2100)         tax_amount  [if any]
+        CR  Sales Revenue (4000)       subtotal
     """
     company = note.company
     ZERO = Decimal('0')
 
     if note.total_amount <= ZERO:
+        _logger.warning('Skipping journal entry for %s %s: total_amount is zero', note_type, note.invoice_number)
         return None
 
-    # Resolve accounts
-    ar_account = (
-        Account.objects.filter(company=company, code='1100', is_active=True).first()
-    )
-    revenue_account = (
-        Account.objects.filter(company=company, code='4000', is_active=True).first()
-    )
-    vat_account = (
-        Account.objects.filter(company=company, code='2200', is_active=True).first()
-    )
-
-    if not ar_account or not revenue_account:
-        return None  # Silently skip if accounts not set up
+    db_alias = get_current_db_alias()
 
     fiscal_year = FiscalYear.objects.filter(
-        company=company, is_current=True
+        company=company, is_current=True, is_closed=False,
     ).first()
 
     entry_number = SequenceService.get_next_number(company, 'journal_entry')
-
     label = 'إشعار دائن' if note_type == 'credit' else 'إشعار مدين'
 
     with transaction.atomic():
+        # Use _get_or_create_account so missing accounts are created rather than silently skipped
+        ar_account = _get_or_create_account(
+            company, '1200', 'Accounts Receivable', 'ذمم مدينة', 'asset', db_alias
+        )
+        revenue_account = _get_or_create_account(
+            company, '4000', 'Sales Revenue', 'إيرادات المبيعات', 'income', db_alias
+        )
+
         je = JournalEntry.objects.create(
             company=company,
             entry_number=entry_number,
             entry_date=note.invoice_date,
-            entry_type='invoice',
+            entry_type=JournalEntry.EntryType.INVOICE,
             description=f'{label} {note.invoice_number} - {note.customer.name}',
             reference=note.reference or note.invoice_number,
             fiscal_year=fiscal_year,
-            status='draft',
+            status=JournalEntry.Status.DRAFT,
             created_by=user,
         )
 
         if note_type == 'credit':
-            # Credit note reverses original sale:
-            # DR Revenue (reduce income)
-            # CR Accounts Receivable (reduce what customer owes)
+            # DR Revenue — reduce income
             JournalEntryLine.objects.create(
                 journal_entry=je,
                 account=revenue_account,
@@ -201,16 +202,20 @@ def _create_credit_debit_journal(note, user, note_type='credit'):
                 reference_type='invoice',
                 reference_id=note.pk,
             )
-            if note.tax_amount > ZERO and vat_account:
+            if note.tax_amount > ZERO:
+                tax_account = _get_or_create_account(
+                    company, '2100', 'Tax Payable', 'ضريبة مستحقة', 'liability', db_alias
+                )
                 JournalEntryLine.objects.create(
                     journal_entry=je,
-                    account=vat_account,
+                    account=tax_account,
                     description=f'ضريبة {label} - {note.customer.name}',
                     debit_amount=note.tax_amount,
                     credit_amount=ZERO,
                     reference_type='invoice',
                     reference_id=note.pk,
                 )
+            # CR Accounts Receivable — reduce what customer owes
             JournalEntryLine.objects.create(
                 journal_entry=je,
                 account=ar_account,
@@ -221,9 +226,7 @@ def _create_credit_debit_journal(note, user, note_type='credit'):
                 reference_id=note.pk,
             )
         else:
-            # Debit note = additional charge:
-            # DR Accounts Receivable
-            # CR Revenue
+            # DR Accounts Receivable — customer owes more
             JournalEntryLine.objects.create(
                 journal_entry=je,
                 account=ar_account,
@@ -233,16 +236,20 @@ def _create_credit_debit_journal(note, user, note_type='credit'):
                 reference_type='invoice',
                 reference_id=note.pk,
             )
-            if note.tax_amount > ZERO and vat_account:
+            if note.tax_amount > ZERO:
+                tax_account = _get_or_create_account(
+                    company, '2100', 'Tax Payable', 'ضريبة مستحقة', 'liability', db_alias
+                )
                 JournalEntryLine.objects.create(
                     journal_entry=je,
-                    account=vat_account,
+                    account=tax_account,
                     description=f'ضريبة {label} - {note.customer.name}',
                     debit_amount=ZERO,
                     credit_amount=note.tax_amount,
                     reference_type='invoice',
                     reference_id=note.pk,
                 )
+            # CR Revenue
             JournalEntryLine.objects.create(
                 journal_entry=je,
                 account=revenue_account,

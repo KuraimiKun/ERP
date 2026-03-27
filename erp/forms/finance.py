@@ -42,9 +42,11 @@ class InvoiceForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
 
     class Meta:
         model = Invoice
+        # 'status' is intentionally excluded — transitions happen via dedicated
+        # action endpoints (cancel, send, etc.), not free-form editing.
         fields = [
             'customer', 'invoice_type', 'invoice_date', 'due_date',
-            'reference', 'currency', 'status', 'notes', 'terms'
+            'reference', 'currency', 'notes', 'terms'
         ]
         widgets = {
             'invoice_date': forms.DateInput(attrs={'type': 'date'}),
@@ -52,6 +54,14 @@ class InvoiceForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
             'notes': forms.Textarea(attrs={'rows': 3}),
             'terms': forms.Textarea(attrs={'rows': 3}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        invoice_date = cleaned_data.get('invoice_date')
+        due_date = cleaned_data.get('due_date')
+        if invoice_date and due_date and due_date < invoice_date:
+            self.add_error('due_date', _('تاريخ الاستحقاق لا يمكن أن يكون قبل تاريخ الفاتورة'))
+        return cleaned_data
 
 
 class InvoiceLineForm(BootstrapFormMixin, forms.ModelForm):
@@ -113,10 +123,17 @@ class PaymentForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
         invoice = cleaned_data.get('invoice')
         amount = cleaned_data.get('amount')
 
-        if invoice and amount:
-            if amount > invoice.balance_due:
-                # Allow overpayment but warn — don't block
-                pass
+        if invoice and amount is not None:
+            if amount <= 0:
+                self.add_error('amount', _('يجب أن يكون المبلغ أكبر من الصفر'))
+            elif amount > invoice.balance_due:
+                self.add_error(
+                    'amount',
+                    _(
+                        f'المبلغ المدخل ({amount}) أكبر من الرصيد المستحق على الفاتورة ({invoice.balance_due}). '
+                        'يُرجى إدخال مبلغ لا يتجاوز الرصيد المستحق.'
+                    ),
+                )
 
         return cleaned_data
 

@@ -8,6 +8,7 @@ import uuid
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
 
@@ -78,6 +79,19 @@ class Account(ERPBaseModel):
 
     def __str__(self):
         return f"{self.code} - {self.name}"
+
+    def clean(self):
+        """Prevent circular parent-child relationships."""
+        if self.parent_id:
+            parent = self.parent
+            visited = set()
+            while parent is not None:
+                if parent.pk in visited:
+                    break  # already detected cycle
+                if parent.pk == self.pk:
+                    raise ValidationError({'parent': _('لا يمكن أن يكون الحساب والداً لنفسه (مرجع دائري)')})
+                visited.add(parent.pk)
+                parent = parent.parent
 
     @property
     def is_debit_normal(self):
@@ -190,7 +204,7 @@ class Customer(ERPBaseModel):
         related_name='erp_customer_profile'
     )
     
-    customer_id = models.CharField(max_length=20, unique=True)
+    customer_id = models.CharField(max_length=20)
     customer_type = models.CharField(max_length=20, choices=CustomerType.choices, default=CustomerType.INDIVIDUAL)
     
     # Name
@@ -251,6 +265,7 @@ class Customer(ERPBaseModel):
         verbose_name=_('Customer')
         verbose_name_plural = 'Customers'
         ordering = ['name']
+        unique_together = ['company', 'customer_id']
         indexes = [
             models.Index(fields=['company', 'is_active'], name='idx_cust_company_active'),
             models.Index(fields=['company', 'customer_type'], name='idx_cust_company_type'),
@@ -358,6 +373,10 @@ class Invoice(ERPBaseModel):
 
     def __str__(self):
         return f"{self.invoice_number} - {self.customer.name}"
+
+    def clean(self):
+        if self.due_date and self.invoice_date and self.due_date < self.invoice_date:
+            raise ValidationError({'due_date': _('تاريخ الاستحقاق لا يمكن أن يكون قبل تاريخ الفاتورة')})
 
     def calculate_totals(self):
         """Calculate invoice totals from line items using a single DB aggregate."""
@@ -519,8 +538,11 @@ class Payment(ERPBaseModel):
         on_delete=models.PROTECT,
         related_name='payments'
     )
-    amount = models.DecimalField(max_digits=15, decimal_places=2)
-    
+    amount = models.DecimalField(
+        max_digits=15, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+    )
+
     # Allocation
     allocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     unallocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
@@ -571,6 +593,24 @@ class PaymentAllocation(TimeStampedModel):
         verbose_name=_('Payment Allocation')
         verbose_name_plural = 'Payment Allocations'
         unique_together = ['payment', 'invoice']
+
+    def clean(self):
+        """Ensure allocation amount does not exceed the invoice's remaining balance_due."""
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        if self.invoice_id and self.amount:
+            already_allocated = (
+                PaymentAllocation.objects.filter(invoice_id=self.invoice_id)
+                .exclude(pk=self.pk)
+                .aggregate(total=Coalesce(Sum('amount'), Decimal('0')))['total']
+            )
+            if already_allocated + self.amount > self.invoice.total_amount:
+                raise ValidationError({
+                    'amount': _(
+                        f'إجمالي المبالغ المخصصة ({already_allocated + self.amount}) '
+                        f'يتجاوز إجمالي الفاتورة ({self.invoice.total_amount})'
+                    )
+                })
 
     def __str__(self):
         return f"{self.payment.payment_number} → {self.invoice.invoice_number}"
@@ -837,15 +877,35 @@ class JournalEntry(ERPBaseModel):
         from django.db import transaction
         if self.status != self.Status.DRAFT:
             raise ValueError('يمكن ترحيل المسودات فقط')
+        if self.lines.count() < 2:
+            raise ValueError('يجب أن يحتوي القيد على سطرين على الأقل (مدين ودائن)')
         if not self.is_balanced:
             raise ValueError('القيد غير متوازن - المدين لا يساوي الدائن')
-        
+        if self.total_debit <= 0:
+            raise ValueError('يجب أن يكون إجمالي المدين أكبر من الصفر')
+
+        # Validate fiscal year is open and entry date is within range
+        if self.fiscal_year:
+            if self.fiscal_year.is_closed:
+                raise ValueError('لا يمكن الترحيل في سنة مالية مغلقة')
+            if not (self.fiscal_year.start_date <= self.entry_date <= self.fiscal_year.end_date):
+                raise ValueError(
+                    f'تاريخ القيد ({self.entry_date}) خارج نطاق السنة المالية '
+                    f'({self.fiscal_year.start_date} – {self.fiscal_year.end_date})'
+                )
+
         with transaction.atomic():
-            # Update account balances (respects normal balance direction)
+            # Lock affected accounts in deterministic order to prevent concurrent balance corruption
+            account_ids = sorted(self.lines.values_list('account_id', flat=True))
+            locked_accounts = {
+                acc.pk: acc
+                for acc in Account.objects.select_for_update().filter(pk__in=account_ids)
+            }
             for line in self.lines.select_related('account').all():
-                line.account.update_balance(line.debit_amount, line.credit_amount)
-                line.account.save(update_fields=['current_balance'])
-            
+                acc = locked_accounts[line.account_id]
+                acc.update_balance(line.debit_amount, line.credit_amount)
+                acc.save(update_fields=['current_balance'])
+
             self.status = self.Status.POSTED
             self.posted_by = user
             self.posted_at = timezone.now()

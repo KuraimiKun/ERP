@@ -206,6 +206,12 @@ def confirm_goods_receipt(grn_id, user):
     if grn.status != GoodsReceiptNote.Status.DRAFT:
         raise ValueError('GRN is not in Draft status')
 
+    if grn.purchase_order and grn.purchase_order.status != PurchaseOrder.Status.APPROVED:
+        raise ValueError(
+            f'لا يمكن تأكيد استلام البضاعة لأمر الشراء {grn.purchase_order.po_number} '
+            'لأنه غير معتمد. يجب اعتماد أمر الشراء أولاً.'
+        )
+
     lines = grn.lines.select_related('product', 'po_line', 'bin', 'lot').using(db)
 
     with transaction.atomic(using=db):
@@ -375,6 +381,17 @@ def approve_stock_adjustment(adjustment_id, user):
         StockAdjustment.AdjustmentType.WRITE_OFF: StockMovement.MovementType.WRITE_OFF,
         StockAdjustment.AdjustmentType.REVALUATION: StockMovement.MovementType.ADJUSTMENT_GAIN,
     }
+
+    # Pre-validate: LOSS / WRITE_OFF must not result in negative on-hand
+    outbound_types = {StockAdjustment.AdjustmentType.LOSS, StockAdjustment.AdjustmentType.WRITE_OFF}
+    if adj.adjustment_type in outbound_types:
+        for line in lines:
+            stock = _get_or_create_stock_item(adj.company, line.product, adj.warehouse, line.bin, line.lot, db)
+            if abs(line.quantity) > stock.on_hand:
+                raise ValueError(
+                    f'الكمية المطلوبة ({abs(line.quantity)}) للمنتج "{line.product.name}" '
+                    f'تتجاوز المخزون المتاح ({stock.on_hand}). لا يمكن إنشاء مخزون سالب.'
+                )
 
     with transaction.atomic(using=db):
         for line in lines:
