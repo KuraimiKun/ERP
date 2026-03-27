@@ -10,6 +10,11 @@ from tenants import views as tenant_views
 
 from django.conf.urls.i18n import i18n_patterns
 
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 from .views import health_check
 
 urlpatterns = [
@@ -24,6 +29,11 @@ urlpatterns = [
     # ── Versioned REST API (no i18n prefix — clients use Accept-Language) ─────
     # v1 canonical path — all new integrations should target /api/v1/.
     path('api/v1/', include('erp.api.urls')),
+    # ── API Documentation ──────────────────────────────────────────────────────
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
     # Legacy unversioned alias kept for backward compatibility with existing
     # clients.  Will be deprecated in a future release.
     path('api/', include('erp.api.urls')),

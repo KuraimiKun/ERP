@@ -33,14 +33,14 @@ class CurrencySerializer(serializers.ModelSerializer):
 
 
 class CompanySerializer(serializers.ModelSerializer):
-    currency_display = CurrencySerializer(source='currency', read_only=True)
-    
+    currency_display = CurrencySerializer(source='base_currency', read_only=True)
+
     class Meta:
         model = Company
         fields = [
-            'id', 'name', 'legal_name', 'tax_id', 'registration_number',
+            'id', 'name', 'legal_name', 'tax_number',
             'email', 'phone', 'website', 'address', 'city', 'state',
-            'postal_code', 'country', 'currency', 'currency_display',
+            'postal_code', 'country', 'base_currency', 'currency_display',
             'fiscal_year_start', 'logo', 'is_active', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -69,8 +69,8 @@ class BranchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Branch
         fields = [
-            'id', 'company', 'name', 'code', 'address', 'city', 'state',
-            'postal_code', 'country', 'phone', 'email', 'is_headquarters',
+            'id', 'company', 'name', 'code', 'address', 'city',
+            'country', 'phone', 'email', 'is_headquarters',
             'is_active', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -100,7 +100,7 @@ class EmployeeListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'employee_id', 'first_name', 'last_name', 'full_name',
             'email', 'job_title', 'department', 'department_name',
-            'employment_status', 'is_active'
+            'employment_status'
         ]
     
     def get_full_name(self, obj):
@@ -116,11 +116,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             'id', 'company', 'user', 'employee_id', 'first_name', 'last_name',
-            'full_name', 'email', 'phone', 'mobile', 'date_of_birth', 'gender',
-            'nationality', 'address', 'city', 'state', 'postal_code', 'country',
+            'full_name', 'email', 'phone', 'date_of_birth', 'gender',
+            'nationality', 'address', 'city', 'country',
             'department', 'department_name', 'branch', 'job_title', 'reports_to',
             'reports_to_name', 'hire_date', 'termination_date', 'employment_type',
-            'employment_status', 'is_active', 'created_at', 'updated_at'
+            'employment_status', 'created_at', 'updated_at'
         ]
         read_only_fields = ['employee_id', 'created_at', 'updated_at']
     
@@ -137,8 +137,8 @@ class LeaveTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveType
         fields = [
-            'id', 'company', 'name', 'code', 'days_per_year', 'is_paid',
-            'requires_approval', 'is_active'
+            'id', 'name', 'code', 'days_allowed', 'is_paid',
+            'is_active'
         ]
 
 
@@ -150,11 +150,11 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         model = LeaveRequest
         fields = [
             'id', 'employee', 'employee_name', 'leave_type', 'leave_type_name',
-            'start_date', 'end_date', 'total_days', 'reason', 'status',
-            'approved_by', 'approved_at', 'rejection_reason',
+            'start_date', 'end_date', 'days_requested', 'reason', 'status',
+            'approved_by', 'approval_date', 'approval_notes',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['total_days', 'approved_at', 'created_at', 'updated_at']
+        read_only_fields = ['days_requested', 'approval_date', 'created_at', 'updated_at']
     
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
@@ -167,10 +167,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = [
             'id', 'employee', 'employee_name', 'date', 'check_in', 'check_out',
-            'total_hours', 'overtime_hours', 'status', 'is_late', 'late_minutes',
+            'hours_worked', 'overtime_hours', 'is_late', 'late_minutes',
             'notes', 'created_at'
         ]
-        read_only_fields = ['total_hours', 'is_late', 'late_minutes', 'created_at']
+        read_only_fields = ['hours_worked', 'is_late', 'late_minutes', 'created_at']
     
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
@@ -183,8 +183,8 @@ class PayrollSerializer(serializers.ModelSerializer):
         model = Payroll
         fields = [
             'id', 'employee', 'employee_name', 'period_start', 'period_end',
-            'basic_salary', 'allowances', 'overtime_pay', 'bonuses',
-            'gross_salary', 'deductions', 'tax_amount', 'net_salary',
+            'basic_salary', 'overtime_amount', 'bonus',
+            'gross_salary', 'total_deductions', 'tax_deduction', 'net_salary',
             'status', 'payment_date', 'created_at', 'updated_at'
         ]
         read_only_fields = ['gross_salary', 'net_salary', 'created_at', 'updated_at']
@@ -212,13 +212,13 @@ class AccountSerializer(serializers.ModelSerializer):
 class TaxRateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaxRate
-        fields = ['id', 'company', 'name', 'rate', 'description', 'is_active']
+        fields = ['id', 'company', 'name', 'rate', 'is_active']
 
 
 class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentMethod
-        fields = ['id', 'company', 'name', 'description', 'is_active']
+        fields = ['id', 'company', 'name', 'is_active']
 
 
 class CustomerListSerializer(serializers.ModelSerializer):
@@ -226,24 +226,24 @@ class CustomerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = [
-            'id', 'customer_id', 'name', 'customer_type', 'email', 
-            'phone', 'balance', 'is_active'
+            'id', 'customer_id', 'name', 'customer_type', 'email',
+            'phone', 'current_balance', 'is_active'
         ]
 
 
 class CustomerSerializer(serializers.ModelSerializer):
     currency_display = CurrencySerializer(source='currency', read_only=True)
-    
+
     class Meta:
         model = Customer
         fields = [
             'id', 'company', 'customer_id', 'name', 'customer_type', 'email',
-            'phone', 'mobile', 'address', 'city', 'state', 'postal_code',
-            'country', 'currency', 'currency_display', 'tax_id', 'credit_limit',
-            'payment_terms', 'balance', 'notes', 'is_active',
+            'phone', 'mobile', 'billing_address', 'billing_city', 'billing_state', 'billing_postal_code',
+            'billing_country', 'currency', 'currency_display', 'tax_id', 'credit_limit',
+            'payment_terms', 'current_balance', 'notes', 'is_active',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['customer_id', 'balance', 'created_at', 'updated_at']
+        read_only_fields = ['customer_id', 'current_balance', 'created_at', 'updated_at']
 
 
 class InvoiceLineSerializer(serializers.ModelSerializer):
@@ -252,9 +252,9 @@ class InvoiceLineSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'invoice', 'description', 'quantity', 'unit_price',
             'discount_percent', 'discount_amount', 'tax_rate', 'tax_amount',
-            'total_amount', 'sort_order'
+            'line_total'
         ]
-        read_only_fields = ['discount_amount', 'tax_amount', 'total_amount']
+        read_only_fields = ['discount_amount', 'tax_amount', 'line_total']
 
 
 class InvoiceListSerializer(serializers.ModelSerializer):
@@ -279,13 +279,13 @@ class InvoiceSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'company', 'customer', 'customer_display', 'invoice_number',
             'invoice_date', 'due_date', 'reference', 'currency', 'currency_display',
-            'subtotal_amount', 'discount_amount', 'tax_amount', 'total_amount',
-            'amount_paid', 'balance_due', 'status', 'notes', 'terms',
+            'subtotal', 'discount_amount', 'tax_amount', 'total_amount',
+            'paid_amount', 'balance_due', 'status', 'notes', 'terms',
             'lines', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'invoice_number', 'subtotal_amount', 'tax_amount', 'total_amount',
-            'amount_paid', 'balance_due', 'created_at', 'updated_at'
+            'invoice_number', 'subtotal', 'tax_amount', 'total_amount',
+            'paid_amount', 'balance_due', 'created_at', 'updated_at'
         ]
 
 
@@ -296,7 +296,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = [
             'id', 'company', 'customer', 'customer_name', 'payment_number',
-            'payment_date', 'amount', 'payment_method', 'reference', 'notes',
+            'payment_date', 'amount', 'payment_method', 'reference_number', 'notes',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['payment_number', 'created_at', 'updated_at']
@@ -305,27 +305,27 @@ class PaymentSerializer(serializers.ModelSerializer):
 class ExpenseCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenseCategory
-        fields = ['id', 'company', 'name', 'code', 'parent', 'description', 'is_active']
+        fields = ['id', 'company', 'name', 'code', 'parent', 'is_active']
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
-    submitted_by_name = serializers.SerializerMethodField()
-    
+    employee_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Expense
         fields = [
             'id', 'company', 'expense_number', 'category', 'category_name',
             'expense_date', 'description', 'amount', 'tax_amount', 'total_amount',
-            'currency', 'submitted_by', 'submitted_by_name', 'status',
-            'approved_by', 'approved_at', 'paid_date', 'notes',
+            'currency', 'employee', 'employee_name', 'status',
+            'approved_by', 'approval_date', 'notes',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['expense_number', 'total_amount', 'approved_at', 'created_at', 'updated_at']
-    
-    def get_submitted_by_name(self, obj):
-        if obj.submitted_by:
-            return f"{obj.submitted_by.first_name} {obj.submitted_by.last_name}"
+        read_only_fields = ['expense_number', 'total_amount', 'approval_date', 'created_at', 'updated_at']
+
+    def get_employee_name(self, obj):
+        if obj.employee:
+            return f"{obj.employee.first_name} {obj.employee.last_name}"
         return None
 
 
@@ -359,8 +359,8 @@ class SupplierSerializer(serializers.ModelSerializer):
         model = Supplier
         fields = [
             'id', 'company', 'supplier_id', 'name', 'supplier_type',
-            'email', 'phone', 'website', 'address', 'city', 'state',
-            'postal_code', 'country', 'currency', 'tax_id', 'payment_terms',
+            'email', 'phone', 'website', 'address', 'city',
+            'postal_code', 'country', 'currency', 'tax_number', 'payment_terms',
             'rating', 'notes', 'is_active', 'contacts',
             'created_at', 'updated_at'
         ]
@@ -372,9 +372,9 @@ class PurchaseOrderLineSerializer(serializers.ModelSerializer):
         model = PurchaseOrderLine
         fields = [
             'id', 'purchase_order', 'description', 'quantity', 'unit_price',
-            'tax_rate', 'tax_amount', 'total_amount', 'sort_order'
+            'tax_rate', 'tax_amount', 'line_total'
         ]
-        read_only_fields = ['tax_amount', 'total_amount']
+        read_only_fields = ['tax_amount', 'line_total']
 
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):
@@ -385,12 +385,12 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         model = PurchaseOrder
         fields = [
             'id', 'company', 'supplier', 'supplier_name', 'po_number',
-            'po_date', 'expected_date', 'subtotal_amount', 'tax_amount',
+            'po_date', 'expected_date', 'subtotal', 'tax_amount',
             'total_amount', 'status', 'notes', 'lines',
             'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'po_number', 'subtotal_amount', 'tax_amount', 'total_amount',
+            'po_number', 'subtotal', 'tax_amount', 'total_amount',
             'created_at', 'updated_at'
         ]
 
@@ -423,12 +423,12 @@ class LeadListSerializer(serializers.ModelSerializer):
 
 class LeadActivitySerializer(serializers.ModelSerializer):
     performed_by_name = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = LeadActivity
         fields = [
             'id', 'lead', 'activity_type', 'activity_date', 'description',
-            'outcome', 'performed_by', 'performed_by_name', 'created_at'
+            'performed_by', 'performed_by_name', 'created_at'
         ]
         read_only_fields = ['created_at']
     
@@ -448,11 +448,11 @@ class LeadSerializer(serializers.ModelSerializer):
             'id', 'company', 'lead_number', 'first_name', 'last_name',
             'email', 'phone', 'mobile', 'company_name', 'job_title',
             'source', 'status', 'estimated_value', 'service_interest',
-            'notes', 'assigned_to', 'assigned_to_name', 'last_contacted',
-            'next_follow_up', 'converted_customer', 'converted_at',
+            'notes', 'assigned_to', 'assigned_to_name', 'last_contact_date',
+            'next_follow_up', 'converted_customer', 'conversion_date',
             'activities', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['lead_number', 'converted_at', 'created_at', 'updated_at']
+        read_only_fields = ['lead_number', 'conversion_date', 'created_at', 'updated_at']
     
     def get_assigned_to_name(self, obj):
         if obj.assigned_to:
@@ -461,20 +461,20 @@ class LeadSerializer(serializers.ModelSerializer):
 
 
 class CustomerInteractionSerializer(serializers.ModelSerializer):
-    performed_by_name = serializers.SerializerMethodField()
-    
+    handled_by_name = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomerInteraction
         fields = [
             'id', 'customer', 'interaction_type', 'interaction_date',
-            'subject', 'notes', 'outcome', 'performed_by', 'performed_by_name',
+            'subject', 'description', 'handled_by', 'handled_by_name',
             'follow_up_date', 'created_at'
         ]
         read_only_fields = ['created_at']
-    
-    def get_performed_by_name(self, obj):
-        if obj.performed_by:
-            return f"{obj.performed_by.first_name} {obj.performed_by.last_name}"
+
+    def get_handled_by_name(self, obj):
+        if obj.handled_by:
+            return f"{obj.handled_by.first_name} {obj.handled_by.last_name}"
         return None
 
 
@@ -553,7 +553,7 @@ class ServiceCategorySerializer(serializers.ModelSerializer):
 class PriceTierSerializer(serializers.ModelSerializer):
     class Meta:
         model = PriceTier
-        fields = ['id', 'service_pricing', 'min_quantity', 'max_quantity', 'unit_price']
+        fields = ['id', 'service_pricing', 'min_quantity', 'max_quantity', 'price']
 
 
 class ServicePricingSerializer(serializers.ModelSerializer):
@@ -565,7 +565,7 @@ class ServicePricingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'company', 'name', 'code', 'category', 'category_name',
             'description', 'pricing_type', 'base_price', 'currency',
-            'unit_of_measure', 'is_active', 'tiers',
+            'is_active', 'tiers',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -576,10 +576,10 @@ class QuoteLineSerializer(serializers.ModelSerializer):
         model = QuoteLine
         fields = [
             'id', 'quote', 'description', 'quantity', 'unit_price',
-            'discount_percent', 'discount_amount', 'tax_rate', 'tax_amount',
-            'total_amount', 'sort_order'
+            'discount_percent', 'tax_rate', 'tax_amount',
+            'line_total'
         ]
-        read_only_fields = ['discount_amount', 'tax_amount', 'total_amount']
+        read_only_fields = ['tax_amount', 'line_total']
 
 
 class QuoteListSerializer(serializers.ModelSerializer):
@@ -603,12 +603,12 @@ class QuoteSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'company', 'customer', 'customer_display', 'lead',
             'quote_number', 'quote_date', 'valid_until', 'reference',
-            'currency', 'subtotal_amount', 'discount_amount', 'tax_amount',
-            'total_amount', 'status', 'notes', 'terms', 'converted_invoice',
+            'currency', 'subtotal', 'discount_amount', 'tax_amount',
+            'total_amount', 'status', 'notes', 'terms', 'converted_to_invoice',
             'lines', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'quote_number', 'subtotal_amount', 'tax_amount', 'total_amount',
+            'quote_number', 'subtotal', 'tax_amount', 'total_amount',
             'created_at', 'updated_at'
         ]
 
@@ -622,7 +622,7 @@ class DashboardWidgetSerializer(serializers.ModelSerializer):
         model = DashboardWidget
         fields = [
             'id', 'dashboard', 'title', 'widget_type', 'data_source',
-            'config', 'position_x', 'position_y', 'width', 'height'
+            'configuration', 'row', 'column', 'width', 'height'
         ]
 
 
@@ -633,7 +633,7 @@ class DashboardSerializer(serializers.ModelSerializer):
         model = Dashboard
         fields = [
             'id', 'company', 'name', 'description', 'is_default',
-            'created_by', 'widgets', 'created_at', 'updated_at'
+            'owner', 'widgets', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
 
@@ -641,7 +641,7 @@ class DashboardSerializer(serializers.ModelSerializer):
 class KPIValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = KPIValue
-        fields = ['id', 'kpi', 'value', 'date', 'created_at']
+        fields = ['id', 'kpi', 'value', 'period_start', 'created_at']
 
 
 class KPISerializer(serializers.ModelSerializer):
@@ -650,12 +650,12 @@ class KPISerializer(serializers.ModelSerializer):
     class Meta:
         model = KPI
         fields = [
-            'id', 'company', 'name', 'code', 'description', 'category',
-            'target_value', 'unit', 'frequency', 'is_active', 'recent_values'
+            'id', 'company', 'name', 'description', 'kpi_type',
+            'target_value', 'unit', 'is_active', 'recent_values'
         ]
-    
+
     def get_recent_values(self, obj):
-        values = obj.values.order_by('-date')[:10]
+        values = obj.values.order_by('-period_start')[:10]
         return KPIValueSerializer(values, many=True).data
 
 
@@ -665,22 +665,22 @@ class KPISerializer(serializers.ModelSerializer):
 
 class AuditLogSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.username', read_only=True)
-    
+
     class Meta:
         model = AuditLog
         fields = [
             'id', 'user', 'user_name', 'action', 'content_type', 'object_id',
-            'object_repr', 'changes', 'ip_address', 'user_agent', 'timestamp'
+            'object_repr', 'changes', 'ip_address', 'user_agent', 'created_at'
         ]
-        read_only_fields = ['timestamp']
+        read_only_fields = ['created_at']
 
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = [
-            'id', 'user', 'title', 'message', 'notification_type',
-            'is_read', 'read_at', 'link', 'created_at'
+            'id', 'recipient', 'title', 'message', 'notification_type',
+            'is_read', 'read_at', 'action_url', 'created_at'
         ]
         read_only_fields = ['read_at', 'created_at']
 

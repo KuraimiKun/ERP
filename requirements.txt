@@ -18,6 +18,9 @@ Django>=4.2,<5.0
 djangorestframework>=3.14.0
 django-filter>=23.0,<25.0
 
+# OpenAPI 3.0 schema & documentation UI
+drf-spectacular>=0.27.0
+
 # Environment variables
 python-dotenv>=1.0.0
 

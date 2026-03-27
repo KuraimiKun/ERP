@@ -173,7 +173,7 @@ class EmployeeViewSet(ERPBaseViewSet):
     queryset = Employee.objects.select_related('department', 'branch', 'reports_to')
     serializer_class = EmployeeSerializer
     search_fields = ['first_name', 'last_name', 'email', 'employee_id']
-    filterset_fields = ['department', 'branch', 'employment_status', 'employment_type', 'is_active']
+    filterset_fields = ['department', 'branch', 'employment_status', 'employment_type']
     ordering_fields = ['first_name', 'last_name', 'hire_date', 'created_at']
     
     def get_serializer_class(self):
@@ -248,7 +248,7 @@ class LeaveRequestViewSet(ERPBaseViewSet):
         leave_request.status = 'approved'
         if hasattr(request.user, 'employee_profile'):
             leave_request.approved_by = request.user.employee_profile
-        leave_request.approved_at = timezone.now()
+        leave_request.approval_date = timezone.now()
         leave_request.save()
         
         serializer = self.get_serializer(leave_request)
@@ -262,7 +262,7 @@ class LeaveRequestViewSet(ERPBaseViewSet):
             return Response({'detail': 'Can only reject pending requests.'}, status=status.HTTP_400_BAD_REQUEST)
         
         leave_request.status = 'rejected'
-        leave_request.rejection_reason = request.data.get('reason', '')
+        leave_request.approval_notes = request.data.get('reason', '')
         leave_request.save()
         
         serializer = self.get_serializer(leave_request)
@@ -369,7 +369,7 @@ class CustomerViewSet(ERPBaseViewSet):
         
         return Response({
             'customer': CustomerListSerializer(customer).data,
-            'balance': customer.balance,
+            'balance': customer.current_balance,
             'invoices': list(invoices),
             'payments': list(payments),
         })
@@ -449,10 +449,10 @@ class ExpenseCategoryViewSet(ERPBaseViewSet):
 
 class ExpenseViewSet(ERPBaseViewSet):
     """API endpoint for expenses."""
-    queryset = Expense.objects.select_related('category', 'submitted_by', 'approved_by')
+    queryset = Expense.objects.select_related('category', 'employee', 'approved_by')
     serializer_class = ExpenseSerializer
     search_fields = ['expense_number', 'description']
-    filterset_fields = ['category', 'status', 'submitted_by', 'employee']
+    filterset_fields = ['category', 'status', 'employee']
     ordering_fields = ['expense_date', 'total_amount', 'created_at', 'status']
     ordering = ['-expense_date']
     
@@ -466,7 +466,7 @@ class ExpenseViewSet(ERPBaseViewSet):
         expense.status = 'approved'
         if hasattr(request.user, 'employee_profile'):
             expense.approved_by = request.user.employee_profile
-        expense.approved_at = timezone.now()
+        expense.approval_date = timezone.now()
         expense.save()
         
         serializer = self.get_serializer(expense)
@@ -551,8 +551,8 @@ class LeadViewSet(ERPBaseViewSet):
         serializer.save(lead=lead)
         
         # Update last contacted
-        lead.last_contacted = timezone.now()
-        lead.save(update_fields=['last_contacted'])
+        lead.last_contact_date = timezone.now()
+        lead.save(update_fields=['last_contact_date'])
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
@@ -578,7 +578,7 @@ class LeadViewSet(ERPBaseViewSet):
             # Update lead
             lead.status = 'won'
             lead.converted_customer = customer
-            lead.converted_at = timezone.now()
+            lead.conversion_date = timezone.now()
             lead.save()
 
         return Response({
@@ -879,7 +879,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        return self.queryset.filter(recipient=self.request.user)
     
     @action(detail=False, methods=['get'])
     def unread(self, request):

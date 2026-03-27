@@ -140,7 +140,7 @@ class StockItemSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'product', 'product_name', 'product_sku',
             'warehouse', 'warehouse_name', 'bin', 'lot',
-            'on_hand_quantity', 'allocated_quantity', 'in_transit_quantity',
+            'on_hand', 'allocated', 'in_transit',
             'unit_cost', 'available', 'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -175,7 +175,7 @@ class GoodsReceiptLineSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoodsReceiptLine
         fields = [
-            'id', 'goods_receipt', 'po_line', 'product', 'product_name',
+            'id', 'grn', 'po_line', 'product', 'product_name',
             'quantity_ordered', 'quantity_received', 'quantity_accepted',
             'quantity_rejected', 'unit_cost', 'bin', 'lot', 'notes',
         ]
@@ -192,7 +192,7 @@ class GoodsReceiptNoteSerializer(serializers.ModelSerializer):
             'id', 'company', 'grn_number', 'receipt_date',
             'purchase_order', 'supplier', 'supplier_name',
             'warehouse', 'warehouse_name', 'status',
-            'received_by', 'notes', 'lines',
+            'notes', 'lines',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at', 'grn_number']
@@ -234,7 +234,7 @@ class StockTransferSerializer(serializers.ModelSerializer):
             'id', 'company', 'transfer_number', 'transfer_date',
             'from_warehouse', 'from_warehouse_name',
             'to_warehouse', 'to_warehouse_name',
-            'status', 'created_by', 'shipped_date', 'received_date',
+            'status', 'shipped_date', 'received_date',
             'notes', 'lines', 'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at', 'transfer_number']

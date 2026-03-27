@@ -126,7 +126,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'crispy_forms',
     'crispy_bootstrap5',
-    
+    'drf_spectacular',
+
     # Local apps
     'tenants',  # Multi-tenant management app
     'erp',      # ERP application
@@ -410,6 +411,103 @@ REST_FRAMEWORK = {
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# ── OpenAPI / Swagger documentation ─────────────────────────────────────────
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Kuraimi ERP API',
+    'DESCRIPTION': 'REST API for Kuraimi ERP — finance, HR, CRM, inventory, suppliers, services, reporting, and AI modules.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': r'/api/',
+
+    'TAGS': [
+        # Core
+        {'name': 'currencies', 'description': 'Currency management'},
+        {'name': 'companies', 'description': 'Company settings'},
+        {'name': 'departments', 'description': 'Department structure'},
+        {'name': 'branches', 'description': 'Branch offices'},
+        {'name': 'fiscal-years', 'description': 'Fiscal year configuration'},
+        # HR
+        {'name': 'employees', 'description': 'Employee management'},
+        {'name': 'leave-types', 'description': 'Leave type configuration'},
+        {'name': 'leave-requests', 'description': 'Leave request workflow'},
+        {'name': 'attendance', 'description': 'Attendance tracking'},
+        {'name': 'payroll', 'description': 'Payroll management'},
+        # Finance
+        {'name': 'accounts', 'description': 'Chart of accounts'},
+        {'name': 'tax-rates', 'description': 'Tax rate configuration'},
+        {'name': 'payment-methods', 'description': 'Payment method setup'},
+        {'name': 'customers', 'description': 'Customer management'},
+        {'name': 'invoices', 'description': 'Invoice management'},
+        {'name': 'payments', 'description': 'Payment processing'},
+        {'name': 'expense-categories', 'description': 'Expense categories'},
+        {'name': 'expenses', 'description': 'Expense management'},
+        # Suppliers
+        {'name': 'suppliers', 'description': 'Supplier management'},
+        {'name': 'supplier-contacts', 'description': 'Supplier contacts'},
+        {'name': 'purchase-orders', 'description': 'Purchase order workflow'},
+        # CRM
+        {'name': 'leads', 'description': 'Lead management & scoring'},
+        {'name': 'lead-activities', 'description': 'Lead activity tracking'},
+        {'name': 'customer-interactions', 'description': 'Customer interaction log'},
+        {'name': 'campaigns', 'description': 'Marketing campaigns'},
+        {'name': 'tasks', 'description': 'Task management'},
+        {'name': 'task-comments', 'description': 'Task comments'},
+        # Services
+        {'name': 'service-categories', 'description': 'Service categories'},
+        {'name': 'service-pricing', 'description': 'Service pricing'},
+        {'name': 'quotes', 'description': 'Quotation management'},
+        # Reporting
+        {'name': 'dashboards', 'description': 'Dashboard configuration'},
+        {'name': 'dashboard-widgets', 'description': 'Dashboard widget setup'},
+        {'name': 'kpis', 'description': 'KPI tracking'},
+        {'name': 'report-templates', 'description': 'Report template builder'},
+        {'name': 'generated-reports', 'description': 'Generated reports'},
+        {'name': 'report-data-sources', 'description': 'Report data sources'},
+        # Audit
+        {'name': 'audit-logs', 'description': 'Audit trail'},
+        {'name': 'notifications', 'description': 'User notifications'},
+        # Inventory & Warehouse
+        {'name': 'uom', 'description': 'Units of measure'},
+        {'name': 'uom-conversions', 'description': 'UoM conversion factors'},
+        {'name': 'warehouses', 'description': 'Warehouse management'},
+        {'name': 'warehouse-zones', 'description': 'Warehouse zones'},
+        {'name': 'warehouse-bins', 'description': 'Warehouse bin locations'},
+        {'name': 'lots', 'description': 'Lot/batch tracking'},
+        {'name': 'serial-numbers', 'description': 'Serial number tracking'},
+        {'name': 'stock-items', 'description': 'Stock item catalog'},
+        {'name': 'stock-movements', 'description': 'Stock movement history'},
+        {'name': 'goods-receipts', 'description': 'Goods receipt notes'},
+        {'name': 'stock-transfers', 'description': 'Inter-warehouse transfers'},
+        {'name': 'stock-adjustments', 'description': 'Stock adjustments'},
+        {'name': 'cycle-counts', 'description': 'Cycle count operations'},
+        {'name': 'pick-lists', 'description': 'Pick list management'},
+        {'name': 'shipments', 'description': 'Shipment notes'},
+        {'name': 'reorder-rules', 'description': 'Automatic reorder rules'},
+        {'name': 'valuation-config', 'description': 'Inventory valuation'},
+    ],
+
+    'SECURITY': [
+        {'sessionAuth': []},
+        {'tokenAuth': []},
+    ],
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'sessionAuth': {
+                'type': 'apiKey',
+                'in': 'cookie',
+                'name': 'sessionid',
+            },
+            'tokenAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'Authorization',
+                'description': 'Token-based auth. Format: "Token <api_key>"',
+            },
+        },
+    },
 }
 
 # CORS settings

@@ -5,6 +5,9 @@ Provides a reusable ERPTestCase base that sets up a complete shared
 fixture (currency, company, department, accounts, employee, customer,
 supplier, etc.) so every downstream test module can focus on the logic
 under test rather than repeating boilerplate data creation.
+
+ERPAPITestCase extends ERPTestCase with DRF APIClient, token auth,
+and an employee→user linkage so API permission checks pass.
 """
 
 from datetime import date
@@ -12,6 +15,8 @@ from decimal import Decimal
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+from rest_framework.authtoken.models import Token
 
 from erp.models import (
     Currency, Company, Department, Branch, FiscalYear, Account, TaxRate, PaymentMethod,
@@ -223,3 +228,59 @@ class ERPTestCase(TestCase):
             company=cls.company, code='WH1', name='Main Warehouse',
             created_by=cls.user,
         )
+
+
+class ERPAPITestCase(ERPTestCase):
+    """
+    Base test case for API tests with DRF client and token auth.
+
+    Links the default employee to the test user so that
+    ``ERPBaseViewSet.get_company()`` (which traverses
+    ``request.user.employee_profile.company``) works correctly.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # Link employee to user – required by IsCompanyUser permission
+        cls.employee.user = cls.user
+        cls.employee.save()
+        # Auth tokens
+        cls.token = Token.objects.create(user=cls.user)
+        cls.admin_token = Token.objects.create(user=cls.admin_user)
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+
+    def get_admin_client(self):
+        """Return an APIClient authenticated as the admin/superuser."""
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f'Token {self.admin_token.key}')
+        return client
+
+    @classmethod
+    def create_other_company_user(cls):
+        """Create a user belonging to a different company for isolation tests."""
+        other_user = User.objects.create_user(
+            email='other@example.com', password='OtherPass123!',
+        )
+        other_company = Company.objects.create(
+            name='Other Corp', email='other@corp.com', phone='+966500000099',
+            base_currency=cls.currency, created_by=other_user,
+        )
+        other_dept = Department.objects.create(
+            company=other_company, name='Ops', code='OPS',
+            is_active=True, created_by=other_user,
+        )
+        other_employee = Employee.objects.create(
+            company=other_company, department=other_dept,
+            employee_id='EMP-9999', first_name='Other', last_name='User',
+            gender='male', date_of_birth=date(1992, 1, 1),
+            nationality='Saudi', email='other@corp.com', phone='+966500000099',
+            job_title='Manager', hire_date=date(2024, 1, 1),
+            basic_salary=Decimal('8000'), currency=cls.currency,
+            user=other_user, created_by=other_user,
+        )
+        other_token = Token.objects.create(user=other_user)
+        return other_user, other_company, other_employee, other_token

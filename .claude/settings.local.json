@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(python manage.py makemigrations erp --name=\"add_indexes_and_task_constraint\")",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(python manage.py test erp.tests.test_signals erp.tests.test_middleware erp.tests.test_api --settings=erpproject.test_settings -v2)",
+      "Bash(python -c \"import django; print\\(django.VERSION\\)\")",
+      "Bash(python manage.py test erp.tests.test_signals erp.tests.test_middleware erp.tests.test_api --settings=erpproject.test_settings)",
+      "Bash(python manage.py test erp.tests.test_api.TestEmployeeAPI.test_list_employees --settings=erpproject.test_settings -v2)",
+      "Bash(python manage.py test erp.tests.test_api.TestExpenseAPI.test_approve_expense --settings=erpproject.test_settings -v2)",
+      "Bash(python manage.py test erp.tests.test_api erp.tests.test_signals erp.tests.test_middleware --settings=erpproject.test_settings -v2)",
+      "Bash(python manage.py test erp.tests.test_api.TestEmployeeAPI -v2 --settings=erpproject.test_settings)"
     ]
   }
 }
