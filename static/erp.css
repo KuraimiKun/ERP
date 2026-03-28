@@ -59,6 +59,7 @@
   /* Header */
   --header-bg:     rgba(255, 255, 255, 0.88);
   --header-border: rgba(226, 232, 240, 0.8);
+  --header-height: 64px;
 
   /* Borders & Radii */
   --border-color:       #e2e8f0;
@@ -483,12 +484,14 @@ a:hover { color: var(--clr-primary-hover); }
   font-weight: 600;
   color: var(--clr-gray-600);
   font-size: 0.77rem;
+  line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
   padding: 0.7rem 1rem;
   white-space: nowrap;
+  vertical-align: middle;
 }
 .erp-table tbody td {
   vertical-align: middle;
@@ -504,12 +507,7 @@ a:hover { color: var(--clr-primary-hover); }
 .erp-table tbody tr:hover { background: var(--clr-primary-light); }
 .erp-table tbody tr:last-child td { border-bottom: none; }
 
-/* Sort links */
-.erp-sort-link { color: var(--clr-gray-600); text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.25rem; }
-.erp-sort-link:hover { color: var(--clr-primary); }
-.erp-sort-link.active { color: var(--clr-primary-active); font-weight: 700; }
-.erp-sort-icon-idle { opacity: 0; transition: opacity 0.15s; font-size: 0.7rem; }
-th:hover .erp-sort-icon-idle { opacity: 0.45; }
+/* Sort links — full rules in section 40 below */
 
 /* ---- 9. STATUS BADGES ---- */
 .badge-status {
@@ -1034,7 +1032,6 @@ th:hover .erp-sort-icon-idle { opacity: 0.45; }
 .erp-table .col-amount,
 .erp-table td.amount { text-align: end; font-variant-numeric: tabular-nums; font-weight: 500; }
 .erp-table .col-actions { width: 1%; white-space: nowrap; }
-.erp-table thead { position: sticky; top: var(--header-height); z-index: 5; background: #fff; }
 .table-wrapper { overflow-x: auto; border-radius: var(--border-radius); }
 
 /* Mobile: card table */
@@ -1527,17 +1524,24 @@ th:hover .erp-sort-icon-idle { opacity: 0.45; }
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: var(--clr-gray-600);
-  font-weight: 600;
+  color: inherit;
+  font-weight: inherit;
   font-size: inherit;
+  line-height: inherit;
   text-decoration: none;
   white-space: nowrap;
   transition: color 0.15s;
 }
 .erp-sort-link:hover { color: var(--clr-primary); }
 .erp-sort-link.active { color: var(--clr-primary); }
-.erp-sort-link .erp-sort-icon-idle { opacity: 0.35; font-size: 0.8em; }
-.erp-sort-link i:not(.erp-sort-icon-idle) { font-size: 0.85em; }
+.erp-sort-link i { font-size: 0.85em; }
+.erp-sort-link .erp-sort-icon-idle {
+  opacity: 0;
+  font-size: 0.8em;
+  transition: opacity 0.15s;
+}
+th:hover .erp-sort-icon-idle,
+.erp-sort-link:hover .erp-sort-icon-idle { opacity: 0.45; }
 
 /* ---- 41. PAGE TITLE / SUBTITLE HELPERS ---- */
 .portal-page-title {
