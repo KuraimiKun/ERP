@@ -98,7 +98,9 @@ InvoiceLineFormSet = forms.inlineformset_factory(
     Invoice, InvoiceLine,
     form=InvoiceLineForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
 )
 
 

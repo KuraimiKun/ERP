@@ -114,7 +114,9 @@ PurchaseOrderLineFormSet = forms.inlineformset_factory(
     PurchaseOrder, PurchaseOrderLine,
     form=PurchaseOrderLineForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
 )
 
 
@@ -162,6 +164,8 @@ SupplierInvoiceLineFormSet = forms.inlineformset_factory(
     form=SupplierInvoiceLineForm,
     extra=1,
     can_delete=True,
+    min_num=1,
+    validate_min=True,
 )
 
 

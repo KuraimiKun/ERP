@@ -7,6 +7,7 @@ from erp.models import (
     AuditLog, SystemSetting, Notification, EmailTemplate,
     ScheduledTask, IntegrationLog,
 )
+from .mixins import CompanyIsolatedAdmin
 
 
 @admin.register(AuditLog)
@@ -31,14 +32,15 @@ class AuditLogAdmin(admin.ModelAdmin):
 
 
 @admin.register(SystemSetting)
-class SystemSettingAdmin(admin.ModelAdmin):
+class SystemSettingAdmin(CompanyIsolatedAdmin):
     list_display = ['key', 'category', 'setting_type', 'is_editable']
     list_filter = ['company', 'category', 'setting_type']
     search_fields = ['key', 'category']
 
 
 @admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
+class NotificationAdmin(CompanyIsolatedAdmin):
+    company_lookup = 'recipient__employee_profile__company'
     list_display = ['title', 'recipient', 'notification_type', 'is_read', 'created_at']
     list_filter = ['notification_type', 'is_read']
     search_fields = ['title', 'recipient__email']
@@ -46,21 +48,21 @@ class NotificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(EmailTemplate)
-class EmailTemplateAdmin(admin.ModelAdmin):
+class EmailTemplateAdmin(CompanyIsolatedAdmin):
     list_display = ['name', 'code', 'subject', 'is_active']
     list_filter = ['company', 'is_active']
     search_fields = ['name', 'code', 'subject']
 
 
 @admin.register(ScheduledTask)
-class ScheduledTaskAdmin(admin.ModelAdmin):
+class ScheduledTaskAdmin(CompanyIsolatedAdmin):
     list_display = ['name', 'task_type', 'status', 'last_run', 'next_run', 'is_enabled']
     list_filter = ['status', 'is_enabled']
     search_fields = ['name', 'task_type']
 
 
 @admin.register(IntegrationLog)
-class IntegrationLogAdmin(admin.ModelAdmin):
+class IntegrationLogAdmin(CompanyIsolatedAdmin):
     list_display = ['integration_name', 'direction', 'status', 'status_code', 'duration_ms', 'created_at']
     list_filter = ['integration_name', 'direction', 'status']
     date_hierarchy = 'created_at'

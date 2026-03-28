@@ -3,6 +3,7 @@ AI API Views – REST endpoints for the AI / ML module.
 """
 
 import logging
+from django.db.models import Count, Q
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
@@ -233,16 +234,18 @@ def ai_dashboard_summary(request):
     """Return a summary for the AI dashboard widgets."""
     company = get_user_company(request.user)
 
-    # Active insights counts
+    # Active insights counts — single aggregate instead of 3 separate queries
     active_insights = AIInsight.objects.filter(
         company=company, is_dismissed=False,
     )
-    critical_count = active_insights.filter(
-        severity=AIInsight.Severity.CRITICAL).count()
-    warning_count = active_insights.filter(
-        severity=AIInsight.Severity.WARNING).count()
-    info_count = active_insights.filter(
-        severity=AIInsight.Severity.INFO).count()
+    severity_counts = active_insights.aggregate(
+        critical=Count('id', filter=Q(severity=AIInsight.Severity.CRITICAL)),
+        warning=Count('id', filter=Q(severity=AIInsight.Severity.WARNING)),
+        info=Count('id', filter=Q(severity=AIInsight.Severity.INFO)),
+    )
+    critical_count = severity_counts['critical']
+    warning_count = severity_counts['warning']
+    info_count = severity_counts['info']
 
     # Model stats
     models = MLModel.objects.filter(company=company, is_active=True)

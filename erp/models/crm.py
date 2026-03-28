@@ -1,12 +1,15 @@
-from django.utils.translation import gettext_lazy as _
 """
 CRM (Customer Relationship Management) models for the ERP system.
 """
 
-from django.db import models
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
+
 from .base import ERPBaseModel, TimeStampedModel
 
 
@@ -294,10 +297,14 @@ class Campaign(ERPBaseModel):
 
     @property
     def roi(self):
-        """Calculate Return on Investment."""
+        """Return on Investment as a percentage, rounded to 2 dp."""
         if self.actual_cost > 0:
-            return ((self.actual_revenue - self.actual_cost) / self.actual_cost) * 100
-        return 0
+            return (
+                (self.actual_revenue - self.actual_cost)
+                / self.actual_cost
+                * 100
+            ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return Decimal('0')
 
 
 class CampaignLead(TimeStampedModel):

@@ -15,13 +15,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .permissions import IsCompanyUser
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
-from django.db import models
+from decimal import Decimal, ROUND_HALF_UP
+
+from django.db import models, DatabaseError
 from ..models import (
     # Core
     Currency, Company, Department, Branch, FiscalYear,
@@ -465,11 +467,17 @@ class InvoiceViewSet(ERPBaseViewSet):
         """Get invoice summary statistics."""
         queryset = self.get_queryset()
         
+        agg = queryset.aggregate(
+            total_count=Count('id'),
+            total_amount=Sum('total_amount'),
+            outstanding=Sum('balance_due', filter=Q(status__in=['sent', 'partial', 'overdue'])),
+            overdue_count=Count('id', filter=Q(status='overdue')),
+        )
         summary = {
-            'total_count': queryset.count(),
-            'total_amount': queryset.aggregate(total=Sum('total_amount'))['total'] or 0,
-            'outstanding': queryset.filter(status__in=['sent', 'partial', 'overdue']).aggregate(total=Sum('balance_due'))['total'] or 0,
-            'overdue_count': queryset.filter(status='overdue').count(),
+            'total_count': agg['total_count'] or 0,
+            'total_amount': agg['total_amount'] or 0,
+            'outstanding': agg['outstanding'] or 0,
+            'overdue_count': agg['overdue_count'] or 0,
             'by_status': list(queryset.values('status').annotate(
                 count=Count('id'),
                 total=Sum('total_amount')
@@ -724,8 +732,15 @@ class CampaignViewSet(ERPBaseViewSet):
             'campaign': CampaignSerializer(campaign).data,
             'leads_generated': leads_count,
             'conversions': converted_count,
-            'conversion_rate': (converted_count / leads_count * 100) if leads_count > 0 else 0,
-            'roi': ((campaign.actual_revenue - campaign.actual_cost) / campaign.actual_cost * 100) if campaign.actual_cost > 0 else 0,
+            'conversion_rate': (
+                (Decimal(converted_count * 100) / Decimal(leads_count))
+                .quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            ) if leads_count > 0 else Decimal('0'),
+            'roi': (
+                (campaign.actual_revenue - campaign.actual_cost)
+                / campaign.actual_cost
+                * 100
+            ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) if campaign.actual_cost > 0 else Decimal('0'),
         })
 
 
@@ -1029,7 +1044,7 @@ class ReportTemplateViewSet(ERPBaseViewSet):
         try:
             result = execute_to_list(config, template.company, limit=50)
             return Response(result)
-        except Exception as exc:
+        except (DatabaseError, ValueError, KeyError) as exc:
             logger.exception("Report preview failed: %s", exc)
             return Response({'error': 'Preview failed.'}, status=400)
 
@@ -1102,7 +1117,7 @@ class GeneratedReportViewSet(viewsets.ReadOnlyModelViewSet):
         if instance.file:
             try:
                 instance.file.delete(save=False)
-            except Exception:
+            except OSError:
                 pass
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

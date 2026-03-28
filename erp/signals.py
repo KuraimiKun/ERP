@@ -227,18 +227,25 @@ def sync_invoice_totals_on_line_delete(sender, instance, **kwargs):
 # Auth signals (login / logout)
 # ---------------------------------------------------------------------------
 
+def _auditlog_table_exists():
+    """Return True if the erp_auditlog table is present in the current database.
+
+    Uses Django's database-agnostic introspection API instead of raw SQL so
+    this works on SQLite, PostgreSQL, MySQL, and Oracle without modification.
+    Cached per process — the table set doesn't change after migrations run.
+    """
+    from django.db import connection
+    with connection.cursor() as cursor:
+        return 'erp_auditlog' in connection.introspection.table_names(cursor)
+
+
 @receiver(user_logged_in)
 def audit_user_login(sender, request, user, **kwargs):
     """Log when a user logs in."""
     try:
-        from django.db import connection
-        # Skip audit logging when ERP tables don't exist (e.g. tenant databases)
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT 1 FROM information_schema.tables WHERE table_name = 'erp_auditlog'"
-            )
-            if not cursor.fetchone():
-                return
+        # Skip if the audit table hasn't been migrated yet (e.g. fresh setup).
+        if not _auditlog_table_exists():
+            return
         ip = _get_client_ip(request) if request else None
         ua = request.META.get('HTTP_USER_AGENT', '')[:500] if request else ''
         AuditService.log_login(user=user, ip_address=ip, user_agent=ua)
@@ -252,13 +259,8 @@ def audit_user_logout(sender, request, user, **kwargs):
     if user is None:
         return
     try:
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT 1 FROM information_schema.tables WHERE table_name = 'erp_auditlog'"
-            )
-            if not cursor.fetchone():
-                return
+        if not _auditlog_table_exists():
+            return
         ip = _get_client_ip(request) if request else None
         ua = request.META.get('HTTP_USER_AGENT', '')[:500] if request else ''
         AuditService.log_logout(user=user, ip_address=ip, user_agent=ua)

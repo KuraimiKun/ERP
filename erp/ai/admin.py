@@ -1,9 +1,10 @@
 from django.contrib import admin
 from .models import MLModel, PredictionLog, AIInsight
+from erp.admin.mixins import CompanyIsolatedAdmin
 
 
 @admin.register(MLModel)
-class MLModelAdmin(admin.ModelAdmin):
+class MLModelAdmin(CompanyIsolatedAdmin):
     list_display = ('name', 'model_type', 'company', 'version', 'is_active',
                     'accuracy_score', 'last_trained_at')
     list_filter = ('model_type', 'is_active', 'company')
@@ -13,7 +14,8 @@ class MLModelAdmin(admin.ModelAdmin):
 
 
 @admin.register(PredictionLog)
-class PredictionLogAdmin(admin.ModelAdmin):
+class PredictionLogAdmin(CompanyIsolatedAdmin):
+    company_lookup = 'model__company'
     list_display = ('model', 'entity_type', 'entity_id', 'score',
                     'created_at')
     list_filter = ('model__model_type', 'entity_type')
@@ -22,7 +24,7 @@ class PredictionLogAdmin(admin.ModelAdmin):
 
 
 @admin.register(AIInsight)
-class AIInsightAdmin(admin.ModelAdmin):
+class AIInsightAdmin(CompanyIsolatedAdmin):
     list_display = ('company', 'category', 'severity', 'title',
                     'is_dismissed', 'created_at')
     list_filter = ('category', 'severity', 'is_dismissed')

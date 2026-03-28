@@ -207,7 +207,8 @@ def employee_register_view(request, token):
             ).exists():
                 form.add_error('email', 'This email is already registered.')
             else:
-                from django.db import transaction, IntegrityError
+                from django.core.exceptions import ValidationError
+                from django.db import transaction, IntegrityError, DatabaseError
 
                 tenant_db = invite.database
                 db_alias = add_tenant_database(tenant_db)
@@ -309,9 +310,10 @@ def employee_register_view(request, token):
                         invite.registration_count += 1
                         invite.save(using='default', update_fields=['registration_count'])
 
-                except Exception:
-                    # Compensate: if anything after the default-DB user creation
-                    # failed, remove that user so no orphaned accounts exist.
+                except (DatabaseError, ValidationError):
+                    # Compensate: if any data-layer step after the default-DB
+                    # user creation failed, delete that user so no orphaned
+                    # accounts exist. Re-raise so the view returns a 500.
                     user.delete(using='default')
                     raise
 

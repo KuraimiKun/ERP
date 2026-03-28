@@ -6,15 +6,16 @@ from django.contrib import admin
 from erp.models import (
     Employee, EmployeeDocument, LeaveType, LeaveRequest, Attendance, Payroll,
 )
+from .mixins import CompanyIsolatedAdmin, CompanyIsolatedInline
 
 
-class EmployeeDocumentInline(admin.TabularInline):
+class EmployeeDocumentInline(CompanyIsolatedInline):
     model = EmployeeDocument
     extra = 0
 
 
 @admin.register(Employee)
-class EmployeeAdmin(admin.ModelAdmin):
+class EmployeeAdmin(CompanyIsolatedAdmin):
     list_display = ['employee_id', 'full_name', 'department', 'job_title', 'employment_status', 'employment_type']
     list_filter = ['company', 'department', 'employment_status', 'employment_type']
     search_fields = ['employee_id', 'first_name', 'last_name', 'email']
@@ -56,7 +57,8 @@ class LeaveTypeAdmin(admin.ModelAdmin):
 
 
 @admin.register(LeaveRequest)
-class LeaveRequestAdmin(admin.ModelAdmin):
+class LeaveRequestAdmin(CompanyIsolatedAdmin):
+    company_lookup = 'employee__company'
     list_display = ['employee', 'leave_type', 'start_date', 'end_date', 'days_requested', 'status']
     list_filter = ['status', 'leave_type', 'start_date']
     search_fields = ['employee__first_name', 'employee__last_name']
@@ -64,7 +66,8 @@ class LeaveRequestAdmin(admin.ModelAdmin):
 
 
 @admin.register(Attendance)
-class AttendanceAdmin(admin.ModelAdmin):
+class AttendanceAdmin(CompanyIsolatedAdmin):
+    company_lookup = 'employee__company'
     list_display = ['employee', 'date', 'check_in', 'check_out', 'hours_worked', 'is_present', 'is_late']
     list_filter = ['is_present', 'is_late', 'date']
     search_fields = ['employee__first_name', 'employee__last_name']
@@ -72,7 +75,8 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 
 @admin.register(Payroll)
-class PayrollAdmin(admin.ModelAdmin):
+class PayrollAdmin(CompanyIsolatedAdmin):
+    company_lookup = 'employee__company'
     list_display = ['employee', 'period_start', 'period_end', 'gross_salary', 'net_salary', 'status']
     list_filter = ['status', 'period_start']
     search_fields = ['employee__first_name', 'employee__last_name']

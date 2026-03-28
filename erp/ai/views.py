@@ -4,6 +4,7 @@ AI Dashboard Views – server-rendered views for the AI insights dashboard.
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Count
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
 
@@ -139,21 +140,20 @@ def xai_dashboard(request):
     """Explainable AI overview – lists available models and recent explanations."""
     company = get_user_company(request.user)
 
-    # Trained models that support XAI
+    # Trained models that support XAI — annotate explanation counts in one query
     models = MLModel.objects.filter(
         company=company, is_active=True,
         model_type__in=XAI_MODELS,
-    ).order_by('model_type')
+    ).annotate(explanation_count=Count('explanations')).order_by('model_type')
 
     model_cards = []
     for m in models:
         info = XAI_MODELS.get(m.model_type, {})
-        explanation_count = ExplanationResult.objects.filter(model=m).count()
         model_cards.append({
             'model': m,
             'entity_type': info.get('entity_type', ''),
             'label': info.get('label', m.name),
-            'explanation_count': explanation_count,
+            'explanation_count': m.explanation_count,
         })
 
     recent = ExplanationResult.objects.filter(

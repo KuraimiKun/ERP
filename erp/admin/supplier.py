@@ -9,33 +9,34 @@ from erp.models import (
     SupplierInvoice, SupplierInvoiceLine,
     SupplierPayment,
 )
+from .mixins import CompanyIsolatedAdmin, CompanyIsolatedInline
 
 
-class SupplierContactInline(admin.TabularInline):
+class SupplierContactInline(CompanyIsolatedInline):
     model = SupplierContact
     extra = 0
 
 
-class SupplierDocumentInline(admin.TabularInline):
+class SupplierDocumentInline(CompanyIsolatedInline):
     model = SupplierDocument
     extra = 0
 
 
 @admin.register(Supplier)
-class SupplierAdmin(admin.ModelAdmin):
+class SupplierAdmin(CompanyIsolatedAdmin):
     list_display = ['supplier_id', 'name', 'supplier_type', 'email', 'phone', 'current_balance', 'is_active']
     list_filter = ['company', 'supplier_type', 'is_active']
     search_fields = ['supplier_id', 'name', 'email']
     inlines = [SupplierContactInline, SupplierDocumentInline]
 
 
-class PurchaseOrderLineInline(admin.TabularInline):
+class PurchaseOrderLineInline(CompanyIsolatedInline):
     model = PurchaseOrderLine
     extra = 1
 
 
 @admin.register(PurchaseOrder)
-class PurchaseOrderAdmin(admin.ModelAdmin):
+class PurchaseOrderAdmin(CompanyIsolatedAdmin):
     list_display = ['po_number', 'supplier', 'po_date', 'total_amount', 'status']
     list_filter = ['status', 'po_date']
     search_fields = ['po_number', 'supplier__name']
@@ -43,13 +44,13 @@ class PurchaseOrderAdmin(admin.ModelAdmin):
     inlines = [PurchaseOrderLineInline]
 
 
-class SupplierInvoiceLineInline(admin.TabularInline):
+class SupplierInvoiceLineInline(CompanyIsolatedInline):
     model = SupplierInvoiceLine
     extra = 1
 
 
 @admin.register(SupplierInvoice)
-class SupplierInvoiceAdmin(admin.ModelAdmin):
+class SupplierInvoiceAdmin(CompanyIsolatedAdmin):
     list_display = ['invoice_number', 'supplier', 'invoice_date', 'due_date', 'total_amount', 'balance_due', 'status']
     list_filter = ['status', 'invoice_date']
     search_fields = ['invoice_number', 'supplier__name']
@@ -58,7 +59,7 @@ class SupplierInvoiceAdmin(admin.ModelAdmin):
 
 
 @admin.register(SupplierPayment)
-class SupplierPaymentAdmin(admin.ModelAdmin):
+class SupplierPaymentAdmin(CompanyIsolatedAdmin):
     list_display = ['payment_number', 'supplier', 'payment_date', 'amount', 'allocated_amount']
     list_filter = ['payment_method', 'payment_date']
     search_fields = ['payment_number', 'supplier__name']
