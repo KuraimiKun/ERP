@@ -66,5 +66,8 @@ openpyxl>=3.1.0
 # APM / Monitoring
 newrelic>=10.0.0
 
+# Field-level encryption (Fernet — required by FIELD_ENCRYPTION_KEY in settings)
+cryptography>=41.0.0
+
 # Cloud media storage (S3 / GCS / Azure via CLOUD_STORAGE_PROVIDER env var)
 django-storages[s3]>=1.14.0

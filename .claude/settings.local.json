@@ -10,7 +10,8 @@
       "Bash(python manage.py test erp.tests.test_api.TestEmployeeAPI.test_list_employees --settings=erpproject.test_settings -v2)",
       "Bash(python manage.py test erp.tests.test_api.TestExpenseAPI.test_approve_expense --settings=erpproject.test_settings -v2)",
       "Bash(python manage.py test erp.tests.test_api erp.tests.test_signals erp.tests.test_middleware --settings=erpproject.test_settings -v2)",
-      "Bash(python manage.py test erp.tests.test_api.TestEmployeeAPI -v2 --settings=erpproject.test_settings)"
+      "Bash(python manage.py test erp.tests.test_api.TestEmployeeAPI -v2 --settings=erpproject.test_settings)",
+      "Bash(grep -n \"readonly_fields\\\\|list_editable\" /f/erpdjango/erp/admin/*.py)"
     ]
   }
 }

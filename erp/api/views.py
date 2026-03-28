@@ -222,6 +222,52 @@ class LeaveTypeViewSet(ERPBaseViewSet):
         return [IsAdminUser()]
 
 
+def _can_approve_for_employee(requesting_user, subject_employee):
+    """
+    Return True if requesting_user has management authority over subject_employee.
+
+    Authorised if the requester is:
+    - Django staff / superuser
+    - Tenant owner or admin (DatabaseAssignment role in the default DB)
+    - The direct line manager of the subject (Employee.reports_to)
+    - The department manager of the subject's department (Department.manager)
+
+    An employee is never authorised to approve their own requests.
+    """
+    if requesting_user.is_staff or requesting_user.is_superuser:
+        return True
+
+    approver = getattr(requesting_user, 'employee_profile', None)
+    if approver is None:
+        return False
+
+    # An employee cannot approve their own requests.
+    if approver.pk == subject_employee.pk:
+        return False
+
+    # Tenant owner / admin check via DatabaseAssignment.
+    from tenants.models import DatabaseAssignment
+    if DatabaseAssignment.objects.filter(
+        user=requesting_user,
+        role__in=['owner', 'admin'],
+        is_active=True,
+    ).exists():
+        return True
+
+    # Direct line manager (Employee.reports_to).
+    if subject_employee.reports_to_id and subject_employee.reports_to_id == approver.pk:
+        return True
+
+    # Department manager (Department.manager).
+    if subject_employee.department_id and Department.objects.filter(
+        id=subject_employee.department_id,
+        manager=approver,
+    ).exists():
+        return True
+
+    return False
+
+
 class LeaveRequestViewSet(ERPBaseViewSet):
     """API endpoint for leave requests."""
     queryset = LeaveRequest.objects.select_related('employee', 'leave_type', 'approved_by')
@@ -244,27 +290,33 @@ class LeaveRequestViewSet(ERPBaseViewSet):
         leave_request = self.get_object()
         if leave_request.status != 'pending':
             return Response({'detail': 'Can only approve pending requests.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        if not _can_approve_for_employee(request.user, leave_request.employee):
+            raise PermissionDenied('You do not have permission to approve this leave request.')
+
         leave_request.status = 'approved'
         if hasattr(request.user, 'employee_profile'):
             leave_request.approved_by = request.user.employee_profile
         leave_request.approval_date = timezone.now()
         leave_request.save()
-        
+
         serializer = self.get_serializer(leave_request)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         """Reject a leave request."""
         leave_request = self.get_object()
         if leave_request.status != 'pending':
             return Response({'detail': 'Can only reject pending requests.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        if not _can_approve_for_employee(request.user, leave_request.employee):
+            raise PermissionDenied('You do not have permission to reject this leave request.')
+
         leave_request.status = 'rejected'
         leave_request.approval_notes = request.data.get('reason', '')
         leave_request.save()
-        
+
         serializer = self.get_serializer(leave_request)
         return Response(serializer.data)
 
@@ -462,13 +514,31 @@ class ExpenseViewSet(ERPBaseViewSet):
         expense = self.get_object()
         if expense.status != 'pending':
             return Response({'detail': 'Can only approve pending expenses.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # When an expense has a submitting employee, verify the requester has
+        # management authority over that employee.  Expenses without an employee
+        # (e.g. company-level costs) can only be approved by staff/admins,
+        # which is also enforced by _can_approve_for_employee when approver
+        # is None.
+        subject = expense.employee
+        if subject is None:
+            if not (request.user.is_staff or request.user.is_superuser):
+                from tenants.models import DatabaseAssignment
+                if not DatabaseAssignment.objects.filter(
+                    user=request.user,
+                    role__in=['owner', 'admin'],
+                    is_active=True,
+                ).exists():
+                    raise PermissionDenied('You do not have permission to approve this expense.')
+        elif not _can_approve_for_employee(request.user, subject):
+            raise PermissionDenied('You do not have permission to approve this expense.')
+
         expense.status = 'approved'
         if hasattr(request.user, 'employee_profile'):
             expense.approved_by = request.user.employee_profile
         expense.approval_date = timezone.now()
         expense.save()
-        
+
         serializer = self.get_serializer(expense)
         return Response(serializer.data)
 
@@ -765,42 +835,44 @@ class QuoteViewSet(ERPBaseViewSet):
     @action(detail=True, methods=['post'])
     def convert_to_invoice(self, request, pk=None):
         """Convert a quote to an invoice."""
+        from django.db import transaction
         quote = self.get_object()
         if quote.status != 'accepted':
             return Response({'detail': 'Can only convert accepted quotes.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if quote.converted_invoice:
             return Response({'detail': 'Quote already converted.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Create invoice from quote
-        invoice = Invoice.objects.create(
-            company=quote.company,
-            customer=quote.customer,
-            currency=quote.currency,
-            reference=f"From Quote {quote.quote_number}",
-            subtotal_amount=quote.subtotal_amount,
-            discount_amount=quote.discount_amount,
-            tax_amount=quote.tax_amount,
-            total_amount=quote.total_amount,
-            notes=quote.notes,
-            terms=quote.terms,
-        )
-        
-        # Copy lines
-        for line in quote.lines.all():
-            InvoiceLine.objects.create(
-                invoice=invoice,
-                description=line.description,
-                quantity=line.quantity,
-                unit_price=line.unit_price,
-                discount_percent=line.discount_percent,
-                tax_rate=line.tax_rate,
+
+        with transaction.atomic():
+            # Create invoice from quote
+            invoice = Invoice.objects.create(
+                company=quote.company,
+                customer=quote.customer,
+                currency=quote.currency,
+                reference=f"From Quote {quote.quote_number}",
+                subtotal_amount=quote.subtotal_amount,
+                discount_amount=quote.discount_amount,
+                tax_amount=quote.tax_amount,
+                total_amount=quote.total_amount,
+                notes=quote.notes,
+                terms=quote.terms,
             )
-        
-        # Update quote
-        quote.converted_invoice = invoice
-        quote.save()
-        
+
+            # Copy lines
+            for line in quote.lines.all():
+                InvoiceLine.objects.create(
+                    invoice=invoice,
+                    description=line.description,
+                    quantity=line.quantity,
+                    unit_price=line.unit_price,
+                    discount_percent=line.discount_percent,
+                    tax_rate=line.tax_rate,
+                )
+
+            # Link quote to the new invoice
+            quote.converted_invoice = invoice
+            quote.save()
+
         return Response({
             'quote': QuoteSerializer(quote).data,
             'invoice': InvoiceSerializer(invoice).data,

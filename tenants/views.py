@@ -207,10 +207,12 @@ def employee_register_view(request, token):
             ).exists():
                 form.add_error('email', 'This email is already registered.')
             else:
+                from django.db import transaction, IntegrityError
+
                 tenant_db = invite.database
                 db_alias = add_tenant_database(tenant_db)
 
-                # 1. Create TenantUser in DEFAULT DB
+                # Step 1: Create TenantUser in DEFAULT DB to obtain a PK.
                 user = TenantUser(
                     email=cd['email'],
                     first_name=cd['first_name'],
@@ -226,84 +228,92 @@ def employee_register_view(request, token):
                 user.set_password(cd['password1'])
                 user.save(using='default')
 
-                # 2. Create same user in TENANT DB (for FK relationships)
-                tenant_user = TenantUser(
-                    id=user.id,
-                    email=user.email,
-                    password=user.password,
-                    first_name=user.first_name,
-                    last_name=user.last_name,
-                    phone=user.phone,
-                    company_name=invite.company_name,
-                    is_approved=False,
-                    approval_status='pending',
-                    is_active=True,
-                    is_staff=False,
-                    is_superuser=False,
-                    date_joined=user.date_joined,
-                )
                 try:
-                    tenant_user.save(using=db_alias, force_insert=True)
+                    # Step 2: Replicate user + create Employee in TENANT DB —
+                    # all in one atomic block so they succeed or roll back together.
+                    set_current_db_alias(db_alias)
+                    try:
+                        with transaction.atomic(using=db_alias):
+                            tenant_user = TenantUser(
+                                id=user.id,
+                                email=user.email,
+                                password=user.password,
+                                first_name=user.first_name,
+                                last_name=user.last_name,
+                                phone=user.phone,
+                                company_name=invite.company_name,
+                                is_approved=False,
+                                approval_status='pending',
+                                is_active=True,
+                                is_staff=False,
+                                is_superuser=False,
+                                date_joined=user.date_joined,
+                            )
+                            try:
+                                tenant_user.save(using=db_alias, force_insert=True)
+                            except IntegrityError:
+                                # User already exists in tenant DB — sync fields.
+                                TenantUser.objects.using(db_alias).filter(
+                                    id=user.id
+                                ).update(
+                                    email=user.email,
+                                    password=user.password,
+                                    first_name=user.first_name,
+                                    last_name=user.last_name,
+                                    is_approved=False,
+                                    approval_status='pending',
+                                )
+
+                            company = Company.objects.using(db_alias).first()
+                            currency = company.base_currency if company else None
+
+                            emp = Employee(
+                                user_id=user.id,
+                                employee_id=f'PENDING-{str(user.id)[:8]}',
+                                first_name=cd['first_name'],
+                                last_name=cd['last_name'],
+                                first_name_ar=cd.get('first_name_ar', ''),
+                                last_name_ar=cd.get('last_name_ar', ''),
+                                gender=cd['gender'],
+                                date_of_birth=cd['date_of_birth'],
+                                nationality=cd.get('nationality', ''),
+                                email=cd['email'],
+                                phone=cd.get('phone', ''),
+                                emergency_contact_name=cd.get('emergency_contact_name', ''),
+                                emergency_contact_phone=cd.get('emergency_contact_phone', ''),
+                                address=cd.get('address', ''),
+                                city=cd.get('city', ''),
+                                country=cd.get('country', ''),
+                                national_id=cd.get('national_id', ''),
+                                company=company,
+                                job_title=cd.get('job_title', ''),
+                                hire_date=tz.now().date(),
+                                basic_salary=0,
+                                currency=currency,
+                                approval_status='pending',
+                                registered_via=token,
+                            )
+                            emp.save(using=db_alias)
+                    finally:
+                        clear_current_db_alias()
+
+                    # Step 3: Persist the default-DB records (assignment + invite
+                    # counter) together so they succeed or roll back together.
+                    with transaction.atomic(using='default'):
+                        DatabaseAssignment.objects.using('default').create(
+                            user=user,
+                            database=tenant_db,
+                            role='user',
+                            is_active=False,
+                        )
+                        invite.registration_count += 1
+                        invite.save(using='default', update_fields=['registration_count'])
+
                 except Exception:
-                    # If user already exists in tenant DB, update it
-                    TenantUser.objects.using(db_alias).filter(
-                        id=user.id
-                    ).update(
-                        email=user.email,
-                        password=user.password,
-                        first_name=user.first_name,
-                        last_name=user.last_name,
-                        is_approved=False,
-                        approval_status='pending',
-                    )
-
-                # 3. Create Employee in TENANT DB
-                set_current_db_alias(db_alias)
-                try:
-                    company = Company.objects.using(db_alias).first()
-                    currency = company.base_currency if company else None
-
-                    emp = Employee(
-                        user_id=user.id,
-                        employee_id=f'PENDING-{str(user.id)[:8]}',
-                        first_name=cd['first_name'],
-                        last_name=cd['last_name'],
-                        first_name_ar=cd.get('first_name_ar', ''),
-                        last_name_ar=cd.get('last_name_ar', ''),
-                        gender=cd['gender'],
-                        date_of_birth=cd['date_of_birth'],
-                        nationality=cd.get('nationality', ''),
-                        email=cd['email'],
-                        phone=cd.get('phone', ''),
-                        emergency_contact_name=cd.get('emergency_contact_name', ''),
-                        emergency_contact_phone=cd.get('emergency_contact_phone', ''),
-                        address=cd.get('address', ''),
-                        city=cd.get('city', ''),
-                        country=cd.get('country', ''),
-                        national_id=cd.get('national_id', ''),
-                        company=company,
-                        job_title=cd.get('job_title', ''),
-                        hire_date=tz.now().date(),
-                        basic_salary=0,
-                        currency=currency,
-                        approval_status='pending',
-                        registered_via=token,
-                    )
-                    emp.save(using=db_alias)
-                finally:
-                    clear_current_db_alias()
-
-                # 4. Create inactive DatabaseAssignment (default DB)
-                DatabaseAssignment.objects.using('default').create(
-                    user=user,
-                    database=tenant_db,
-                    role='user',
-                    is_active=False,
-                )
-
-                # 5. Update invite link counter
-                invite.registration_count += 1
-                invite.save(using='default', update_fields=['registration_count'])
+                    # Compensate: if anything after the default-DB user creation
+                    # failed, remove that user so no orphaned accounts exist.
+                    user.delete(using='default')
+                    raise
 
                 messages.success(
                     request,

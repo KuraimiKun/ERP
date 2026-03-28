@@ -73,9 +73,9 @@ class ServicePricing(ERPBaseModel):
     
     name = models.CharField(max_length=255)
     name_ar = models.CharField(max_length=255, blank=True)
-    code = models.CharField(max_length=20, unique=True)
+    code = models.CharField(max_length=20)
     description = models.TextField(blank=True)
-    
+
     category = models.ForeignKey(
         ServiceCategory,
         on_delete=models.SET_NULL,
@@ -134,6 +134,7 @@ class ServicePricing(ERPBaseModel):
         verbose_name=_('Service Pricing')
         verbose_name_plural = 'Service Pricings'
         ordering = ['category', 'name']
+        unique_together = [('company', 'code')]
         indexes = [
             models.Index(fields=['company', 'is_active', 'category'], name='idx_svc_company_active_cat'),
             models.Index(fields=['company', 'pricing_type'], name='idx_svc_company_pricetype'),
@@ -182,7 +183,7 @@ class ServicePackage(ERPBaseModel):
     
     name = models.CharField(max_length=255)
     name_ar = models.CharField(max_length=255, blank=True)
-    code = models.CharField(max_length=20, unique=True)
+    code = models.CharField(max_length=20)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to=service_image_path, null=True, blank=True)
     
@@ -207,6 +208,7 @@ class ServicePackage(ERPBaseModel):
         verbose_name=_('Service Package')
         verbose_name_plural = 'Service Packages'
         ordering = ['name']
+        unique_together = [('company', 'code')]
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -269,7 +271,7 @@ class Quote(ERPBaseModel):
     )
     
     # Quote details
-    quote_number = models.CharField(max_length=50, unique=True)
+    quote_number = models.CharField(max_length=50)
     quote_date = models.DateField()
     valid_until = models.DateField()
     
@@ -325,6 +327,7 @@ class Quote(ERPBaseModel):
         verbose_name=_('Quote')
         verbose_name_plural = 'Quotes'
         ordering = ['-quote_date', '-id']
+        unique_together = [('company', 'quote_number')]
         indexes = [
             models.Index(fields=['company', 'status', 'quote_date'], name='idx_quote_company_status_date'),
             models.Index(fields=['customer', 'status'], name='idx_quote_customer_status'),
@@ -462,7 +465,7 @@ class Product(ERPBaseModel):
     )
 
     # Identification
-    sku = models.CharField('SKU', max_length=50, unique=True)
+    sku = models.CharField('SKU', max_length=50)
     barcode = models.CharField(max_length=50, blank=True)
     name = models.CharField(max_length=255)
     name_ar = models.CharField(max_length=255, blank=True)
@@ -549,10 +552,11 @@ class Product(ERPBaseModel):
         verbose_name=_('Product')
         verbose_name_plural = 'Products'
         ordering = ['name']
+        unique_together = [('company', 'sku')]
         indexes = [
             models.Index(fields=['company', 'is_active', 'category'], name='idx_prod_company_active_cat'),
             models.Index(fields=['company', 'product_type'], name='idx_prod_company_type'),
-            models.Index(fields=['sku'], name='idx_prod_sku'),
+            models.Index(fields=['company', 'sku'], name='idx_prod_sku'),
         ]
 
     def __str__(self):

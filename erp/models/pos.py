@@ -185,7 +185,7 @@ class POSOrder(ERPBaseModel):
         on_delete=models.PROTECT,
         related_name='orders',
     )
-    order_number = models.CharField(max_length=50, unique=True)
+    order_number = models.CharField(max_length=50)
     order_date = models.DateTimeField(auto_now_add=True)
 
     customer = models.ForeignKey(
@@ -228,6 +228,7 @@ class POSOrder(ERPBaseModel):
         verbose_name=_('POS Order')
         verbose_name_plural = 'POS Orders'
         ordering = ['-order_date']
+        unique_together = [('company', 'order_number')]
         indexes = [
             models.Index(fields=['company', 'order_date']),
             models.Index(fields=['session', 'status']),

@@ -44,7 +44,7 @@ class Employee(ERPBaseModel):
     )
     
     # Employee ID
-    employee_id = models.CharField(max_length=20, unique=True)
+    employee_id = models.CharField(max_length=20)
     
     # Personal Information
     first_name = models.CharField(max_length=100)
@@ -188,6 +188,7 @@ class Employee(ERPBaseModel):
         verbose_name=_('Employee')
         verbose_name_plural = 'Employees'
         ordering = ['first_name', 'last_name']
+        unique_together = [('company', 'employee_id')]
         indexes = [
             models.Index(fields=['company', 'employment_status'], name='idx_emp_company_status'),
             models.Index(fields=['company', 'department'], name='idx_emp_company_dept'),
@@ -304,6 +305,11 @@ class LeaveRequest(ERPBaseModel):
             models.Index(fields=['status', 'start_date'], name='idx_lr_status_startdate'),
         ]
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValidationError({'end_date': _('تاريخ الانتهاء لا يمكن أن يكون قبل تاريخ البداية')})
+
     def __str__(self):
         return f"{self.employee.full_name} - {self.leave_type.name} ({self.start_date})"
 
@@ -338,6 +344,11 @@ class Attendance(TimeStampedModel):
         indexes = [
             models.Index(fields=['date', 'is_present'], name='idx_att_date_present'),
         ]
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.check_in and self.check_out and self.check_out < self.check_in:
+            raise ValidationError({'check_out': _('وقت الخروج لا يمكن أن يكون قبل وقت الدخول')})
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.date}"

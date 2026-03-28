@@ -7,7 +7,10 @@ TaxRate, PaymentMethod, ExpenseCategory.
 from django.utils.translation import gettext_lazy as _
 
 
+from decimal import Decimal
+
 from django import forms
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from erp.models import (
     Customer, Invoice, InvoiceLine, Payment,
@@ -66,6 +69,25 @@ class InvoiceForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
 
 class InvoiceLineForm(BootstrapFormMixin, forms.ModelForm):
     """Form for InvoiceLine model."""
+
+    quantity = forms.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        error_messages={'min_value': _('الكمية يجب أن تكون أكبر من صفر')},
+    )
+    unit_price = forms.DecimalField(
+        max_digits=15, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0'))],
+        error_messages={'min_value': _('سعر الوحدة لا يمكن أن يكون سالباً')},
+    )
+    discount_percent = forms.DecimalField(
+        max_digits=5, decimal_places=2, required=False, initial=Decimal('0'),
+        validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('100'))],
+        error_messages={
+            'min_value': _('نسبة الخصم لا يمكن أن تكون سالبة'),
+            'max_value': _('نسبة الخصم لا يمكن أن تتجاوز 100%'),
+        },
+    )
 
     class Meta:
         model = InvoiceLine

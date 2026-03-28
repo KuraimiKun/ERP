@@ -37,7 +37,7 @@ class Supplier(ERPBaseModel):
         related_name='suppliers'
     )
     
-    supplier_id = models.CharField(max_length=20, unique=True)
+    supplier_id = models.CharField(max_length=20)
     supplier_type = models.CharField(max_length=30, choices=SupplierType.choices)
     
     # Name
@@ -101,6 +101,7 @@ class Supplier(ERPBaseModel):
         verbose_name=_('Supplier')
         verbose_name_plural = 'Suppliers'
         ordering = ['name']
+        unique_together = [('company', 'supplier_id')]
         indexes = [
             models.Index(fields=['company', 'supplier_type', 'is_active'], name='idx_sup_company_type_active'),
             models.Index(fields=['company', 'is_active'], name='idx_sup_company_active'),
@@ -187,7 +188,7 @@ class PurchaseOrder(ERPBaseModel):
         related_name='purchase_orders'
     )
     
-    po_number = models.CharField(max_length=50, unique=True)
+    po_number = models.CharField(max_length=50)
     po_date = models.DateField()
     expected_date = models.DateField(null=True, blank=True, help_text=_('Expected delivery/completion date'))
     
@@ -228,6 +229,7 @@ class PurchaseOrder(ERPBaseModel):
         verbose_name=_('Purchase Order')
         verbose_name_plural = 'Purchase Orders'
         ordering = ['-po_date', '-id']
+        unique_together = [('company', 'po_number')]
         indexes = [
             models.Index(fields=['company', 'status', 'po_date'], name='idx_po_company_status_date'),
             models.Index(fields=['supplier', 'status'], name='idx_po_supplier_status'),
@@ -462,7 +464,7 @@ class SupplierPayment(ERPBaseModel):
         related_name='payments'
     )
     
-    payment_number = models.CharField(max_length=50, unique=True)
+    payment_number = models.CharField(max_length=50)
     payment_date = models.DateField()
     
     # Method & Reference
@@ -491,6 +493,7 @@ class SupplierPayment(ERPBaseModel):
         verbose_name=_('Supplier Payment')
         verbose_name_plural = 'Supplier Payments'
         ordering = ['-payment_date', '-id']
+        unique_together = [('company', 'payment_number')]
         indexes = [
             models.Index(fields=['company', 'payment_date'], name='idx_sp_company_date'),
             models.Index(fields=['supplier', 'payment_date'], name='idx_sp_supplier_date'),

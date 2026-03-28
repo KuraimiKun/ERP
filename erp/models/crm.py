@@ -40,7 +40,7 @@ class Lead(ERPBaseModel):
     )
     
     # Lead Info
-    lead_number = models.CharField(max_length=20, unique=True)
+    lead_number = models.CharField(max_length=20)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     source = models.CharField(max_length=20, choices=Source.choices, blank=True)
     
@@ -100,6 +100,7 @@ class Lead(ERPBaseModel):
         verbose_name=_('Lead')
         verbose_name_plural = 'Leads'
         ordering = ['-created_at']
+        unique_together = [('company', 'lead_number')]
         indexes = [
             models.Index(fields=['company', 'status'], name='idx_lead_company_status'),
             models.Index(fields=['company', 'assigned_to'], name='idx_lead_company_assigned'),
