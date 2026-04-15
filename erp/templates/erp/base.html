@@ -567,7 +567,7 @@
                             <div style="font-size:0.85rem; font-weight:600; color: var(--clr-gray-800);">{{ user.get_full_name|default:user.username }}</div>
                             <div style="font-size:0.75rem; color: var(--clr-gray-500);">{{ user.email }}</div>
                         </li>
-                        <li><a class="dropdown-item mt-1" href="{% url 'admin:index' %}"><i class="bi bi-gear"></i> {% trans "Settings" %}</a></li>
+                        <li><a class="dropdown-item mt-1" href="{% url 'tenants:profile' %}"><i class="bi bi-gear"></i> {% trans "Settings" %}</a></li>
                         <li><a class="dropdown-item text-danger" href="{% url 'tenants:logout' %}"><i class="bi bi-box-arrow-left"></i> {% trans "Logout" %}</a></li>
                     </ul>
                 </div>
