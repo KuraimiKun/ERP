@@ -55,21 +55,21 @@
         <td>{{ forloop.counter }}</td>
         <td>{{ line.description }}</td>
         <td>{{ line.quantity|floatformat:2 }}</td>
-        <td class="text-left">${{ line.unit_price|floatformat:2 }}</td>
-        <td class="text-left">${{ line.tax_amount|floatformat:2 }}</td>
-        <td class="text-left">${{ line.line_total|floatformat:2 }}</td>
+        <td class="text-left">{{ line.unit_price|currency_display:quote.currency }}</td>
+        <td class="text-left">{{ line.tax_amount|currency_display:quote.currency }}</td>
+        <td class="text-left">{{ line.line_total|currency_display:quote.currency }}</td>
     </tr>
     {% endfor %}
     </tbody>
 </table>
 
 <table class="totals-table">
-    <tr><td>{% trans "Subtotal:" %}</td><td class="text-left">${{ quote.subtotal|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Subtotal:" %}</td><td class="text-left">{{ quote.subtotal|currency_display:quote.currency }}</td></tr>
     {% if quote.discount_amount > 0 %}
-    <tr><td>{% trans "Discount:" %}</td><td class="text-left" style="color:#dc3545">-${{ quote.discount_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Discount:" %}</td><td class="text-left" style="color:#dc3545">-{{ quote.discount_amount|currency_display:quote.currency }}</td></tr>
     {% endif %}
-    <tr><td>{% trans "Tax:" %}</td><td class="text-left">${{ quote.tax_amount|floatformat:2 }}</td></tr>
-    <tr class="total-row"><td>{% trans "Total:" %}</td><td class="text-left">${{ quote.total_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Tax:" %}</td><td class="text-left">{{ quote.tax_amount|currency_display:quote.currency }}</td></tr>
+    <tr class="total-row"><td>{% trans "Total:" %}</td><td class="text-left">{{ quote.total_amount|currency_display:quote.currency }}</td></tr>
 </table>
 
 {% if quote.notes %}

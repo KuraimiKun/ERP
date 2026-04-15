@@ -71,7 +71,7 @@
 
 <table style="width:50%;margin:0 auto;border:2px solid #0d6efd;border-radius:6px;text-align:center">
 <tr><td style="padding:10px;font-size:12px;color:#666">{% trans "Net Salary" %}</td></tr>
-<tr><td style="padding:5px 10px 15px;font-size:22px;font-weight:bold;color:#0d6efd">{{ payroll.currency.symbol|default:"$" }}{{ payroll.net_salary|floatformat:2 }}</td></tr>
+<tr><td style="padding:5px 10px 15px;font-size:22px;font-weight:bold;color:#0d6efd">{{ payroll.net_salary|currency_display:payroll.currency }}</td></tr>
 </table>
 
 {% if payroll.notes %}

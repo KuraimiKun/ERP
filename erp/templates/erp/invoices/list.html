@@ -73,9 +73,9 @@
                         <small class="text-danger d-block">{% trans "Overdue" %}</small>
                         {% endif %}
                     </td>
-                    <td>{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                    <td>{{ invoice.total_amount|currency_display:invoice.currency }}</td>
                     <td class="{% if invoice.balance_due > 0 %}text-warning{% else %}text-success{% endif %}">
-                        {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}
+                        {{ invoice.balance_due|currency_display:invoice.currency }}
                     </td>
                     <td>
                         <span class="badge badge-status badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span>

@@ -11,7 +11,7 @@
         <div class="erp-card">
             <div class="erp-card-body text-center">
                 <div class="text-muted small">{% trans "Total Acquisition Cost" %}</div>
-                <div class="fs-4 fw-bold text-primary">${{ totals.total_cost|floatformat:2|default:"0.00" }}</div>
+                <div class="fs-4 fw-bold text-primary">{{ totals.total_cost|currency_display:company.base_currency }}</div>
             </div>
         </div>
     </div>
@@ -19,7 +19,7 @@
         <div class="erp-card">
             <div class="erp-card-body text-center">
                 <div class="text-muted small">{% trans "Total Book Value" %}</div>
-                <div class="fs-4 fw-bold text-success">${{ totals.total_book_value|floatformat:2|default:"0.00" }}</div>
+                <div class="fs-4 fw-bold text-success">{{ totals.total_book_value|currency_display:company.base_currency }}</div>
             </div>
         </div>
     </div>
@@ -27,7 +27,7 @@
         <div class="erp-card">
             <div class="erp-card-body text-center">
                 <div class="text-muted small">{% trans "Total Depreciation" %}</div>
-                <div class="fs-4 fw-bold text-warning">${{ totals.total_depreciation|floatformat:2|default:"0.00" }}</div>
+                <div class="fs-4 fw-bold text-warning">{{ totals.total_depreciation|currency_display:company.base_currency }}</div>
             </div>
         </div>
     </div>
@@ -96,8 +96,8 @@
                     <td>{{ asset.name|truncatechars:30 }}</td>
                     <td>{{ asset.category.name }}</td>
                     <td>{{ asset.acquisition_date|date:"Y/m/d" }}</td>
-                    <td>${{ asset.acquisition_cost|floatformat:2 }}</td>
-                    <td>${{ asset.current_book_value|floatformat:2 }}</td>
+                    <td>{{ asset.acquisition_cost|currency_display:asset.currency }}</td>
+                    <td>{{ asset.current_book_value|currency_display:asset.currency }}</td>
                     <td>
                         <span class="badge {% if asset.status == 'active' %}bg-success{% elif asset.status == 'draft' %}bg-secondary{% elif asset.status == 'disposed' %}bg-danger{% elif asset.status == 'fully_depreciated' %}bg-warning text-dark{% else %}bg-info{% endif %}">
                             {{ asset.get_status_display }}

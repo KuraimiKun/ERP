@@ -23,11 +23,11 @@
                     <div class="col-md-6">
                         <table class="table table-sm table-borderless">
                             <tr><td class="text-muted">{% trans "Revaluation Date" %}</td><td>{{ revaluation.revaluation_date|date:"Y/m/d" }}</td></tr>
-                            <tr><td class="text-muted">{% trans "Old Value" %}</td><td>${{ revaluation.old_value|floatformat:2 }}</td></tr>
-                            <tr><td class="text-muted">{% trans "New Value" %}</td><td>${{ revaluation.new_value|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Old Value" %}</td><td>{{ revaluation.old_value|currency_display:revaluation.asset.currency }}</td></tr>
+                            <tr><td class="text-muted">{% trans "New Value" %}</td><td>{{ revaluation.new_value|currency_display:revaluation.asset.currency }}</td></tr>
                             <tr><td class="text-muted">{% trans "Change" %}</td>
                                 <td class="fw-bold {% if revaluation.revaluation_amount > 0 %}text-success{% elif revaluation.revaluation_amount < 0 %}text-danger{% endif %}">
-                                    {% if revaluation.revaluation_amount > 0 %}+{% endif %}${{ revaluation.revaluation_amount|floatformat:2 }}
+                                    {% if revaluation.revaluation_amount > 0 %}+{% endif %}{{ revaluation.revaluation_amount|currency_display:revaluation.asset.currency }}
                                 </td>
                             </tr>
                         </table>

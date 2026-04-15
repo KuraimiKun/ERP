@@ -79,7 +79,7 @@
                     <td><span class="badge bg-light text-dark">{{ lead.get_source_display }}</span></td>
                     <td>
                         {% if lead.estimated_value %}
-                        ${{ lead.estimated_value|floatformat:0 }}
+                        {{ lead.estimated_value|currency_display:company.base_currency }}
                         {% else %}
                         -
                         {% endif %}

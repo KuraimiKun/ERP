@@ -174,7 +174,7 @@
                                 <tr>
                                     <td>{{ po.po_number }}</td>
                                     <td>{{ po.po_date|date:"M d, Y" }}</td>
-                                    <td>${{ po.total_amount|floatformat:2 }}</td>
+                                    <td>{{ po.total_amount|currency_display:po.currency }}</td>
                                     <td><span class="badge bg-secondary">{{ po.get_status_display }}</span></td>
                                 </tr>
                                 {% empty %}
@@ -209,7 +209,7 @@
                                     <td>{{ inv.invoice_number }}</td>
                                     <td>{{ inv.invoice_date|date:"M d, Y" }}</td>
                                     <td>{{ inv.due_date|date:"M d, Y" }}</td>
-                                    <td>${{ inv.total_amount|floatformat:2 }}</td>
+                                    <td>{{ inv.total_amount|currency_display:inv.currency }}</td>
                                     <td><span class="badge bg-secondary">{{ inv.get_status_display }}</span></td>
                                 </tr>
                                 {% empty %}

@@ -79,8 +79,8 @@
                                     <td>{{ line.service_pricing.name|default:"-" }}</td>
                                     <td>{{ line.description }}</td>
                                     <td class="text-center">{{ line.quantity }}</td>
-                                    <td class="text-start">${{ line.unit_price|floatformat:2 }}</td>
-                                    <td class="text-start">${{ line.line_total|floatformat:2 }}</td>
+                                    <td class="text-start">{{ line.unit_price|currency_display:quote.currency }}</td>
+                                    <td class="text-start">{{ line.line_total|currency_display:quote.currency }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -91,21 +91,21 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="4" class="text-start"><strong>{% trans "Subtotal:" %}</strong></td>
-                                    <td class="text-start">${{ quote.subtotal|floatformat:2 }}</td>
+                                    <td class="text-start">{{ quote.subtotal|currency_display:quote.currency }}</td>
                                 </tr>
                                 {% if quote.discount_amount %}
                                 <tr>
                                     <td colspan="4" class="text-start"><strong>{% trans "Discount:" %}</strong></td>
-                                    <td class="text-start text-danger">-${{ quote.discount_amount|floatformat:2 }}</td>
+                                    <td class="text-start text-danger">-{{ quote.discount_amount|currency_display:quote.currency }}</td>
                                 </tr>
                                 {% endif %}
                                 <tr>
                                     <td colspan="4" class="text-start"><strong>{% trans "Tax:" %}</strong></td>
-                                    <td class="text-start">${{ quote.tax_amount|floatformat:2 }}</td>
+                                    <td class="text-start">{{ quote.tax_amount|currency_display:quote.currency }}</td>
                                 </tr>
                                 <tr class="table-primary">
                                     <td colspan="4" class="text-start"><strong>{% trans "Total:" %}</strong></td>
-                                    <td class="text-start"><strong>${{ quote.total_amount|floatformat:2 }}</strong></td>
+                                    <td class="text-start"><strong>{{ quote.total_amount|currency_display:quote.currency }}</strong></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -146,7 +146,7 @@
                     {% endif %}
                     
                     <div class="mt-3">
-                        <h3 class="mb-0">${{ quote.total_amount|floatformat:2 }}</h3>
+                        <h3 class="mb-0">{{ quote.total_amount|currency_display:quote.currency }}</h3>
                         <small class="text-muted">{% trans "Total Amount" %}</small>
                     </div>
                 </div>

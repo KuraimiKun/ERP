@@ -76,7 +76,7 @@
                         {% endwith %}
                     </td>
                     <td>{{ payment.payment_method.name|default:"-" }}</td>
-                    <td class="fw-medium text-success">{{ payment.amount }}</td>
+                    <td class="fw-medium text-success">{{ payment.amount|currency_display:payment.currency }}</td>
                     <td><small class="text-muted">{{ payment.reference_number|default:"-"|truncatechars:20 }}</small></td>
                     <td>
                         <div class="btn-group btn-group-sm">

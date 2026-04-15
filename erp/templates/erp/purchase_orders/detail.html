@@ -22,9 +22,9 @@
                     <span class="badge badge-status badge-{{ order.status }} fs-6">{{ order.get_status_display }}</span>
                 </div>
                 <div class="text-start">
-                    <div class="display-6 fw-bold">{{ order.currency.symbol|default:"$" }}{{ order.total_amount|floatformat:2 }}</div>
+                    <div class="display-6 fw-bold">{{ order.total_amount|currency_display:order.currency }}</div>
                     {% if order.balance_due > 0 %}
-                    <small class="text-warning">{% trans "Balance Due:" %} {{ order.currency.symbol|default:"$" }}{{ order.balance_due|floatformat:2 }}</small>
+                    <small class="text-warning">{% trans "Balance Due:" %} {{ order.balance_due|currency_display:order.currency }}</small>
                     {% endif %}
                 </div>
             </div>
@@ -88,9 +88,9 @@
                                 {% if line.product %}<br><small class="text-muted">{{ line.product.sku }}</small>{% endif %}
                             </td>
                             <td class="text-center">{{ line.quantity }}</td>
-                            <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
-                            <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ line.tax_amount|floatformat:2 }}</td>
-                            <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ line.line_total|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.unit_price|currency_display:order.currency }}</td>
+                            <td class="text-start">{{ line.tax_amount|currency_display:order.currency }}</td>
+                            <td class="text-start">{{ line.line_total|currency_display:order.currency }}</td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -101,21 +101,21 @@
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="4" class="text-start"><strong>{% trans "Subtotal:" %}</strong></td>
-                            <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ order.subtotal|floatformat:2 }}</td>
+                            <td class="text-start">{{ order.subtotal|currency_display:order.currency }}</td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-start">{% trans "Tax:" %}</td>
-                            <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ order.tax_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ order.tax_amount|currency_display:order.currency }}</td>
                         </tr>
                         {% if order.discount_amount > 0 %}
                         <tr>
                             <td colspan="4" class="text-start">{% trans "Discount:" %}</td>
-                            <td class="text-start text-danger">-{{ order.currency.symbol|default:"$" }}{{ order.discount_amount|floatformat:2 }}</td>
+                            <td class="text-start text-danger">-{{ order.discount_amount|currency_display:order.currency }}</td>
                         </tr>
                         {% endif %}
                         <tr class="fw-bold">
                             <td colspan="4" class="text-start">{% trans "Total:" %}</td>
-                            <td class="text-start">{{ order.currency.symbol|default:"$" }}{{ order.total_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ order.total_amount|currency_display:order.currency }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -141,7 +141,7 @@
                         <tr>
                             <td><a href="{% url 'erp:supplier_invoice_detail' sinv.pk %}">{{ sinv.invoice_number }}</a></td>
                             <td>{{ sinv.invoice_date|date:"Y/m/d" }}</td>
-                            <td class="text-start">{{ sinv.currency.symbol|default:"$" }}{{ sinv.total_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ sinv.total_amount|currency_display:sinv.currency }}</td>
                             <td><span class="badge badge-status badge-{{ sinv.status }}">{{ sinv.get_status_display }}</span></td>
                         </tr>
                         {% endfor %}

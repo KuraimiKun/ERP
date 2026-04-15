@@ -56,7 +56,7 @@
                 <div class="mb-3">
                     <label class="text-muted small">{% trans "Expected Value" %}</label>
                     <div class="fs-5 fw-bold text-success">
-                        {% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}
+                        {% if lead.estimated_value %}{{ lead.estimated_value|currency_display:company.base_currency }}{% else %}-{% endif %}
                     </div>
                 </div>
                 <div class="mb-3">
@@ -203,7 +203,7 @@
                         <tr>
                             <td>{{ quote.quote_number }}</td>
                             <td>{{ quote.quote_date|date:"M d, Y" }}</td>
-                            <td>${{ quote.total_amount|floatformat:2 }}</td>
+                            <td>{{ quote.total_amount|currency_display:quote.currency }}</td>
                             <td><span class="badge bg-secondary">{{ quote.get_status_display }}</span></td>
                         </tr>
                         {% empty %}

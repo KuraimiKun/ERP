@@ -54,9 +54,9 @@
                 <tr>
                     <td><a href="{% url 'erp:asset_detail' s.asset.pk %}">{{ s.asset.asset_number }}</a></td>
                     <td>{{ s.period_date|date:"Y/m" }}</td>
-                    <td>${{ s.depreciation_amount|floatformat:2 }}</td>
-                    <td>${{ s.accumulated_total|floatformat:2 }}</td>
-                    <td>${{ s.book_value_after|floatformat:2 }}</td>
+                    <td>{{ s.depreciation_amount|currency_display:s.asset.currency }}</td>
+                    <td>{{ s.accumulated_total|currency_display:s.asset.currency }}</td>
+                    <td>{{ s.book_value_after|currency_display:s.asset.currency }}</td>
                     <td>
                         <span class="badge {% if s.status == 'posted' %}bg-success{% elif s.status == 'scheduled' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ s.get_status_display }}</span>
                     </td>

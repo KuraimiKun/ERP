@@ -58,6 +58,7 @@ def lead_list(request):
         'sources': Lead.Source.choices,
         'current_sort': current_sort,
         'current_order': current_order,
+        'company': company,
     })
 
 
@@ -72,6 +73,7 @@ def lead_detail(request, pk):
         'activities': lead.activities.order_by('-activity_date'),
         'quotes': lead.quotes.order_by('-quote_date'),
         'today': date.today(),
+        'company': company,
     })
 
 

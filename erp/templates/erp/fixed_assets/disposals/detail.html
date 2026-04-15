@@ -24,11 +24,11 @@
                     <div class="col-md-6">
                         <table class="table table-sm table-borderless">
                             <tr><td class="text-muted">{% trans "Disposal Date" %}</td><td class="fw-medium">{{ disposal.disposal_date|date:"Y/m/d" }}</td></tr>
-                            <tr><td class="text-muted">{% trans "Sale Amount" %}</td><td>${{ disposal.sale_amount|floatformat:2 }}</td></tr>
-                            <tr><td class="text-muted">{% trans "Book Value at Disposal" %}</td><td>${{ disposal.book_value_at_disposal|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Sale Amount" %}</td><td>{{ disposal.sale_amount|currency_display:disposal.asset.currency }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Book Value at Disposal" %}</td><td>{{ disposal.book_value_at_disposal|currency_display:disposal.asset.currency }}</td></tr>
                             <tr><td class="text-muted">{% trans "Gain / Loss" %}</td>
                                 <td class="fw-bold {% if disposal.gain_loss > 0 %}text-success{% elif disposal.gain_loss < 0 %}text-danger{% endif %}">
-                                    {% if disposal.gain_loss > 0 %}+{% endif %}${{ disposal.gain_loss|floatformat:2 }}
+                                    {% if disposal.gain_loss > 0 %}+{% endif %}{{ disposal.gain_loss|currency_display:disposal.asset.currency }}
                                 </td>
                             </tr>
                         </table>

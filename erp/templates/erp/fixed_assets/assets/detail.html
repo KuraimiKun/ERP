@@ -27,7 +27,7 @@
                     <span class="badge bg-primary ms-2">{{ asset.category.name }}</span>
                 </div>
                 <div class="text-start">
-                    <div class="display-6 fw-bold">${{ asset.current_book_value|floatformat:2 }}</div>
+                    <div class="display-6 fw-bold">{{ asset.current_book_value|currency_display:asset.currency }}</div>
                     <small class="text-muted">{% trans "Book Value" %}</small>
                 </div>
             </div>
@@ -36,10 +36,10 @@
                     <div class="col-md-6">
                         <table class="table table-sm table-borderless">
                             <tr><td class="text-muted">{% trans "Acquisition Date" %}</td><td class="fw-medium">{{ asset.acquisition_date|date:"Y/m/d" }}</td></tr>
-                            <tr><td class="text-muted">{% trans "Acquisition Cost" %}</td><td class="fw-medium">${{ asset.acquisition_cost|floatformat:2 }}</td></tr>
-                            <tr><td class="text-muted">{% trans "Accumulated Depreciation" %}</td><td class="fw-medium text-warning">${{ asset.accumulated_depreciation|floatformat:2 }}</td></tr>
-                            <tr><td class="text-muted">{% trans "Salvage Value" %}</td><td>${{ asset.salvage_value|floatformat:2 }}</td></tr>
-                            <tr><td class="text-muted">{% trans "Depreciable Amount" %}</td><td>${{ asset.depreciable_amount|floatformat:2 }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Acquisition Cost" %}</td><td class="fw-medium">{{ asset.acquisition_cost|currency_display:asset.currency }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Accumulated Depreciation" %}</td><td class="fw-medium text-warning">{{ asset.accumulated_depreciation|currency_display:asset.currency }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Salvage Value" %}</td><td>{{ asset.salvage_value|currency_display:asset.currency }}</td></tr>
+                            <tr><td class="text-muted">{% trans "Depreciable Amount" %}</td><td>{{ asset.depreciable_amount|currency_display:asset.currency }}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
@@ -100,9 +100,9 @@
                                 {% for s in schedules %}
                                 <tr>
                                     <td>{{ s.period_date|date:"Y/m" }}</td>
-                                    <td>${{ s.depreciation_amount|floatformat:2 }}</td>
-                                    <td>${{ s.accumulated_total|floatformat:2 }}</td>
-                                    <td>${{ s.book_value_after|floatformat:2 }}</td>
+                                    <td>{{ s.depreciation_amount|currency_display:asset.currency }}</td>
+                                    <td>{{ s.accumulated_total|currency_display:asset.currency }}</td>
+                                    <td>{{ s.book_value_after|currency_display:asset.currency }}</td>
                                     <td>
                                         <span class="badge {% if s.status == 'posted' %}bg-success{% elif s.status == 'scheduled' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ s.get_status_display }}</span>
                                     </td>
@@ -194,10 +194,10 @@
                                 {% for r in revaluations %}
                                 <tr>
                                     <td>{{ r.revaluation_date|date:"Y/m/d" }}</td>
-                                    <td>${{ r.old_value|floatformat:2 }}</td>
-                                    <td>${{ r.new_value|floatformat:2 }}</td>
+                                    <td>{{ r.old_value|currency_display:asset.currency }}</td>
+                                    <td>{{ r.new_value|currency_display:asset.currency }}</td>
                                     <td class="{% if r.revaluation_amount > 0 %}text-success{% else %}text-danger{% endif %}">
-                                        {% if r.revaluation_amount > 0 %}+{% endif %}${{ r.revaluation_amount|floatformat:2 }}
+                                        {% if r.revaluation_amount > 0 %}+{% endif %}{{ r.revaluation_amount|currency_display:asset.currency }}
                                     </td>
                                     <td>{{ r.appraiser|default:"-" }}</td>
                                     <td>
@@ -246,7 +246,7 @@
                                     <td>{{ m.description|truncatechars:40 }}</td>
                                     <td>{{ m.scheduled_date|date:"Y/m/d"|default:"-" }}</td>
                                     <td>{{ m.completion_date|date:"Y/m/d"|default:"-" }}</td>
-                                    <td>${{ m.cost|floatformat:2 }}</td>
+                                    <td>{{ m.cost|currency_display:asset.currency }}</td>
                                     <td>
                                         <span class="badge {% if m.status == 'completed' %}bg-success{% elif m.status == 'in_progress' %}bg-info{% elif m.status == 'scheduled' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ m.get_status_display }}</span>
                                     </td>
@@ -358,9 +358,9 @@
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td class="text-muted">{% trans "Date" %}</td><td>{{ disposal.disposal_date|date:"Y/m/d" }}</td></tr>
                     <tr><td class="text-muted">{% trans "Type" %}</td><td>{{ disposal.get_disposal_type_display }}</td></tr>
-                    <tr><td class="text-muted">{% trans "Sale Amount" %}</td><td>${{ disposal.sale_amount|floatformat:2 }}</td></tr>
-                    <tr><td class="text-muted">{% trans "Book Value" %}</td><td>${{ disposal.book_value_at_disposal|floatformat:2 }}</td></tr>
-                    <tr><td class="text-muted">{% trans "Gain/Loss" %}</td><td class="{% if disposal.gain_loss > 0 %}text-success{% elif disposal.gain_loss < 0 %}text-danger{% endif %}">${{ disposal.gain_loss|floatformat:2 }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Sale Amount" %}</td><td>{{ disposal.sale_amount|currency_display:asset.currency }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Book Value" %}</td><td>{{ disposal.book_value_at_disposal|currency_display:asset.currency }}</td></tr>
+                    <tr><td class="text-muted">{% trans "Gain/Loss" %}</td><td class="{% if disposal.gain_loss > 0 %}text-success{% elif disposal.gain_loss < 0 %}text-danger{% endif %}">{{ disposal.gain_loss|currency_display:asset.currency }}</td></tr>
                     <tr><td class="text-muted">{% trans "Buyer" %}</td><td>{{ disposal.buyer_name|default:"-" }}</td></tr>
                     {% if disposal.journal_entry %}
                     <tr><td class="text-muted">{% trans "Journal" %}</td><td><a href="{% url 'erp:journal_entry_detail' disposal.journal_entry.pk %}">{{ disposal.journal_entry.entry_number }}</a></td></tr>

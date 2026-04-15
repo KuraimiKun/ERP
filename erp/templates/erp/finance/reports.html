@@ -19,7 +19,7 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <p class="text-muted small mb-1">{% trans "Monthly Revenue" %}</p>
-                        <h4 class="mb-0">${{ monthly_revenue|floatformat:2|intcomma }}</h4>
+                        <h4 class="mb-0">{{ monthly_revenue|currency_display:company.base_currency }}</h4>
                     </div>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <p class="text-muted small mb-1">{% trans "Yearly Revenue" %}</p>
-                        <h4 class="mb-0">${{ yearly_revenue|floatformat:2|intcomma }}</h4>
+                        <h4 class="mb-0">{{ yearly_revenue|currency_display:company.base_currency }}</h4>
                     </div>
                 </div>
             </div>
@@ -53,7 +53,7 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <p class="text-muted small mb-1">{% trans "Monthly Expenses" %}</p>
-                        <h4 class="mb-0">${{ monthly_expenses|floatformat:2|intcomma }}</h4>
+                        <h4 class="mb-0">{{ monthly_expenses|currency_display:company.base_currency }}</h4>
                     </div>
                 </div>
             </div>
@@ -71,7 +71,7 @@
                     <div class="flex-grow-1 ms-3">
                         <p class="text-muted small mb-1">{% trans "Monthly Profit" %}</p>
                         <h4 class="mb-0 {% if monthly_profit < 0 %}text-danger{% else %}text-success{% endif %}">
-                            ${{ monthly_profit|floatformat:2|intcomma }}
+                            {{ monthly_profit|currency_display:company.base_currency }}
                         </h4>
                     </div>
                 </div>
@@ -89,18 +89,18 @@
             </div>
             <div class="erp-card-body">
                 <div class="text-center py-4">
-                    <h2 class="mb-1 text-warning">${{ total_receivables|floatformat:2|intcomma }}</h2>
+                    <h2 class="mb-1 text-warning">{{ total_receivables|currency_display:company.base_currency }}</h2>
                     <p class="text-muted mb-0">{% trans "Total Receivables" %}</p>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between text-muted small">
                     <span>{% trans "Yearly Expenses" %}</span>
-                    <span>${{ yearly_expenses|floatformat:2|intcomma }}</span>
+                    <span>{{ yearly_expenses|currency_display:company.base_currency }}</span>
                 </div>
                 <div class="d-flex justify-content-between text-muted small mt-2">
                     <span>{% trans "Yearly Profit" %}</span>
                     <span class="{% if yearly_profit < 0 %}text-danger{% else %}text-success{% endif %}">
-                        ${{ yearly_profit|floatformat:2|intcomma }}
+                        {{ yearly_profit|currency_display:company.base_currency }}
                     </span>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                                         {{ account.get_account_type_display }}
                                     </span>
                                 </td>
-                                <td class="text-end">${{ account.current_balance|floatformat:2|intcomma }}</td>
+                                <td class="text-end">{{ account.current_balance|currency_display:company.base_currency }}</td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -183,7 +183,7 @@
                                 {{ invoice.status|title }}
                             </span>
                             <br>
-                            <small>${{ invoice.total_amount|floatformat:2|intcomma }}</small>
+                            <small>{{ invoice.total_amount|currency_display:company.base_currency }}</small>
                         </div>
                     </li>
                     {% empty %}
@@ -211,7 +211,7 @@
                             <small class="text-muted">{{ payment.payment_date|date:"M d, Y" }}</small>
                         </div>
                         <div class="text-end">
-                            <span class="text-success fw-bold">${{ payment.amount|floatformat:2|intcomma }}</span>
+                            <span class="text-success fw-bold">{{ payment.amount|currency_display:company.base_currency }}</span>
                             <br>
                             <small class="text-muted">{{ payment.payment_method|default:"-" }}</small>
                         </div>
@@ -241,7 +241,7 @@
                             <small class="text-muted">{{ expense.expense_date|date:"M d, Y" }}</small>
                         </div>
                         <div class="text-end">
-                            <span class="text-danger fw-bold">${{ expense.amount|floatformat:2|intcomma }}</span>
+                            <span class="text-danger fw-bold">{{ expense.amount|currency_display:company.base_currency }}</span>
                             <br>
                             <small class="text-muted">
                                 {% if expense.category %}{{ expense.category.name }}{% else %}-{% endif %}

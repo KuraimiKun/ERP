@@ -109,7 +109,7 @@ def asset_category_delete(request, pk):
 def asset_list(request):
     company = get_user_company(request.user)
     assets = FixedAsset.objects.filter(company=company).select_related(
-        'category', 'department', 'custodian',
+        'category', 'department', 'custodian', 'currency',
     )
 
     status = request.GET.get('status')
@@ -153,6 +153,7 @@ def asset_list(request):
         'totals': totals,
         'current_sort': current_sort,
         'current_order': current_order,
+        'company': company,
     })
 
 
@@ -267,7 +268,7 @@ def depreciation_list(request):
     company = get_user_company(request.user)
     schedules = DepreciationSchedule.objects.filter(
         asset__company=company,
-    ).select_related('asset', 'journal_entry')
+    ).select_related('asset', 'asset__currency', 'journal_entry')
 
     status = request.GET.get('status')
     if status:
@@ -396,7 +397,7 @@ def disposal_list(request):
     company = get_user_company(request.user)
     disposals = AssetDisposal.objects.filter(
         asset__company=company,
-    ).select_related('asset', 'journal_entry')
+    ).select_related('asset', 'asset__currency', 'journal_entry')
     disposals, current_sort, current_order = apply_sorting(
         request, disposals,
         allowed_fields=['disposal_date', 'disposal_amount'],
@@ -544,7 +545,7 @@ def revaluation_list(request):
     company = get_user_company(request.user)
     revaluations = AssetRevaluation.objects.filter(
         asset__company=company,
-    ).select_related('asset', 'journal_entry')
+    ).select_related('asset', 'asset__currency', 'journal_entry')
     revaluations, current_sort, current_order = apply_sorting(
         request, revaluations,
         allowed_fields=['revaluation_date', 'new_value'],
@@ -621,7 +622,7 @@ def maintenance_list(request):
     company = get_user_company(request.user)
     logs = AssetMaintenanceLog.objects.filter(
         asset__company=company,
-    ).select_related('asset', 'performed_by')
+    ).select_related('asset', 'asset__currency', 'performed_by')
 
     status = request.GET.get('status')
     if status:

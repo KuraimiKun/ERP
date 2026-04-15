@@ -176,6 +176,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'tenants.context_processors.tenant_context',
             ],
+            'builtins': ['erp.templatetags.currency_filters'],
         },
     },
 ]

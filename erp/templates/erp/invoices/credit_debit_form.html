@@ -19,7 +19,7 @@
         <h5 class="mb-1">{% trans "Create" %} {{ note_type_ar }} {% trans "for Invoice" %} {{ invoice.invoice_number }}</h5>
         <small class="text-muted">
             {% trans "Customer" %}: {{ invoice.customer.name }} — 
-            {% trans "Original Amount" %}: {{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}
+            {% trans "Original Amount" %}: {{ invoice.total_amount|currency_display:invoice.currency }}
         </small>
     </div>
     <div class="erp-card-body">
@@ -60,7 +60,7 @@
                                 <input type="number" name="qty_{{ line.pk }}" class="form-control form-control-sm text-center"
                                        value="{{ line.quantity|floatformat:2 }}" min="0.01" max="{{ line.quantity|floatformat:2 }}" step="0.01">
                             </td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.unit_price|currency_display:invoice.currency }}</td>
                             <td class="text-start">
                                 {% if line.tax_rate %}{{ line.tax_rate.rate }}%{% else %}-{% endif %}
                             </td>

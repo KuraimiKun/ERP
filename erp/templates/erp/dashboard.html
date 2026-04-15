@@ -28,7 +28,7 @@
         <div class="stat-card stat-card--primary">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value">{{ company.base_currency.symbol|default:"$" }}{{ monthly_revenue|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-value">{{ monthly_revenue|currency_display:company.base_currency }}</div>
                     <div class="stat-label">{% trans "Monthly Revenue" %}</div>
                     {% if new_customers_month %}
                     <div class="stat-trend" style="color: var(--clr-success);">
@@ -47,7 +47,7 @@
         <div class="stat-card stat-card--warning">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="stat-value">{{ company.base_currency.symbol|default:"$" }}{{ outstanding_receivables|floatformat:0|default:"0"|intcomma }}</div>
+                    <div class="stat-value">{{ outstanding_receivables|currency_display:company.base_currency }}</div>
                     <div class="stat-label">{% trans "Outstanding Receivables" %}</div>
                     {% if overdue_invoices %}
                     <div class="stat-trend mt-1">
@@ -111,7 +111,7 @@
                 <div>
                     <div class="stat-label">{% trans "Pending Quotes" %}</div>
                     <div class="stat-value fs-3 mt-1">{{ pending_quotes }}</div>
-                    <small class="text-muted">{% trans "Value" %}: {{ company.base_currency.symbol|default:"$" }}{{ quotes_value|floatformat:0|default:"0"|intcomma }}</small>
+                    <small class="text-muted">{% trans "Value" %}: {{ quotes_value|currency_display:company.base_currency }}</small>
                 </div>
                 <div style="width:44px; height:44px; border-radius: var(--border-radius-sm); background: var(--clr-primary-light); display:flex; align-items:center; justify-content:center; font-size:1.4rem; color: var(--clr-primary);">
                     <i class="bi bi-file-earmark-text"></i>
@@ -231,7 +231,7 @@
                                     </a>
                                 </td>
                                 <td>{{ invoice.customer.name|truncatechars:20 }}</td>
-                                <td class="fw-semibold">{{ company.base_currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                                <td class="fw-semibold">{{ invoice.total_amount|currency_display:company.base_currency }}</td>
                                 <td>
                                     {% if invoice.status == 'paid' %}
                                     <span class="badge badge-status badge-paid">{% trans "Paid" %}</span>
@@ -306,7 +306,7 @@
                                     <span class="badge badge-status badge-draft">{{ lead.get_status_display }}</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ company.base_currency.symbol|default:"$" }}{{ lead.estimated_value|floatformat:0|default:"0" }}</td>
+                                <td>{{ lead.estimated_value|currency_display:company.base_currency }}</td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -417,7 +417,7 @@
                     <div class="flex-grow-1">
                         <p class="mb-0 fw-semibold" style="font-size:0.855rem;">{% trans "New Payment" %}</p>
                         <small class="text-muted">
-                            {{ company.base_currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }} &mdash; {{ payment.payment_date|date:"Y/m/d" }}
+                            {{ payment.amount|currency_display:company.base_currency }} &mdash; {{ payment.payment_date|date:"Y/m/d" }}
                         </small>
                     </div>
                 </div>

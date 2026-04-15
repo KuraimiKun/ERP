@@ -39,7 +39,7 @@
                         <tr><td class="text-muted">{% trans "Phone" %}:</td><td>{{ lead.phone|default:"-" }}</td></tr>
                         <tr><td class="text-muted">{% trans "Company" %}:</td><td>{{ lead.company_name|default:"-" }}</td></tr>
                         <tr><td class="text-muted">{% trans "City" %}:</td><td>{{ lead.city|default:"-" }}</td></tr>
-                        <tr><td class="text-muted">{% trans "Expected Value" %}:</td><td>{% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}</td></tr>
+                        <tr><td class="text-muted">{% trans "Expected Value" %}:</td><td>{% if lead.estimated_value %}{{ lead.estimated_value|currency_display:company.base_currency }}{% else %}-{% endif %}</td></tr>
                     </table>
                     
                     <div class="d-flex gap-2">

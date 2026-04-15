@@ -60,24 +60,24 @@
         <td>{{ forloop.counter }}</td>
         <td>{{ line.description }}</td>
         <td>{{ line.quantity|floatformat:2 }}</td>
-        <td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
-        <td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ line.tax_amount|floatformat:2 }}</td>
-        <td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ line.line_total|floatformat:2 }}</td>
+        <td class="text-left">{{ line.unit_price|currency_display:invoice.currency }}</td>
+        <td class="text-left">{{ line.tax_amount|currency_display:invoice.currency }}</td>
+        <td class="text-left">{{ line.line_total|currency_display:invoice.currency }}</td>
     </tr>
     {% endfor %}
     </tbody>
 </table>
 
 <table class="totals-table">
-    <tr><td>{% trans "Subtotal:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Subtotal:" %}</td><td class="text-left">{{ invoice.subtotal|currency_display:invoice.currency }}</td></tr>
     {% if invoice.discount_amount > 0 %}
-    <tr><td>{% trans "Discount:" %}</td><td class="text-left" style="color:#dc3545">-{{ invoice.currency.symbol|default:"$" }}{{ invoice.discount_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Discount:" %}</td><td class="text-left" style="color:#dc3545">-{{ invoice.discount_amount|currency_display:invoice.currency }}</td></tr>
     {% endif %}
-    <tr><td>{% trans "Tax:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.tax_amount|floatformat:2 }}</td></tr>
-    <tr class="total-row"><td>{% trans "Total:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Tax:" %}</td><td class="text-left">{{ invoice.tax_amount|currency_display:invoice.currency }}</td></tr>
+    <tr class="total-row"><td>{% trans "Total:" %}</td><td class="text-left">{{ invoice.total_amount|currency_display:invoice.currency }}</td></tr>
     {% if invoice.paid_amount > 0 %}
-    <tr><td>{% trans "Paid:" %}</td><td class="text-left" style="color:#198754">{{ invoice.currency.symbol|default:"$" }}{{ invoice.paid_amount|floatformat:2 }}</td></tr>
-    <tr style="font-weight:bold"><td>{% trans "Balance:" %}</td><td class="text-left">{{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</td></tr>
+    <tr><td>{% trans "Paid:" %}</td><td class="text-left" style="color:#198754">{{ invoice.paid_amount|currency_display:invoice.currency }}</td></tr>
+    <tr style="font-weight:bold"><td>{% trans "Balance:" %}</td><td class="text-left">{{ invoice.balance_due|currency_display:invoice.currency }}</td></tr>
     {% endif %}
 </table>
 

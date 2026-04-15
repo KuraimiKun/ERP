@@ -84,7 +84,7 @@
                             <span class="badge bg-danger ms-1">{% trans "Expired" %}</span>
                             {% endif %}
                         </td>
-                        <td class="fw-bold">${{ quote.total_amount|floatformat:2 }}</td>
+                        <td class="fw-bold">{{ quote.total_amount|currency_display:quote.currency }}</td>
                         <td>
                             {% if quote.status == 'draft' %}
                             <span class="badge bg-secondary">{% trans "Draft" %}</span>

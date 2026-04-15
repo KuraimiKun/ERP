@@ -72,9 +72,9 @@
                     <td>{{ customer.phone|default:"-" }}</td>
                     <td>
                         {% if customer.current_balance > 0 %}
-                        <span class="text-warning">{{ customer.currency.symbol|default:"$" }}{{ customer.current_balance|floatformat:2 }}</span>
+                        <span class="text-warning">{{ customer.current_balance|currency_display:customer.currency }}</span>
                         {% else %}
-                        <span class="text-success">{{ customer.currency.symbol|default:"$" }}0.00</span>
+                        <span class="text-success">{{ 0|currency_display:customer.currency }}</span>
                         {% endif %}
                     </td>
                     <td>

@@ -67,7 +67,7 @@
                         <td>{{ expense.category.name|default:"-" }}</td>
                         <td>{{ expense.description|truncatewords:10 }}</td>
                         <td>{{ expense.employee.first_name|default:"-" }} {{ expense.employee.last_name|default:"" }}</td>
-                        <td class="fw-bold">{{ expense.total_amount|floatformat:2 }} $</td>
+                        <td class="fw-bold">{{ expense.total_amount|currency_display:expense.currency }}</td>
                         <td>
                             {% if expense.status == 'draft' %}
                             <span class="badge bg-secondary">{% trans "Draft" %}</span>

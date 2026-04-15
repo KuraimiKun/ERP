@@ -21,7 +21,7 @@
             </div>
             <div class="erp-card-body">
                 <div class="alert alert-info">
-                    <strong>{% trans "Current Book Value:" %}</strong> ${{ asset.current_book_value|floatformat:2 }}
+                    <strong>{% trans "Current Book Value:" %}</strong> {{ asset.current_book_value|currency_display:asset.currency }}
                 </div>
                 <form method="post" novalidate>
                     {% csrf_token %}

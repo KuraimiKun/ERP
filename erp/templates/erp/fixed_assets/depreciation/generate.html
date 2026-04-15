@@ -29,7 +29,7 @@
                         </div>
                         <div class="col-6">
                             <small class="text-muted d-block">{% trans "Depreciable Amount" %}</small>
-                            <strong>${{ asset.depreciable_amount|floatformat:2 }}</strong>
+                            <strong>{{ asset.depreciable_amount|currency_display:asset.currency }}</strong>
                         </div>
                     </div>
                     <div class="row mt-2">

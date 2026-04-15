@@ -23,9 +23,9 @@
                     <span class="badge badge-status badge-{{ invoice.status }} fs-6">{{ invoice.get_status_display }}</span>
                 </div>
                 <div class="text-start">
-                    <div class="display-6 fw-bold">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</div>
+                    <div class="display-6 fw-bold">{{ invoice.total_amount|currency_display:invoice.currency }}</div>
                     {% if invoice.balance_due > 0 %}
-                    <small class="text-warning">{% trans "Balance" %}: {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}</small>
+                    <small class="text-warning">{% trans "Balance" %}: {{ invoice.balance_due|currency_display:invoice.currency }}</small>
                     {% else %}
                     <small class="text-success"><i class="bi bi-check-circle ms-1"></i>{% trans "Fully Paid" %}</small>
                     {% endif %}
@@ -90,9 +90,9 @@
                         <tr>
                             <td><strong>{{ line.description }}</strong></td>
                             <td class="text-center">{{ line.quantity }}</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.unit_price|floatformat:2 }}</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.tax_amount|floatformat:2 }}</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ line.line_total|floatformat:2 }}</td>
+                            <td class="text-start">{{ line.unit_price|currency_display:invoice.currency }}</td>
+                            <td class="text-start">{{ line.tax_amount|currency_display:invoice.currency }}</td>
+                            <td class="text-start">{{ line.line_total|currency_display:invoice.currency }}</td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -103,25 +103,25 @@
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="4" class="text-start"><strong>{% trans "Subtotal" %}:</strong></td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.subtotal|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.subtotal|currency_display:invoice.currency }}</td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-start">{% trans "Tax" %}:</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.tax_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.tax_amount|currency_display:invoice.currency }}</td>
                         </tr>
                         <tr class="fw-bold">
                             <td colspan="4" class="text-start">{% trans "Total" %}:</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.total_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.total_amount|currency_display:invoice.currency }}</td>
                         </tr>
                         {% if invoice.paid_amount > 0 %}
                         <tr class="text-success">
                             <td colspan="4" class="text-start">{% trans "Amount Paid" %}:</td>
-                            <td class="text-start">{{ invoice.currency.symbol|default:"$" }}{{ invoice.paid_amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ invoice.paid_amount|currency_display:invoice.currency }}</td>
                         </tr>
                         <tr class="fw-bold">
                             <td colspan="4" class="text-start">{% trans "Balance Due" %}:</td>
                             <td class="text-start {% if invoice.balance_due > 0 %}text-warning{% else %}text-success{% endif %}">
-                                {{ invoice.currency.symbol|default:"$" }}{{ invoice.balance_due|floatformat:2 }}
+                                {{ invoice.balance_due|currency_display:invoice.currency }}
                             </td>
                         </tr>
                         {% endif %}
@@ -167,7 +167,7 @@
                         <a href="{% url 'erp:supplier_payment_detail' alloc.payment.pk %}" class="fw-medium">{{ alloc.payment.payment_number }}</a>
                         <br><small class="text-muted">{{ alloc.payment.payment_date|date:"Y/m/d" }}</small>
                     </div>
-                    <span class="text-success">{{ invoice.currency.symbol|default:"$" }}{{ alloc.amount|floatformat:2 }}</span>
+                    <span class="text-success">{{ alloc.amount|currency_display:invoice.currency }}</span>
                 </div>
                 {% empty %}
                 <p class="text-center text-muted mb-0">{% trans "No payments" %}</p>

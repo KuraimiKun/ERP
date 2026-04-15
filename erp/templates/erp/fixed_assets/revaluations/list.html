@@ -25,10 +25,10 @@
                 <tr>
                     <td><a href="{% url 'erp:asset_detail' r.asset.pk %}">{{ r.asset.asset_number }}</a></td>
                     <td>{{ r.revaluation_date|date:"Y/m/d" }}</td>
-                    <td>${{ r.old_value|floatformat:2 }}</td>
-                    <td>${{ r.new_value|floatformat:2 }}</td>
+                    <td>{{ r.old_value|currency_display:r.asset.currency }}</td>
+                    <td>{{ r.new_value|currency_display:r.asset.currency }}</td>
                     <td class="{% if r.revaluation_amount > 0 %}text-success{% elif r.revaluation_amount < 0 %}text-danger{% endif %}">
-                        {% if r.revaluation_amount > 0 %}+{% endif %}${{ r.revaluation_amount|floatformat:2 }}
+                        {% if r.revaluation_amount > 0 %}+{% endif %}{{ r.revaluation_amount|currency_display:r.asset.currency }}
                     </td>
                     <td>{{ r.appraiser|default:"-" }}</td>
                     <td>

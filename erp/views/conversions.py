@@ -144,4 +144,5 @@ def lead_convert_to_customer(request, pk):
 
     return render(request, 'erp/leads/convert_confirm.html', {
         'lead': lead,
+        'company': company,
     })

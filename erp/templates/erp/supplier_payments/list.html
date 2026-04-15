@@ -105,10 +105,10 @@
                     <td>{{ payment.payment_date|date:"Y/m/d" }}</td>
                     <td>{{ payment.payment_method.name|default:"-" }}</td>
                     <td><small class="text-muted">{{ payment.reference_number|default:"-"|truncatechars:20 }}</small></td>
-                    <td class="text-start fw-medium">{{ payment.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }}</td>
-                    <td class="text-start text-success">{{ payment.currency.symbol|default:"$" }}{{ payment.allocated_amount|floatformat:2 }}</td>
+                    <td class="text-start fw-medium">{{ payment.amount|currency_display:payment.currency }}</td>
+                    <td class="text-start text-success">{{ payment.allocated_amount|currency_display:payment.currency }}</td>
                     <td class="text-start {% if payment.unallocated_amount > 0 %}text-warning fw-medium{% endif %}">
-                        {{ payment.currency.symbol|default:"$" }}{{ payment.unallocated_amount|floatformat:2 }}
+                        {{ payment.unallocated_amount|currency_display:payment.currency }}
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">

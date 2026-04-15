@@ -57,7 +57,7 @@
                     <td>{{ m.description|truncatechars:40 }}</td>
                     <td>{{ m.scheduled_date|date:"Y/m/d"|default:"-" }}</td>
                     <td>{{ m.completion_date|date:"Y/m/d"|default:"-" }}</td>
-                    <td>${{ m.cost|floatformat:2 }}</td>
+                    <td>{{ m.cost|currency_display:m.asset.currency }}</td>
                     <td>
                         <span class="badge {% if m.status == 'completed' %}bg-success{% elif m.status == 'in_progress' %}bg-info{% elif m.status == 'scheduled' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ m.get_status_display }}</span>
                     </td>

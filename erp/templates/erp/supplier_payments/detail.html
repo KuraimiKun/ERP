@@ -39,7 +39,7 @@
                     <div class="col-md-6">
                         <label class="text-muted small">{% trans "Amount" %}</label>
                         <div class="fw-bold fs-4 text-primary">
-                            {{ payment.currency.symbol|default:"$" }}{{ payment.amount|floatformat:2 }}
+                            {{ payment.amount|currency_display:payment.currency }}
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -56,12 +56,12 @@
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted small">{% trans "Allocated Amount" %}</label>
-                        <div>{{ payment.currency.symbol|default:"$" }}{{ payment.allocated_amount|floatformat:2 }}</div>
+                        <div>{{ payment.allocated_amount|currency_display:payment.currency }}</div>
                     </div>
                     {% if payment.unallocated_amount > 0 %}
                     <div class="col-md-6">
                         <label class="text-muted small">{% trans "Unallocated Amount" %}</label>
-                        <div class="text-warning">{{ payment.currency.symbol|default:"$" }}{{ payment.unallocated_amount|floatformat:2 }}</div>
+                        <div class="text-warning">{{ payment.unallocated_amount|currency_display:payment.currency }}</div>
                     </div>
                     {% endif %}
                     {% if payment.notes %}
@@ -97,8 +97,8 @@
                                 <a href="{% url 'erp:supplier_invoice_detail' alloc.invoice.pk %}">{{ alloc.invoice.invoice_number }}</a>
                             </td>
                             <td>{{ alloc.invoice.supplier.name }}</td>
-                            <td class="text-start">{{ payment.currency.symbol|default:"$" }}{{ alloc.invoice.total_amount|floatformat:2 }}</td>
-                            <td class="text-start text-success">{{ payment.currency.symbol|default:"$" }}{{ alloc.amount|floatformat:2 }}</td>
+                            <td class="text-start">{{ alloc.invoice.total_amount|currency_display:payment.currency }}</td>
+                            <td class="text-start text-success">{{ alloc.amount|currency_display:payment.currency }}</td>
                             <td class="text-start">
                                 <span class="badge badge-status badge-{{ alloc.invoice.status }}">{{ alloc.invoice.get_status_display }}</span>
                             </td>

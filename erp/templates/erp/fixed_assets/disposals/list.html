@@ -26,10 +26,10 @@
                     <td><a href="{% url 'erp:asset_detail' d.asset.pk %}">{{ d.asset.asset_number }} – {{ d.asset.name|truncatechars:20 }}</a></td>
                     <td>{{ d.disposal_date|date:"Y/m/d" }}</td>
                     <td>{{ d.get_disposal_type_display }}</td>
-                    <td>${{ d.sale_amount|floatformat:2 }}</td>
-                    <td>${{ d.book_value_at_disposal|floatformat:2 }}</td>
+                    <td>{{ d.sale_amount|currency_display:d.asset.currency }}</td>
+                    <td>{{ d.book_value_at_disposal|currency_display:d.asset.currency }}</td>
                     <td class="{% if d.gain_loss > 0 %}text-success{% elif d.gain_loss < 0 %}text-danger{% endif %}">
-                        {% if d.gain_loss > 0 %}+{% endif %}${{ d.gain_loss|floatformat:2 }}
+                        {% if d.gain_loss > 0 %}+{% endif %}{{ d.gain_loss|currency_display:d.asset.currency }}
                     </td>
                     <td>
                         {% if d.journal_entry %}

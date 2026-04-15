@@ -27,7 +27,7 @@
                     </tr>
                     <tr>
                         <td class="text-muted">{% trans "Amount" %}:</td>
-                        <td class="fw-bold">${{ quote.total_amount|floatformat:2 }}</td>
+                        <td class="fw-bold">{{ quote.total_amount|currency_display:quote.currency }}</td>
                     </tr>
                     <tr>
                         <td class="text-muted">{% trans "Lines" %}:</td>
