@@ -12,6 +12,7 @@ from erp.forms import (
     QuoteForm, QuoteLineFormSet,
 )
 from erp.services import get_quote_number
+from django.utils.translation import gettext as _
 from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
     get_user_company, staff_member_required, paginate_qs, apply_sorting,
@@ -181,12 +182,12 @@ def service_category_create(request):
             obj = form.save(commit=False)
             obj.company = company
             obj.save()
-            messages.success(request, f'تمت إضافة تصنيف الخدمة "{obj.name}" بنجاح.')
+            messages.success(request, _('Service category "%(name)s" created successfully.') % {'name': obj.name})
             return redirect('erp:service_category_list')
     else:
         form = ServiceCategoryForm(company=company)
     return render(request, 'erp/service_categories/form.html', {
-        'form': form, 'title': 'إضافة تصنيف خدمة', 'submit_text': 'حفظ',
+        'form': form, 'title': _('Add Service Category'), 'submit_text': _('Save'),
     })
 
 
@@ -198,12 +199,12 @@ def service_category_edit(request, pk):
         form = ServiceCategoryForm(request.POST, instance=obj, company=company)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تم تحديث تصنيف الخدمة بنجاح.')
+            messages.success(request, _('Service category updated successfully.'))
             return redirect('erp:service_category_list')
     else:
         form = ServiceCategoryForm(instance=obj, company=company)
     return render(request, 'erp/service_categories/form.html', {
-        'form': form, 'title': 'تعديل تصنيف خدمة', 'submit_text': 'حفظ التغييرات',
+        'form': form, 'title': _('Edit Service Category'), 'submit_text': _('Save Changes'),
     })
 
 
@@ -280,12 +281,12 @@ def service_create(request):
             service = form.save(commit=False)
             service.company = company
             service.save()
-            messages.success(request, f'تمت إضافة الخدمة "{service.name}" بنجاح.')
+            messages.success(request, _('Service "%(name)s" created successfully.') % {'name': service.name})
             return redirect('erp:service_detail', pk=service.pk)
     else:
         form = ServicePricingForm(company=company)
     return render(request, 'erp/services/form.html', {
-        'form': form, 'title': 'إضافة خدمة', 'submit_text': 'حفظ الخدمة',
+        'form': form, 'title': _('Add Service'), 'submit_text': _('Save Service'),
     })
 
 
@@ -297,12 +298,12 @@ def service_edit(request, pk):
         form = ServicePricingForm(request.POST, instance=service, company=company)
         if form.is_valid():
             form.save()
-            messages.success(request, 'تم تحديث الخدمة بنجاح.')
+            messages.success(request, _('Service updated successfully.'))
             return redirect('erp:service_detail', pk=service.pk)
     else:
         form = ServicePricingForm(instance=service, company=company)
     return render(request, 'erp/services/form.html', {
-        'form': form, 'title': 'تعديل خدمة', 'submit_text': 'حفظ التغييرات',
+        'form': form, 'title': _('Edit Service'), 'submit_text': _('Save Changes'),
     })
 
 

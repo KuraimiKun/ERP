@@ -23,6 +23,8 @@ from erp.forms import (
     SupplierInvoiceForm, SupplierInvoiceLineFormSet,
     SupplierPaymentForm,
 )
+from django.utils.translation import gettext as _
+
 from erp.services import (
     get_supplier_id, get_po_number,
     get_supplier_invoice_number, get_supplier_payment_number,
@@ -307,7 +309,7 @@ def purchase_order_approve(request, pk):
 
     if request.method == 'POST':
         if order.status not in ('draft', 'pending'):
-            messages.error(request, 'لا يمكن اعتماد هذا الطلب بحالته الحالية.')
+            messages.error(request, _('Cannot approve this purchase order in its current state.'))
             return redirect('erp:purchase_order_detail', pk=order.pk)
 
         # Get approving employee if available
@@ -318,7 +320,7 @@ def purchase_order_approve(request, pk):
         except Employee.DoesNotExist:
             messages.warning(
                 request,
-                'لم يتم العثور على ملف موظف لحسابك — تم تسجيل الاعتماد بدون ربط بموظف.'
+                _('Employee record not found for your account — approval recorded without employee link.')
             )
 
         order.approval_date = timezone.now()
@@ -333,7 +335,7 @@ def purchase_order_approve(request, pk):
         except Exception:
             pass  # Don't fail if journal entry creation fails
 
-        messages.success(request, f'تم اعتماد أمر الشراء {order.po_number}.')
+        messages.success(request, _('Purchase order %(number)s approved.') % {'number': order.po_number})
         return redirect('erp:purchase_order_detail', pk=order.pk)
 
     return render(request, 'erp/purchase_orders/detail.html', {
@@ -379,7 +381,7 @@ def purchase_order_create_invoice(request, pk):
         sinv.calculate_totals()
         sinv.save()
 
-        messages.success(request, f'تم إنشاء فاتورة المورد {sinv.invoice_number} من أمر الشراء {order.po_number}.')
+        messages.success(request, _('Supplier invoice %(sinv)s created from purchase order %(po)s.') % {'sinv': sinv.invoice_number, 'po': order.po_number})
         return redirect('erp:supplier_invoice_edit', pk=sinv.pk)
 
     return render(request, 'erp/purchase_orders/detail.html', {
@@ -465,7 +467,7 @@ def supplier_invoice_create(request):
                 _logger.exception('Failed to create journal entry for supplier invoice %s', invoice.invoice_number)
                 messages.warning(request, 'تحذير: تعذّر إنشاء القيد المحاسبي تلقائياً. يُرجى إنشاؤه يدوياً.')
 
-            messages.success(request, f'تم إنشاء فاتورة المورد {invoice.invoice_number}.')
+            messages.success(request, _('Supplier invoice %(number)s created.') % {'number': invoice.invoice_number})
             return redirect('erp:supplier_invoice_detail', pk=invoice.pk)
     else:
         form = SupplierInvoiceForm(company=company)
@@ -482,8 +484,8 @@ def supplier_invoice_create(request):
     return render(request, 'erp/supplier_invoices/form.html', {
         'form': form,
         'formset': formset,
-        'title': 'إنشاء فاتورة مورد',
-        'submit_text': 'حفظ الفاتورة',
+        'title': _('Create Supplier Invoice'),
+        'submit_text': _('Save Invoice'),
     })
 
 
@@ -503,7 +505,7 @@ def supplier_invoice_edit(request, pk):
             invoice.calculate_totals()
             invoice.save()
 
-            messages.success(request, f'تم تحديث فاتورة المورد {invoice.invoice_number}.')
+            messages.success(request, _('Supplier invoice %(number)s updated.') % {'number': invoice.invoice_number})
             return redirect('erp:supplier_invoice_detail', pk=invoice.pk)
     else:
         form = SupplierInvoiceForm(instance=invoice, company=company)
@@ -513,8 +515,8 @@ def supplier_invoice_edit(request, pk):
         'form': form,
         'formset': formset,
         'invoice': invoice,
-        'title': f'تعديل فاتورة المورد: {invoice.invoice_number}',
-        'submit_text': 'حفظ التغييرات',
+        'title': _('Edit Supplier Invoice: %(number)s') % {'number': invoice.invoice_number},
+        'submit_text': _('Save Changes'),
     })
 
 
@@ -525,7 +527,7 @@ def supplier_invoice_approve(request, pk):
 
     if request.method == 'POST':
         if supplier_invoice.status not in ('draft', 'pending'):
-            messages.error(request, 'لا يمكن اعتماد هذه الفاتورة بحالتها الحالية.')
+            messages.error(request, _('Cannot approve this invoice in its current state.'))
             return redirect('erp:supplier_invoice_detail', pk=supplier_invoice.pk)
 
         supplier_invoice.status = SupplierInvoice.Status.APPROVED
@@ -541,7 +543,7 @@ def supplier_invoice_approve(request, pk):
             )
             pass  # Non-fatal: log but don't block the approval
 
-        messages.success(request, f'تم اعتماد فاتورة المورد {supplier_invoice.invoice_number}.')
+        messages.success(request, _('Supplier invoice %(number)s approved.') % {'number': supplier_invoice.invoice_number})
         return redirect('erp:supplier_invoice_detail', pk=supplier_invoice.pk)
 
     return render(request, 'erp/supplier_invoices/detail.html', {
@@ -576,7 +578,7 @@ def supplier_invoice_delete(request, pk):
                 je.status = JournalEntry.Status.CANCELLED
                 je.save(update_fields=['status'])
             invoice.delete()
-        messages.success(request, f'تم حذف فاتورة المورد {number}.')
+        messages.success(request, _('Supplier invoice %(number)s deleted.') % {'number': number})
         return redirect('erp:supplier_invoice_list')
 
     return render(request, 'erp/confirm_delete.html', {
@@ -682,7 +684,7 @@ def supplier_payment_create(request):
                 _logger.exception('Failed to create journal entry for supplier payment %s', payment.payment_number)
                 messages.warning(request, 'تحذير: تعذّر إنشاء القيد المحاسبي تلقائياً. يُرجى إنشاؤه يدوياً.')
 
-            messages.success(request, f'تم تسجيل دفعة المورد {payment.payment_number}.')
+            messages.success(request, _('Supplier payment %(number)s recorded.') % {'number': payment.payment_number})
             return redirect('erp:supplier_payment_detail', pk=payment.pk)
     else:
         form = SupplierPaymentForm(company=company)
@@ -701,8 +703,8 @@ def supplier_payment_create(request):
 
     return render(request, 'erp/supplier_payments/form.html', {
         'form': form,
-        'title': 'تسجيل دفعة للمورد',
-        'submit_text': 'حفظ الدفعة',
+        'title': _('Record Supplier Payment'),
+        'submit_text': _('Save Payment'),
     })
 
 
@@ -738,7 +740,7 @@ def supplier_payment_delete(request, pk):
                 je.status = JournalEntry.Status.CANCELLED
                 je.save(update_fields=['status'])
             payment.delete()
-        messages.success(request, f'تم حذف دفعة المورد {number}.')
+        messages.success(request, _('Supplier payment %(number)s deleted.') % {'number': number})
         return redirect('erp:supplier_payment_list')
 
     return render(request, 'erp/confirm_delete.html', {

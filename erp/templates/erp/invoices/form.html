@@ -102,7 +102,7 @@
     {% for line_error in formset.errors %}
     {% if line_error %}
     <div class="alert alert-danger mb-2">
-        <small>بند {{ forloop.counter }}: {% for f, errs in line_error.items %}{{ f }}: {{ errs|join:", " }} {% endfor %}</small>
+        <small>{% trans "Line" %} {{ forloop.counter }}: {% for f, errs in line_error.items %}{{ f }}: {{ errs|join:", " }} {% endfor %}</small>
     </div>
     {% endif %}
     {% endfor %}
@@ -111,14 +111,14 @@
         <table class="table table-bordered mb-0" id="lines-table">
             <thead class="table-light">
                 <tr>
-                    <th style="width:14%">المنتج</th>
-                    <th style="width:14%">الخدمة</th>
-                    <th style="width:18%">الوصف</th>
-                    <th style="width:8%" class="text-center">الكمية</th>
-                    <th style="width:10%" class="text-center">سعر الوحدة</th>
-                    <th style="width:7%" class="text-center">خصم %</th>
-                    <th style="width:13%">الضريبة</th>
-                    <th style="width:10%" class="text-center">الإجمالي</th>
+                    <th style="width:14%">{% trans "Product" %}</th>
+                    <th style="width:14%">{% trans "Service" %}</th>
+                    <th style="width:18%">{% trans "Description" %}</th>
+                    <th style="width:8%" class="text-center">{% trans "Quantity" %}</th>
+                    <th style="width:10%" class="text-center">{% trans "Unit Price" %}</th>
+                    <th style="width:7%" class="text-center">{% trans "Discount %" %}</th>
+                    <th style="width:13%">{% trans "Tax" %}</th>
+                    <th style="width:10%" class="text-center">{% trans "Total" %}</th>
                     <th style="width:3%"></th>
                 </tr>
             </thead>
@@ -144,7 +144,7 @@
             </tbody>
             <tfoot class="table-light">
                 <tr>
-                    <td colspan="7" class="text-start fw-bold">الإجمالي</td>
+                    <td colspan="7" class="text-start fw-bold">{% trans "Total" %}</td>
                     <td class="text-center fw-bold" id="grand-total">0.00</td>
                     <td></td>
                 </tr>
