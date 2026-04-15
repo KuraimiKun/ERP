@@ -19,3 +19,7 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+# Disable HTTPS redirects during pure unit tests since the test client 
+# makes unencrypted HTTP requests by default.
+SECURE_SSL_REDIRECT = False
