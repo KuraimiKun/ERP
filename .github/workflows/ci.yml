@@ -45,6 +45,7 @@ jobs:
       CELERY_BROKER_URL: redis://localhost:6379/0
       CELERY_RESULT_BACKEND: redis://localhost:6379/0
       SECRET_KEY: ci-test-secret-key-not-for-production
+      FIELD_ENCRYPTION_KEY: g4m3hYmX6K2sSWeVn19A-p3aZRbQ2K2B5vDqD2GfT2Q=
       ALLOWED_HOSTS: localhost
 
     steps:
