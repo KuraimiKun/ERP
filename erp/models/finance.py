@@ -1,4 +1,3 @@
-from django.utils.translation import gettext_lazy as _
 """
 Financial/Accounting models for the ERP system.
 """
@@ -7,6 +6,7 @@ import logging
 import uuid
 from decimal import Decimal
 
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator

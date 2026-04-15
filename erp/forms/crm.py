@@ -3,9 +3,6 @@ ERP Forms - CRM
 
 Forms for Lead, LeadActivity, CustomerInteraction, Campaign, Task, TaskComment.
 """
-from django.utils.translation import gettext_lazy as _
-
-
 from django import forms
 
 from erp.models import Lead, LeadActivity, CustomerInteraction, Campaign, Task, TaskComment

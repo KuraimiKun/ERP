@@ -9,13 +9,11 @@ Journal entry creation for inventory transactions:
 
 import logging
 from decimal import Decimal
+
 from django.db import transaction
 from django.utils import timezone
 
 from tenants.routers import get_current_db_alias
-
-logger = logging.getLogger('erp.inventory')
-
 from erp.models import (
     JournalEntry,
     JournalEntryLine,
@@ -27,6 +25,8 @@ from erp.services.accounting import (
     _get_current_fiscal_year,
     _next_journal_number,
 )
+
+logger = logging.getLogger('erp.inventory')
 
 
 # Default GL codes

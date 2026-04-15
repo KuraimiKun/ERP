@@ -310,14 +310,26 @@ def payment_create(request):
 
             # Allocate payment to invoice if selected
             if invoice:
-                alloc_amount = min(payment.amount, invoice.balance_due)
+                # Convert payment amount to invoice currency when they differ
+                if payment.currency_id != invoice.currency_id:
+                    from decimal import Decimal, ROUND_HALF_UP
+                    pay_rate = payment.exchange_rate_at_date or Decimal('1')
+                    inv_rate = invoice.exchange_rate_at_date or Decimal('1')
+                    amount_in_invoice_ccy = (payment.amount * pay_rate / inv_rate).quantize(
+                        Decimal('0.01'), rounding=ROUND_HALF_UP
+                    )
+                else:
+                    amount_in_invoice_ccy = payment.amount
+
+                # alloc_amount is in invoice currency
+                alloc_amount = min(amount_in_invoice_ccy, invoice.balance_due)
                 PaymentAllocation.objects.create(
                     payment=payment,
                     invoice=invoice,
                     amount=alloc_amount,
                 )
-                # Update payment allocated amounts
-                payment.allocated_amount = alloc_amount
+                # allocated_amount tracks in payment's own currency
+                payment.allocated_amount = payment.amount
                 payment.save()
 
                 # Update invoice paid_amount and status

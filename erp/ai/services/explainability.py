@@ -15,18 +15,15 @@ Supported model types:
 import io
 import base64
 import logging
-from datetime import timedelta
 
 import numpy as np
 import pandas as pd
 import shap
 import lime
 import lime.lime_tabular
-from django.conf import settings
-from django.utils import timezone
 
 from erp.ai.models import MLModel, ExplanationResult
-from .base import load_model_artefact, get_or_create_registry
+from .base import load_model_artefact
 
 logger = logging.getLogger('erp.ai.xai')
 
@@ -565,8 +562,6 @@ class ExplainabilityService:
 
     def _get_background_data(self, model_type, artefact) -> pd.DataFrame | None:
         """Build a background dataset for SHAP/LIME from DB records."""
-        feature_names = self._get_feature_names(model_type, artefact)
-
         if model_type == MLModel.ModelType.LATE_PAYMENT:
             from erp.ai.services.finance import LatePaymentPredictor
             predictor = LatePaymentPredictor(self.company)

@@ -7,6 +7,7 @@ import logging
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
@@ -15,16 +16,12 @@ from erp.models import (
     SupplierInvoice, SupplierInvoiceLine, SupplierPayment, SupplierPaymentAllocation,
     Product, TaxRate, JournalEntry, Account,
 )
-
-_logger = logging.getLogger('erp.finance')
 from erp.forms import (
     SupplierForm, SupplierContactFormSet,
     PurchaseOrderForm, PurchaseOrderLineFormSet,
     SupplierInvoiceForm, SupplierInvoiceLineFormSet,
     SupplierPaymentForm,
 )
-from django.utils.translation import gettext as _
-
 from erp.services import (
     get_supplier_id, get_po_number,
     get_supplier_invoice_number, get_supplier_payment_number,
@@ -36,6 +33,8 @@ from ._common import (
     render, get_object_or_404, redirect, messages, reverse,
     get_user_company, staff_member_required, paginate_qs, apply_sorting,
 )
+
+_logger = logging.getLogger('erp.finance')
 
 
 # ── Suppliers ───────────────────────────────────────────────────────────────

@@ -8,14 +8,13 @@ actions, filtering, and soft-delete across key API ViewSets.
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
 from erp.models import (
-    Department, Customer, Invoice, InvoiceLine, Employee,
-    LeaveType, LeaveRequest, Lead, Notification, Expense, ExpenseCategory,
+    Department, Customer, Invoice,
+    LeaveType, LeaveRequest, Lead, Notification, Expense,
 )
 from erp.tests.helpers import ERPAPITestCase
 

@@ -5,25 +5,22 @@ Django REST Framework ViewSets for the ERP system.
 """
 
 import logging
+from decimal import Decimal, ROUND_HALF_UP
 
 from rest_framework import viewsets, status, filters
-
-logger = logging.getLogger('erp.api')
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .permissions import IsCompanyUser
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import models, DatabaseError
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
-from decimal import Decimal, ROUND_HALF_UP
-
-from django.db import models, DatabaseError
+from .permissions import IsCompanyUser
 from ..models import (
     # Core
     Currency, Company, Department, Branch, FiscalYear,
@@ -73,6 +70,8 @@ from .serializers import (
     # Audit
     AuditLogSerializer, NotificationSerializer,
 )
+
+logger = logging.getLogger('erp.api')
 
 
 class ERPBaseViewSet(viewsets.ModelViewSet):

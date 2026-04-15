@@ -781,7 +781,7 @@ class CycleCount(ERPBaseModel):
                     lot=line.lot,
                     quantity=abs(variance),
                     unit_cost=line.product.cost_price or 0,
-                    notes=f'Cycle count variance',
+                    notes='Cycle count variance',
                 )
                 # Update StockItem directly
                 from erp.services.inventory import record_stock_movement, StockMovement

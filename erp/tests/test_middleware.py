@@ -5,15 +5,15 @@ Tests for TenantMiddleware (tenant routing, approval redirects) and
 ERPSetupMiddleware (setup wizard redirect).
 """
 
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import patch, MagicMock
 
-from django.test import TestCase, RequestFactory, override_settings
+from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.middleware import MessageMiddleware
 
-from tenants.middleware import TenantMiddleware, PUBLIC_URLS
+from tenants.middleware import TenantMiddleware
 from erp.middleware import ERPSetupMiddleware
 
 User = get_user_model()

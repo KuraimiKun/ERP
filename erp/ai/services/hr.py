@@ -329,7 +329,6 @@ class AttritionPredictor:
         payroll_agg = Payroll.objects.filter(
             employee=employee,
         ).aggregate(cnt=Count('id'), avg_gross=Avg('gross_salary'))
-        payroll_months = payroll_agg['cnt'] or 0
         avg_gross_pay = float(payroll_agg['avg_gross'] or employee.basic_salary)
 
         dept_avg_comp = Payroll.objects.filter(

@@ -3,9 +3,6 @@ ERP Forms - Services
 
 Forms for ServiceCategory, ServicePricing, Quote, QuoteLine.
 """
-from django.utils.translation import gettext_lazy as _
-
-
 from django import forms
 
 from erp.models import ServiceCategory, ServicePricing, Quote, QuoteLine

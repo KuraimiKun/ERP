@@ -8,7 +8,6 @@ Migration: add missing DB indexes and Task polymorphic FK constraint.
 """
 
 from django.db import migrations, models
-import django.db.models.expressions
 
 
 class Migration(migrations.Migration):

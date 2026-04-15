@@ -1,15 +1,17 @@
-from django.utils.translation import gettext_lazy as _
 """
 Audit and System Configuration models for the ERP system.
 """
 
+import json
+
+from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+
 from .base import TimeStampedModel
-import json
 
 # Maximum file size for any single attachment (10 MB)
 _MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024

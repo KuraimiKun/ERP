@@ -8,6 +8,7 @@ maintenance operations, export/import, clone, password reset, locks.
 import os
 import re
 import uuid
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, FileResponse
@@ -16,6 +17,10 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_POST
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
+
+from tenants.models import TenantDatabase, ServerLog
+from tenants.services.database_service import DatabaseService
+from . import platform_admin_required, pa_context
 
 # Max SQL import file size (50 MB)
 _SQL_IMPORT_MAX_BYTES = 50 * 1024 * 1024
@@ -27,10 +32,6 @@ _DANGEROUS_SQL_RE = re.compile(
     r'pg_read_file|pg_write_file|lo_import|lo_export)\b',
     re.IGNORECASE,
 )
-
-from tenants.models import TenantDatabase, ServerLog
-from tenants.services.database_service import DatabaseService
-from . import platform_admin_required, pa_context
 
 
 # ── Performance Dashboard ────────────────────────────────────────────────────

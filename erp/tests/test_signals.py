@@ -5,16 +5,12 @@ Tests for audit signals (create/update/delete logging),
 invoice line total sync signals, and auth event signals.
 """
 
-import threading
 from datetime import date
 from decimal import Decimal
-from unittest.mock import patch
-
-from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 
 from erp.models import (
-    AuditLog, Department, Invoice, InvoiceLine, Customer, TaxRate,
+    AuditLog, Department, Invoice, InvoiceLine,
 )
 from erp.services.audit import _audit_thread_locals
 from erp.tests.helpers import ERPTestCase
@@ -149,7 +145,7 @@ class TestInvoiceLineSyncSignals(ERPTestCase):
         )
 
     def test_adding_line_updates_totals(self):
-        line = InvoiceLine.objects.create(
+        InvoiceLine.objects.create(
             invoice=self.invoice,
             description='Service A',
             quantity=Decimal('2'),

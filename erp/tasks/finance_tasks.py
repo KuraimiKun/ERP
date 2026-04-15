@@ -74,7 +74,7 @@ def auto_post_depreciation(self):
     are already generated or posted.
     """
     from django.conf import settings
-    from erp.models import FixedAsset, DepreciationSchedule
+    from erp.models import FixedAsset
 
     today = timezone.now().date()
     total_posted = 0

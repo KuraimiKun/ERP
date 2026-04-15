@@ -105,8 +105,8 @@
                                 </a>
                             </td>
                             <td>{{ alloc.invoice.customer.name }}</td>
-                            <td class="text-start">{{ alloc.invoice.total_amount|currency_display:payment.currency }}</td>
-                            <td class="text-start text-success">{{ alloc.amount|currency_display:payment.currency }}</td>
+                            <td class="text-start">{{ alloc.invoice.total_amount|currency_display:alloc.invoice.currency }}</td>
+                            <td class="text-start text-success">{{ alloc.amount|currency_display:alloc.invoice.currency }}</td>
                             <td class="text-start">
                                 <span class="badge badge-status badge-{{ alloc.invoice.status }}">{{ alloc.invoice.get_status_display }}</span>
                             </td>

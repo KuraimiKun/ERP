@@ -12,7 +12,7 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from erp.models import Invoice, InvoiceLine, JournalEntry, JournalEntryLine, Account
+from erp.models import Invoice, InvoiceLine, JournalEntry, JournalEntryLine
 from erp.models.core import FiscalYear
 from erp.services import get_invoice_number
 from erp.services.accounting import _get_or_create_account

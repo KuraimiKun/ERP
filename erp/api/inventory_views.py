@@ -5,8 +5,6 @@ ERP API ViewSets – Inventory & Warehouse Management
 import logging
 
 from rest_framework.decorators import action
-
-logger = logging.getLogger('erp.api.inventory')
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -36,6 +34,8 @@ from .inventory_serializers import (
     ReorderRuleSerializer,
     InventoryValuationConfigSerializer,
 )
+
+logger = logging.getLogger('erp.api.inventory')
 
 
 # ── UoM ─────────────────────────────────────────────────────────

@@ -1,4 +1,3 @@
-from django.utils.translation import gettext_lazy as _
 """
 Base models and mixins for the ERP system.
 """

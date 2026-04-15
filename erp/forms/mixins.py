@@ -3,9 +3,6 @@ ERP Forms - Base Mixins
 
 Shared form mixins used across all ERP form modules.
 """
-from django.utils.translation import gettext_lazy as _
-
-
 from django import forms
 
 

@@ -14,7 +14,6 @@ Then set it in your ``.env``::
     FIELD_ENCRYPTION_KEY=<generated-key>
 """
 
-import base64
 import logging
 
 from cryptography.fernet import Fernet, InvalidToken

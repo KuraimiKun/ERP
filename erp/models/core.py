@@ -1,9 +1,10 @@
-from django.utils.translation import gettext_lazy as _
 """
 Core/Company models for the ERP system.
 """
 
+from django.utils.translation import gettext_lazy as _
 from django.db import models
+
 from .base import ERPBaseModel, TimeStampedModel
 from tenants.fields import EncryptedCharField
 

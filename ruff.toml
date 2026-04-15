@@ -12,5 +12,6 @@ ignore = [
 "__init__.py" = ["F401", "E402"]  # re-exports and late imports
 "audit_tenant.py" = ["E402"]  # django.setup() must run before model imports
 "erp/management/commands/*.py" = ["E402"]
+"erp/models/*.py" = ["E402"]  # gettext_lazy import before docstring (i18n)
 "erp/views/pos.py" = ["E402"]  # mid-file imports in existing code
 "erpproject/settings.py" = ["E402"]  # gettext_lazy import after config
