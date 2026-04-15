@@ -14,7 +14,7 @@ from django.utils import timezone
 from erp.models import (
     Invoice, Payment, PaymentAllocation, Expense, ExpenseCategory,
     Account, TaxRate, PaymentMethod, Currency, FiscalYear,
-    Product, ServicePricing, JournalEntry,
+    Product, ServicePricing, JournalEntry, Customer,
 )
 from erp.services import get_invoice_number, get_payment_number, get_expense_number
 from erp.forms import (
@@ -79,6 +79,15 @@ def invoice_detail(request, pk):
 @staff_member_required
 def invoice_create(request):
     company = get_user_company(request.user)
+    
+    # Pre-fill customer if provided in query parameter
+    initial_customer = None
+    customer_id = request.GET.get('customer')
+    if customer_id:
+        try:
+            initial_customer = Customer.objects.get(pk=customer_id, company=company)
+        except Customer.DoesNotExist:
+            pass
 
     if request.method == 'POST':
         form = InvoiceForm(request.POST, company=company)
@@ -111,7 +120,10 @@ def invoice_create(request):
             messages.success(request, f'Invoice {invoice.invoice_number} created successfully.')
             return redirect('erp:invoice_detail', pk=invoice.pk)
     else:
-        form = InvoiceForm(company=company)
+        initial_data = {}
+        if initial_customer:
+            initial_data['customer'] = initial_customer
+        form = InvoiceForm(company=company, initial=initial_data)
         formset = InvoiceLineFormSet()
 
     return render(request, 'erp/invoices/form.html', {
