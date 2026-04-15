@@ -547,6 +547,12 @@ class ExpenseViewSet(ERPBaseViewSet):
         expense.approval_date = timezone.now()
         expense.save()
 
+        from erp.services.accounting import create_expense_journal_entry
+        try:
+            create_expense_journal_entry(expense, request.user)
+        except Exception:
+            pass
+
         serializer = self.get_serializer(expense)
         return Response(serializer.data)
 

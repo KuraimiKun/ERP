@@ -508,6 +508,15 @@ class Payroll(ERPBaseModel):
         from erp.services.sequence import SequenceService
         from django.db import transaction
 
+        # Idempotency guard: if a posted JE already exists, return it without creating a duplicate
+        if self.journal_entry_id:
+            try:
+                existing = JournalEntry.objects.get(pk=self.journal_entry_id)
+                if existing.status in ('posted', 'draft'):
+                    return existing
+            except Exception:
+                pass
+
         company = self.employee.company
 
         # Resolve accounts using standard chart codes:

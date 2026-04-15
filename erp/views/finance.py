@@ -99,7 +99,10 @@ def invoice_create(request):
 
                 # Adjust inventory for product lines
                 from erp.services.inventory import adjust_inventory_for_invoice
-                adjust_inventory_for_invoice(invoice, direction='out')
+                try:
+                    adjust_inventory_for_invoice(invoice, direction='out')
+                except ValueError as stock_err:
+                    messages.warning(request, f'تحذير مخزون: {stock_err}')
 
                 # Auto-generate journal entry
                 from erp.services.accounting import create_invoice_journal_entry
@@ -122,6 +125,42 @@ def invoice_create(request):
     })
 
 
+def _reverse_invoice_accounting(invoice, company):
+    """Reverse inventory deductions and cancel posted journal entries for an
+    invoice so that its accounting state can be rebuilt from scratch.
+    Must be called inside an active transaction.atomic() block."""
+    from erp.services.inventory import adjust_inventory_for_invoice
+    from erp.models import Account
+
+    # 1. Reverse inventory: add stock back
+    try:
+        adjust_inventory_for_invoice(invoice, direction='in')
+    except Exception:
+        pass  # If reversal fails (e.g. no tracked products), continue
+
+    # 2. Cancel & reverse-balance all posted journal entries for this invoice
+    posted_entries = JournalEntry.objects.filter(
+        company=company,
+        reference=invoice.invoice_number,
+        status=JournalEntry.Status.POSTED,
+    )
+    account_ids = sorted(
+        posted_entries.values_list('lines__account_id', flat=True).distinct()
+    )
+    locked_accounts = {
+        a.pk: a
+        for a in Account.objects.select_for_update().filter(pk__in=account_ids)
+    }
+    for je in posted_entries:
+        for line in je.lines.select_related('account').all():
+            acc = locked_accounts.get(line.account_id)
+            if acc:
+                acc.update_balance(line.credit_amount, line.debit_amount)
+                acc.save(update_fields=['current_balance'])
+        je.status = JournalEntry.Status.CANCELLED
+        je.save(update_fields=['status'])
+
+
 @staff_member_required
 def invoice_edit(request, pk):
     company = get_user_company(request.user)
@@ -133,11 +172,27 @@ def invoice_edit(request, pk):
 
         if form.is_valid() and formset.is_valid():
             with transaction.atomic():
+                # For posted invoices, reverse the existing accounting before
+                # saving new lines so GL and stock stay consistent.
+                was_posted = invoice.status not in (
+                    Invoice.Status.DRAFT, Invoice.Status.CANCELLED
+                )
+                if was_posted:
+                    _reverse_invoice_accounting(invoice, company)
+
                 invoice = form.save()
                 formset.save()
-
                 invoice.calculate_totals()
                 invoice.save()
+
+                if was_posted:
+                    from erp.services.inventory import adjust_inventory_for_invoice
+                    from erp.services.accounting import create_invoice_journal_entry
+                    try:
+                        adjust_inventory_for_invoice(invoice, direction='out')
+                    except ValueError as stock_err:
+                        messages.warning(request, f'تحذير مخزون: {stock_err}')
+                    create_invoice_journal_entry(invoice, request.user)
 
             messages.success(request, f'Invoice {invoice.invoice_number} updated successfully.')
             return redirect('erp:invoice_detail', pk=invoice.pk)

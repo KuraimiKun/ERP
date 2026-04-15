@@ -86,6 +86,7 @@ urlpatterns = [
     path('leave-requests/add/', views.leave_request_create, name='leave_request_create'),
     path('leave-requests/<int:pk>/', views.leave_request_detail, name='leave_request_detail'),
     path('leave-requests/<int:pk>/approve/', views.leave_request_approve, name='leave_request_approve'),
+    path('leave-requests/<int:pk>/cancel/', views.leave_request_cancel, name='leave_request_cancel'),
     
     # Suppliers
     path('suppliers/', views.supplier_list, name='supplier_list'),

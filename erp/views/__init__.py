@@ -78,7 +78,7 @@ from .suppliers import (
     purchase_order_edit, purchase_order_delete,
     purchase_order_approve, purchase_order_create_invoice,
     supplier_invoice_list, supplier_invoice_detail, supplier_invoice_create,
-    supplier_invoice_edit, supplier_invoice_delete,
+    supplier_invoice_edit, supplier_invoice_delete, supplier_invoice_approve,
     supplier_payment_list, supplier_payment_detail, supplier_payment_create,
     supplier_payment_delete,
 )

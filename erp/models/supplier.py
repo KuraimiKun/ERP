@@ -5,7 +5,7 @@ Supplier/Vendor management models for the ERP system.
 
 from decimal import Decimal
 
-from django.db import models
+from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from .base import ERPBaseModel, TimeStampedModel
@@ -109,6 +109,17 @@ class Supplier(ERPBaseModel):
 
     def __str__(self):
         return f"{self.name} ({self.supplier_id})"
+
+    def recalculate_balance(self):
+        """Recompute current_balance as the sum of balance_due on all
+        non-cancelled supplier invoices for this supplier."""
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        total = self.invoices.exclude(status='cancelled').aggregate(
+            total=Coalesce(Sum('balance_due'), Decimal('0'))
+        )['total']
+        self.current_balance = total
+        self.save(update_fields=['current_balance'])
 
 
 class SupplierContact(TimeStampedModel):
@@ -246,6 +257,65 @@ class PurchaseOrder(ERPBaseModel):
         self.total_amount = self.subtotal + self.tax_amount - self.discount_amount
         self.balance_due = self.total_amount - self.paid_amount
 
+    def recalculate_payment_status(self):
+        """Propagate payment totals from linked SupplierInvoices to this PO."""
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        ZERO = Decimal('0')
+        agg = self.supplier_invoices.exclude(status='cancelled').aggregate(
+            total_paid=Coalesce(Sum('paid_amount'), ZERO),
+            total_invoiced=Coalesce(Sum('total_amount'), ZERO),
+        )
+        self.paid_amount = agg['total_paid']
+        self.balance_due = max(self.total_amount - self.paid_amount, ZERO)
+        self.save(update_fields=['paid_amount', 'balance_due'])
+
+    def cancel(self, user=None):
+        """
+        Cancel this PO. Reverses any posted GRN journal entries and supplier invoices.
+        Safe to call on draft or approved POs. Raises ValueError if already cancelled.
+        """
+        from django.db import transaction
+        import logging
+        _logger = logging.getLogger('erp.suppliers')
+
+        if self.status == self.Status.CANCELLED:
+            raise ValueError(f'PO {self.po_number} is already cancelled.')
+
+        with transaction.atomic():
+            # Cancel any linked SupplierInvoices that are not yet paid
+            for si in self.supplier_invoices.exclude(status__in=['paid', 'cancelled']):
+                si.status = 'cancelled'
+                si.save(update_fields=['status'])
+
+            # Reverse and cancel posted journal entries referencing this PO
+            from erp.models.finance import JournalEntry, Account
+            posted_entries = JournalEntry.objects.filter(
+                company=self.company,
+                reference=self.po_number,
+                status=JournalEntry.Status.POSTED,
+            )
+            account_ids = list(
+                posted_entries.values_list('lines__account_id', flat=True).distinct()
+            )
+            locked_accounts = {
+                a.pk: a
+                for a in Account.objects.select_for_update().filter(pk__in=account_ids)
+            }
+            for je in posted_entries:
+                for line in je.lines.select_related('account').all():
+                    acc = locked_accounts.get(line.account_id)
+                    if acc:
+                        acc.update_balance(line.credit_amount, line.debit_amount)
+                        acc.save(update_fields=['current_balance'])
+                je.status = JournalEntry.Status.CANCELLED
+                je.save(update_fields=['status'])
+
+            self.status = self.Status.CANCELLED
+            self.save(update_fields=['status', 'updated_at'])
+
+        _logger.info('PurchaseOrder %s cancelled by user %s', self.po_number, user)
+
 
 class PurchaseOrderLine(TimeStampedModel):
     """Line items for purchase orders."""
@@ -347,10 +417,14 @@ class SupplierInvoice(ERPBaseModel):
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     paid_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     balance_due = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
+    exchange_rate_at_date = models.DecimalField(
+        max_digits=12, decimal_places=6, default=1,
+        help_text='Exchange rate to base currency at invoice date',
+    )
+
     # Status
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
-    
+
     notes = models.TextField(blank=True)
 
     class Meta:
@@ -402,8 +476,34 @@ class SupplierInvoice(ERPBaseModel):
             self.status = self.Status.PARTIAL
 
     def save(self, *args, **kwargs):
+        import logging
+        _logger = logging.getLogger('erp.suppliers')
         self.balance_due = self.total_amount - self.paid_amount
+        if self.exchange_rate_at_date == 1 and self.currency_id:
+            try:
+                from erp.models.core import Currency
+                cur = Currency.objects.get(pk=self.currency_id)
+                if not cur.is_base:
+                    self.exchange_rate_at_date = cur.exchange_rate
+            except Exception:
+                pass
         super().save(*args, **kwargs)
+
+        supplier_pk = self.supplier_id
+        po_pk = self.purchase_order_id
+
+        def _recalc():
+            try:
+                Supplier.objects.get(pk=supplier_pk).recalculate_balance()
+            except Exception:
+                _logger.exception('Failed to recalculate balance for supplier %s', supplier_pk)
+            if po_pk:
+                try:
+                    PurchaseOrder.objects.get(pk=po_pk).recalculate_payment_status()
+                except Exception:
+                    _logger.exception('Failed to recalculate payment status for PO %s', po_pk)
+
+        transaction.on_commit(_recalc)
 
 
 class SupplierInvoiceLine(TimeStampedModel):
@@ -482,10 +582,14 @@ class SupplierPayment(ERPBaseModel):
         related_name='supplier_payments'
     )
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    
+    exchange_rate_at_date = models.DecimalField(
+        max_digits=12, decimal_places=6, default=1,
+        help_text='Exchange rate to base currency at payment date',
+    )
+
     # Allocation
     allocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
+
     unallocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     notes = models.TextField(blank=True)
 
@@ -504,6 +608,14 @@ class SupplierPayment(ERPBaseModel):
 
     def save(self, *args, **kwargs):
         self.unallocated_amount = self.amount - self.allocated_amount
+        if self.exchange_rate_at_date == 1 and self.currency_id:
+            try:
+                from erp.models.core import Currency
+                cur = Currency.objects.get(pk=self.currency_id)
+                if not cur.is_base:
+                    self.exchange_rate_at_date = cur.exchange_rate
+            except Exception:
+                pass
         super().save(*args, **kwargs)
 
 

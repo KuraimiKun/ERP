@@ -209,4 +209,20 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=4, minute=30),       # daily at 4:30 AM
         'options': {'time_limit': 600, 'soft_time_limit': 540},
     },
+    # ── Finance Automation ───────────────────────────────────────────────
+    'mark-overdue-invoices-daily': {
+        'task': 'erp.tasks.finance.mark_overdue_invoices',
+        'schedule': crontab(hour=0, minute=15),       # daily at 00:15 AM
+        'options': {'time_limit': 300, 'soft_time_limit': 270},
+    },
+    'auto-post-depreciation-monthly': {
+        'task': 'erp.tasks.finance.auto_post_depreciation',
+        'schedule': crontab(hour=1, minute=0, day_of_month='1'),  # 1st of month, 1 AM
+        'options': {'time_limit': 1800, 'soft_time_limit': 1700},
+    },
+    'check-reorder-rules-daily': {
+        'task': 'erp.tasks.finance.check_reorder_rules',
+        'schedule': crontab(hour=6, minute=0),       # daily at 6 AM
+        'options': {'time_limit': 600, 'soft_time_limit': 560},
+    },
 }

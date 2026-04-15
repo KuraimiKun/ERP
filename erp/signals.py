@@ -224,6 +224,120 @@ def sync_invoice_totals_on_line_delete(sender, instance, **kwargs):
 
 
 # ---------------------------------------------------------------------------
+# CRM: auto-update Campaign actual_leads when CampaignLead changes
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender='erp.CampaignLead')
+def update_campaign_actual_leads_on_save(sender, instance, created, **kwargs):
+    """Increment campaign.actual_leads when a new CampaignLead is added."""
+    if not created:
+        return
+    try:
+        from django.db.models import F
+        instance.campaign.__class__.objects.filter(pk=instance.campaign_id).update(
+            actual_leads=F('actual_leads') + 1
+        )
+    except Exception:
+        logger.exception(
+            'Failed to update campaign actual_leads for CampaignLead pk=%s', instance.pk
+        )
+
+
+@receiver(post_delete, sender='erp.CampaignLead')
+def update_campaign_actual_leads_on_delete(sender, instance, **kwargs):
+    """Decrement campaign.actual_leads when a CampaignLead is removed."""
+    try:
+        from django.db.models import F
+        instance.campaign.__class__.objects.filter(pk=instance.campaign_id).update(
+            actual_leads=F('actual_leads') - 1
+        )
+    except Exception:
+        logger.exception(
+            'Failed to decrement campaign actual_leads for CampaignLead pk=%s', instance.pk
+        )
+
+
+# ---------------------------------------------------------------------------
+# CRM: auto-update Campaign.actual_revenue when a lead's invoice is paid
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender='erp.Invoice')
+def update_campaign_revenue_on_invoice_paid(sender, instance, **kwargs):
+    """
+    When an Invoice transitions to 'paid', find if the customer originated from
+    a campaign lead and credit that campaign's actual_revenue.
+    """
+    if instance.status != 'paid':
+        return
+    try:
+        from django.db.models import F
+        # Find campaigns linked to this customer via converted leads
+        campaign_ids = (
+            instance.customer.__class__.objects
+            .filter(pk=instance.customer_id)
+            .values_list('lead_origin__campaign_sources__campaign_id', flat=True)
+            .distinct()
+        )
+        campaign_ids = [cid for cid in campaign_ids if cid]
+        if not campaign_ids:
+            return
+        from erp.models import Campaign
+        Campaign.objects.filter(pk__in=campaign_ids).update(
+            actual_revenue=F('actual_revenue') + instance.total_amount
+        )
+    except Exception:
+        logger.exception(
+            'Failed to update campaign actual_revenue for invoice pk=%s', instance.pk
+        )
+
+
+# ---------------------------------------------------------------------------
+# Suppliers: recalculate SupplierInvoice balance when allocations change
+# ---------------------------------------------------------------------------
+
+def _recalc_supplier_invoice_balance(invoice_id):
+    """Recompute SupplierInvoice.balance_due and status from its allocations."""
+    try:
+        from erp.models import SupplierInvoice
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        from decimal import Decimal
+        si = SupplierInvoice.objects.get(pk=invoice_id)
+        paid = si.payment_allocations.aggregate(
+            total=Coalesce(Sum('amount'), Decimal('0'))
+        )['total']
+        si.paid_amount = paid
+        si.balance_due = max(si.total_amount - paid, Decimal('0'))
+        if paid >= si.total_amount and si.total_amount > 0:
+            si.status = 'paid'
+        elif paid > 0:
+            si.status = 'partial'
+        si.save(update_fields=['paid_amount', 'balance_due', 'status'])
+        # Propagate to supplier balance
+        from django.db import transaction
+        supplier_pk = si.supplier_id
+        def _recalc():
+            try:
+                from erp.models import Supplier
+                Supplier.objects.get(pk=supplier_pk).recalculate_balance()
+            except Exception:
+                pass
+        transaction.on_commit(_recalc)
+    except Exception:
+        logger.exception('Failed to recalc SupplierInvoice balance for pk=%s', invoice_id)
+
+
+@receiver(post_save, sender='erp.SupplierPaymentAllocation')
+def recalc_si_on_allocation_save(sender, instance, **kwargs):
+    _recalc_supplier_invoice_balance(instance.invoice_id)
+
+
+@receiver(post_delete, sender='erp.SupplierPaymentAllocation')
+def recalc_si_on_allocation_delete(sender, instance, **kwargs):
+    _recalc_supplier_invoice_balance(instance.invoice_id)
+
+
+# ---------------------------------------------------------------------------
 # Auth signals (login / logout)
 # ---------------------------------------------------------------------------
 

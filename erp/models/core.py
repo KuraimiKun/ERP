@@ -109,6 +109,35 @@ class Company(ERPBaseModel):
     def __str__(self):
         return self.name
 
+    def cascade_soft_delete(self, user=None):
+        """
+        Soft-delete this company and all its related ERPBaseModel records.
+        Call this instead of company.delete() to preserve audit trail.
+        """
+        import logging
+        _logger = logging.getLogger('erp.company')
+
+        # Soft-delete the company itself
+        self.soft_delete(user=user)
+
+        # Cascade soft-delete to all related managers that have soft_delete
+        related_managers = [
+            'invoices', 'payments', 'purchase_orders', 'supplier_invoices',
+            'supplier_payments', 'leads', 'campaigns', 'quotes', 'customers',
+            'employees', 'fixed_assets', 'expenses', 'stock_adjustments',
+            'cycle_counts', 'stock_transfers', 'pos_sessions', 'pos_orders',
+        ]
+        for attr in related_managers:
+            mgr = getattr(self, attr, None)
+            if mgr is None:
+                continue
+            try:
+                for obj in mgr.all():
+                    if hasattr(obj, 'soft_delete') and not getattr(obj, 'is_deleted', False):
+                        obj.soft_delete(user=user)
+            except Exception:
+                _logger.exception('cascade_soft_delete: failed for %s on company %s', attr, self.pk)
+
 
 class Department(ERPBaseModel):
     """Company departments."""

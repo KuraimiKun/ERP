@@ -730,6 +730,98 @@ class CycleCount(ERPBaseModel):
     def __str__(self):
         return f'{self.count_number} – {self.warehouse.code}'
 
+    def finalize(self, user):
+        """
+        Finalize a completed cycle count: create a StockAdjustment for all variance
+        lines and trigger the accounting journal entry.
+
+        Only runs once (variance_posted guard). Sets status='completed'.
+        """
+        from django.db import transaction
+        from tenants.routers import get_current_db_alias
+
+        if self.variance_posted:
+            return None
+        if self.status == self.Status.CANCELLED:
+            raise ValueError('Cannot finalize a cancelled cycle count.')
+
+        db = get_current_db_alias()
+        lines_with_variance = [
+            line for line in self.lines.select_related('product', 'bin', 'lot').using(db)
+            if line.counted_quantity is not None and line.variance != 0
+        ]
+        if not lines_with_variance:
+            with transaction.atomic(using=db):
+                self.status = self.Status.COMPLETED
+                self.variance_posted = True
+                self.save(using=db, update_fields=['status', 'variance_posted', 'updated_at'])
+            return None
+
+        with transaction.atomic(using=db):
+            # Create parent StockAdjustment
+            from erp.services.sequence import SequenceService
+            adj_number = SequenceService.get_next_number(self.company, 'stock_adjustment')
+            adj = StockAdjustment.objects.using(db).create(
+                company=self.company,
+                adjustment_number=adj_number,
+                adjustment_date=self.count_date,
+                warehouse=self.warehouse,
+                adjustment_type=StockAdjustment.AdjustmentType.GAIN,
+                reason=f'Cycle Count {self.count_number}',
+                status=StockAdjustment.Status.APPROVED,
+                approved_by=user,
+                created_by=user,
+            )
+            for line in lines_with_variance:
+                variance = line.variance  # + = gain, - = loss
+                StockAdjustmentLine.objects.using(db).create(
+                    adjustment=adj,
+                    product=line.product,
+                    bin=line.bin,
+                    lot=line.lot,
+                    quantity=abs(variance),
+                    unit_cost=line.product.cost_price or 0,
+                    notes=f'Cycle count variance',
+                )
+                # Update StockItem directly
+                from erp.services.inventory import record_stock_movement, StockMovement
+                movement_type = (
+                    StockMovement.MovementType.ADJUSTMENT_IN if variance > 0
+                    else StockMovement.MovementType.ADJUSTMENT_OUT
+                )
+                record_stock_movement(
+                    company=self.company,
+                    product=line.product,
+                    warehouse=self.warehouse,
+                    movement_type=movement_type,
+                    quantity=abs(variance),
+                    unit_cost=line.product.cost_price or 0,
+                    bin=line.bin,
+                    lot=line.lot,
+                    reference_type='cycle_count',
+                    reference_id=self.pk,
+                    reference_number=self.count_number,
+                    description=f'Cycle count {self.count_number} variance',
+                    user=user,
+                    db_alias=db,
+                )
+
+            self.status = self.Status.COMPLETED
+            self.variance_posted = True
+            self.save(using=db, update_fields=['status', 'variance_posted', 'updated_at'])
+
+        # Create accounting JE outside the transaction
+        try:
+            from erp.services.inventory_accounting import create_adjustment_journal_entry
+            create_adjustment_journal_entry(adj, user)
+        except Exception:
+            import logging
+            logging.getLogger('erp.inventory').exception(
+                'CycleCount finalize: JE creation failed for count %s', self.count_number
+            )
+
+        return adj
+
 
 class CycleCountLine(TimeStampedModel):
     """One product line on a cycle count."""

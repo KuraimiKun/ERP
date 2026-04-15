@@ -72,6 +72,15 @@ def quote_convert_to_invoice(request, pk):
         quote.status = 'accepted'
         quote.save(update_fields=['converted_to_invoice', 'status'])
 
+        # Adjust inventory and create journal entry (same as invoice_create)
+        from erp.services.inventory import adjust_inventory_for_invoice
+        from erp.services.accounting import create_invoice_journal_entry
+        try:
+            adjust_inventory_for_invoice(invoice, direction='out')
+        except ValueError as stock_err:
+            messages.warning(request, f'تحذير مخزون: {stock_err}')
+        create_invoice_journal_entry(invoice, request.user)
+
         messages.success(request, f'تم تحويل عرض السعر {quote.quote_number} إلى الفاتورة {invoice.invoice_number}.')
         return redirect('erp:invoice_edit', pk=invoice.pk)
 

@@ -428,7 +428,22 @@ def disposal_create(request, pk):
         disposal = form.save(commit=False)
         disposal.asset = asset
         disposal.save()
-        messages.success(request, _('Disposal record created for %(number)s.') % {'number': asset.asset_number})
+
+        # Auto-process: calculate gain/loss and create disposal journal entry
+        try:
+            je = disposal.process(request.user)
+            if je:
+                messages.success(
+                    request,
+                    _('Disposal record created for %(number)s. Journal entry %(je)s posted.')
+                    % {'number': asset.asset_number, 'je': je.entry_number},
+                )
+            else:
+                messages.success(request, _('Disposal record created for %(number)s.') % {'number': asset.asset_number})
+        except Exception:
+            messages.success(request, _('Disposal record created for %(number)s.') % {'number': asset.asset_number})
+            messages.warning(request, _('Journal entry could not be created automatically. Use "Process" to retry.'))
+
         return redirect('erp:disposal_detail', pk=disposal.pk)
 
     return render(request, 'erp/fixed_assets/disposals/form.html', {

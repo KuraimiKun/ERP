@@ -411,21 +411,102 @@ def leave_request_approve(request, pk):
             approver = None
 
         if action == 'approve':
-            leave_request.status = 'approved'
-            leave_request.approved_by = approver
-            leave_request.approval_date = timezone.now()
-            leave_request.approval_notes = notes
-            leave_request.save()
+            leave_type = leave_request.leave_type
+            days = leave_request.days_requested
+            code = leave_type.code.lower()
+
+            from django.db import transaction as _txn
+            with _txn.atomic():
+                employee = Employee.objects.select_for_update().get(pk=leave_request.employee_id)
+
+                # Validate sufficient leave balance before approving
+                if code == 'annual':
+                    if employee.annual_leave_balance < days:
+                        messages.error(
+                            request,
+                            f'رصيد الإجازة السنوية للموظف ({employee.annual_leave_balance} يوم) '
+                            f'غير كافٍ للطلب ({days} يوم).'
+                        )
+                        return redirect('erp:leave_request_detail', pk=pk)
+                elif code == 'sick':
+                    if employee.sick_leave_balance < days:
+                        messages.error(
+                            request,
+                            f'رصيد الإجازة المرضية للموظف ({employee.sick_leave_balance} يوم) '
+                            f'غير كافٍ للطلب ({days} يوم).'
+                        )
+                        return redirect('erp:leave_request_detail', pk=pk)
+
+                leave_request.status = 'approved'
+                leave_request.approved_by = approver
+                leave_request.approval_date = timezone.now()
+                leave_request.approval_notes = notes
+                leave_request.save()
+
+                # Deduct from employee leave balance
+                if code == 'annual':
+                    employee.annual_leave_balance = max(employee.annual_leave_balance - days, 0)
+                    employee.save(update_fields=['annual_leave_balance'])
+                elif code == 'sick':
+                    employee.sick_leave_balance = max(employee.sick_leave_balance - days, 0)
+                    employee.save(update_fields=['sick_leave_balance'])
+
             messages.success(request, 'Leave request approved.')
         elif action == 'reject':
+            was_approved = leave_request.status == 'approved'
             leave_request.status = 'rejected'
             leave_request.approved_by = approver
             leave_request.approval_date = timezone.now()
             leave_request.approval_notes = notes
             leave_request.save()
+
+            # Restore leave balance if reversing a previously approved request
+            if was_approved:
+                employee = leave_request.employee
+                days = leave_request.days_requested
+                code = leave_request.leave_type.code.lower()
+                if code == 'annual':
+                    employee.annual_leave_balance += days
+                    employee.save(update_fields=['annual_leave_balance'])
+                elif code == 'sick':
+                    employee.sick_leave_balance += days
+                    employee.save(update_fields=['sick_leave_balance'])
+
             messages.warning(request, 'Leave request rejected.')
 
         return redirect('erp:leave_request_detail', pk=pk)
+
+    return redirect('erp:leave_request_detail', pk=pk)
+
+
+@staff_member_required
+def leave_request_cancel(request, pk):
+    """Cancel an approved or pending leave request and restore leave balance."""
+    company = get_user_company(request.user)
+    leave_request = get_object_or_404(LeaveRequest, pk=pk, employee__company=company)
+
+    if request.method == 'POST':
+        if leave_request.status not in ('pending', 'approved'):
+            messages.error(request, 'لا يمكن إلغاء هذا الطلب.')
+            return redirect('erp:leave_request_detail', pk=pk)
+
+        was_approved = leave_request.status == 'approved'
+        leave_request.status = 'cancelled'
+        leave_request.save(update_fields=['status'])
+
+        if was_approved:
+            employee = leave_request.employee
+            days = leave_request.days_requested
+            code = leave_request.leave_type.code.lower()
+            if code == 'annual':
+                employee.annual_leave_balance += days
+                employee.save(update_fields=['annual_leave_balance'])
+            elif code == 'sick':
+                employee.sick_leave_balance += days
+                employee.save(update_fields=['sick_leave_balance'])
+            messages.success(request, f'تم إلغاء إجازة {employee.full_name} واسترداد {days} يوم.')
+        else:
+            messages.success(request, 'تم إلغاء طلب الإجازة.')
 
     return redirect('erp:leave_request_detail', pk=pk)
 

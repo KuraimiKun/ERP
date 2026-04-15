@@ -48,23 +48,37 @@ from erp.models import (
 
 def adjust_inventory_for_invoice(invoice, direction='out'):
     """
-    Adjust inventory when an invoice is created.
+    Adjust inventory when an invoice is created or a credit note issued.
 
     direction='out'  → decrement stock (sales invoice)
     direction='in'   → increment stock (credit note / return)
+
+    Raises ValueError if an outbound adjustment would produce negative stock.
     """
+    import logging
+    _log = logging.getLogger('erp.inventory')
     db_alias = get_current_db_alias()
 
     with transaction.atomic(using=db_alias):
         for line in invoice.lines.select_related('product').all():
-            if line.product and line.product.track_inventory:
-                product = Product.objects.using(db_alias).select_for_update().get(pk=line.product.pk)
-                qty = Decimal(str(line.quantity))
-                if direction == 'out':
-                    product.quantity_on_hand -= qty
-                else:
-                    product.quantity_on_hand += qty
-                product.save(using=db_alias, update_fields=['quantity_on_hand'])
+            if not (line.product and line.product.track_inventory):
+                continue
+            product = Product.objects.using(db_alias).select_for_update().get(pk=line.product.pk)
+            qty = Decimal(str(line.quantity))
+            if direction == 'out':
+                if product.quantity_on_hand < qty:
+                    raise ValueError(
+                        f'المخزون غير كافٍ للمنتج "{product.name}": '
+                        f'المتاح {product.quantity_on_hand}، المطلوب {qty}.'
+                    )
+                product.quantity_on_hand -= qty
+            else:
+                product.quantity_on_hand += qty
+            product.save(using=db_alias, update_fields=['quantity_on_hand'])
+            _log.debug(
+                'adjust_inventory_for_invoice: %s %s qty=%s new_on_hand=%s',
+                direction, product.sku, qty, product.quantity_on_hand,
+            )
 
 
 def adjust_inventory_for_purchase_order(purchase_order):
@@ -355,6 +369,64 @@ def receive_stock_transfer(transfer_id, user):
         transfer.status = StockTransfer.Status.RECEIVED
         transfer.received_date = timezone.now().date()
         transfer.save(using=db, update_fields=['status', 'received_date', 'updated_at'])
+
+    # Accounting hook: memo JE for inter-warehouse inventory value movement
+    from erp.services.inventory_accounting import create_transfer_journal_entry
+    create_transfer_journal_entry(transfer, user)
+
+    return transfer
+
+
+def cancel_stock_transfer(transfer_id, user):
+    """
+    Cancel an in-transit or draft stock transfer.
+
+    For in-transit transfers: creates TRANSFER_IN reversal movements at the
+    source warehouse and clears the destination's in_transit allocation.
+    For draft transfers: simply marks as cancelled.
+    """
+    db = get_current_db_alias()
+    transfer = StockTransfer.objects.using(db).select_related(
+        'company', 'from_warehouse', 'to_warehouse',
+    ).get(pk=transfer_id)
+
+    if transfer.status == StockTransfer.Status.CANCELLED:
+        raise ValueError('Transfer is already cancelled.')
+    if transfer.status == StockTransfer.Status.RECEIVED:
+        raise ValueError('Cannot cancel a received transfer.')
+
+    lines = transfer.lines.select_related('product', 'from_bin', 'lot').using(db)
+
+    with transaction.atomic(using=db):
+        if transfer.status == StockTransfer.Status.IN_TRANSIT:
+            for line in lines:
+                # Reverse the TRANSFER_OUT: return stock to source warehouse
+                record_stock_movement(
+                    company=transfer.company,
+                    product=line.product,
+                    warehouse=transfer.from_warehouse,
+                    movement_type=StockMovement.MovementType.RETURN_IN,
+                    quantity=line.quantity,
+                    unit_cost=line.unit_cost,
+                    bin=line.from_bin,
+                    lot=line.lot,
+                    reference_type='stock_transfer',
+                    reference_id=transfer.pk,
+                    reference_number=transfer.transfer_number,
+                    description=f'Transfer Cancelled {transfer.transfer_number} – {line.product.sku}',
+                    user=user,
+                    db_alias=db,
+                )
+                # Clear the in-transit allocation at destination
+                dest_stock = _get_or_create_stock_item(
+                    transfer.company, line.product, transfer.to_warehouse,
+                    None, line.lot, db,
+                )
+                dest_stock.in_transit = max(dest_stock.in_transit - line.quantity, Decimal('0'))
+                dest_stock.save(using=db, update_fields=['in_transit', 'updated_at'])
+
+        transfer.status = StockTransfer.Status.CANCELLED
+        transfer.save(using=db, update_fields=['status', 'updated_at'])
 
     return transfer
 

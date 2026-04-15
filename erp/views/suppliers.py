@@ -325,14 +325,9 @@ def purchase_order_approve(request, pk):
         order.status = PurchaseOrder.Status.APPROVED
         order.save()
 
-        # Adjust inventory — increment stock for received products
-        from erp.services.inventory import adjust_inventory_for_purchase_order
-        try:
-            adjust_inventory_for_purchase_order(order)
-        except Exception as e:
-            messages.warning(request, f'تم اعتماد الطلب لكن فشل تحديث المخزون: {e}')
-
-        # Create accrual journal entry
+        # NOTE: Stock is NOT incremented here. Physical receipt happens via
+        # Goods Receipt Note (GRN). This accrual entry records the commitment.
+        # Create accrual journal entry (DR GRNI / CR Accrued Liabilities)
         try:
             create_purchase_order_journal_entry(order, request.user)
         except Exception:
@@ -520,6 +515,39 @@ def supplier_invoice_edit(request, pk):
         'invoice': invoice,
         'title': f'تعديل فاتورة المورد: {invoice.invoice_number}',
         'submit_text': 'حفظ التغييرات',
+    })
+
+
+@staff_member_required
+def supplier_invoice_approve(request, pk):
+    company = get_user_company(request.user)
+    supplier_invoice = get_object_or_404(SupplierInvoice, pk=pk, company=company)
+
+    if request.method == 'POST':
+        if supplier_invoice.status not in ('draft', 'pending'):
+            messages.error(request, 'لا يمكن اعتماد هذه الفاتورة بحالتها الحالية.')
+            return redirect('erp:supplier_invoice_detail', pk=supplier_invoice.pk)
+
+        supplier_invoice.status = SupplierInvoice.Status.APPROVED
+        supplier_invoice.save(update_fields=['status'])
+
+        from erp.services.inventory_accounting import create_supplier_invoice_journal_entry as _create_grni_clearing_je
+        try:
+            _create_grni_clearing_je(supplier_invoice, request.user)
+        except Exception:
+            _logger.exception(
+                'Failed to create GRNI-clearing JE for supplier invoice %s',
+                supplier_invoice.invoice_number,
+            )
+            pass  # Non-fatal: log but don't block the approval
+
+        messages.success(request, f'تم اعتماد فاتورة المورد {supplier_invoice.invoice_number}.')
+        return redirect('erp:supplier_invoice_detail', pk=supplier_invoice.pk)
+
+    return render(request, 'erp/supplier_invoices/detail.html', {
+        'invoice': supplier_invoice,
+        'lines': supplier_invoice.lines.select_related('tax_rate', 'account').all(),
+        'payments': supplier_invoice.payment_allocations.select_related('payment').all(),
     })
 
 

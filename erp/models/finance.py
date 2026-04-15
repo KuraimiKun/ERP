@@ -347,10 +347,17 @@ class Invoice(ERPBaseModel):
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     paid_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     balance_due = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
+    # Exchange rate at the time of invoice creation (vs. company base currency).
+    # Snapshotted on first save so historical amounts remain stable even if
+    # Currency.exchange_rate changes later.
+    exchange_rate_at_date = models.DecimalField(
+        max_digits=12, decimal_places=6, default=1,
+        help_text=_('Exchange rate to base currency at invoice date'),
+    )
+
     # Status
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
-    
+
     # Notes
     notes = models.TextField(blank=True)
     terms = models.TextField(blank=True, help_text=_('Payment terms and conditions'))
@@ -399,7 +406,15 @@ class Invoice(ERPBaseModel):
             self.status = self.Status.PARTIAL
 
     def save(self, *args, **kwargs):
-        self.balance_due = self.total_amount - self.paid_amount
+        # Snapshot exchange rate on first save (when it hasn't been explicitly set)
+        if self.exchange_rate_at_date == 1 and self.currency_id:
+            try:
+                from erp.models.core import Currency
+                cur = Currency.objects.get(pk=self.currency_id)
+                if not cur.is_base:
+                    self.exchange_rate_at_date = cur.exchange_rate
+            except Exception:
+                pass
         super().save(*args, **kwargs)
         # Defer balance recalculation until *after* the surrounding transaction
         # commits.  This ensures the worker always reads a consistent, committed
@@ -483,6 +498,23 @@ class InvoiceLine(TimeStampedModel):
     def __str__(self):
         return f"{self.invoice.invoice_number} - {self.description[:50]}"
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        max_discount = Decimal('100')
+        if self.discount_percent < 0 or self.discount_percent > max_discount:
+            raise ValidationError({'discount_percent': 'Discount must be between 0 and 100%.'})
+        # Company-level max discount check (if configured)
+        try:
+            company = self.invoice.company if self.invoice_id else None
+            if company:
+                max_allowed = getattr(company, 'max_discount_percent', None)
+                if max_allowed is not None and self.discount_percent > max_allowed:
+                    raise ValidationError({
+                        'discount_percent': f'Discount exceeds company maximum of {max_allowed}%.'
+                    })
+        except Exception:
+            pass  # Non-fatal: company may not be loaded yet
+
     def save(self, *args, **kwargs):
         # Ensure Decimal types
         self.quantity = Decimal(str(self.quantity))
@@ -542,11 +574,15 @@ class Payment(ERPBaseModel):
         max_digits=15, decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))],
     )
+    exchange_rate_at_date = models.DecimalField(
+        max_digits=12, decimal_places=6, default=1,
+        help_text=_('Exchange rate to base currency at payment date'),
+    )
 
     # Allocation
     allocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     unallocated_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
+
     notes = models.TextField(blank=True)
 
     class Meta:
@@ -569,6 +605,14 @@ class Payment(ERPBaseModel):
 
     def save(self, *args, **kwargs):
         self.unallocated_amount = self.amount - self.allocated_amount
+        if self.exchange_rate_at_date == 1 and self.currency_id:
+            try:
+                from erp.models.core import Currency
+                cur = Currency.objects.get(pk=self.currency_id)
+                if not cur.is_base:
+                    self.exchange_rate_at_date = cur.exchange_rate
+            except Exception:
+                pass
         super().save(*args, **kwargs)
 
 
@@ -673,6 +717,10 @@ class Expense(ERPBaseModel):
     )
     tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    exchange_rate_at_date = models.DecimalField(
+        max_digits=12, decimal_places=6, default=1,
+        help_text=_('Exchange rate to base currency at expense date'),
+    )
 
     # Payment
     payment_method = models.ForeignKey(
@@ -722,6 +770,14 @@ class Expense(ERPBaseModel):
 
     def save(self, *args, **kwargs):
         self.total_amount = self.amount + self.tax_amount
+        if self.exchange_rate_at_date == 1 and self.currency_id:
+            try:
+                from erp.models.core import Currency
+                cur = Currency.objects.get(pk=self.currency_id)
+                if not cur.is_base:
+                    self.exchange_rate_at_date = cur.exchange_rate
+            except Exception:
+                pass
         super().save(*args, **kwargs)
 
 

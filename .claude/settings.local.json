@@ -11,7 +11,17 @@
       "Bash(python manage.py test erp.tests.test_api.TestExpenseAPI.test_approve_expense --settings=erpproject.test_settings -v2)",
       "Bash(python manage.py test erp.tests.test_api erp.tests.test_signals erp.tests.test_middleware --settings=erpproject.test_settings -v2)",
       "Bash(python manage.py test erp.tests.test_api.TestEmployeeAPI -v2 --settings=erpproject.test_settings)",
-      "Bash(grep -n \"readonly_fields\\\\|list_editable\" /f/erpdjango/erp/admin/*.py)"
+      "Bash(grep -n \"readonly_fields\\\\|list_editable\" /f/erpdjango/erp/admin/*.py)",
+      "Bash(python manage.py makemigrations erp --name=\"add_exchange_rate_at_date_and_supplier_fixes\")",
+      "Bash(python manage.py test erp --verbosity=2)",
+      "Bash(python manage.py test erp.tests.test_middleware erp.tests.test_signals --verbosity=2)",
+      "Bash(python manage.py check)",
+      "Bash(python -c \"from erp.views.suppliers import purchase_order_approve; print\\(''OK''\\)\")",
+      "Bash(python manage.py shell -c \"from erp.views.suppliers import purchase_order_approve; from erp.views.credit_debit import credit_note_create; from erp.services.pos import complete_pos_order; from erp.signals import update_campaign_actual_leads_on_save; print\\(''All imports OK''\\)\")",
+      "Bash(grep -r \"def approve\\\\|def reject\" /f/erpdjango/erp/views/*.py)",
+      "Bash(grep -r \"\\\\.approve\\\\|\\\\.reject\\\\|\\\\.cancel\\\\|\\\\.mark_paid\\\\|\\\\.void\" /f/erpdjango/erp/views/ --include=*.py)",
+      "Bash(grep -rn \"LeaveRequest.*approve\\\\|LeaveRequest.*status\\\\|approve.*leave\\\\|status.*=.*approved\" /f/erpdjango/erp --include=*.py)",
+      "Bash(python manage.py makemigrations --check)"
     ]
   }
 }

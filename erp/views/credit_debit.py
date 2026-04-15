@@ -8,17 +8,32 @@ import logging
 from decimal import Decimal
 
 from django.db import transaction
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from erp.models import Invoice, InvoiceLine, JournalEntry, JournalEntryLine, Account
 from erp.models.core import FiscalYear
 from erp.services import get_invoice_number
 from erp.services.accounting import _get_or_create_account
+from erp.services.inventory import adjust_inventory_for_invoice
 from erp.services.sequence import SequenceService
 from tenants.routers import get_current_db_alias
 from ._common import (
     render, get_object_or_404, redirect, messages, get_user_company, staff_member_required,
 )
+
+
+def _already_credited_qty(invoice, line):
+    """Return the total quantity already credited for a given invoice line
+    across all existing credit notes that reference this invoice."""
+    return InvoiceLine.objects.filter(
+        invoice__company=invoice.company,
+        invoice__invoice_type='credit',
+        invoice__reference=f'CN for {invoice.invoice_number}',
+        product=line.product,
+        description=line.description,
+    ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
 
 _logger = logging.getLogger('erp.finance')
 
@@ -50,9 +65,19 @@ def credit_note_create(request, pk):
         if line_ids:
             source_lines = source_lines.filter(pk__in=line_ids)
 
+        lines_added = 0
         for line in source_lines:
+            # Guard against double-crediting: cap at remaining creditable qty
+            already_credited = _already_credited_qty(invoice, line)
+            max_creditable = line.quantity - already_credited
+            if max_creditable <= Decimal('0'):
+                continue  # This line has been fully credited already
+
             qty = request.POST.get(f'qty_{line.pk}')
-            quantity = min(Decimal(qty), line.quantity) if qty else line.quantity
+            quantity = min(Decimal(qty), max_creditable) if qty else max_creditable
+            if quantity <= Decimal('0'):
+                continue
+
             InvoiceLine.objects.create(
                 invoice=cn,
                 product=line.product,
@@ -64,12 +89,24 @@ def credit_note_create(request, pk):
                 tax_rate=line.tax_rate,
                 account=line.account,
             )
+            lines_added += 1
+
+        if lines_added == 0:
+            cn.delete()
+            messages.error(request, 'جميع البنود في هذه الفاتورة تم إنشاء إشعارات دائنة لها مسبقاً.')
+            return redirect('erp:invoice_detail', pk=invoice.pk)
 
         cn.calculate_totals()
         cn.save()
 
         # Create journal entry for credit note
         _create_credit_debit_journal(cn, request.user, note_type='credit')
+
+        # Reverse inventory: restock returned items
+        try:
+            adjust_inventory_for_invoice(cn, direction='in')
+        except Exception as exc:
+            _logger.warning('Credit note %s: inventory reversal failed: %s', cn.invoice_number, exc)
 
         messages.success(request, f'تم إنشاء إشعار دائن {cn.invoice_number} بنجاح.')
         return redirect('erp:invoice_detail', pk=cn.pk)

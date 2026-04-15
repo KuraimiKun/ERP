@@ -7,11 +7,14 @@ Journal entry creation for inventory transactions:
   - create_adjustment_journal_entry   DR/CR Inventory ↔ Adjustment Expense
 """
 
+import logging
 from decimal import Decimal
 from django.db import transaction
 from django.utils import timezone
 
 from tenants.routers import get_current_db_alias
+
+logger = logging.getLogger('erp.inventory')
 
 from erp.models import (
     JournalEntry,
@@ -47,7 +50,14 @@ def _get_valuation_account(company, account_field, default_key, db_alias):
         if account:
             return account
     except InventoryValuationConfig.DoesNotExist:
-        pass
+        logger.warning(
+            'No InventoryValuationConfig found for company %s (pk=%s). '
+            'Falling back to default GL account for "%s". '
+            'Configure inventory valuation accounts in Settings → Inventory Valuation.',
+            getattr(company, 'name', company),
+            getattr(company, 'pk', '?'),
+            default_key,
+        )
 
     code, name, name_ar, atype = _DEFAULTS[default_key]
     return _get_or_create_account(company, code, name, name_ar, atype, db_alias)
@@ -205,6 +215,80 @@ def create_sales_issue_journal_entry(pick_list, user):
 
 
 # =========================================================================
+# Stock Transfer Journal Entry
+# =========================================================================
+
+def create_transfer_journal_entry(transfer, user):
+    """
+    For inter-warehouse transfers, record the movement of inventory value.
+
+    DR  Inventory (1500)   total_cost   [destination side]
+    CR  Inventory (1500)   total_cost   [source side]
+
+    Both sides use the same account code (single-warehouse GL). This is a
+    self-balancing memo entry that makes the transfer visible in the journal
+    without changing net inventory value.
+    """
+    from erp.models import StockMovement
+    db = get_current_db_alias()
+    company = transfer.company
+
+    movements = StockMovement.objects.using(db).filter(
+        reference_type='stock_transfer',
+        reference_id=transfer.pk,
+        movement_type=StockMovement.MovementType.TRANSFER_OUT,
+    )
+    total_cost = sum(m.unit_cost * m.quantity for m in movements)
+    if total_cost <= Decimal('0'):
+        return None
+
+    with transaction.atomic(using=db):
+        inv_account = _get_valuation_account(company, 'inventory_account', 'inventory', db)
+        fiscal_year = _get_current_fiscal_year(company, db)
+        entry_number = _next_journal_number(company, 'TRF', db)
+
+        journal_entry = JournalEntry.objects.using(db).create(
+            company=company,
+            entry_number=entry_number,
+            entry_date=transfer.received_date or timezone.now().date(),
+            entry_type=JournalEntry.EntryType.INVENTORY,
+            description=(
+                f'تحويل مخزون {transfer.transfer_number} – '
+                f'{transfer.from_warehouse.name} → {transfer.to_warehouse.name}'
+            ),
+            reference=transfer.transfer_number,
+            fiscal_year=fiscal_year,
+            status=JournalEntry.Status.POSTED,
+            posted_by=user,
+            posted_at=timezone.now(),
+            created_by=user,
+        )
+        JournalEntryLine.objects.using(db).create(
+            journal_entry=journal_entry,
+            account=inv_account,
+            description=f'مخزون وارد – {transfer.to_warehouse.name}',
+            debit_amount=total_cost,
+            credit_amount=Decimal('0'),
+            reference_type='stock_transfer',
+            reference_id=transfer.pk,
+        )
+        JournalEntryLine.objects.using(db).create(
+            journal_entry=journal_entry,
+            account=inv_account,
+            description=f'مخزون صادر – {transfer.from_warehouse.name}',
+            debit_amount=Decimal('0'),
+            credit_amount=total_cost,
+            reference_type='stock_transfer',
+            reference_id=transfer.pk,
+        )
+        journal_entry.calculate_totals()
+        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        _update_account_balances(journal_entry, db)
+
+    return journal_entry
+
+
+# =========================================================================
 # Adjustment Journal Entry
 # =========================================================================
 
@@ -299,6 +383,76 @@ def create_adjustment_journal_entry(adjustment, user):
                 reference_id=adjustment.pk,
             )
 
+        journal_entry.calculate_totals()
+        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        _update_account_balances(journal_entry, db)
+
+    return journal_entry
+
+
+# =========================================================================
+# Supplier Invoice Journal Entry (3-way match: clear GRNI, create AP)
+# =========================================================================
+
+def create_supplier_invoice_journal_entry(supplier_invoice, user):
+    """
+    On SupplierInvoice approval, clear the GRNI accrual and record Accounts Payable:
+
+        DR  Goods Received Not Invoiced (1400)   invoice_total
+        CR  Accounts Payable (2000)              invoice_total
+
+    This completes the 3-way match: GRN created DR Inventory / CR GRNI;
+    now the invoice clears GRNI and books the real liability.
+    """
+    db = get_current_db_alias()
+    company = supplier_invoice.company
+
+    total = supplier_invoice.total_amount
+    if total <= 0:
+        return None
+
+    with transaction.atomic(using=db):
+        grni_account = _get_valuation_account(company, 'grni_account', 'grni', db)
+        # AP account: code 2000
+        ap_account = _get_or_create_account(
+            company, '2000', 'Accounts Payable', 'الدائنون', 'liability', db
+        )
+        fiscal_year = _get_current_fiscal_year(company, db)
+        entry_number = _next_journal_number(company, 'SI', db)
+
+        journal_entry = JournalEntry.objects.using(db).create(
+            company=company,
+            entry_number=entry_number,
+            entry_date=supplier_invoice.invoice_date,
+            entry_type=JournalEntry.EntryType.PURCHASE,
+            description=f'فاتورة مورد {supplier_invoice.invoice_number} – {supplier_invoice.supplier.name}',
+            reference=supplier_invoice.invoice_number,
+            fiscal_year=fiscal_year,
+            status=JournalEntry.Status.POSTED,
+            posted_by=user,
+            posted_at=timezone.now(),
+            created_by=user,
+        )
+        # DR GRNI (clear the accrual)
+        JournalEntryLine.objects.using(db).create(
+            journal_entry=journal_entry,
+            account=grni_account,
+            description=f'تصفية بضاعة مستلمة – {supplier_invoice.invoice_number}',
+            debit_amount=total,
+            credit_amount=Decimal('0'),
+            reference_type='supplier_invoice',
+            reference_id=supplier_invoice.pk,
+        )
+        # CR Accounts Payable
+        JournalEntryLine.objects.using(db).create(
+            journal_entry=journal_entry,
+            account=ap_account,
+            description=f'دائنون – {supplier_invoice.supplier.name}',
+            debit_amount=Decimal('0'),
+            credit_amount=total,
+            reference_type='supplier_invoice',
+            reference_id=supplier_invoice.pk,
+        )
         journal_entry.calculate_totals()
         journal_entry.save(update_fields=['total_debit', 'total_credit'])
         _update_account_balances(journal_entry, db)

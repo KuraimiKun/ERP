@@ -250,14 +250,92 @@ def complete_pos_order(*, order, payments_data):
         order.status = 'completed'
         order.save(using=db, update_fields=['status', 'updated_at'])
 
+    # Create COGS journal entry for tracked inventory items
+    _create_pos_cogs_journal_entry(order)
+
     return order
+
+
+def _create_pos_cogs_journal_entry(order):
+    """
+    DR  Cost of Goods Sold (5100)   total_cost
+    CR  Inventory (1500)            total_cost
+
+    Called after complete_pos_order to record COGS for POS sales.
+    """
+    from decimal import Decimal
+    from erp.services.inventory_accounting import _get_valuation_account
+    from erp.services.accounting import (
+        _get_current_fiscal_year, _next_journal_number, _update_account_balances,
+    )
+    from erp.models import JournalEntry, JournalEntryLine, StockMovement
+    from django.db import transaction
+    from django.utils import timezone
+
+    db = get_current_db_alias()
+    company = order.company
+
+    # Sum cost from the stock movements just created for this order
+    movements = StockMovement.objects.using(db).filter(
+        reference_type='pos_order',
+        reference_id=order.pk,
+        movement_type=StockMovement.MovementType.SALES_ISSUE,
+    )
+    total_cost = sum(m.unit_cost * m.quantity for m in movements)
+    if total_cost <= Decimal('0'):
+        return None
+
+    try:
+        with transaction.atomic(using=db):
+            cogs_account = _get_valuation_account(company, 'cogs_account', 'cogs', db)
+            inv_account = _get_valuation_account(company, 'inventory_account', 'inventory', db)
+            fiscal_year = _get_current_fiscal_year(company, db)
+            entry_number = _next_journal_number(company, 'PCOGS', db)
+
+            je = JournalEntry.objects.using(db).create(
+                company=company,
+                entry_number=entry_number,
+                entry_date=order.order_date.date() if hasattr(order.order_date, 'date') else order.order_date,
+                entry_type=JournalEntry.EntryType.INVENTORY,
+                description=f'تكلفة بضاعة مباعة POS – {order.order_number}',
+                reference=order.order_number,
+                fiscal_year=fiscal_year,
+                status=JournalEntry.Status.POSTED,
+                posted_by=order.employee.user if order.employee else None,
+                posted_at=timezone.now(),
+            )
+            JournalEntryLine.objects.using(db).create(
+                journal_entry=je,
+                account=cogs_account,
+                description=f'COGS POS {order.order_number}',
+                debit_amount=total_cost,
+                credit_amount=Decimal('0'),
+                reference_type='pos_order',
+                reference_id=order.pk,
+            )
+            JournalEntryLine.objects.using(db).create(
+                journal_entry=je,
+                account=inv_account,
+                description=f'مخزون POS {order.order_number}',
+                debit_amount=Decimal('0'),
+                credit_amount=total_cost,
+                reference_type='pos_order',
+                reference_id=order.pk,
+            )
+            je.calculate_totals()
+            je.save(update_fields=['total_debit', 'total_credit'])
+            _update_account_balances(je, db)
+    except Exception:
+        logger.exception('POS COGS journal entry failed for order %s', order.order_number)
 
 
 def void_pos_order(*, order, user):
     """
     Void a POS order.
 
-    If the order was completed, reverses inventory deductions.
+    If the order was completed, reverses inventory deductions and any COGS
+    journal entries.  If an invoice was generated, it is cancelled and its
+    own journal entries are also reversed.
     """
     db = get_current_db_alias()
 
@@ -282,10 +360,89 @@ def void_pos_order(*, order, user):
                         db_alias=db,
                     )
 
+            # Reverse the COGS journal entry created by _create_pos_cogs_journal_entry
+            _reverse_pos_cogs_je(order, db)
+
         order.status = 'voided'
         order.save(using=db, update_fields=['status', 'updated_at'])
 
+    # If an invoice was generated, cancel it and reverse its journal entries
+    if order.invoice_id:
+        _reverse_pos_invoice(order, db)
+
     return order
+
+
+def _reverse_pos_cogs_je(order, db):
+    """Cancel and reverse any posted COGS journal entries for a POS order.
+
+    COGS JEs are created by _create_pos_cogs_journal_entry with
+    reference=order.order_number.  Must be called inside an atomic block.
+    """
+    from erp.models import Account, JournalEntry
+    try:
+        posted_cogs = JournalEntry.objects.using(db).filter(
+            company=order.company,
+            reference=order.order_number,
+            status=JournalEntry.Status.POSTED,
+        )
+        if not posted_cogs.exists():
+            return
+        account_ids = sorted(
+            posted_cogs.values_list('lines__account_id', flat=True).distinct()
+        )
+        locked_accounts = {
+            a.pk: a
+            for a in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
+        }
+        for je in posted_cogs:
+            for line in je.lines.select_related('account').using(db).all():
+                acc = locked_accounts.get(line.account_id)
+                if acc:
+                    # Reverse: swap debit/credit
+                    acc.update_balance(line.credit_amount, line.debit_amount)
+                    acc.save(using=db, update_fields=['current_balance'])
+            je.status = JournalEntry.Status.CANCELLED
+            je.save(using=db, update_fields=['status'])
+    except Exception:
+        logger.exception('Failed to reverse COGS JE for voided POS order %s', order.order_number)
+
+
+def _reverse_pos_invoice(order, db):
+    """Cancel the linked POS invoice and reverse all its posted journal entries."""
+    from erp.models import Invoice, Account, JournalEntry
+    try:
+        invoice = Invoice.objects.using(db).get(pk=order.invoice_id)
+        if invoice.status == Invoice.Status.CANCELLED:
+            return
+
+        with transaction.atomic(using=db):
+            # Collect and reverse all posted JEs for this invoice
+            posted_entries = JournalEntry.objects.using(db).filter(
+                company=order.company,
+                reference=invoice.invoice_number,
+                status=JournalEntry.Status.POSTED,
+            )
+            account_ids = sorted(
+                posted_entries.values_list('lines__account_id', flat=True).distinct()
+            )
+            locked_accounts = {
+                a.pk: a
+                for a in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
+            }
+            for je in posted_entries:
+                for line in je.lines.select_related('account').using(db).all():
+                    acc = locked_accounts.get(line.account_id)
+                    if acc:
+                        acc.update_balance(line.credit_amount, line.debit_amount)
+                        acc.save(using=db, update_fields=['current_balance'])
+                je.status = JournalEntry.Status.CANCELLED
+                je.save(using=db, update_fields=['status'])
+
+            invoice.status = Invoice.Status.CANCELLED
+            invoice.save(using=db, update_fields=['status'])
+    except Exception:
+        logger.exception('Failed to reverse POS invoice for voided order %s', order.order_number)
 
 
 def generate_invoice_from_pos(order, user):
