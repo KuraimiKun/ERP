@@ -7,7 +7,8 @@ used by every view module in this package.
 
 from django.contrib import messages  # noqa: F401
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, redirect, render, reverse  # noqa: F401
+from django.shortcuts import get_object_or_404, redirect, render  # noqa: F401
+from django.urls import reverse  # noqa: F401
 
 from erp.decorators import tenant_required as staff_member_required  # noqa: F401
 

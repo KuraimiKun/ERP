@@ -22,7 +22,9 @@
       "Bash(grep -r \"\\\\.approve\\\\|\\\\.reject\\\\|\\\\.cancel\\\\|\\\\.mark_paid\\\\|\\\\.void\" /f/erpdjango/erp/views/ --include=*.py)",
       "Bash(grep -rn \"LeaveRequest.*approve\\\\|LeaveRequest.*status\\\\|approve.*leave\\\\|status.*=.*approved\" /f/erpdjango/erp --include=*.py)",
       "Bash(python manage.py makemigrations --check)",
-      "Bash(grep -rn '\\\\${{' /f/erpdjango/erp/templates --include=\"*.html\")"
+      "Bash(grep -rn '\\\\${{' /f/erpdjango/erp/templates --include=\"*.html\")",
+      "Bash(grep -n \"class.*Credit\\\\|class.*Debit\" /f/erpdjango/erp/models/*.py)",
+      "Bash(grep -n \"^class.*Quote\" /f/erpdjango/erp/models/*.py)"
     ]
   }
 }

@@ -21,11 +21,11 @@ def _t(ar: str, en: str, id: str = '') -> dict:
     return {'ar': ar, 'en': en, 'id': id or en}
 
 
-def get_text(translations: dict, lang: str = 'en') -> str:
+def get_text(translations: dict | str, lang: str = 'en') -> str:
     """Return the text for *lang*, falling back to English then Arabic."""
     if isinstance(translations, str):
         return translations
-    return translations.get(lang) or translations.get('en') or translations.get('ar', '')
+    return translations.get(lang) or translations.get('en') or translations.get('ar', '')  # type: ignore
 
 
 # =============================================================================

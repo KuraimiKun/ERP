@@ -238,7 +238,7 @@ class Command(BaseCommand):
     def _ensure_accounts(self, company: Company, chart_preset: str = 'standard'):
         chart = get_chart_of_accounts(chart_preset)
 
-        accounts = {}
+        accounts: dict[str, Account] = {}
         for item in chart:
             parent = accounts.get(item.get("parent"))
             name = get_text(item['name'], self.lang)
@@ -281,7 +281,7 @@ class Command(BaseCommand):
             created.append(tax)
         return created
 
-    def _ensure_payment_methods(self, company: Company, accounts):
+    def _ensure_payment_methods(self, company: Company, accounts: dict[str, Account]):
         created = []
         for item in PAYMENT_METHODS:
             pm, _ = PaymentMethod.objects.get_or_create(
@@ -298,8 +298,8 @@ class Command(BaseCommand):
             created.append(pm)
         return created
 
-    def _ensure_expense_categories(self, company: Company, accounts):
-        created = {}
+    def _ensure_expense_categories(self, company: Company, accounts: dict[str, Account]):
+        created: dict[str, ExpenseCategory] = {}
         for item in EXPENSE_CATEGORIES:
             parent_obj = created.get(item.get("parent"))
             cat, _ = ExpenseCategory.objects.get_or_create(
@@ -316,7 +316,7 @@ class Command(BaseCommand):
             created[item["code"]] = cat
         return list(created.values())
 
-    def _ensure_asset_categories(self, company: Company, accounts):
+    def _ensure_asset_categories(self, company: Company, accounts: dict[str, Account]):
         """Create recommended fixed-asset categories with proper GL mappings."""
         created = []
         for item in ASSET_CATEGORIES:

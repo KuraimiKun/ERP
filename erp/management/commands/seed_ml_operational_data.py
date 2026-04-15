@@ -210,7 +210,7 @@ class Command(BaseCommand):
                     unit_cost=round(Decimal(str(unit_cost)), 4),
                     total_cost=round(Decimal(str(qty * unit_cost)), 4),
                     reference_type='ml_seed',
-                    reference_number=f'{SEED_REF_PREFIX}-SM-{product.id}-{d}',
+                    reference_number=f'{SEED_REF_PREFIX}-SM-{product.id}-{d}',  # type: ignore[attr-defined]
                     description='Synthetic demand movement for ML training',
                 )
                 created += 1
@@ -228,7 +228,7 @@ class Command(BaseCommand):
                 unit_cost=opening_unit_cost,
                 total_cost=(opening_qty * opening_unit_cost).quantize(Decimal('0.0001')),
                 reference_type='ml_seed',
-                reference_number=f'{SEED_REF_PREFIX}-OPEN-{product.id}',
+                reference_number=f'{SEED_REF_PREFIX}-OPEN-{product.id}',  # type: ignore[attr-defined]
                 description='Synthetic opening balance for ML demand baseline',
             )
             created += 1
@@ -275,17 +275,17 @@ class Command(BaseCommand):
             spike_products = products[:min(20, len(products))]
             for i in range(spike_extra):
                 product = random.choice(spike_products)
-                qty = Decimal(str(random.uniform(0.4, 4.0))).quantize(Decimal('0.0001'))
-                unit_cost = Decimal(str(float(product.cost_price or Decimal('1.00')))).quantize(Decimal('0.0001'))
+                spike_qty: Decimal = Decimal(str(random.uniform(0.4, 4.0))).quantize(Decimal('0.0001'))
+                spike_unit_cost: Decimal = Decimal(str(float(product.cost_price or Decimal('1.00')))).quantize(Decimal('0.0001'))
                 StockMovement.objects.using(self.db).create(
                     company=self.company,
                     movement_date=yesterday,
                     movement_type=StockMovement.MovementType.TRANSFER_OUT,
                     product=product,
                     warehouse=warehouse,
-                    quantity=qty,
-                    unit_cost=unit_cost,
-                    total_cost=(qty * unit_cost).quantize(Decimal('0.0001')),
+                    quantity=spike_qty,
+                    unit_cost=spike_unit_cost,
+                    total_cost=(spike_qty * spike_unit_cost).quantize(Decimal('0.0001')),  # type: ignore[assignment]
                     reference_type='ml_seed',
                     reference_number=f'{SEED_REF_PREFIX}-KPI-{i}',
                     description='Synthetic KPI stress spike',
