@@ -7,8 +7,8 @@ on:
     branches: [ "main", "master" ]
   workflow_dispatch:
     inputs:
-      bootstrap:
-        description: 'Full server bootstrap (run once on a fresh EC2 instance)'
+      force_bootstrap:
+        description: 'Force a full server re-bootstrap (use after a server wipe)'
         type: boolean
         default: false
         required: false
@@ -71,8 +71,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # requirements-dev.txt = requirements.txt + psycopg2-binary + dev tools.
-        # Using psycopg2-binary avoids needing libpq-dev in CI and keeps install fast.
         pip install -r requirements-dev.txt
 
     - name: Lint with ruff
@@ -92,42 +90,40 @@ jobs:
         python manage.py test --settings=erpproject.test_settings
 
   # ── Deploy ──────────────────────────────────────────────────────────────────
-  # Runs on pushes to main/master and manual workflow_dispatch triggers.
+  # Runs on every push to main/master and on manual workflow_dispatch.
   #
-  # TWO MODES:
+  # AUTO-DETECTS which mode to use on every run:
   #
-  # 1. Normal deploy (every push to main):
-  #    - Rsyncs code directly to APP_DIR on the server
-  #    - Runs pip install, migrate, collectstatic, restart services
+  #   BOOTSTRAP mode — runs automatically on the FIRST push to a fresh server
+  #   (or when force_bootstrap=true). Generates .env.production from secrets,
+  #   then runs deploy/deploy.sh which installs all packages, PostgreSQL, Redis,
+  #   Nginx, SSL, Docker, systemd services, firewall, etc.
   #
-  # 2. Bootstrap (manual trigger with bootstrap=true):
-  #    - For a FRESH EC2 instance — run this once after launching the server
-  #    - Syncs code to a staging dir, writes .env.production from secrets,
-  #      then runs deploy/deploy.sh as root (installs all packages, sets up
-  #      PostgreSQL, Redis, Nginx, SSL, systemd services, firewall, etc.)
+  #   FAST DEPLOY mode — runs on every subsequent push. Rsyncs code, installs
+  #   any new deps, migrates, collects static files, restarts services.
   #
   # Required secrets (Settings → Secrets → Actions):
   #
   #   Always required:
-  #     VPS_HOST        — server IP or hostname
-  #     VPS_USER        — SSH user ('ubuntu' on AWS EC2)
-  #     VPS_SSH_KEY     — private SSH key (public key must be in authorized_keys)
+  #     VPS_HOST                  — EC2 Elastic IP or hostname
+  #     VPS_USER                  — SSH user ('ubuntu' on AWS EC2)
+  #     VPS_SSH_KEY               — private SSH key
   #
-  #   Required for bootstrap only:
+  #   Required for bootstrap (first push to a fresh server):
   #     PROD_DOMAIN               — your domain (e.g. erp.example.com)
   #     PROD_SECRET_KEY           — Django secret key
   #     PROD_DB_PASSWORD          — PostgreSQL password
   #     PROD_FIELD_ENCRYPTION_KEY — django-encrypted-fields key
   #     PROD_SSL_EMAIL            — Let's Encrypt notification email
-  #     PROD_SUPERUSER_EMAIL      — Django admin email
-  #     PROD_SUPERUSER_PASSWORD   — Django admin password
+  #     PROD_SUPERUSER_EMAIL      — Django admin login email
+  #     PROD_SUPERUSER_PASSWORD   — Django admin login password
   #
   #   Optional:
   #     VPS_PORT                  — SSH port (default: 22)
   #     VPS_APP_DIR               — app directory (default: /opt/erpdjango)
   #     PROD_GUNICORN_WORKERS     — Gunicorn worker count (default: 3)
-  #     PROD_CELERY_CONCURRENCY   — Celery worker concurrency (default: 4)
-  #     PROD_EMAIL_HOST_USER      — SMTP user
+  #     PROD_CELERY_CONCURRENCY   — Celery concurrency (default: 4)
+  #     PROD_EMAIL_HOST_USER      — SMTP username
   #     PROD_EMAIL_HOST_PASSWORD  — SMTP password
   # ────────────────────────────────────────────────────────────────────────────
   deploy:
@@ -155,41 +151,53 @@ jobs:
     - name: Add VPS to known hosts
       run: ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
 
-    # Determine whether this is a bootstrap or a normal deploy
-    - name: Detect deploy mode
-      id: mode
+    # Check if the server has already been bootstrapped (venv exists).
+    # Sync code to the right place based on the result:
+    #   - Bootstrap → staging dir the ubuntu user can write to
+    #   - Fast deploy → APP_DIR directly via sudo rsync
+    - name: Detect mode and sync code
+      id: sync
       run: |
-        if [ "${{ github.event.inputs.bootstrap }}" = "true" ]; then
-          echo "type=bootstrap" >> "$GITHUB_OUTPUT"
-          echo "Mode: BOOTSTRAP (full server setup)"
+        FORCE="${{ github.event.inputs.force_bootstrap }}"
+
+        if [ "$FORCE" = "true" ] || \
+           ! ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+               "test -f '$APP_DIR/venv/bin/activate'" 2>/dev/null; then
+          echo "mode=bootstrap" >> "$GITHUB_OUTPUT"
+          echo "==> Mode: BOOTSTRAP (server not yet set up)"
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='venv/' \
+            --exclude='__pycache__/' \
+            --exclude='*.pyc' \
+            --exclude='.env' \
+            --exclude='media/' \
+            --exclude='staticfiles/' \
+            --exclude='logs/' \
+            -e "ssh -p $VPS_PORT" \
+            ./ "$VPS_USER@$VPS_HOST:/home/$VPS_USER/erp-bootstrap/"
         else
-          echo "type=deploy" >> "$GITHUB_OUTPUT"
-          echo "Mode: DEPLOY (fast code update)"
+          echo "mode=deploy" >> "$GITHUB_OUTPUT"
+          echo "==> Mode: FAST DEPLOY"
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='venv/' \
+            --exclude='__pycache__/' \
+            --exclude='*.pyc' \
+            --exclude='.env' \
+            --exclude='media/' \
+            --exclude='staticfiles/' \
+            --exclude='logs/' \
+            --rsync-path="sudo rsync" \
+            -e "ssh -p $VPS_PORT" \
+            ./ "$VPS_USER@$VPS_HOST:$APP_DIR/"
         fi
 
     # ── BOOTSTRAP ─────────────────────────────────────────────────────────────
-    # Step 1: Sync the repo to a staging dir the ubuntu user can write to.
-    # deploy.sh will rsync it from there into /opt/erpdjango itself.
-    - name: Bootstrap — sync code to staging dir
-      if: steps.mode.outputs.type == 'bootstrap'
-      run: |
-        rsync -az --delete \
-          --exclude='.git/' \
-          --exclude='venv/' \
-          --exclude='__pycache__/' \
-          --exclude='*.pyc' \
-          --exclude='.env' \
-          --exclude='media/' \
-          --exclude='staticfiles/' \
-          --exclude='logs/' \
-          -e "ssh -p $VPS_PORT" \
-          ./ "$VPS_USER@$VPS_HOST:/home/$VPS_USER/erp-bootstrap/"
-
-    # Step 2: Write .env.production from secrets and run deploy.sh as root.
-    # printf is used instead of a heredoc to safely handle special characters
-    # in secrets (e.g. $ signs in SECRET_KEY or DB_PASSWORD).
+    # Writes .env.production from secrets then runs deploy/deploy.sh as root.
+    # Takes ~5-10 min on a fresh instance. Cleans up the staging dir when done.
     - name: Bootstrap — write .env.production and run deploy.sh
-      if: steps.mode.outputs.type == 'bootstrap'
+      if: steps.sync.outputs.mode == 'bootstrap'
       uses: appleboy/ssh-action@v1.0.3
       env:
         STAGING:          /home/${{ secrets.VPS_USER }}/erp-bootstrap
@@ -214,7 +222,8 @@ jobs:
         script: |
           set -euo pipefail
 
-          # Write .env.production using printf so special characters are safe
+          # Write .env.production using printf so special characters in secrets
+          # (e.g. $ signs in SECRET_KEY) are handled safely
           {
             printf 'DOMAIN=%s\n'               "$PROD_DOMAIN"
             printf 'SECRET_KEY=%s\n'           "$PROD_SECRET_KEY"
@@ -238,30 +247,12 @@ jobs:
 
           sudo bash "$STAGING/deploy/deploy.sh"
 
-          # Clean up staging dir
           rm -rf "$STAGING"
 
-    # ── NORMAL DEPLOY ─────────────────────────────────────────────────────────
-    # APP_DIR is owned by the 'erp' system user, so we use sudo rsync to write
-    # there as the 'ubuntu' user (which has passwordless sudo on AWS EC2).
-    - name: Deploy — sync code to VPS
-      if: steps.mode.outputs.type == 'deploy'
-      run: |
-        rsync -az --delete \
-          --exclude='.git/' \
-          --exclude='venv/' \
-          --exclude='__pycache__/' \
-          --exclude='*.pyc' \
-          --exclude='.env' \
-          --exclude='media/' \
-          --exclude='staticfiles/' \
-          --exclude='logs/' \
-          --rsync-path="sudo rsync" \
-          -e "ssh -p $VPS_PORT" \
-          ./ "$VPS_USER@$VPS_HOST:$APP_DIR/"
-
+    # ── FAST DEPLOY ───────────────────────────────────────────────────────────
+    # Code is already synced. Install any new deps, migrate, restart.
     - name: Deploy — install deps, migrate, restart
-      if: steps.mode.outputs.type == 'deploy'
+      if: steps.sync.outputs.mode == 'deploy'
       uses: appleboy/ssh-action@v1.0.3
       env:
         APP_DIR: ${{ env.APP_DIR }}
