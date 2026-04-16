@@ -265,21 +265,31 @@ jobs:
         envs: APP_DIR
         script: |
           set -euo pipefail
-          source "$APP_DIR/venv/bin/activate"
-          cd "$APP_DIR"
+
+          # rsync ran as root so files may be owned by root.
+          # Restore ownership so the app user can read .env and write logs/media.
+          sudo chown -R erp:www-data "$APP_DIR"
+          sudo chmod 600 "$APP_DIR/.env"
+          sudo chmod 770 "$APP_DIR/run"
+          sudo chmod 775 "$APP_DIR/media"
+
+          # Run all Django commands as 'erp' — it owns .env (chmod 600)
+          # and the venv, so python/pip work correctly.
+          PY="$APP_DIR/venv/bin/python"
+          PIP="$APP_DIR/venv/bin/pip"
 
           echo "--- Installing/updating Python dependencies ---"
-          pip install -r requirements-prod.txt -q
-          pip install -r requirements-ml.txt -q
+          sudo -u erp "$PIP" install -r "$APP_DIR/requirements-prod.txt" -q
+          sudo -u erp "$PIP" install -r "$APP_DIR/requirements-ml.txt" -q
 
           echo "--- Running migrations ---"
-          python manage.py migrate --noinput
+          sudo -u erp "$PY" "$APP_DIR/manage.py" migrate --noinput
 
           echo "--- Collecting static files ---"
-          python manage.py collectstatic --noinput --clear -v 0
+          sudo -u erp "$PY" "$APP_DIR/manage.py" collectstatic --noinput --clear -v 0
 
           echo "--- Compiling translations ---"
-          python manage.py compilemessages
+          sudo -u erp "$PY" "$APP_DIR/manage.py" compilemessages
 
           echo "--- Restarting services ---"
           sudo systemctl restart erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat
