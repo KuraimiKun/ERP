@@ -37,14 +37,13 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.db import transaction
 from django.utils import timezone
 
+from tenants.routers import get_current_db_alias
+from erp.models import JournalEntry, JournalEntryLine, Account, FiscalYear
 
 def _to_base(amount, exchange_rate):
     """Convert an amount to base currency using the snapshot exchange rate."""
     rate = exchange_rate or Decimal('1')
     return (Decimal(str(amount)) * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-
-from tenants.routers import get_current_db_alias
-from erp.models import JournalEntry, JournalEntryLine, Account, FiscalYear
 
 
 def _update_account_balances(journal_entry, db_alias):

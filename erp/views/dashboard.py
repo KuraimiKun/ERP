@@ -12,6 +12,12 @@ from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
+from erp.models import (
+    Invoice, Expense, Customer, Lead, Quote, Employee, LeaveRequest,
+    Task, Payment,
+)
+from ._common import render, get_user_company, staff_member_required
+
 # Reusable expressions: amount fields multiplied by their exchange rate snapshot
 # to give a sum in base currency.
 _INV_TOTAL_BASE = ExpressionWrapper(
@@ -31,12 +37,6 @@ _QUOTE_TOTAL_BASE = ExpressionWrapper(
     F('total_amount') * F('currency__exchange_rate'),
     output_field=DecimalField(max_digits=20, decimal_places=6),
 )
-
-from erp.models import (
-    Invoice, Expense, Customer, Lead, Quote, Employee, LeaveRequest,
-    Task, Payment,
-)
-from ._common import render, get_user_company, staff_member_required
 
 
 def _per_company_cache(timeout):

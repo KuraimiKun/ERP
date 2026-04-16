@@ -9,15 +9,6 @@ from decimal import Decimal
 from django.db.models import DecimalField, ExpressionWrapper, F, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-
-_AMOUNT_BASE = ExpressionWrapper(
-    F('amount') * F('exchange_rate_at_date'),
-    output_field=DecimalField(max_digits=20, decimal_places=6),
-)
-_TOTAL_BASE = ExpressionWrapper(
-    F('total_amount') * F('exchange_rate_at_date'),
-    output_field=DecimalField(max_digits=20, decimal_places=6),
-)
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
@@ -30,7 +21,14 @@ from ._common import (
     render, get_object_or_404, get_user_company, staff_member_required,
 )
 
-
+_AMOUNT_BASE = ExpressionWrapper(
+    F('amount') * F('exchange_rate_at_date'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
+_TOTAL_BASE = ExpressionWrapper(
+    F('total_amount') * F('exchange_rate_at_date'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
 def _parse_date_range(request, company):
