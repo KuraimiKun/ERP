@@ -303,4 +303,32 @@ jobs:
             fi
           done
 
+          echo "--- Health check ---"
+          sleep 3
+          # Check every service and print a clear status line for each
+          for svc in erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat nginx postgresql redis-server; do
+            if systemctl is-active --quiet "$svc" 2>/dev/null; then
+              echo "  [OK]   ${svc} is running"
+            else
+              echo "  [FAIL] ${svc} is NOT running"
+              sudo journalctl -u "$svc" -n 20 --no-pager || true
+            fi
+          done
+
+          # Verify Gunicorn socket exists
+          if [ -S "$APP_DIR/run/gunicorn.sock" ]; then
+            echo "  [OK]   gunicorn.sock exists"
+          else
+            echo "  [FAIL] gunicorn.sock missing — Gunicorn did not start cleanly"
+          fi
+
+          # Hit the app locally through Nginx to confirm end-to-end connectivity
+          HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" http://localhost/ || echo "000")
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
+            echo "  [OK]   HTTP check passed (status ${HTTP_CODE})"
+          else
+            echo "  [FAIL] HTTP check returned status ${HTTP_CODE}"
+            sudo nginx -t || true
+          fi
+
           echo "--- Deploy complete ---"

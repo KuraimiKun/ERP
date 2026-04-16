@@ -41,7 +41,7 @@ class CompanySerializer(serializers.ModelSerializer):
             'id', 'name', 'legal_name', 'tax_number',
             'email', 'phone', 'website', 'address', 'city', 'state',
             'postal_code', 'country', 'base_currency', 'currency_display',
-            'fiscal_year_start', 'logo', 'is_active', 'created_at', 'updated_at'
+            'fiscal_year_start', 'logo', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
 
