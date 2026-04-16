@@ -88,7 +88,10 @@ echo ""
 info "Updating system packages..."
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get upgrade -yqq
+# NOTE: We deliberately do NOT run 'apt-get upgrade' here.
+# A full system upgrade can silently promote postgresql-15 → 18 (or similar),
+# breaking the version-pinned install below and causing gpg pipe errors on
+# subsequent runs.  Security updates are handled by unattended-upgrades.
 
 info "Installing base dependencies..."
 apt-get install -yqq \
@@ -125,8 +128,15 @@ ok "Python $(python${PYTHON_VERSION} --version 2>&1)"
 # ─── PostgreSQL ────────────────────────────────────────────────────────────
 info "Installing PostgreSQL ${PG_VERSION}..."
 if ! dpkg -l | grep -q "postgresql-${PG_VERSION}"; then
-    sh -c "echo 'deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
-    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg 2>/dev/null
+    # Add PGDG sources list only if not already present
+    if [[ ! -f /etc/apt/sources.list.d/pgdg.list ]]; then
+        sh -c "echo 'deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
+    fi
+    # Import GPG key only if not already present — gpg refuses to overwrite an
+    # existing key file and the broken pipe causes curl to exit with code 23.
+    if [[ ! -f /etc/apt/trusted.gpg.d/pgdg.gpg ]]; then
+        curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+    fi
     apt-get update -qq
 fi
 apt-get install -yqq "postgresql-${PG_VERSION}" "postgresql-contrib-${PG_VERSION}"
