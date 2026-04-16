@@ -295,6 +295,12 @@ jobs:
           sudo -u erp "$PY" "$APP_DIR/manage.py" compilemessages
 
           echo "--- Restarting services ---"
-          sudo systemctl restart erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat
+          for svc in erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat; do
+            if sudo systemctl list-unit-files "${svc}.service" 2>/dev/null | grep -q "^${svc}"; then
+              sudo systemctl restart "$svc" && echo "  Restarted ${svc}"
+            else
+              echo "  [WARN] ${svc} not found — run bootstrap to install services"
+            fi
+          done
 
           echo "--- Deploy complete ---"
