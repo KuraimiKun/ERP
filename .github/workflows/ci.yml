@@ -5,6 +5,13 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: 'Full server bootstrap (run once on a fresh EC2 instance)'
+        type: boolean
+        default: false
+        required: false
 
 jobs:
   build:
@@ -85,33 +92,61 @@ jobs:
         python manage.py test --settings=erpproject.test_settings
 
   # ── Deploy ──────────────────────────────────────────────────────────────────
-  # Runs only on pushes to main/master (not on PRs).
+  # Runs on pushes to main/master and manual workflow_dispatch triggers.
   #
-  # Required repository secrets (Settings → Secrets → Actions):
-  #   VPS_HOST        — server IP or hostname
-  #   VPS_USER        — SSH user (root, or a user with passwordless sudo for systemctl)
-  #   VPS_SSH_KEY     — private SSH key (the matching public key must be in
-  #                     ~/.ssh/authorized_keys on the VPS)
+  # TWO MODES:
   #
-  # Optional secrets (defaults shown):
-  #   VPS_PORT        — SSH port          (default: 22)
-  #   VPS_APP_DIR     — app directory     (default: /opt/erpdjango)
+  # 1. Normal deploy (every push to main):
+  #    - Rsyncs code directly to APP_DIR on the server
+  #    - Runs pip install, migrate, collectstatic, restart services
+  #
+  # 2. Bootstrap (manual trigger with bootstrap=true):
+  #    - For a FRESH EC2 instance — run this once after launching the server
+  #    - Syncs code to a staging dir, writes .env.production from secrets,
+  #      then runs deploy/deploy.sh as root (installs all packages, sets up
+  #      PostgreSQL, Redis, Nginx, SSL, systemd services, firewall, etc.)
+  #
+  # Required secrets (Settings → Secrets → Actions):
+  #
+  #   Always required:
+  #     VPS_HOST        — server IP or hostname
+  #     VPS_USER        — SSH user ('ubuntu' on AWS EC2)
+  #     VPS_SSH_KEY     — private SSH key (public key must be in authorized_keys)
+  #
+  #   Required for bootstrap only:
+  #     PROD_DOMAIN               — your domain (e.g. erp.example.com)
+  #     PROD_SECRET_KEY           — Django secret key
+  #     PROD_DB_PASSWORD          — PostgreSQL password
+  #     PROD_FIELD_ENCRYPTION_KEY — django-encrypted-fields key
+  #     PROD_SSL_EMAIL            — Let's Encrypt notification email
+  #     PROD_SUPERUSER_EMAIL      — Django admin email
+  #     PROD_SUPERUSER_PASSWORD   — Django admin password
+  #
+  #   Optional:
+  #     VPS_PORT                  — SSH port (default: 22)
+  #     VPS_APP_DIR               — app directory (default: /opt/erpdjango)
+  #     PROD_GUNICORN_WORKERS     — Gunicorn worker count (default: 3)
+  #     PROD_CELERY_CONCURRENCY   — Celery worker concurrency (default: 4)
+  #     PROD_EMAIL_HOST_USER      — SMTP user
+  #     PROD_EMAIL_HOST_PASSWORD  — SMTP password
   # ────────────────────────────────────────────────────────────────────────────
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      ((github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
+       github.event_name == 'push')
 
     env:
-      VPS_HOST:    ${{ secrets.VPS_HOST }}
-      VPS_USER:    ${{ secrets.VPS_USER }}
-      VPS_PORT:    ${{ secrets.VPS_PORT    || '22' }}
-      APP_DIR:     ${{ secrets.VPS_APP_DIR || '/opt/erpdjango' }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+      APP_DIR:  ${{ secrets.VPS_APP_DIR || '/opt/erpdjango' }}
 
     steps:
     - uses: actions/checkout@v4
 
-    # Set up SSH agent so rsync can authenticate without a password prompt
     - name: Set up SSH agent
       uses: webfactory/ssh-agent@v0.9.0
       with:
@@ -120,9 +155,23 @@ jobs:
     - name: Add VPS to known hosts
       run: ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
 
-    # Push only changed source files — skips venv, media, .env so they are
-    # never accidentally overwritten by CI.
-    - name: Sync code to VPS
+    # Determine whether this is a bootstrap or a normal deploy
+    - name: Detect deploy mode
+      id: mode
+      run: |
+        if [ "${{ github.event.inputs.bootstrap }}" = "true" ]; then
+          echo "type=bootstrap" >> "$GITHUB_OUTPUT"
+          echo "Mode: BOOTSTRAP (full server setup)"
+        else
+          echo "type=deploy" >> "$GITHUB_OUTPUT"
+          echo "Mode: DEPLOY (fast code update)"
+        fi
+
+    # ── BOOTSTRAP ─────────────────────────────────────────────────────────────
+    # Step 1: Sync the repo to a staging dir the ubuntu user can write to.
+    # deploy.sh will rsync it from there into /opt/erpdjango itself.
+    - name: Bootstrap — sync code to staging dir
+      if: steps.mode.outputs.type == 'bootstrap'
       run: |
         rsync -az --delete \
           --exclude='.git/' \
@@ -134,11 +183,85 @@ jobs:
           --exclude='staticfiles/' \
           --exclude='logs/' \
           -e "ssh -p $VPS_PORT" \
+          ./ "$VPS_USER@$VPS_HOST:/home/$VPS_USER/erp-bootstrap/"
+
+    # Step 2: Write .env.production from secrets and run deploy.sh as root.
+    # printf is used instead of a heredoc to safely handle special characters
+    # in secrets (e.g. $ signs in SECRET_KEY or DB_PASSWORD).
+    - name: Bootstrap — write .env.production and run deploy.sh
+      if: steps.mode.outputs.type == 'bootstrap'
+      uses: appleboy/ssh-action@v1.0.3
+      env:
+        STAGING:          /home/${{ secrets.VPS_USER }}/erp-bootstrap
+        PROD_DOMAIN:      ${{ secrets.PROD_DOMAIN }}
+        PROD_SECRET_KEY:  ${{ secrets.PROD_SECRET_KEY }}
+        PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+        PROD_ENC_KEY:     ${{ secrets.PROD_FIELD_ENCRYPTION_KEY }}
+        PROD_SSL_EMAIL:   ${{ secrets.PROD_SSL_EMAIL }}
+        PROD_SU_EMAIL:    ${{ secrets.PROD_SUPERUSER_EMAIL }}
+        PROD_SU_PASS:     ${{ secrets.PROD_SUPERUSER_PASSWORD }}
+        PROD_GW:          ${{ secrets.PROD_GUNICORN_WORKERS || '3' }}
+        PROD_CC:          ${{ secrets.PROD_CELERY_CONCURRENCY || '4' }}
+        PROD_EMAIL_USER:  ${{ secrets.PROD_EMAIL_HOST_USER || '' }}
+        PROD_EMAIL_PASS:  ${{ secrets.PROD_EMAIL_HOST_PASSWORD || '' }}
+      with:
+        host:     ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key:      ${{ secrets.VPS_SSH_KEY }}
+        port:     ${{ secrets.VPS_PORT || '22' }}
+        envs: STAGING,PROD_DOMAIN,PROD_SECRET_KEY,PROD_DB_PASSWORD,PROD_ENC_KEY,PROD_SSL_EMAIL,PROD_SU_EMAIL,PROD_SU_PASS,PROD_GW,PROD_CC,PROD_EMAIL_USER,PROD_EMAIL_PASS
+        command_timeout: 30m
+        script: |
+          set -euo pipefail
+
+          # Write .env.production using printf so special characters are safe
+          {
+            printf 'DOMAIN=%s\n'               "$PROD_DOMAIN"
+            printf 'SECRET_KEY=%s\n'           "$PROD_SECRET_KEY"
+            printf 'DB_NAME=erp_main\n'
+            printf 'DB_USER=erp_user\n'
+            printf 'DB_PASSWORD=%s\n'          "$PROD_DB_PASSWORD"
+            printf 'FIELD_ENCRYPTION_KEY=%s\n' "$PROD_ENC_KEY"
+            printf 'ENABLE_SSL=true\n'
+            printf 'SSL_EMAIL=%s\n'            "$PROD_SSL_EMAIL"
+            printf 'SUPERUSER_EMAIL=%s\n'      "$PROD_SU_EMAIL"
+            printf 'SUPERUSER_PASSWORD=%s\n'   "$PROD_SU_PASS"
+            printf 'GUNICORN_WORKERS=%s\n'     "$PROD_GW"
+            printf 'CELERY_CONCURRENCY=%s\n'   "$PROD_CC"
+            printf 'EMAIL_HOST_USER=%s\n'      "$PROD_EMAIL_USER"
+            printf 'EMAIL_HOST_PASSWORD=%s\n'  "$PROD_EMAIL_PASS"
+            printf 'TIMEZONE=Asia/Riyadh\n'
+            printf 'PYTHON_VERSION=3.12\n'
+            printf 'PG_VERSION=15\n'
+          } > "$STAGING/deploy/.env.production"
+          chmod 600 "$STAGING/deploy/.env.production"
+
+          sudo bash "$STAGING/deploy/deploy.sh"
+
+          # Clean up staging dir
+          rm -rf "$STAGING"
+
+    # ── NORMAL DEPLOY ─────────────────────────────────────────────────────────
+    # APP_DIR is owned by the 'erp' system user, so we use sudo rsync to write
+    # there as the 'ubuntu' user (which has passwordless sudo on AWS EC2).
+    - name: Deploy — sync code to VPS
+      if: steps.mode.outputs.type == 'deploy'
+      run: |
+        rsync -az --delete \
+          --exclude='.git/' \
+          --exclude='venv/' \
+          --exclude='__pycache__/' \
+          --exclude='*.pyc' \
+          --exclude='.env' \
+          --exclude='media/' \
+          --exclude='staticfiles/' \
+          --exclude='logs/' \
+          --rsync-path="sudo rsync" \
+          -e "ssh -p $VPS_PORT" \
           ./ "$VPS_USER@$VPS_HOST:$APP_DIR/"
 
-    # Install any new/updated packages, run migrations, collect statics,
-    # then perform a zero-downtime restart of all three services.
-    - name: Run post-deploy steps on VPS
+    - name: Deploy — install deps, migrate, restart
+      if: steps.mode.outputs.type == 'deploy'
       uses: appleboy/ssh-action@v1.0.3
       env:
         APP_DIR: ${{ env.APP_DIR }}
@@ -147,7 +270,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key:      ${{ secrets.VPS_SSH_KEY }}
         port:     ${{ secrets.VPS_PORT || '22' }}
-        envs:     APP_DIR
+        envs: APP_DIR
         script: |
           set -euo pipefail
           source "$APP_DIR/venv/bin/activate"
@@ -155,6 +278,7 @@ jobs:
 
           echo "--- Installing/updating Python dependencies ---"
           pip install -r requirements-prod.txt -q
+          pip install -r requirements-ml.txt -q
 
           echo "--- Running migrations ---"
           python manage.py migrate --noinput
@@ -166,6 +290,6 @@ jobs:
           python manage.py compilemessages
 
           echo "--- Restarting services ---"
-          systemctl restart erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat
+          sudo systemctl restart erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat
 
           echo "--- Deploy complete ---"
