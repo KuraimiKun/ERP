@@ -6,9 +6,18 @@ Profit & Loss, Balance Sheet, Trial Balance, Cash Flow, AR/AP Aging.
 
 from decimal import Decimal
 
-from django.db.models import Sum
+from django.db.models import DecimalField, ExpressionWrapper, F, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+
+_AMOUNT_BASE = ExpressionWrapper(
+    F('amount') * F('exchange_rate_at_date'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
+_TOTAL_BASE = ExpressionWrapper(
+    F('total_amount') * F('exchange_rate_at_date'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
@@ -200,24 +209,25 @@ def cash_flow(request):
     _cash_account_codes = ['1100', '1000']  # typical cash/bank account codes
 
     # Operating: payments received, payments made, expenses paid
+    # All summed in base currency via exchange_rate_at_date snapshots.
     payments_received = Payment.objects.filter(
         company=company, payment_date__gte=start_date, payment_date__lte=end_date,
         payment_type='received',
-    ).aggregate(total=Coalesce(Sum('amount'), Decimal('0')))['total']
+    ).aggregate(total=Coalesce(Sum(_AMOUNT_BASE), Decimal('0')))['total']
 
-    payments_made_supplier = 0
+    payments_made_supplier = Decimal('0')
     try:
         from erp.models import SupplierPayment
         payments_made_supplier = SupplierPayment.objects.filter(
             company=company, payment_date__gte=start_date, payment_date__lte=end_date,
-        ).aggregate(total=Coalesce(Sum('amount'), Decimal('0')))['total']
+        ).aggregate(total=Coalesce(Sum(_AMOUNT_BASE), Decimal('0')))['total']
     except Exception:
         pass
 
     expenses_paid = Expense.objects.filter(
         company=company, expense_date__gte=start_date, expense_date__lte=end_date,
         status__in=['approved', 'paid'],
-    ).aggregate(total=Coalesce(Sum('total_amount'), Decimal('0')))['total']
+    ).aggregate(total=Coalesce(Sum(_TOTAL_BASE), Decimal('0')))['total']
 
     operating_inflows = payments_received
     operating_outflows = payments_made_supplier + expenses_paid
@@ -273,7 +283,9 @@ def _calculate_aging_buckets(queryset, date_field='due_date'):
             bucket = 'over_120'
 
         buckets[bucket]['items'].append(inv)
-        buckets[bucket]['total'] += inv.balance_due
+        # Convert to base currency using the invoice's snapshot exchange rate
+        rate = getattr(inv, 'exchange_rate_at_date', None) or Decimal('1')
+        buckets[bucket]['total'] += inv.balance_due * rate
 
     grand_total = sum(b['total'] for b in buckets.values())
     return buckets, grand_total
@@ -294,13 +306,14 @@ def aging_receivables(request):
 
     buckets, grand_total = _calculate_aging_buckets(invoices)
 
-    # Summary by customer
+    # Summary by customer (in base currency)
     customer_summary = {}
     for inv in invoices:
         cname = inv.customer.name
         if cname not in customer_summary:
             customer_summary[cname] = {'total': Decimal('0'), 'count': 0}
-        customer_summary[cname]['total'] += inv.balance_due
+        rate = inv.exchange_rate_at_date or Decimal('1')
+        customer_summary[cname]['total'] += inv.balance_due * rate
         customer_summary[cname]['count'] += 1
     customer_summary = dict(sorted(customer_summary.items(), key=lambda x: x[1]['total'], reverse=True))
 
@@ -328,13 +341,14 @@ def aging_payables(request):
 
     buckets, grand_total = _calculate_aging_buckets(invoices)
 
-    # Summary by supplier
+    # Summary by supplier (in base currency)
     supplier_summary = {}
     for inv in invoices:
         sname = inv.supplier.name
         if sname not in supplier_summary:
             supplier_summary[sname] = {'total': Decimal('0'), 'count': 0}
-        supplier_summary[sname]['total'] += inv.balance_due
+        rate = inv.exchange_rate_at_date or Decimal('1')
+        supplier_summary[sname]['total'] += inv.balance_due * rate
         supplier_summary[sname]['count'] += 1
     supplier_summary = dict(sorted(supplier_summary.items(), key=lambda x: x[1]['total'], reverse=True))
 

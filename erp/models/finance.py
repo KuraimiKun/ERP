@@ -406,6 +406,7 @@ class Invoice(ERPBaseModel):
             self.status = self.Status.PARTIAL
 
     def save(self, *args, **kwargs):
+        self.balance_due = self.total_amount - self.paid_amount
         # Snapshot exchange rate on first save (when it hasn't been explicitly set)
         if self.exchange_rate_at_date == 1 and self.currency_id:
             try:
@@ -639,10 +640,17 @@ class PaymentAllocation(TimeStampedModel):
         unique_together = ['payment', 'invoice']
 
     def clean(self):
-        """Ensure allocation amount does not exceed the invoice's remaining balance_due."""
+        """Ensure allocation amount (in invoice currency) does not exceed invoice total.
+
+        PaymentAllocation.amount is always stored in invoice currency (the
+        payment_create view converts before creating the allocation). The ceiling
+        is invoice.total_amount — the sum of all allocations for an invoice must
+        not exceed it.
+        """
         from django.db.models import Sum
         from django.db.models.functions import Coalesce
         if self.invoice_id and self.amount:
+            # Sum all other allocations for this invoice — all in invoice currency
             already_allocated = (
                 PaymentAllocation.objects.filter(invoice_id=self.invoice_id)
                 .exclude(pk=self.pk)

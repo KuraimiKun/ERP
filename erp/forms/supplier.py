@@ -222,10 +222,31 @@ class SupplierPaymentForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelFor
         cleaned_data = super().clean()
         invoice = cleaned_data.get('supplier_invoice')
         amount = cleaned_data.get('amount')
+        payment_currency = cleaned_data.get('currency')
 
-        if invoice and amount:
-            if amount > invoice.balance_due:
-                # Allow overpayment but warn
-                pass
+        if invoice and amount is not None:
+            if amount <= 0:
+                self.add_error('amount', _('يجب أن يكون المبلغ أكبر من الصفر'))
+            else:
+                # Convert to invoice currency before checking overpayment
+                if payment_currency and payment_currency.pk != invoice.currency_id:
+                    from decimal import Decimal, ROUND_HALF_UP
+                    pay_rate = payment_currency.exchange_rate or Decimal('1')
+                    inv_rate = invoice.exchange_rate_at_date or Decimal('1')
+                    amount_in_invoice_ccy = (amount * pay_rate / inv_rate).quantize(
+                        Decimal('0.01'), rounding=ROUND_HALF_UP
+                    )
+                else:
+                    amount_in_invoice_ccy = amount
+
+                if amount_in_invoice_ccy > invoice.balance_due:
+                    self.add_error(
+                        'amount',
+                        _(
+                            f'المبلغ المدخل يعادل ({amount_in_invoice_ccy} {invoice.currency.code}) '
+                            f'وهو أكبر من الرصيد المستحق ({invoice.balance_due} {invoice.currency.code}). '
+                            'يُرجى إدخال مبلغ لا يتجاوز الرصيد المستحق.'
+                        ),
+                    )
 
         return cleaned_data

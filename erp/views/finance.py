@@ -6,8 +6,10 @@ Payment Methods, Expense Categories, Currencies, Fiscal Years, and
 Financial Reports.
 """
 
+from decimal import Decimal
 from django.db import transaction
-from django.db.models import Sum, Q
+from django.db.models import DecimalField, ExpressionWrapper, F, Sum, Q
+from django.db.models.functions import Coalesce as _Coalesce
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
@@ -1078,28 +1080,41 @@ def financial_reports(request):
     }
 
     if company:
+        _inv_total_base = ExpressionWrapper(
+            F('total_amount') * F('exchange_rate_at_date'),
+            output_field=DecimalField(max_digits=20, decimal_places=6),
+        )
+        _inv_balance_base = ExpressionWrapper(
+            F('balance_due') * F('exchange_rate_at_date'),
+            output_field=DecimalField(max_digits=20, decimal_places=6),
+        )
+        _exp_total_base = ExpressionWrapper(
+            F('total_amount') * F('exchange_rate_at_date'),
+            output_field=DecimalField(max_digits=20, decimal_places=6),
+        )
+
         context['monthly_revenue'] = Invoice.objects.filter(
             company=company, status='paid', invoice_date__gte=start_of_month
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        ).aggregate(total=_Coalesce(Sum(_inv_total_base), Decimal('0')))['total']
 
         context['yearly_revenue'] = Invoice.objects.filter(
             company=company, status='paid', invoice_date__gte=start_of_year
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        ).aggregate(total=_Coalesce(Sum(_inv_total_base), Decimal('0')))['total']
 
         context['monthly_expenses'] = Expense.objects.filter(
             company=company, expense_date__gte=start_of_month
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        ).aggregate(total=_Coalesce(Sum(_exp_total_base), Decimal('0')))['total']
 
         context['yearly_expenses'] = Expense.objects.filter(
             company=company, expense_date__gte=start_of_year
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        ).aggregate(total=_Coalesce(Sum(_exp_total_base), Decimal('0')))['total']
 
         context['monthly_profit'] = context['monthly_revenue'] - context['monthly_expenses']
         context['yearly_profit'] = context['yearly_revenue'] - context['yearly_expenses']
 
         context['total_receivables'] = Invoice.objects.filter(
             company=company, status__in=['sent', 'partial', 'overdue']
-        ).aggregate(total=Sum('balance_due'))['total'] or 0
+        ).aggregate(total=_Coalesce(Sum(_inv_balance_base), Decimal('0')))['total']
 
         context['recent_invoices'] = Invoice.objects.filter(company=company).order_by('-invoice_date')[:5]
         context['recent_payments'] = Payment.objects.filter(company=company).order_by('-payment_date')[:5]

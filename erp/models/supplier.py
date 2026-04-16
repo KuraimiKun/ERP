@@ -258,15 +258,24 @@ class PurchaseOrder(ERPBaseModel):
         self.balance_due = self.total_amount - self.paid_amount
 
     def recalculate_payment_status(self):
-        """Propagate payment totals from linked SupplierInvoices to this PO."""
-        from django.db.models import Sum
-        from django.db.models.functions import Coalesce
+        """Propagate payment totals from linked SupplierInvoices to this PO.
+
+        Converts each invoice's amounts to the PO currency using the invoice's
+        exchange_rate_at_date snapshot so cross-currency invoices are comparable.
+        """
         ZERO = Decimal('0')
-        agg = self.supplier_invoices.exclude(status='cancelled').aggregate(
-            total_paid=Coalesce(Sum('paid_amount'), ZERO),
-            total_invoiced=Coalesce(Sum('total_amount'), ZERO),
-        )
-        self.paid_amount = agg['total_paid']
+        po_rate = self.currency.exchange_rate if self.currency_id else Decimal('1')
+
+        total_paid = ZERO
+        total_invoiced = ZERO
+        for inv in self.supplier_invoices.exclude(status='cancelled').select_related('currency'):
+            inv_rate = inv.exchange_rate_at_date or Decimal('1')
+            # Ratio converts from invoice currency to PO currency
+            ratio = inv_rate / po_rate if po_rate else Decimal('1')
+            total_paid += (inv.paid_amount * ratio).quantize(Decimal('0.01'))
+            total_invoiced += (inv.total_amount * ratio).quantize(Decimal('0.01'))
+
+        self.paid_amount = total_paid
         self.balance_due = max(self.total_amount - self.paid_amount, ZERO)
         self.save(update_fields=['paid_amount', 'balance_due'])
 

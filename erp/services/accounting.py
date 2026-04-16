@@ -33,9 +33,15 @@ Standard accounting entries:
     CR  Accrued Liabilities         (total_amount)
 """
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from django.db import transaction
 from django.utils import timezone
+
+
+def _to_base(amount, exchange_rate):
+    """Convert an amount to base currency using the snapshot exchange rate."""
+    rate = exchange_rate or Decimal('1')
+    return (Decimal(str(amount)) * rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
 from tenants.routers import get_current_db_alias
 from erp.models import JournalEntry, JournalEntryLine, Account, FiscalYear
@@ -137,12 +143,14 @@ def create_invoice_journal_entry(invoice, user):
             created_by=user,
         )
 
+        rate = invoice.exchange_rate_at_date
+
         # DR Accounts Receivable
         JournalEntryLine.objects.using(db_alias).create(
             journal_entry=journal_entry,
             account=ar_account,
             description=f'ذمم مدينة - {invoice.customer.name}',
-            debit_amount=invoice.total_amount,
+            debit_amount=_to_base(invoice.total_amount, rate),
             credit_amount=Decimal('0'),
             reference_type='invoice',
             reference_id=invoice.pk,
@@ -154,7 +162,7 @@ def create_invoice_journal_entry(invoice, user):
             account=revenue_account,
             description=f'إيرادات مبيعات - {invoice.invoice_number}',
             debit_amount=Decimal('0'),
-            credit_amount=invoice.subtotal,
+            credit_amount=_to_base(invoice.subtotal, rate),
             reference_type='invoice',
             reference_id=invoice.pk,
         )
@@ -169,7 +177,7 @@ def create_invoice_journal_entry(invoice, user):
                 account=tax_account,
                 description=f'ضريبة القيمة المضافة - {invoice.invoice_number}',
                 debit_amount=Decimal('0'),
-                credit_amount=invoice.tax_amount,
+                credit_amount=_to_base(invoice.tax_amount, rate),
                 reference_type='invoice',
                 reference_id=invoice.pk,
             )
@@ -227,12 +235,15 @@ def create_payment_journal_entry(payment, user):
             created_by=user,
         )
 
+        rate = payment.exchange_rate_at_date
+        base_amount = _to_base(payment.amount, rate)
+
         # DR Cash / Bank
         JournalEntryLine.objects.using(db_alias).create(
             journal_entry=journal_entry,
             account=bank_account,
             description=f'دفعة مستلمة - {payment.payment_number}',
-            debit_amount=payment.amount,
+            debit_amount=base_amount,
             credit_amount=Decimal('0'),
             reference_type='payment',
             reference_id=payment.pk,
@@ -244,7 +255,7 @@ def create_payment_journal_entry(payment, user):
             account=ar_account,
             description=f'تحصيل من {payment.customer.name}',
             debit_amount=Decimal('0'),
-            credit_amount=payment.amount,
+            credit_amount=base_amount,
             reference_type='payment',
             reference_id=payment.pk,
         )
@@ -308,12 +319,14 @@ def create_expense_journal_entry(expense, user):
             created_by=user,
         )
 
+        rate = expense.exchange_rate_at_date
+
         # DR Expense
         JournalEntryLine.objects.using(db_alias).create(
             journal_entry=journal_entry,
             account=expense_account,
             description=expense.description[:255],
-            debit_amount=expense.amount,
+            debit_amount=_to_base(expense.amount, rate),
             credit_amount=Decimal('0'),
             reference_type='expense',
             reference_id=expense.pk,
@@ -328,7 +341,7 @@ def create_expense_journal_entry(expense, user):
                 journal_entry=journal_entry,
                 account=tax_recv_account,
                 description=f'ضريبة مدخلات - {expense.expense_number}',
-                debit_amount=expense.tax_amount,
+                debit_amount=_to_base(expense.tax_amount, rate),
                 credit_amount=Decimal('0'),
                 reference_type='expense',
                 reference_id=expense.pk,
@@ -340,7 +353,7 @@ def create_expense_journal_entry(expense, user):
             account=cash_account,
             description=f'صرف مصروف - {expense.expense_number}',
             debit_amount=Decimal('0'),
-            credit_amount=expense.total_amount,
+            credit_amount=_to_base(expense.total_amount, rate),
             reference_type='expense',
             reference_id=expense.pk,
         )
@@ -397,12 +410,14 @@ def create_supplier_invoice_journal_entry(supplier_invoice, user):
             created_by=user,
         )
 
+        rate = supplier_invoice.exchange_rate_at_date
+
         # DR Purchases / COGS
         JournalEntryLine.objects.using(db_alias).create(
             journal_entry=journal_entry,
             account=purchases_account,
             description=f'مشتريات - {supplier_invoice.supplier.name}',
-            debit_amount=supplier_invoice.subtotal,
+            debit_amount=_to_base(supplier_invoice.subtotal, rate),
             credit_amount=Decimal('0'),
             reference_type='supplier_invoice',
             reference_id=supplier_invoice.pk,
@@ -417,7 +432,7 @@ def create_supplier_invoice_journal_entry(supplier_invoice, user):
                 journal_entry=journal_entry,
                 account=tax_input_account,
                 description=f'ضريبة مدخلات - {supplier_invoice.invoice_number}',
-                debit_amount=supplier_invoice.tax_amount,
+                debit_amount=_to_base(supplier_invoice.tax_amount, rate),
                 credit_amount=Decimal('0'),
                 reference_type='supplier_invoice',
                 reference_id=supplier_invoice.pk,
@@ -429,7 +444,7 @@ def create_supplier_invoice_journal_entry(supplier_invoice, user):
             account=ap_account,
             description=f'ذمم دائنة - {supplier_invoice.supplier.name}',
             debit_amount=Decimal('0'),
-            credit_amount=supplier_invoice.total_amount,
+            credit_amount=_to_base(supplier_invoice.total_amount, rate),
             reference_type='supplier_invoice',
             reference_id=supplier_invoice.pk,
         )
@@ -485,12 +500,15 @@ def create_supplier_payment_journal_entry(supplier_payment, user):
             created_by=user,
         )
 
+        rate = supplier_payment.exchange_rate_at_date
+        base_amount = _to_base(supplier_payment.amount, rate)
+
         # DR Accounts Payable
         JournalEntryLine.objects.using(db_alias).create(
             journal_entry=journal_entry,
             account=ap_account,
             description=f'سداد ذمم دائنة - {supplier_payment.supplier.name}',
-            debit_amount=supplier_payment.amount,
+            debit_amount=base_amount,
             credit_amount=Decimal('0'),
             reference_type='supplier_payment',
             reference_id=supplier_payment.pk,
@@ -502,7 +520,7 @@ def create_supplier_payment_journal_entry(supplier_payment, user):
             account=bank_account,
             description=f'دفعة لمورد - {supplier_payment.payment_number}',
             debit_amount=Decimal('0'),
-            credit_amount=supplier_payment.amount,
+            credit_amount=base_amount,
             reference_type='supplier_payment',
             reference_id=supplier_payment.pk,
         )
@@ -554,12 +572,16 @@ def create_purchase_order_journal_entry(purchase_order, user):
             created_by=user,
         )
 
+        # PO has no exchange_rate_at_date snapshot — use current currency rate
+        rate = purchase_order.currency.exchange_rate if purchase_order.currency_id else Decimal('1')
+        base_total = _to_base(purchase_order.total_amount, rate)
+
         # DR Goods Received Not Invoiced
         JournalEntryLine.objects.using(db_alias).create(
             journal_entry=journal_entry,
             account=grni_account,
             description=f'أمر شراء - {purchase_order.po_number}',
-            debit_amount=purchase_order.total_amount,
+            debit_amount=base_total,
             credit_amount=Decimal('0'),
             reference_type='purchase_order',
             reference_id=purchase_order.pk,
@@ -571,7 +593,7 @@ def create_purchase_order_journal_entry(purchase_order, user):
             account=accrued_account,
             description=f'التزام مستحق - {purchase_order.po_number}',
             debit_amount=Decimal('0'),
-            credit_amount=purchase_order.total_amount,
+            credit_amount=base_total,
             reference_type='purchase_order',
             reference_id=purchase_order.pk,
         )

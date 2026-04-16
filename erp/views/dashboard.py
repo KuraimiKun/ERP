@@ -6,11 +6,31 @@ from decimal import Decimal
 from datetime import timedelta
 
 from django.http import JsonResponse
-from django.db.models import Count, Q, Sum
-from django.db.models.functions import TruncMonth
+from django.db.models import Count, DecimalField, ExpressionWrapper, F, Q, Sum
+from django.db.models.functions import Coalesce, TruncMonth
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
+
+# Reusable expressions: amount fields multiplied by their exchange rate snapshot
+# to give a sum in base currency.
+_INV_TOTAL_BASE = ExpressionWrapper(
+    F('total_amount') * F('exchange_rate_at_date'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
+_INV_BALANCE_BASE = ExpressionWrapper(
+    F('balance_due') * F('exchange_rate_at_date'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
+_EXP_TOTAL_BASE = ExpressionWrapper(
+    F('total_amount') * F('exchange_rate_at_date'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
+# Quotes have no exchange_rate_at_date snapshot — use live currency rate
+_QUOTE_TOTAL_BASE = ExpressionWrapper(
+    F('total_amount') * F('currency__exchange_rate'),
+    output_field=DecimalField(max_digits=20, decimal_places=6),
+)
 
 from erp.models import (
     Invoice, Expense, Customer, Lead, Quote, Employee, LeaveRequest,
@@ -54,18 +74,18 @@ def dashboard(request):
         _revenue_statuses = ['sent', 'partial', 'paid']
         _open_statuses = ['sent', 'partial', 'overdue']
         inv_stats = Invoice.objects.filter(company=company).aggregate(
-            monthly_revenue=Sum(
-                'total_amount',
+            monthly_revenue=Coalesce(Sum(
+                _INV_TOTAL_BASE,
                 filter=Q(invoice_date__gte=start_of_month, status__in=_revenue_statuses),
-            ),
-            yearly_revenue=Sum(
-                'total_amount',
+            ), Decimal('0')),
+            yearly_revenue=Coalesce(Sum(
+                _INV_TOTAL_BASE,
                 filter=Q(invoice_date__gte=start_of_year, status__in=_revenue_statuses),
-            ),
-            outstanding_receivables=Sum(
-                'balance_due',
+            ), Decimal('0')),
+            outstanding_receivables=Coalesce(Sum(
+                _INV_BALANCE_BASE,
                 filter=Q(status__in=_open_statuses),
-            ),
+            ), Decimal('0')),
             overdue_count=Count('id', filter=Q(status='overdue')),
         )
         monthly_revenue = inv_stats['monthly_revenue'] or Decimal('0')
@@ -77,7 +97,7 @@ def dashboard(request):
             company=company,
             expense_date__gte=start_of_month,
             status='approved'
-        ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
+        ).aggregate(total=Coalesce(Sum(_EXP_TOTAL_BASE), Decimal('0')))['total']
 
         total_customers = Customer.objects.filter(company=company, is_active=True).count()
         new_customers_month = Customer.objects.filter(
@@ -98,7 +118,7 @@ def dashboard(request):
         quotes_value = Quote.objects.filter(
             company=company,
             status__in=['draft', 'sent', 'viewed']
-        ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
+        ).aggregate(total=Coalesce(Sum(_QUOTE_TOTAL_BASE), Decimal('0')))['total']
 
         total_employees = Employee.objects.filter(company=company, employment_status='active').count()
         pending_leave_requests = LeaveRequest.objects.filter(
@@ -174,14 +194,14 @@ def dashboard_charts_data(request):
     ).annotate(
         month=TruncMonth('invoice_date')
     ).values('month').annotate(
-        total=Sum('total_amount')
+        total=Coalesce(Sum(_INV_TOTAL_BASE), Decimal('0'))
     ).order_by('month')
 
     revenue_by_status = Invoice.objects.filter(
         company=company,
         invoice_date__gte=six_months_ago
     ).values('status').annotate(
-        total=Sum('total_amount'),
+        total=Coalesce(Sum(_INV_TOTAL_BASE), Decimal('0')),
         count=Count('id')
     )
 
@@ -196,7 +216,7 @@ def dashboard_charts_data(request):
         expense_date__gte=six_months_ago,
         status='approved'
     ).values('category__name').annotate(
-        total=Sum('total_amount')
+        total=Coalesce(Sum(_EXP_TOTAL_BASE), Decimal('0'))
     ).order_by('-total')[:10]
 
     return JsonResponse({
