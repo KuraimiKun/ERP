@@ -222,23 +222,24 @@ jobs:
         script: |
           set -euo pipefail
 
-          # Write .env.production using printf so special characters in secrets
-          # (e.g. $ signs in SECRET_KEY) are handled safely
+          # Write .env.production using printf %q which shell-quotes each value,
+          # safely escaping any special characters (parens, $, !, quotes, etc.)
+          # deploy.sh sources this file, so values must be valid bash assignments.
           {
-            printf 'DOMAIN=%s\n'               "$PROD_DOMAIN"
-            printf 'SECRET_KEY=%s\n'           "$PROD_SECRET_KEY"
+            printf 'DOMAIN=%q\n'               "$PROD_DOMAIN"
+            printf 'SECRET_KEY=%q\n'           "$PROD_SECRET_KEY"
             printf 'DB_NAME=erp_main\n'
             printf 'DB_USER=erp_user\n'
-            printf 'DB_PASSWORD=%s\n'          "$PROD_DB_PASSWORD"
-            printf 'FIELD_ENCRYPTION_KEY=%s\n' "$PROD_ENC_KEY"
+            printf 'DB_PASSWORD=%q\n'          "$PROD_DB_PASSWORD"
+            printf 'FIELD_ENCRYPTION_KEY=%q\n' "$PROD_ENC_KEY"
             printf 'ENABLE_SSL=true\n'
-            printf 'SSL_EMAIL=%s\n'            "$PROD_SSL_EMAIL"
-            printf 'SUPERUSER_EMAIL=%s\n'      "$PROD_SU_EMAIL"
-            printf 'SUPERUSER_PASSWORD=%s\n'   "$PROD_SU_PASS"
-            printf 'GUNICORN_WORKERS=%s\n'     "$PROD_GW"
-            printf 'CELERY_CONCURRENCY=%s\n'   "$PROD_CC"
-            printf 'EMAIL_HOST_USER=%s\n'      "$PROD_EMAIL_USER"
-            printf 'EMAIL_HOST_PASSWORD=%s\n'  "$PROD_EMAIL_PASS"
+            printf 'SSL_EMAIL=%q\n'            "$PROD_SSL_EMAIL"
+            printf 'SUPERUSER_EMAIL=%q\n'      "$PROD_SU_EMAIL"
+            printf 'SUPERUSER_PASSWORD=%q\n'   "$PROD_SU_PASS"
+            printf 'GUNICORN_WORKERS=%q\n'     "$PROD_GW"
+            printf 'CELERY_CONCURRENCY=%q\n'   "$PROD_CC"
+            printf 'EMAIL_HOST_USER=%q\n'      "$PROD_EMAIL_USER"
+            printf 'EMAIL_HOST_PASSWORD=%q\n'  "$PROD_EMAIL_PASS"
             printf 'TIMEZONE=Asia/Riyadh\n'
             printf 'PYTHON_VERSION=3.12\n'
             printf 'PG_VERSION=15\n'
