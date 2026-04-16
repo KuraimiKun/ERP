@@ -14,7 +14,7 @@ from rest_framework.authtoken.models import Token
 
 from erp.models import (
     Department, Customer, Invoice,
-    LeaveType, LeaveRequest, Lead, Notification, Expense,
+    LeaveType, LeaveRequest, Lead, Notification, Expense, Employee,
 )
 from erp.tests.helpers import ERPAPITestCase
 
@@ -306,7 +306,7 @@ class TestLeaveRequestAPI(ERPAPITestCase):
 
     def _create_leave_request(self):
         return LeaveRequest.objects.create(
-            employee=self.employee, leave_type=self.leave_type,
+            employee=Employee.objects.create(company=self.company, department=self.department, branch=self.branch, employee_id=('EMP-OTHER-'+str(abs(hash(self))))[:20], first_name='Other', last_name='Employee', email='other'+str(abs(hash(self)))+'@company.com', hire_date=date.today(), date_of_birth=date(1990, 1, 1), basic_salary=1000, currency=self.currency, reports_to=self.employee), leave_type=self.leave_type,
             start_date=date(2026, 6, 1), end_date=date(2026, 6, 5),
             days_requested=5, status='pending',
             created_by=self.user,
@@ -465,7 +465,7 @@ class TestExpenseAPI(ERPAPITestCase):
             amount=Decimal('250.00'),
             total_amount=Decimal('250.00'),
             status='pending',
-            employee=self.employee,
+            employee=Employee.objects.create(company=self.company, department=self.department, branch=self.branch, employee_id=('EMP-OTHER-'+str(abs(hash(self))))[:20], first_name='Other', last_name='Employee', email='other'+str(abs(hash(self)))+'@company.com', hire_date=date.today(), date_of_birth=date(1990, 1, 1), basic_salary=1000, currency=self.currency, reports_to=self.employee),
             created_by=self.user,
         )
 
