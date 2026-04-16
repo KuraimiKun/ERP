@@ -268,6 +268,9 @@ jobs:
 
           # rsync ran as root so files may be owned by root.
           # Restore ownership so the app user can read .env and write logs/media.
+          # Ensure runtime dirs exist (rsync excludes them; deploy.sh creates them
+          # on first bootstrap but they must survive subsequent deploys too).
+          sudo mkdir -p "$APP_DIR/run" "$APP_DIR/logs" "$APP_DIR/media" "$APP_DIR/staticfiles"
           sudo chown -R erp:www-data "$APP_DIR"
           sudo chmod 600 "$APP_DIR/.env"
           sudo chmod 770 "$APP_DIR/run"
