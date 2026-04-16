@@ -700,7 +700,6 @@ msgid "Default useful life in months"
 msgstr "العمر الإنتاجي الافتراضي بالأشهر"
 
 #: .\erp\models\fixed_assets.py:59
-#, python-format
 msgid "Default salvage value as % of cost"
 msgstr "قيمة الإنقاذ الافتراضية كنسبة مئوية من التكلفة"
 
@@ -8486,7 +8485,7 @@ msgid ""
 "\n"
 "        Page %(current)s of %(total)s — %(count_total)s records\n"
 "        "
-msgstr "الصفحة %(الحالية)s من %(total)s — %(count_total)s من السجلات"
+msgstr "\nالصفحة %(current)s من %(total)s — %(count_total)s من السجلات\n        "
 
 #: .\erp\templates\erp\includes\sort_header.html:6
 msgid "Sort by"
@@ -13314,7 +13313,7 @@ msgstr "تم تحديث فئة الأصول."
 #, python-format
 #| msgid "Edit Payment"
 msgid "Edit %(name)s"
-msgstr "تحرير %(الاسم)s"
+msgstr "تحرير %(name)s"
 
 #: .\erp\views\fixed_assets.py:95
 #| msgid "Product Categories"
@@ -13324,7 +13323,7 @@ msgstr "تم حذف فئة الأصول."
 #: .\erp\views\fixed_assets.py:209
 #, python-format
 msgid "Asset %(number)s created."
-msgstr "تم إنشاء الأصل %(الرقم)."
+msgstr "تم إنشاء الأصل %(number)s."
 
 #: .\erp\views\fixed_assets.py:212
 #| msgid "Record Payment"
@@ -13334,7 +13333,7 @@ msgstr "تسجيل الأصول الجديدة"
 #: .\erp\views\fixed_assets.py:223
 #, python-format
 msgid "Asset %(number)s updated."
-msgstr "تم تحديث الأصل %(number)."
+msgstr "تم تحديث الأصل %(number)s."
 
 #: .\erp\views\fixed_assets.py:236
 #| msgid "Assets"
@@ -13344,7 +13343,7 @@ msgstr "تم حذف الأصل."
 #: .\erp\views\fixed_assets.py:251
 #, python-format
 msgid "Asset activated. Journal entry %(number)s created."
-msgstr "تم تفعيل الأصول. تم إنشاء إدخال دفتر اليومية %(number)."
+msgstr "تم تفعيل الأصول. تم إنشاء إدخال دفتر اليومية %(number)s."
 
 #: .\erp\views\fixed_assets.py:253
 msgid "Asset activated (no GL accounts configured for journal entry)."
@@ -13359,12 +13358,12 @@ msgstr "%(count)s فترة(فترات) الإهلاك التي تم إنشاؤه
 #: .\erp\views\fixed_assets.py:356
 #, python-format
 msgid "Depreciation posted. Journal entry %(number)s created."
-msgstr "تم نشر الاستهلاك. تم إنشاء إدخال دفتر اليومية %(number)."
+msgstr "تم نشر الاستهلاك. تم إنشاء إدخال دفتر اليومية %(number)s."
 
 #: .\erp\views\fixed_assets.py:386
 #, python-format
 msgid "%(posted)s depreciation entries posted, %(errors)s errors."
-msgstr "تم ترحيل %(ترحيل)s إدخالات الإهلاك، %(أخطاء)s أخطاء."
+msgstr "تم ترحيل %(posted)s إدخالات الإهلاك، %(errors)s أخطاء."
 
 #: .\erp\views\fixed_assets.py:423
 #| msgid "No interactions recorded"
@@ -13390,7 +13389,7 @@ msgstr "تمت بالفعل معالجة عملية التخلص هذه."
 #: .\erp\views\fixed_assets.py:465
 #, python-format
 msgid "Disposal processed. Journal entry %(number)s created."
-msgstr "تمت معالجة التخلص. تم إنشاء إدخال دفتر اليومية %(number)."
+msgstr "تمت معالجة التخلص. تم إنشاء إدخال دفتر اليومية %(number)s."
 
 #: .\erp\views\fixed_assets.py:467
 #| msgid "Disposal of"
@@ -13427,7 +13426,7 @@ msgstr "تمت معالجة عملية إعادة التقييم هذه بالف
 #: .\erp\views\fixed_assets.py:593
 #, python-format
 msgid "Revaluation processed. Journal entry %(number)s created."
-msgstr "تمت معالجة إعادة التقييم. تم إنشاء إدخال دفتر اليومية %(number)."
+msgstr "تمت معالجة إعادة التقييم. تم إنشاء إدخال دفتر اليومية %(number)s."
 
 #: .\erp\views\fixed_assets.py:595
 msgid "No change in value."
@@ -13477,7 +13476,7 @@ msgstr "لم يتم العثور على بيانات الاستيراد. يرج�
 #: .\erp\views\import_data.py:175
 #, python-format
 msgid "Import failed: %(error)s"
-msgstr "فشل الاستيراد: %(خطأ)s"
+msgstr "فشل الاستيراد: %(error)s"
 
 #: .\erp\views\inventory.py:104
 #, python-format
@@ -13623,7 +13622,7 @@ msgstr "تم تأكيد مذكرة استلام البضائع %(number)s بنج
 #: .\erp\views\inventory.py:556
 #, python-format
 msgid "Failed to confirm receipt note: %(error)s"
-msgstr "فشل تأكيد استلام الملاحظة: %(خطأ)s"
+msgstr "فشل تأكيد استلام الملاحظة: %(error)s"
 
 #: .\erp\views\inventory.py:565
 msgid "Cannot delete a confirmed receipt note."
@@ -13666,7 +13665,7 @@ msgstr "تم شحن %(number)s بنجاح."
 #: .\erp\views\inventory.py:688
 #, python-format
 msgid "Failed to ship transfer: %(error)s"
-msgstr "فشل شحن النقل: %(خطأ)s"
+msgstr "فشل شحن النقل: %(error)s"
 
 #: .\erp\views\inventory.py:700
 #, python-format
@@ -13676,7 +13675,7 @@ msgstr "تم نقل %(number)s بنجاح."
 #: .\erp\views\inventory.py:702
 #, python-format
 msgid "Failed to receive transfer: %(error)s"
-msgstr "فشل استلام التحويل: %(خطأ)s"
+msgstr "فشل استلام التحويل: %(error)s"
 
 #: .\erp\views\inventory.py:711
 msgid "Cannot delete a non-draft transfer."
@@ -13719,7 +13718,7 @@ msgstr "تمت الموافقة على التعديل %(number)s بنجاح."
 #: .\erp\views\inventory.py:825
 #, python-format
 msgid "Failed to approve adjustment: %(error)s"
-msgstr "فشلت الموافقة على التعديل: %(خطأ)s"
+msgstr "فشلت الموافقة على التعديل: %(error)s"
 
 #: .\erp\views\inventory.py:834
 msgid "Cannot delete an approved adjustment."
@@ -13762,7 +13761,7 @@ msgstr "تم إكمال عدد الدورات %(number)s بنجاح."
 #: .\erp\views\inventory.py:947
 #, python-format
 msgid "Failed to complete cycle count: %(error)s"
-msgstr "فشل إكمال عدد الدورات: %(خطأ)s"
+msgstr "فشل إكمال عدد الدورات: %(error)s"
 
 #: .\erp\views\inventory.py:956
 #| msgid "Complete this cycle count?"
@@ -13804,7 +13803,7 @@ msgstr "تم اختيار قائمة %(number)s بنجاح."
 #: .\erp\views\inventory.py:1069
 #, python-format
 msgid "Failed to complete pick list: %(error)s"
-msgstr "فشل إكمال قائمة الاختيار: %(خطأ)s"
+msgstr "فشل إكمال قائمة الاختيار: %(error)s"
 
 #: .\erp\views\inventory.py:1078
 msgid "Cannot delete a completed pick list."
@@ -13846,7 +13845,7 @@ msgstr "شحنة %(number)s تم شحنها بنجاح."
 #: .\erp\views\inventory.py:1201
 #, python-format
 msgid "Failed to ship: %(error)s"
-msgstr "فشل الشحن: %(خطأ)s"
+msgstr "فشل الشحن: %(error)s"
 
 #: .\erp\views\inventory.py:1210
 msgid "Cannot delete a non-draft shipment note."
@@ -16909,7 +16908,7 @@ msgid ""
 "\n"
 "                    Showing %(start)s–%(end)s of %(total)s entries\n"
 "                "
-msgstr "عرض %(start)s–%(end)s من %(total)s إدخالات"
+msgstr "\n                                        عرض %(start)s–%(end)s من %(total)s إدخالات\n                "
 
 #: .\tenants\templates\platform_admin\logs\list.html:179
 #| msgid "No quotes found"
