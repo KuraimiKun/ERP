@@ -162,7 +162,7 @@ jobs:
 
         if [ "$FORCE" = "true" ] || \
            ! ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-               "test -f '$APP_DIR/venv/bin/activate'" 2>/dev/null; then
+               "test -f '$APP_DIR/venv/bin/activate' && test -f /etc/systemd/system/erp-gunicorn.socket" 2>/dev/null; then
           echo "mode=bootstrap" >> "$GITHUB_OUTPUT"
           echo "==> Mode: BOOTSTRAP (server not yet set up)"
           rsync -az --delete \
