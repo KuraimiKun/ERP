@@ -908,7 +908,7 @@ class DashboardViewSet(ERPBaseViewSet):
     queryset = Dashboard.objects.prefetch_related('widgets')
     serializer_class = DashboardSerializer
     search_fields = ['name']
-    filterset_fields = ['is_default', 'created_by']
+    filterset_fields = ['is_default', 'owner']
     ordering_fields = ['name', 'created_at']
     ordering = ['name']
 
