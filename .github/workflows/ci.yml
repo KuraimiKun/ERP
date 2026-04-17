@@ -294,6 +294,57 @@ jobs:
           echo "--- Compiling translations ---"
           sudo -u erp "$PY" "$APP_DIR/manage.py" compilemessages
 
+          echo "--- Updating systemd service files ---"
+          # Always overwrite service files so changes in deploy.sh propagate
+          # without requiring a full bootstrap re-run.
+          WORKERS=$(sudo grep -oP '(?<=--workers )\d+' /etc/systemd/system/erp-gunicorn.service 2>/dev/null || echo 3)
+
+          sudo tee /etc/systemd/system/erp-gunicorn.socket > /dev/null <<'SOCKEOF'
+          [Unit]
+          Description=ERP Django Gunicorn Socket
+
+          [Socket]
+          ListenStream=/opt/erpdjango/run/gunicorn.sock
+          SocketUser=erp
+          SocketGroup=www-data
+          SocketMode=0660
+
+          [Install]
+          WantedBy=sockets.target
+          SOCKEOF
+
+          sudo tee /etc/systemd/system/erp-gunicorn.service > /dev/null <<SVCEOF
+          [Unit]
+          Description=ERP Django Gunicorn Daemon
+          Requires=erp-gunicorn.socket
+          After=network.target postgresql.service redis-server.service
+
+          [Service]
+          User=erp
+          Group=www-data
+          UMask=0007
+          WorkingDirectory=$APP_DIR
+          EnvironmentFile=$APP_DIR/.env
+          ExecStart=$APP_DIR/venv/bin/gunicorn erpproject.wsgi:application \\
+              --workers ${WORKERS} \\
+              --bind unix:$APP_DIR/run/gunicorn.sock \\
+              --timeout 120 \\
+              --max-requests 1000 \\
+              --max-requests-jitter 100 \\
+              --access-logfile $APP_DIR/logs/gunicorn-access.log \\
+              --error-logfile $APP_DIR/logs/gunicorn-error.log \\
+              --log-level info
+          ExecReload=/bin/kill -s HUP \$MAINPID
+          Restart=on-failure
+          RestartSec=5
+          KillMode=mixed
+
+          [Install]
+          WantedBy=multi-user.target
+          SVCEOF
+
+          sudo systemctl daemon-reload
+
           echo "--- Restarting services ---"
           for svc in erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat; do
             if sudo systemctl list-unit-files "${svc}.service" 2>/dev/null | grep -q "^${svc}"; then
