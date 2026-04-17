@@ -204,6 +204,7 @@ rsync -a --delete \
     --exclude='logs/' \
     --exclude='media/' \
     --exclude='staticfiles/' \
+    --exclude='run/' \
     --exclude='.env' \
     "${REPO_DIR}/" "${APP_DIR}/"
 
