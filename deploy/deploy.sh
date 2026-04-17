@@ -615,7 +615,6 @@ server {
         expires max;
         add_header Cache-Control "public, max-age=315360000, immutable";
         gzip_static on;
-        brotli_static on;   # requires ngx_brotli; harmless if absent
     }
 
     # ── Media files ────────────────────────────────────────────────────────
