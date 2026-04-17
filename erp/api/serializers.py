@@ -251,10 +251,10 @@ class InvoiceLineSerializer(serializers.ModelSerializer):
         model = InvoiceLine
         fields = [
             'id', 'invoice', 'description', 'quantity', 'unit_price',
-            'discount_percent', 'discount_amount', 'tax_rate', 'tax_amount',
+            'discount_percent', 'tax_rate', 'tax_amount',
             'line_total'
         ]
-        read_only_fields = ['discount_amount', 'tax_amount', 'line_total']
+        read_only_fields = ['tax_amount', 'line_total']
 
 
 class InvoiceListSerializer(serializers.ModelSerializer):

@@ -212,7 +212,7 @@ class LeaveTypeViewSet(ERPBaseViewSet):
     queryset = LeaveType.objects.all()
     serializer_class = LeaveTypeSerializer
     search_fields = ['name', 'code']
-    filterset_fields = ['is_active', 'is_paid', 'requires_approval']
+    filterset_fields = ['is_active', 'is_paid']
     ordering_fields = ['name', 'days_allowed']
     ordering = ['name']
 
@@ -929,8 +929,8 @@ class KPIViewSet(ERPBaseViewSet):
     queryset = KPI.objects.prefetch_related('values')
     serializer_class = KPISerializer
     search_fields = ['name', 'code']
-    filterset_fields = ['category', 'is_active']
-    
+    filterset_fields = ['is_active']
+
     @action(detail=True, methods=['post'])
     def record_value(self, request, pk=None):
         """Record a new KPI value."""

@@ -24,7 +24,9 @@
       "Bash(python manage.py makemigrations --check)",
       "Bash(grep -rn '\\\\${{' /f/erpdjango/erp/templates --include=\"*.html\")",
       "Bash(grep -n \"class.*Credit\\\\|class.*Debit\" /f/erpdjango/erp/models/*.py)",
-      "Bash(grep -n \"^class.*Quote\" /f/erpdjango/erp/models/*.py)"
+      "Bash(grep -n \"^class.*Quote\" /f/erpdjango/erp/models/*.py)",
+      "Bash(python manage.py shell --settings=erpproject.test_settings -c ' *)",
+      "Bash(python manage.py spectacular --settings=erpproject.test_settings)"
     ]
   }
 }
