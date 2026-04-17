@@ -452,28 +452,25 @@ class PostgresServerAdmin(admin.ModelAdmin):
             container_name = f"erp_pg_{safe_name}"
             volume_name = f"{container_name}_data"
 
-            # Create the container
-            cmd = [
-                "docker", "run", "-d",
-                "--name", container_name,
-                "--network", docker_svc.network_name,
-                "-e", f"POSTGRES_PASSWORD={obj.admin_password}",
-                "-p", f"{obj.port}:5432",
-                "-v", f"{volume_name}:/var/lib/postgresql/data",
-                "--restart", "unless-stopped",
-                docker_svc.postgres_image,
-            ]
-            success, output = docker_svc._run_command(cmd, check=False)
-
-            if not success:
-                messages.error(
-                    request,
-                    f'Failed to create Docker container: {output}'
+            # Create the container via the Docker SDK
+            try:
+                client = docker_svc._client()
+                container = client.containers.run(
+                    docker_svc.postgres_image,
+                    name=container_name,
+                    detach=True,
+                    environment={'POSTGRES_PASSWORD': obj.admin_password},
+                    ports={'5432/tcp': obj.port},
+                    volumes={volume_name: {'bind': '/var/lib/postgresql/data', 'mode': 'rw'}},
+                    network=docker_svc.network_name,
+                    restart_policy={'Name': 'unless-stopped'},
                 )
+            except Exception as exc:
+                messages.error(request, f'Failed to create Docker container: {exc}')
                 return  # Don't save
 
             # Populate Docker-specific fields
-            obj.docker_container_id = output[:12]
+            obj.docker_container_id = container.short_id
             obj.docker_container_name = container_name
             obj.docker_volume_name = volume_name
             obj.host = 'localhost'

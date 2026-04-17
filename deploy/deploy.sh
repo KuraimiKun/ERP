@@ -377,9 +377,7 @@ Group=www-data
 UMask=0007
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
-Environment=NEW_RELIC_CONFIG_FILE=${APP_DIR}/newrelic.ini
-ExecStart=${APP_DIR}/venv/bin/newrelic-admin run-program \\
-    ${APP_DIR}/venv/bin/gunicorn erpproject.wsgi:application \\
+ExecStart=${APP_DIR}/venv/bin/gunicorn erpproject.wsgi:application \\
     --workers ${GUNICORN_WORKERS} \\
     --bind unix:${APP_DIR}/run/gunicorn.sock \\
     --timeout 120 \\
@@ -392,7 +390,6 @@ ExecReload=/bin/kill -s HUP \$MAINPID
 Restart=on-failure
 RestartSec=5
 KillMode=mixed
-PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
