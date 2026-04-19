@@ -365,6 +365,15 @@ def mobile_attendance_scan(request):
     if not qr_data:
         return _error('No QR code data provided.')
 
+    # The kiosk encodes a full URL (scan_url) into the QR image so that
+    # browsers can tap it directly.  The mobile app scans the same QR and
+    # sends the raw string, which may be the full URL.  Extract the payload
+    # from the ?qr= query parameter when present.
+    if '?qr=' in qr_data:
+        from urllib.parse import urlparse, parse_qs
+        qs = parse_qs(urlparse(qr_data).query)
+        qr_data = qs.get('qr', [''])[0]
+
     try:
         device = AttendanceDevice.verify_qr_payload(qr_data, max_age=30)
     except ValueError as e:
