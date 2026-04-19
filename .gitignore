@@ -111,7 +111,7 @@ Thumbs.db
 # Project specific
 staticfiles/
 media/
-logs/
+/logs/
 *.sqlite3
 
 # Deployment secrets (never commit real credentials)

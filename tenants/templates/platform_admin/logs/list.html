@@ -1,0 +1,185 @@
+{% extends "platform_admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "System Logs" %}{% endblock %}
+{% block page_title %}{% trans "System Logs" %}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div>
+        <h3>{% trans "System Logs" %}</h3>
+        <p>{% trans "Monitor all server, database, and user operations" %}</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="pa-card mb-4">
+    <div class="pa-card-body py-2">
+        <form method="get" class="d-flex flex-wrap gap-2 align-items-end">
+            <div class="search-box flex-grow-1" style="min-width:200px;max-width:350px">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="{% trans 'Search logs...' %}" value="{{ search_query }}">
+            </div>
+
+            <select name="level" class="form-select form-select-sm" style="width:auto">
+                <option value="">{% trans "All Levels" %}</option>
+                <option value="info" {% if current_level == 'info' %}selected{% endif %}>{% trans "Info" %}</option>
+                <option value="success" {% if current_level == 'success' %}selected{% endif %}>{% trans "Success" %}</option>
+                <option value="warning" {% if current_level == 'warning' %}selected{% endif %}>{% trans "Warning" %}</option>
+                <option value="error" {% if current_level == 'error' %}selected{% endif %}>{% trans "Error" %}</option>
+            </select>
+
+            <select name="action" class="form-select form-select-sm" style="width:auto">
+                <option value="">{% trans "All Actions" %}</option>
+                {% for val, label in action_choices %}
+                <option value="{{ val }}" {% if current_action == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-funnel me-1"></i>{% trans "Filter" %}
+            </button>
+            {% if search_query or current_level or current_action %}
+            <a href="{% url 'tenants:pa_logs' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-x-lg me-1"></i>{% trans "Clear" %}
+            </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Logs Table -->
+<div class="pa-card">
+    <div class="pa-card-body p-0">
+        {% if logs %}
+        <div class="table-responsive">
+            <table class="table pa-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:50px"></th>
+                        <th>{% trans "Action" %}</th>
+                        <th>{% trans "Message" %}</th>
+                        <th>{% trans "Server" %}</th>
+                        <th>{% trans "Database" %}</th>
+                        <th>{% trans "User" %}</th>
+                        <th>{% trans "Time" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="text-center">
+                            {% if log.level == 'success' %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            {% elif log.level == 'warning' %}
+                            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                            {% elif log.level == 'error' %}
+                            <i class="bi bi-x-circle-fill text-danger"></i>
+                            {% else %}
+                            <i class="bi bi-info-circle-fill text-primary"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-status badge-{{ log.level }}">
+                                {{ log.get_action_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size:.875rem">{{ log.message|truncatechars:120 }}</span>
+                            {% if log.details %}
+                            <button class="btn btn-link btn-sm p-0 ms-1" data-bs-toggle="collapse" data-bs-target="#logDetail{{ forloop.counter }}">
+                                <i class="bi bi-code-slash"></i>
+                            </button>
+                            <div class="collapse mt-1" id="logDetail{{ forloop.counter }}">
+                                <pre class="bg-light p-2 rounded small mb-0" style="font-size:.75rem;max-height:200px;overflow:auto">{{ log.details|pprint }}</pre>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.server %}
+                            <a href="{% url 'tenants:pa_server_detail' log.server.pk %}" class="text-decoration-none">
+                                <small><i class="bi bi-hdd-rack me-1"></i>{{ log.server.name }}</small>
+                            </a>
+                            {% else %}
+                            <small class="text-muted">-</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.database %}
+                            <a href="{% url 'tenants:pa_database_detail' log.database.pk %}" class="text-decoration-none">
+                                <small><i class="bi bi-database me-1"></i>{{ log.database.display_name|default:log.database.name }}</small>
+                            </a>
+                            {% else %}
+                            <small class="text-muted">-</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.user %}
+                            <a href="{% url 'tenants:pa_user_detail' log.user.pk %}" class="text-decoration-none">
+                                <small>{{ log.user.get_full_name|default:log.user.email }}</small>
+                            </a>
+                            {% else %}
+                            <small class="text-muted">{% trans "System" %}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted text-nowrap">
+                                {{ log.created_at|date:"M d, H:i" }}
+                            </small>
+                            <br>
+                            <small class="text-muted" style="font-size:.7rem">{{ log.created_at|timesince }} {% trans "ago" %}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if logs.has_other_pages %}
+        <div class="pa-card-body border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                {% blocktrans with start=logs.start_index end=logs.end_index total=logs.paginator.count %}
+                    Showing {{ start }}–{{ end }} of {{ total }} entries
+                {% endblocktrans %}
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if logs.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ logs.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_level %}&level={{ current_level }}{% endif %}{% if current_action %}&action={{ current_action }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% for num in logs.paginator.page_range %}
+                        {% if num == logs.number %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > logs.number|add:"-3" and num < logs.number|add:"3" %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_level %}&level={{ current_level }}{% endif %}{% if current_action %}&action={{ current_action }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if logs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ logs.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_level %}&level={{ current_level }}{% endif %}{% if current_action %}&action={{ current_action }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-journal-text"></i>
+            <h6>{% trans "No logs found" %}</h6>
+            <p class="text-muted">{% trans "System activity will appear here" %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
