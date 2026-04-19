@@ -151,6 +151,11 @@ jobs:
     - name: Add VPS to known hosts
       run: ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
 
+    - name: Ensure rsync is installed on VPS
+      run: |
+        ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+          "command -v rsync >/dev/null || sudo apt-get install -yqq rsync"
+
     # Check if the server has already been bootstrapped (venv exists).
     # Sync code to the right place based on the result:
     #   - Bootstrap → staging dir the ubuntu user can write to
