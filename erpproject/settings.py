@@ -397,7 +397,9 @@ else:
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        # Custom subclass that forces .using('default') so token lookups
+        # never follow the tenant DB context set by TenantMiddleware.
+        'erp.api.permissions.DefaultDbTokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',

@@ -6,7 +6,38 @@ checks that enforce company isolation, AI feature availability, and
 finance-specific access control.
 """
 
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import BasePermission
+
+
+class DefaultDbTokenAuthentication(TokenAuthentication):
+    """Token authentication that always reads from the default DB.
+
+    DRF's stock TokenAuthentication uses the active DB router, which
+    follows the tenant context set by TenantMiddleware. Since authtoken
+    lives only in the default DB, every authenticated mobile request
+    would fail with 'relation authtoken_token does not exist' in the
+    tenant DB. Forcing .using('default') here fixes that.
+    """
+
+    def authenticate_credentials(self, key):
+        model = self.get_model()
+        try:
+            token = (
+                model.objects
+                .using('default')
+                .select_related('user')
+                .get(key=key)
+            )
+        except model.DoesNotExist:
+            from rest_framework import exceptions
+            raise exceptions.AuthenticationFailed('Invalid token.')
+
+        if not token.user.is_active:
+            from rest_framework import exceptions
+            raise exceptions.AuthenticationFailed('User inactive or deleted.')
+
+        return (token.user, token)
 
 
 class IsCompanyUser(BasePermission):
