@@ -549,7 +549,8 @@ class Payroll(ERPBaseModel):
 
         entry_number = SequenceService.get_next_number(company, 'journal_entry')
 
-        with transaction.atomic():
+        db_alias = self._state.db or 'default'
+        with transaction.atomic(using=db_alias):
             je = JournalEntry.objects.create(
                 company=company,
                 entry_number=entry_number,

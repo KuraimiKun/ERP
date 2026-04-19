@@ -958,12 +958,13 @@ class JournalEntry(ERPBaseModel):
                     f'({self.fiscal_year.start_date} – {self.fiscal_year.end_date})'
                 )
 
-        with transaction.atomic():
+        db = self._state.db or 'default'
+        with transaction.atomic(using=db):
             # Lock affected accounts in deterministic order to prevent concurrent balance corruption
             account_ids = sorted(self.lines.values_list('account_id', flat=True))
             locked_accounts = {
                 acc.pk: acc
-                for acc in Account.objects.select_for_update().filter(pk__in=account_ids)
+                for acc in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
             }
             for line in self.lines.select_related('account').all():
                 acc = locked_accounts[line.account_id]
@@ -1026,8 +1027,11 @@ class JournalEntryLine(TimeStampedModel):
         # Wrap in atomic and lock the parent row so concurrent line saves for
         # the same JournalEntry serialise their calculate_totals() reads and
         # never produce an inconsistent debit/credit total.
-        with transaction.atomic():
-            locked_entry = JournalEntry.objects.select_for_update().get(
+        # Use the same DB alias as the queryset (passed via using= by create())
+        # so the transaction and the select_for_update() land on the same DB.
+        db = kwargs.get('using') or self._state.db or 'default'
+        with transaction.atomic(using=db):
+            locked_entry = JournalEntry.objects.using(db).select_for_update().get(
                 pk=self.journal_entry_id
             )
             super().save(*args, **kwargs)
