@@ -436,12 +436,15 @@ def mobile_attendance_scan(request):
         'success': True,
         'action': action,
         'attendance': {
+            'id': attendance.pk,
             'date': attendance.date.isoformat(),
             'check_in': str(attendance.check_in) if attendance.check_in else None,
             'check_out': str(attendance.check_out) if attendance.check_out else None,
+            'is_present': attendance.is_present,
             'is_late': attendance.is_late,
             'late_minutes': attendance.late_minutes,
             'hours_worked': str(attendance.hours_worked),
+            'overtime_hours': str(attendance.overtime_hours),
         },
     })
 
