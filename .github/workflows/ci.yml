@@ -392,9 +392,39 @@ jobs:
             sudo nginx -t || true
           fi
 
-          echo "--- Patching nginx: ensure mobile API is accessible over HTTP ---"
-          sudo python3 "$APP_DIR/deploy/patch_nginx_mobile.py" /etc/nginx/sites-available/erp \
-            && sudo nginx -t && sudo systemctl reload nginx \
-            || echo "  [WARN] nginx patch skipped or already applied"
+          echo "--- Patching nginx: ensure /api/mobile/ proxies over HTTP ---"
+          NGINX_CONF="/etc/nginx/sites-available/erp"
+          if sudo grep -q "location /api/mobile/" "$NGINX_CONF" 2>/dev/null; then
+            echo "  [OK]   nginx already has /api/mobile/ HTTP passthrough"
+          else
+            sudo python3 /dev/stdin "$NGINX_CONF" <<'PYEOF'
+          import sys
+          path = sys.argv[1]
+          conf = open(path).read()
+          old = '    location / {\n        return 301 https://$host$request_uri;\n    }\n}'
+          new = (
+          	'    location /api/mobile/ {\n'
+          	'        proxy_pass http://erp_backend;\n'
+          	'        proxy_set_header Host $host;\n'
+          	'        proxy_set_header X-Real-IP $remote_addr;\n'
+          	'        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n'
+          	'        proxy_set_header X-Forwarded-Proto http;\n'
+          	'        proxy_connect_timeout 60s;\n'
+          	'        proxy_read_timeout 120s;\n'
+          	'        proxy_redirect off;\n'
+          	'    }\n\n'
+          	'    location / {\n'
+          	'        return 301 https://$host$request_uri;\n'
+          	'    }\n}'
+          )
+          patched = conf.replace(old, new, 1)
+          if patched == conf:
+          	print('[WARN] pattern not found — nginx config may already differ')
+          	sys.exit(1)
+          open(path, 'w').write(patched)
+          print('[OK] nginx patched')
+          PYEOF
+            sudo nginx -t && sudo systemctl reload nginx && echo "  [OK]   nginx reloaded"
+          fi
 
           echo "--- Deploy complete ---"
