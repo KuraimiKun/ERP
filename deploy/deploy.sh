@@ -556,14 +556,28 @@ upstream erp_backend {
     server unix:APP_DIR_PLACEHOLDER/run/gunicorn.sock fail_timeout=0;
 }
 
-# ── Redirect HTTP → HTTPS ──────────────────────────────────────────────────
+# ── HTTP — mobile API passthrough + ACME + redirect everything else ────────
 server {
     listen 80;
     listen [::]:80;
     server_name DOMAIN_PLACEHOLDER www.DOMAIN_PLACEHOLDER;
 
+    # Let's Encrypt challenge
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
+    }
+
+    # Mobile API: allow plain HTTP so the Android app doesn't hit the
+    # self-signed cert (Dio rejects self-signed certs by default).
+    location /api/mobile/ {
+        proxy_pass http://erp_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto http;
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 120s;
+        proxy_redirect off;
     }
 
     location / {

@@ -392,4 +392,9 @@ jobs:
             sudo nginx -t || true
           fi
 
+          echo "--- Patching nginx: ensure mobile API is accessible over HTTP ---"
+          sudo python3 "$APP_DIR/deploy/patch_nginx_mobile.py" /etc/nginx/sites-available/erp \
+            && sudo nginx -t && sudo systemctl reload nginx \
+            || echo "  [WARN] nginx patch skipped or already applied"
+
           echo "--- Deploy complete ---"
