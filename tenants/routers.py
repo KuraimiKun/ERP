@@ -40,6 +40,11 @@ ALWAYS_DEFAULT_MODELS = {
     'tenants.serverlog',
     'sessions.session',
     'admin.logentry',
+    # Support tickets are platform-level (tenant ↔ admin), not per-tenant data
+    'tenants.ticket',
+    'tenants.ticketmessage',
+    'tenants.ticketattachment',
+    'tenants.ticketcategory',
 }
 
 # Apps that are ALWAYS routed to default (infrastructure only)

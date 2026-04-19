@@ -390,7 +390,7 @@ class DatabaseService:
             
             # Run dependent app migrations first (ERP models have FKs
             # to auth.User / tenants.TenantUser and contenttypes)
-            for app in ('contenttypes', 'auth', 'tenants', 'erp'):
+            for app in ('contenttypes', 'auth', 'authtoken', 'tenants', 'erp', 'erp_ai'):
                 call_command(
                     'migrate',
                     app,
