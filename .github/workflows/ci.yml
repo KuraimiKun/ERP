@@ -302,28 +302,21 @@ jobs:
           sudo -u erp "$PY" "$APP_DIR/manage.py" compilemessages
 
           echo "--- Updating systemd service files ---"
-          # Always overwrite service files so changes in deploy.sh propagate
-          # without requiring a full bootstrap re-run.
+          # Always overwrite service files so changes propagate without a full bootstrap.
+          # We do NOT use a .socket unit — gunicorn owns its own unix socket via --bind.
+          # Using both a socket unit AND --bind causes them to fight over the same file,
+          # which is why gunicorn would sometimes fail to start cleanly after deploy.
           WORKERS=$(sudo grep -oP '(?<=--workers )\d+' /etc/systemd/system/erp-gunicorn.service 2>/dev/null || echo 3)
 
-          sudo tee /etc/systemd/system/erp-gunicorn.socket > /dev/null <<'SOCKEOF'
-          [Unit]
-          Description=ERP Django Gunicorn Socket
-
-          [Socket]
-          ListenStream=/opt/erpdjango/run/gunicorn.sock
-          SocketUser=erp
-          SocketGroup=www-data
-          SocketMode=0660
-
-          [Install]
-          WantedBy=sockets.target
-          SOCKEOF
+          # Disable and remove the socket unit if it exists (legacy cleanup)
+          if sudo systemctl list-unit-files erp-gunicorn.socket &>/dev/null | grep -q erp-gunicorn.socket; then
+            sudo systemctl disable --now erp-gunicorn.socket 2>/dev/null || true
+            sudo rm -f /etc/systemd/system/erp-gunicorn.socket
+          fi
 
           sudo tee /etc/systemd/system/erp-gunicorn.service > /dev/null <<SVCEOF
           [Unit]
           Description=ERP Django Gunicorn Daemon
-          Requires=erp-gunicorn.socket
           After=network.target postgresql.service redis-server.service
 
           [Service]
@@ -352,8 +345,18 @@ jobs:
 
           sudo systemctl daemon-reload
 
-          echo "--- Restarting services ---"
-          for svc in erp-gunicorn erp-celery-worker erp-celery-ml-worker erp-celery-beat; do
+          echo "--- Reloading/restarting services ---"
+          # Gunicorn: use reload (SIGHUP) for zero-downtime — old workers finish
+          # their requests while new workers spin up with the new code.
+          # Fall back to restart only if gunicorn is not currently running.
+          if sudo systemctl is-active --quiet erp-gunicorn; then
+            sudo systemctl reload erp-gunicorn && echo "  Reloaded erp-gunicorn (zero-downtime)"
+          else
+            sudo systemctl restart erp-gunicorn && echo "  Started erp-gunicorn"
+          fi
+
+          # Celery workers require a hard restart (they don't hot-reload)
+          for svc in erp-celery-worker erp-celery-ml-worker erp-celery-beat; do
             if sudo systemctl list-unit-files "${svc}.service" 2>/dev/null | grep -q "^${svc}"; then
               sudo systemctl restart "$svc" && echo "  Restarted ${svc}"
             else

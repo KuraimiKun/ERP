@@ -366,10 +366,13 @@ ok "Permissions set"
 # 9. Gunicorn systemd Service
 ###############################################################################
 info "Configuring Gunicorn service..."
+
+# Gunicorn owns its socket via --bind unix:... — no socket unit needed.
+# Using a socket unit alongside --bind causes both to fight over the same
+# socket file, resulting in startup failures and 502s on every deploy.
 cat > /etc/systemd/system/erp-gunicorn.service <<SVCEOF
 [Unit]
 Description=ERP Django Gunicorn Daemon
-Requires=erp-gunicorn.socket
 After=network.target postgresql.service redis-server.service docker.service
 
 [Service]
@@ -396,22 +399,10 @@ KillMode=mixed
 WantedBy=multi-user.target
 SVCEOF
 
-cat > /etc/systemd/system/erp-gunicorn.socket <<SOCKEOF
-[Unit]
-Description=ERP Django Gunicorn Socket
-
-[Socket]
-ListenStream=${APP_DIR}/run/gunicorn.sock
-SocketUser=${APP_USER}
-SocketGroup=www-data
-SocketMode=0660
-
-[Install]
-WantedBy=sockets.target
-SOCKEOF
+# Remove legacy socket unit if present from a previous bootstrap
+rm -f /etc/systemd/system/erp-gunicorn.socket
 
 systemctl daemon-reload
-systemctl enable --now erp-gunicorn.socket
 systemctl enable erp-gunicorn.service
 systemctl restart erp-gunicorn.service
 ok "Gunicorn service active"
