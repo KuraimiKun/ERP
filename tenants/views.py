@@ -9,10 +9,16 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
+from django.templatetags.static import static
 
 from erp.ratelimit import ratelimit
 from .forms import SignUpForm, LoginForm
 from .models import TenantUser
+
+
+def download_app(request):
+    """Public download page for the employee mobile app."""
+    return render(request, 'tenants/download_app.html')
 
 
 def home(request):

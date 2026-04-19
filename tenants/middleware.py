@@ -23,6 +23,7 @@ PUBLIC_URLS = [
     '/accounts/pending/',
     '/accounts/rejected/',
     '/accounts/register/',
+    '/accounts/download-app/',
     '/',
     '/static/',
     '/media/',

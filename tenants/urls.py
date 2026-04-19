@@ -29,6 +29,9 @@ urlpatterns = [
     # Profile
     path('profile/', views.profile_view, name='profile'),
 
+    # Mobile app download (public)
+    path('download-app/', views.download_app, name='download_app'),
+
     # Employee Self-Registration (public)
     path('register/<str:token>/', views.employee_register_view, name='employee_register'),
 
