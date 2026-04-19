@@ -1,303 +1,346 @@
-# ERP Multi-Tenant System
+<div align="center">
 
-A Django-based multi-tenant ERP (Enterprise Resource Planning) system that supports multiple isolated databases for different organizations.
+# Kuraimi ERP
 
-## Features
+**A full-stack, multi-tenant ERP platform built with Django and Flutter**
 
-- **Multi-Tenant Architecture**: Each tenant gets their own isolated PostgreSQL database
-- **User Signup & Approval**: Users sign up and wait for admin approval
-- **Database Management**: Admin can manage multiple PostgreSQL servers
-- **Docker Integration**: Create PostgreSQL servers as Docker containers
-- **Remote Server Support**: Connect to existing remote PostgreSQL servers
-- **Complete ERP Modules**: Finance, HR, CRM, and more
+[![Django](https://img.shields.io/badge/Django-5.1-0C4B33?style=flat-square&logo=django&logoColor=white)](https://djangoproject.com)
+[![DRF](https://img.shields.io/badge/DRF-3.14-A30000?style=flat-square&logo=django&logoColor=white)](https://www.django-rest-framework.org)
+[![Flutter](https://img.shields.io/badge/Flutter-Mobile-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Celery](https://img.shields.io/badge/Celery-5.3-37814A?style=flat-square&logo=celery&logoColor=white)](https://docs.celeryq.dev)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/KuraimiKun/ERP/ci.yml?branch=main&style=flat-square&label=CI%2FCD&logo=github-actions&logoColor=white)](https://github.com/KuraimiKun/ERP/actions)
+
+<br/>
+
+Each business gets its own **isolated PostgreSQL database**. One platform, unlimited tenants — with a companion Flutter mobile app for employees.
+
+[Live Demo](#) · [Download App](#download) · [API Docs](#api) · [Report Bug](https://github.com/KuraimiKun/ERP/issues)
+
+</div>
+
+---
+
+## What's Inside
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Django 5.1 · Django REST Framework · Celery · Redis |
+| **Database** | PostgreSQL (multi-tenant, per-org isolation) · Docker containers |
+| **Frontend** | Server-rendered Django templates · HTMX-friendly |
+| **Mobile** | Flutter (Android · iOS coming soon) |
+| **Infrastructure** | Nginx · Gunicorn · GitHub Actions CI/CD · GCP Compute Engine |
+| **AI / ML** | OpenAI integration · scikit-learn · plotly charts |
+| **Auth** | Token auth (API) · Session auth (web) · Rate limiting · Account lockout |
+
+---
+
+## Modules
+
+<table>
+<tr>
+<td width="50%">
+
+### 💰 Finance
+- Customer invoicing & payments
+- Expense tracking
+- Journal entries & ledger
+- Financial reports (PDF export)
+- Fixed assets management
+
+### 👥 HR
+- Employee profiles & documents
+- Departments & org chart
+- Attendance tracking (QR kiosk)
+- Leave requests & approvals
+- Payroll & payslips
+
+### 🛒 POS
+- Terminal & session management
+- Product catalog with categories
+- Customer management
+- Multiple payment methods
+- Receipt generation & order history
+
+</td>
+<td width="50%">
+
+### 📦 Inventory
+- Products & stock levels
+- Warehouse management
+- Purchase orders
+- Stock movements
+
+### 🤝 CRM
+- Lead tracking & campaigns
+- Customer interactions
+- Pipeline management
+
+### 🔧 Services
+- Service catalog
+- Quotes & work orders
+
+### 🏢 Supplier Management
+- Supplier profiles
+- Purchase orders
+- Supplier payments
+
+</td>
+</tr>
+</table>
+
+---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Main Database                            │
-│  (erp_main - stores users, servers, tenant info)               │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                ┌───────────────┼───────────────┐
-                ▼               ▼               ▼
-┌───────────────────┐ ┌───────────────────┐ ┌───────────────────┐
-│  PostgreSQL       │ │  PostgreSQL       │ │  PostgreSQL       │
-│  Server 1         │ │  Server 2         │ │  Server N         │
-│  (Docker/Remote)  │ │  (Docker/Remote)  │ │  (Docker/Remote)  │
-├───────────────────┤ ├───────────────────┤ ├───────────────────┤
-│ tenant_db_1       │ │ tenant_db_3       │ │ tenant_db_5       │
-│ tenant_db_2       │ │ tenant_db_4       │ │ tenant_db_6       │
-└───────────────────┘ └───────────────────┘ └───────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                      Internet                              │
+└────────────────────────┬───────────────────────────────────┘
+                         │
+                    ┌────▼────┐
+                    │  Nginx  │  SSL termination · static files
+                    └────┬────┘
+                         │
+              ┌──────────▼──────────┐
+              │  Gunicorn Workers   │  WSGI · unix socket
+              └──────────┬──────────┘
+                         │
+         ┌───────────────┼───────────────┐
+         │               │               │
+    ┌────▼────┐    ┌─────▼─────┐   ┌────▼────┐
+    │  Django  │    │  Celery   │   │   DRF   │
+    │   Web   │    │  Workers  │   │  Mobile │
+    └────┬────┘    └─────┬─────┘   │   API   │
+         │               │         └────┬────┘
+         └───────────────┴──────────────┘
+                         │
+              ┌──────────▼──────────┐
+              │   Default DB        │  Users · tenants · servers
+              │   (erp_main)        │
+              └─────────────────────┘
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+   ┌────▼────┐      ┌────▼────┐      ┌────▼────┐
+   │ tenant  │      │ tenant  │      │ tenant  │
+   │  db_1   │      │  db_2   │      │  db_N   │
+   │ (org A) │      │ (org B) │      │ (org N) │
+   └─────────┘      └─────────┘      └─────────┘
 ```
 
-## Requirements
+Each tenant database is **completely isolated** — separate schema, separate credentials. A compromised tenant cannot read another tenant's data.
 
-- Python 3.10+
-- PostgreSQL 12+ (for main database)
-- Docker (optional, for local PostgreSQL containers)
+---
 
-## Installation
+## Mobile App
 
-### 1. Clone and Setup Virtual Environment
+The Flutter employee app connects to the same REST API:
+
+- **Login** with company credentials
+- **Dashboard** — attendance status, pending tasks, leave balance
+- **Attendance** — QR scan check-in/out
+- **Payslips** — view and download
+- **Leave requests** — apply, track, cancel
+- **Tasks** — view assigned tasks, update status, add comments
+- **Notifications** — real-time push alerts
+- **POS** — full point-of-sale terminal
+
+<a id="download"></a>
+
+> **Android APK** — available at `/accounts/download-app/` on your deployment.  
+> **iOS** — coming soon.
+
+---
+
+## Platform Admin
+
+A dedicated super-admin panel (`/accounts/platform-admin/`) for managing the entire platform:
+
+| Section | Capability |
+|---|---|
+| **Tenants & Users** | Approve/reject signups, assign databases, manage roles |
+| **Servers** | Add Docker or remote PostgreSQL servers |
+| **Databases** | Create, clone, backup, restore tenant databases |
+| **Monitoring** | Real-time server health, resource usage, alerts |
+| **Docker** | Container management, logs, stats, terminal |
+| **Logs** | Filterable system-wide audit log |
+| **Analytics** | Tenant growth, usage trends, KPI charts |
+| **Invites** | Generate employee self-registration links |
+| **Announcements** | Broadcast messages to tenants |
+| **Scheduled Tasks** | Manage Celery beat jobs |
+| **Support Tickets** | Respond to tenant support requests |
+
+---
+
+## Quick Start (Development)
+
+### Prerequisites
+
+- Python 3.12
+- PostgreSQL 15
+- Redis
+- Docker (optional — for tenant DB containers)
+
+### 1. Clone & set up environment
 
 ```bash
-cd erpdjango
+git clone https://github.com/KuraimiKun/ERP.git
+cd ERP
 python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-
-pip install -r requirements.txt
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements-dev.txt
 ```
 
-### 2. Configure Environment
-
-Copy the example environment file and edit it:
+### 2. Configure `.env`
 
 ```bash
-cp .env.example .env
+cp .env.example .env   # then edit with your values
 ```
-
-Edit `.env` with your settings:
 
 ```env
 SECRET_KEY=your-secret-key-here
 DEBUG=True
 DB_NAME=erp_main
 DB_USER=postgres
-DB_PASSWORD=your-password
+DB_PASSWORD=yourpassword
 DB_HOST=localhost
 DB_PORT=5432
+REDIS_URL=redis://localhost:6379/1
+CELERY_BROKER_URL=redis://localhost:6379/0
+FIELD_ENCRYPTION_KEY=<generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())">
 ```
 
-### 3. Create Main Database
-
-Create the main database for tenant management:
-
-```sql
-CREATE DATABASE erp_main;
-```
-
-### 4. Run Migrations
+### 3. Create the database & run migrations
 
 ```bash
+createdb erp_main
 python manage.py migrate
-```
-
-### 5. Create Superuser
-
-```bash
 python manage.py createsuperuser
 ```
 
-Or use the setup command:
+### 4. Run services
 
 ```bash
-python manage.py setup_tenants --email admin@example.com --password yourpassword
-```
-
-### 6. Start the Development Server
-
-```bash
+# Terminal 1 — Django
 python manage.py runserver
+
+# Terminal 2 — Celery worker
+celery -A erpproject worker -l info
+
+# Terminal 3 — Celery beat (scheduled tasks)
+celery -A erpproject beat -l info
 ```
 
-Visit:
-- **Home Page**: http://localhost:8000/
-- **Admin Panel**: http://localhost:8000/admin/
-- **ERP**: http://localhost:8000/erp/
+Visit **http://localhost:8000** · Admin at **http://localhost:8000/admin/**
 
-## Usage Flow
+---
 
-### 1. Admin Setup
+## Production Deployment (CI/CD)
 
-1. Login to the admin panel at `/admin/`
-2. **Add PostgreSQL Server**:
-   - For Docker: Click "PostgreSQL Servers" → "Create Docker Server"
-   - For Remote: Click "PostgreSQL Servers" → "Add PostgreSQL Server"
+Deployment is fully automated via GitHub Actions. Every push to `main`:
 
-### 2. User Registration
+1. **Runs tests** — pytest · ruff lint · mypy type-check · migration check
+2. **Detects mode** — Bootstrap (fresh server) or Fast Deploy (existing server)
+3. **Syncs code** — rsync to GCP Compute Engine over SSH
+4. **Applies changes** — pip install · migrate · collectstatic
+5. **Zero-downtime reload** — `systemctl reload` sends SIGHUP to gunicorn; old workers drain while new workers serve
 
-1. Users visit the home page and click "Sign Up"
-2. Fill in the registration form
-3. Account is created in "Pending" status
+### Required GitHub Secrets
 
-### 3. Admin Approval
+| Secret | Description |
+|---|---|
+| `VPS_HOST` | Server IP or hostname |
+| `VPS_USER` | SSH user |
+| `VPS_SSH_KEY` | Private SSH key |
+| `PROD_SECRET_KEY` | Django secret key |
+| `PROD_DB_PASSWORD` | PostgreSQL password |
+| `PROD_FIELD_ENCRYPTION_KEY` | Fernet encryption key |
+| `PROD_SSL_EMAIL` | Let's Encrypt email |
+| `PROD_SUPERUSER_EMAIL` | Initial admin email |
+| `PROD_SUPERUSER_PASSWORD` | Initial admin password |
 
-1. Admin sees new user in "Users" section with "Pending" status
-2. Click on the user and select "Approve User"
-3. Select a PostgreSQL server for the new database
-4. System creates a new database and runs migrations
-5. User is now approved and can access the ERP
-
-### 4. User Access
-
-1. Approved user logs in
-2. System routes them to their tenant database
-3. User completes ERP setup wizard
-4. User can now use all ERP features
-
-## PostgreSQL Server Management
-
-### Docker Servers (Local)
-
-Perfect for development or small deployments:
-
-1. Navigate to Admin → PostgreSQL Servers
-2. Click "Create Docker Server"
-3. Fill in:
-   - **Name**: Display name for the server
-   - **Port**: Host port (different from 5432 if main DB uses it)
-   - **Password**: PostgreSQL admin password
-4. System creates a Docker container with PostgreSQL
-
-### Remote Servers
-
-For production deployments with existing PostgreSQL infrastructure:
-
-1. Navigate to Admin → PostgreSQL Servers
-2. Click "Add PostgreSQL Server"
-3. Fill in:
-   - **Name**: Display name
-   - **Server Type**: Remote Server
-   - **Host**: Server hostname/IP
-   - **Port**: PostgreSQL port
-   - **Admin Username/Password**: Credentials for database creation
-
-## Database Assignment
-
-Each approved user needs a database assignment. Options:
-
-### Create New Database (During Approval)
-
-When approving a user, a new database is created on the selected server.
-
-### Assign Existing Database
-
-Multiple users can share a database by using "Assign Database" action.
-
-### Roles
-
-- **Owner**: Full access, can manage other users
-- **Admin**: Full access to ERP features
-- **User**: Standard ERP access
-- **Read Only**: View-only access
-
-## Management Commands
-
-```bash
-# Initial setup with Docker server
-python manage.py setup_tenants --email admin@example.com --password pass --create-docker-server
-
-# Run migrations on all tenant databases
-python manage.py migrate_tenants
-
-# Check server health
-python manage.py check_servers
+To force a full server bootstrap (fresh instance):
+```
+GitHub → Actions → Run workflow → ✅ Force bootstrap
 ```
 
-## ERP Modules
-
-Once logged into the ERP, users have access to:
-
-### Finance
-- Customers & Invoicing
-- Payments
-- Expenses
-- Journal Entries
-- Financial Reports
-
-### HR
-- Employees
-- Departments
-- Attendance
-- Leave Requests
-
-### CRM
-- Leads
-- Campaigns
-- Customer Interactions
-
-### Suppliers
-- Supplier Management
-- Purchase Orders
-- Supplier Payments
-
-### Services
-- Service Categories
-- Quotes
+---
 
 ## API
 
-REST API endpoints are available at `/api/`:
+REST API served at `/api/` with OpenAPI schema at `/api/schema/` and Swagger UI at `/api/docs/`.
 
-```
-GET /api/customers/
-GET /api/invoices/
-GET /api/employees/
+Mobile API served at `/api/mobile/` — uses token authentication with a per-request `X-Tenant-DB` header for tenant routing.
+
+```http
+POST   /api/mobile/auth/login/
+POST   /api/mobile/auth/logout/
+GET    /api/mobile/dashboard/
+GET    /api/mobile/attendance/
+POST   /api/mobile/attendance/scan/
+GET    /api/mobile/leaves/
+POST   /api/mobile/leaves/
+GET    /api/mobile/payslips/
+GET    /api/mobile/tasks/
+GET    /api/mobile/notifications/
+POST   /api/mobile/pos/sessions/open/
 ...
 ```
 
-API authentication uses session or token authentication.
+<a id="api"></a>
 
-## Configuration Options
+---
 
-### Settings Reference
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `DOCKER_ENABLED` | True | Enable Docker server creation |
-| `DOCKER_POSTGRES_IMAGE` | postgres:15-alpine | Docker image for PostgreSQL |
-| `DOCKER_NETWORK` | erp_network | Docker network name |
-
-## Security Considerations
-
-- Each tenant database has unique credentials
-- Users can only access their assigned database
-- Admin panel is separate from tenant data
-- All passwords are properly hashed
-
-## Troubleshooting
-
-### Docker not available
+## Project Structure
 
 ```
-Error: Docker is not available or not running
+erpdjango/
+├── erp/                    # Core ERP app
+│   ├── models/             # finance · hr · crm · inventory · pos · services
+│   ├── views/              # Feature views per module
+│   ├── api/                # DRF serializers, views, mobile API
+│   ├── tasks/              # Celery async tasks
+│   ├── ai/                 # OpenAI & ML integrations
+│   └── templates/          # Django HTML templates
+├── tenants/                # Multi-tenancy & platform management
+│   ├── models.py           # TenantUser · TenantDatabase · DatabaseAssignment
+│   ├── middleware.py       # Per-request DB routing
+│   ├── routers.py          # Django multi-DB router
+│   └── platform_admin/     # Super-admin panel
+├── mobile/                 # Flutter mobile app
+│   └── lib/
+│       ├── screens/        # auth · dashboard · attendance · leaves · pos
+│       ├── providers/      # State management
+│       └── services/       # API client · storage
+├── deploy/                 # deploy.sh · nginx patches · CI helpers
+├── .github/workflows/      # CI/CD pipeline (ci.yml)
+└── erpproject/             # Django settings · URL root · Celery config
 ```
 
-**Solution**: Ensure Docker is installed and running:
-```bash
-docker info
-```
+---
 
-### Database connection refused
+## Tech Stack
 
-```
-Error: could not connect to server: Connection refused
-```
+<div align="center">
 
-**Solution**: Check PostgreSQL is running and credentials are correct.
+![Django](https://img.shields.io/badge/-Django-0C4B33?style=for-the-badge&logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![Celery](https://img.shields.io/badge/-Celery-37814A?style=for-the-badge&logo=celery&logoColor=white)
+![Flutter](https://img.shields.io/badge/-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Nginx](https://img.shields.io/badge/-Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![Docker](https://img.shields.io/badge/-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/-GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+![GCP](https://img.shields.io/badge/-Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
+![OpenAI](https://img.shields.io/badge/-OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
 
-### Migration errors
+</div>
 
-If migrations fail on a tenant database:
-
-1. Check the database status in admin
-2. View the error message
-3. Fix any missing dependencies
-4. Re-run migrations from admin
+---
 
 ## License
 
-MIT License
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+MIT — see [LICENSE](LICENSE) for details.
