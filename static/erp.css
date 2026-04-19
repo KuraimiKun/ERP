@@ -428,6 +428,7 @@ a:hover { color: var(--clr-primary-hover); }
   position: relative;
   overflow: hidden;
   transition: var(--transition-slow);
+  min-height: 108px;
 }
 .stat-card::before {
   content: '';
@@ -440,6 +441,12 @@ a:hover { color: var(--clr-primary-hover); }
 }
 .stat-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
 .stat-card:hover::before { opacity: 1; }
+
+/* Colored variants show accent border permanently */
+.stat-card--primary::before { opacity: 1; background: var(--gradient-primary); }
+.stat-card--success::before { opacity: 1; background: var(--gradient-success); }
+.stat-card--warning::before { opacity: 1; background: var(--gradient-warning); }
+.stat-card--info::before    { opacity: 1; background: var(--gradient-info); }
 
 .stat-card .stat-icon {
   width: 48px;
@@ -460,10 +467,12 @@ a:hover { color: var(--clr-primary-hover); }
 .stat-card--info    .stat-icon { background: var(--gradient-info);    color: #fff; box-shadow: 0 4px 14px rgba(6,182,212,0.3); }
 
 .stat-card .stat-value {
-  font-size: 1.7rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.2;
   color: var(--clr-gray-900);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .stat-card .stat-label {
   font-size: 0.8rem;
@@ -477,6 +486,26 @@ a:hover { color: var(--clr-primary-hover); }
   margin-top: 0.35rem;
 }
 .stat-card .stat-change { font-size: 0.75rem; }
+
+/* Secondary KPI icon (soft-tinted, no gradient) */
+.stat-icon-sm {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.stat-icon-sm--primary { background: var(--clr-primary-light); color: var(--clr-primary); }
+.stat-icon-sm--success { background: var(--clr-success-light); color: var(--clr-success); }
+.stat-icon-sm--warning { background: var(--clr-warning-light); color: var(--clr-warning); }
+.stat-icon-sm--danger  { background: var(--clr-danger-light);  color: var(--clr-danger); }
+.stat-icon-sm--info    { background: var(--clr-info-light);    color: var(--clr-info); }
+
+/* Chart height wrapper */
+.chart-container { position: relative; height: 240px; }
 
 /* ---- 8. TABLES ---- */
 .erp-table { margin: 0; }
