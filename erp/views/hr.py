@@ -267,9 +267,9 @@ def attendance_list(request):
     end_date = request.GET.get('end_date', today.isoformat())
 
     attendances = Attendance.objects.filter(
-        employee__company=company,
+        Q(employee__company=company) | Q(employee__company__isnull=True),
         date__gte=start_date,
-        date__lte=end_date
+        date__lte=end_date,
     ).select_related('employee')
 
     attendances, current_sort, current_order = apply_sorting(
@@ -338,7 +338,7 @@ def attendance_edit(request, pk):
 def leave_request_list(request):
     company = get_user_company(request.user)
     leave_requests = LeaveRequest.objects.filter(
-        employee__company=company
+        Q(employee__company=company) | Q(employee__company__isnull=True),
     ).select_related('employee', 'leave_type', 'approved_by')
 
     status = request.GET.get('status')
@@ -519,7 +519,7 @@ def leave_request_cancel(request, pk):
 def payroll_list(request):
     company = get_user_company(request.user)
     payrolls = Payroll.objects.filter(
-        employee__company=company,
+        Q(employee__company=company) | Q(employee__company__isnull=True),
     ).select_related('employee', 'currency', 'journal_entry')
 
     status = request.GET.get('status')

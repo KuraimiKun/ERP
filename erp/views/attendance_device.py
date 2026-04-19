@@ -440,6 +440,9 @@ def approve_employee(request, pk):
         if action == 'approve':
             employee.approval_status = 'approved'
 
+            if employee.company is None:
+                employee.company = company
+
             # Generate proper employee ID
             from erp.services.sequence import SequenceService
             try:

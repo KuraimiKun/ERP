@@ -43,11 +43,23 @@ from erp.models import (
 def _get_employee(user):
     """Return the Employee record linked to the user, or None."""
     if hasattr(user, 'employee_profile') and user.employee_profile:
-        return user.employee_profile
-    try:
-        return Employee.objects.get(email=user.email, approval_status='approved')
-    except Employee.DoesNotExist:
-        return None
+        emp = user.employee_profile
+    else:
+        try:
+            emp = Employee.objects.get(email=user.email, approval_status='approved')
+        except Employee.DoesNotExist:
+            return None
+
+    # Retroactively assign company if missing (happens when employee registered
+    # before a Company record existed in the tenant DB).
+    if emp.company_id is None:
+        from erp.models import Company
+        company = Company.objects.first()
+        if company:
+            emp.company = company
+            emp.save(update_fields=['company'])
+
+    return emp
 
 
 def _employee_json(emp):
