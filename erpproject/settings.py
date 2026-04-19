@@ -86,6 +86,9 @@ if not DEBUG:
     # Enable SSL redirect as defence-in-depth; disable only if a
     # reverse-proxy (Nginx) already handles HTTP→HTTPS.
     SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
+    # Mobile API uses plain HTTP (self-signed cert rejected by Dio on Android).
+    # Nginx proxies /api/mobile/ directly without redirecting to HTTPS.
+    SECURE_REDIRECT_EXEMPT = [r'^api/mobile/']
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Strict'
