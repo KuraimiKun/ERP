@@ -118,8 +118,9 @@ def mobile_login(request):
     if not employee:
         return _error('No employee profile found for your account.', 404)
 
-    # Create or get token
-    token, _ = Token.objects.get_or_create(user=user)
+    # Tokens live in the default DB — force it explicitly since tenant
+    # context is already set and the router would send it to the wrong DB.
+    token, _ = Token.objects.using('default').get_or_create(user=user)
 
     company = employee.company
     return Response({
