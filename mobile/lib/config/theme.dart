@@ -1,109 +1,176 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ---------------------------------------------------------------------------
-// Semantic colours (success, warning, info, danger, muted text)
-// exposed via ThemeExtension so they adapt to light / dark automatically.
-// Usage:  AppTheme.semantics(context).success
-// ---------------------------------------------------------------------------
+// ── Meridian design tokens ───────────────────────────────────────────────────
+
+class MColors {
+  // Light palette
+  static const primary = Color(0xFF3730A3);
+  static const primaryDeep = Color(0xFF2A2280);
+  static const primarySoft = Color(0xFFEEF0FB);
+  static const accent = Color(0xFF0891B2);
+  static const accentSoft = Color(0xFFE0F4F8);
+  static const bg = Color(0xFFF1F5F9);
+  static const surface = Color(0xFFFFFFFF);
+  static const surfaceAlt = Color(0xFFF8FAFC);
+  static const border = Color(0xFFE2E8F0);
+  static const borderSoft = Color(0xFFEEF2F6);
+  static const text = Color(0xFF0F172A);
+  static const textMid = Color(0xFF334155);
+  static const textSub = Color(0xFF64748B);
+  static const textFaint = Color(0xFF94A3B8);
+  static const success = Color(0xFF059669);
+  static const successSoft = Color(0xFFD1FAE5);
+  static const warning = Color(0xFFD97706);
+  static const warningSoft = Color(0xFFFEF3C7);
+  static const error = Color(0xFFE11D48);
+  static const errorSoft = Color(0xFFFEE2E2);
+  static const info = Color(0xFF2563EB);
+  static const infoSoft = Color(0xFFDBEAFE);
+  static const purple = Color(0xFF7C3AED);
+  static const purpleSoft = Color(0xFFEDE9FE);
+
+  // Dark palette
+  static const darkPrimary = Color(0xFF6366F1);
+  static const darkPrimaryDeep = Color(0xFF4F46E5);
+  static const darkPrimarySoft = Color(0xFF1E1B4B);
+  static const darkAccent = Color(0xFF22D3EE);
+  static const darkAccentSoft = Color(0xFF164E63);
+  static const darkBg = Color(0xFF0B1220);
+  static const darkSurface = Color(0xFF111827);
+  static const darkSurfaceAlt = Color(0xFF1F2937);
+  static const darkBorder = Color(0xFF1F2937);
+  static const darkText = Color(0xFFF8FAFC);
+  static const darkTextMid = Color(0xFFCBD5E1);
+  static const darkTextSub = Color(0xFF94A3B8);
+  static const darkTextFaint = Color(0xFF64748B);
+  static const darkSuccess = Color(0xFF34D399);
+  static const darkSuccessSoft = Color(0xFF064E3B);
+  static const darkWarning = Color(0xFFFBBF24);
+  static const darkWarningSoft = Color(0xFF78350F);
+  static const darkError = Color(0xFFFB7185);
+  static const darkErrorSoft = Color(0xFF7F1D1D);
+  static const darkInfo = Color(0xFF60A5FA);
+  static const darkInfoSoft = Color(0xFF1E3A8A);
+  static const darkPurple = Color(0xFFA78BFA);
+  static const darkPurpleSoft = Color(0xFF3B0764);
+}
+
+// ── Semantic colour extension ────────────────────────────────────────────────
 
 class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   final Color success;
   final Color successContainer;
-  final Color onSuccessContainer;
   final Color warning;
   final Color warningContainer;
-  final Color onWarningContainer;
   final Color info;
   final Color infoContainer;
-  final Color onInfoContainer;
   final Color danger;
   final Color dangerContainer;
-  final Color onDangerContainer;
+  final Color purple;
+  final Color purpleContainer;
+  final Color accent;
+  final Color accentContainer;
   final Color textMuted;
+  final Color textSub;
+  final Color textFaint;
+  final Color border;
+  final Color borderSoft;
+  final Color surfaceAlt;
 
   const AppSemanticColors({
     required this.success,
     required this.successContainer,
-    required this.onSuccessContainer,
     required this.warning,
     required this.warningContainer,
-    required this.onWarningContainer,
     required this.info,
     required this.infoContainer,
-    required this.onInfoContainer,
     required this.danger,
     required this.dangerContainer,
-    required this.onDangerContainer,
+    required this.purple,
+    required this.purpleContainer,
+    required this.accent,
+    required this.accentContainer,
     required this.textMuted,
+    required this.textSub,
+    required this.textFaint,
+    required this.border,
+    required this.borderSoft,
+    required this.surfaceAlt,
   });
 
-  // Light-mode palette
   static const light = AppSemanticColors(
-    success: Color(0xFF1B7D3A),
-    successContainer: Color(0xFFD4EDDA),
-    onSuccessContainer: Color(0xFF0A3D1A),
-    warning: Color(0xFFC77700),
-    warningContainer: Color(0xFFFFF3CD),
-    onWarningContainer: Color(0xFF3D2E00),
-    info: Color(0xFF2563A0),
-    infoContainer: Color(0xFFD1ECF1),
-    onInfoContainer: Color(0xFF0A2D45),
-    danger: Color(0xFFBA1A1A),
-    dangerContainer: Color(0xFFFDDEDE),
-    onDangerContainer: Color(0xFF410002),
-    textMuted: Color(0xFF6B7280),
+    success: MColors.success,
+    successContainer: MColors.successSoft,
+    warning: MColors.warning,
+    warningContainer: MColors.warningSoft,
+    info: MColors.info,
+    infoContainer: MColors.infoSoft,
+    danger: MColors.error,
+    dangerContainer: MColors.errorSoft,
+    purple: MColors.purple,
+    purpleContainer: MColors.purpleSoft,
+    accent: MColors.accent,
+    accentContainer: MColors.accentSoft,
+    textMuted: MColors.textSub,
+    textSub: MColors.textSub,
+    textFaint: MColors.textFaint,
+    border: MColors.border,
+    borderSoft: MColors.borderSoft,
+    surfaceAlt: MColors.surfaceAlt,
   );
 
-  // Dark-mode palette
   static const dark = AppSemanticColors(
-    success: Color(0xFF6DD58C),
-    successContainer: Color(0xFF1B3D2A),
-    onSuccessContainer: Color(0xFFD4EDDA),
-    warning: Color(0xFFFFB955),
-    warningContainer: Color(0xFF3D2E00),
-    onWarningContainer: Color(0xFFFFF3CD),
-    info: Color(0xFF7CB8E4),
-    infoContainer: Color(0xFF0A2D45),
-    onInfoContainer: Color(0xFFD1ECF1),
-    danger: Color(0xFFFFB4AB),
-    dangerContainer: Color(0xFF3D0A0A),
-    onDangerContainer: Color(0xFFFDDEDE),
-    textMuted: Color(0xFF9CA3AF),
+    success: MColors.darkSuccess,
+    successContainer: MColors.darkSuccessSoft,
+    warning: MColors.darkWarning,
+    warningContainer: MColors.darkWarningSoft,
+    info: MColors.darkInfo,
+    infoContainer: MColors.darkInfoSoft,
+    danger: MColors.darkError,
+    dangerContainer: MColors.darkErrorSoft,
+    purple: MColors.darkPurple,
+    purpleContainer: MColors.darkPurpleSoft,
+    accent: MColors.darkAccent,
+    accentContainer: MColors.darkAccentSoft,
+    textMuted: MColors.darkTextSub,
+    textSub: MColors.darkTextSub,
+    textFaint: MColors.darkTextFaint,
+    border: MColors.darkBorder,
+    borderSoft: MColors.darkBorder,
+    surfaceAlt: MColors.darkSurfaceAlt,
   );
 
   @override
   AppSemanticColors copyWith({
-    Color? success,
-    Color? successContainer,
-    Color? onSuccessContainer,
-    Color? warning,
-    Color? warningContainer,
-    Color? onWarningContainer,
-    Color? info,
-    Color? infoContainer,
-    Color? onInfoContainer,
-    Color? danger,
-    Color? dangerContainer,
-    Color? onDangerContainer,
-    Color? textMuted,
-  }) {
-    return AppSemanticColors(
-      success: success ?? this.success,
-      successContainer: successContainer ?? this.successContainer,
-      onSuccessContainer: onSuccessContainer ?? this.onSuccessContainer,
-      warning: warning ?? this.warning,
-      warningContainer: warningContainer ?? this.warningContainer,
-      onWarningContainer: onWarningContainer ?? this.onWarningContainer,
-      info: info ?? this.info,
-      infoContainer: infoContainer ?? this.infoContainer,
-      onInfoContainer: onInfoContainer ?? this.onInfoContainer,
-      danger: danger ?? this.danger,
-      dangerContainer: dangerContainer ?? this.dangerContainer,
-      onDangerContainer: onDangerContainer ?? this.onDangerContainer,
-      textMuted: textMuted ?? this.textMuted,
-    );
-  }
+    Color? success, Color? successContainer,
+    Color? warning, Color? warningContainer,
+    Color? info, Color? infoContainer,
+    Color? danger, Color? dangerContainer,
+    Color? purple, Color? purpleContainer,
+    Color? accent, Color? accentContainer,
+    Color? textMuted, Color? textSub, Color? textFaint,
+    Color? border, Color? borderSoft, Color? surfaceAlt,
+  }) => AppSemanticColors(
+    success: success ?? this.success,
+    successContainer: successContainer ?? this.successContainer,
+    warning: warning ?? this.warning,
+    warningContainer: warningContainer ?? this.warningContainer,
+    info: info ?? this.info,
+    infoContainer: infoContainer ?? this.infoContainer,
+    danger: danger ?? this.danger,
+    dangerContainer: dangerContainer ?? this.dangerContainer,
+    purple: purple ?? this.purple,
+    purpleContainer: purpleContainer ?? this.purpleContainer,
+    accent: accent ?? this.accent,
+    accentContainer: accentContainer ?? this.accentContainer,
+    textMuted: textMuted ?? this.textMuted,
+    textSub: textSub ?? this.textSub,
+    textFaint: textFaint ?? this.textFaint,
+    border: border ?? this.border,
+    borderSoft: borderSoft ?? this.borderSoft,
+    surfaceAlt: surfaceAlt ?? this.surfaceAlt,
+  );
 
   @override
   AppSemanticColors lerp(AppSemanticColors? other, double t) {
@@ -111,322 +178,321 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     return AppSemanticColors(
       success: Color.lerp(success, other.success, t)!,
       successContainer: Color.lerp(successContainer, other.successContainer, t)!,
-      onSuccessContainer: Color.lerp(onSuccessContainer, other.onSuccessContainer, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       warningContainer: Color.lerp(warningContainer, other.warningContainer, t)!,
-      onWarningContainer: Color.lerp(onWarningContainer, other.onWarningContainer, t)!,
       info: Color.lerp(info, other.info, t)!,
       infoContainer: Color.lerp(infoContainer, other.infoContainer, t)!,
-      onInfoContainer: Color.lerp(onInfoContainer, other.onInfoContainer, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       dangerContainer: Color.lerp(dangerContainer, other.dangerContainer, t)!,
-      onDangerContainer: Color.lerp(onDangerContainer, other.onDangerContainer, t)!,
+      purple: Color.lerp(purple, other.purple, t)!,
+      purpleContainer: Color.lerp(purpleContainer, other.purpleContainer, t)!,
+      accent: Color.lerp(accent, other.accent, t)!,
+      accentContainer: Color.lerp(accentContainer, other.accentContainer, t)!,
       textMuted: Color.lerp(textMuted, other.textMuted, t)!,
+      textSub: Color.lerp(textSub, other.textSub, t)!,
+      textFaint: Color.lerp(textFaint, other.textFaint, t)!,
+      border: Color.lerp(border, other.border, t)!,
+      borderSoft: Color.lerp(borderSoft, other.borderSoft, t)!,
+      surfaceAlt: Color.lerp(surfaceAlt, other.surfaceAlt, t)!,
     );
   }
 }
 
-// ---------------------------------------------------------------------------
-// Main theme configuration
-// ---------------------------------------------------------------------------
+// ── App theme ────────────────────────────────────────────────────────────────
 
 class AppTheme {
   AppTheme._();
 
-  // ── Navy brand colours ──────────────────────────────────────────────────
-  static const Color navy = Color(0xFF0F2644);
-  static const Color navyLight = Color(0xFF1A3A5C);
-  static const Color navyDark = Color(0xFF081A32);
+  static AppSemanticColors semantics(BuildContext context) =>
+      Theme.of(context).extension<AppSemanticColors>()!;
 
-  // ── Shortcut to access semantic colours from any widget ─────────────
-  static AppSemanticColors semantics(BuildContext context) {
-    return Theme.of(context).extension<AppSemanticColors>()!;
-  }
+  static TextTheme _textTheme(TextTheme base) => GoogleFonts.interTextTheme(base);
 
-  // ====================================================================
-  // LIGHT THEME
-  // ====================================================================
   static ThemeData get lightTheme {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: navy,
+    const cs = ColorScheme(
       brightness: Brightness.light,
-      primary: navy,
+      primary: MColors.primary,
       onPrimary: Colors.white,
-      primaryContainer: const Color(0xFFD4E3F5),
-      secondary: const Color(0xFF1A6B5A),
-      secondaryContainer: const Color(0xFFC8EDE5),
-      tertiary: const Color(0xFF5C548A),
-      tertiaryContainer: const Color(0xFFE4DFFF),
-      error: const Color(0xFFBA1A1A),
-      errorContainer: const Color(0xFFFDDEDE),
-      surface: const Color(0xFFF8F9FC),
-      onSurface: const Color(0xFF1A1C1E),
-      surfaceContainerLowest: Colors.white,
-      surfaceContainerLow: const Color(0xFFF1F3F6),
-      surfaceContainer: const Color(0xFFECEEF1),
-      surfaceContainerHigh: const Color(0xFFE6E8EB),
-      outline: const Color(0xFF73777F),
-      outlineVariant: const Color(0xFFC3C7CF),
+      primaryContainer: MColors.primarySoft,
+      onPrimaryContainer: MColors.primaryDeep,
+      secondary: MColors.accent,
+      onSecondary: Colors.white,
+      secondaryContainer: MColors.accentSoft,
+      onSecondaryContainer: MColors.accent,
+      tertiary: MColors.purple,
+      onTertiary: Colors.white,
+      tertiaryContainer: MColors.purpleSoft,
+      onTertiaryContainer: MColors.purple,
+      error: MColors.error,
+      onError: Colors.white,
+      errorContainer: MColors.errorSoft,
+      onErrorContainer: MColors.error,
+      surface: MColors.surface,
+      onSurface: MColors.text,
+      surfaceContainerLowest: MColors.surface,
+      surfaceContainerLow: MColors.surfaceAlt,
+      surfaceContainer: MColors.surfaceAlt,
+      surfaceContainerHigh: MColors.bg,
+      outline: MColors.border,
+      outlineVariant: MColors.borderSoft,
+      inverseSurface: MColors.text,
+      onInverseSurface: MColors.surface,
     );
 
     final base = ThemeData.light(useMaterial3: true);
     return base.copyWith(
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: colorScheme.surface,
+      colorScheme: cs,
+      scaffoldBackgroundColor: MColors.bg,
       extensions: const [AppSemanticColors.light],
+      textTheme: _textTheme(base.textTheme),
       appBarTheme: AppBarTheme(
-        backgroundColor: navy,
-        foregroundColor: Colors.white,
+        backgroundColor: MColors.surface,
+        foregroundColor: MColors.text,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.tajawal(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 16, fontWeight: FontWeight.w700, color: MColors.text,
+          letterSpacing: -0.3,
         ),
+        iconTheme: const IconThemeData(color: MColors.text),
       ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: MColors.surface,
         elevation: 0,
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
+          side: const BorderSide(color: MColors.border, width: 0.5),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: navy,
+          backgroundColor: MColors.primary,
           foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(double.infinity, 54),
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.tajawal(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: navy,
-          side: const BorderSide(color: navy),
-          minimumSize: const Size(double.infinity, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          foregroundColor: MColors.primary,
+          side: const BorderSide(color: MColors.primary),
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: MColors.surfaceAlt,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: navy, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.error),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.error),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: MColors.textSub),
+        hintStyle: GoogleFonts.inter(fontSize: 14, color: MColors.textFaint),
       ),
-      textTheme: GoogleFonts.tajawalTextTheme(base.textTheme),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: navy,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: MColors.primary,
         foregroundColor: Colors.white,
-        elevation: 2,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        selectedItemColor: navy,
-        unselectedItemColor: colorScheme.onSurfaceVariant,
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: MColors.surface,
+        selectedItemColor: MColors.primary,
+        unselectedItemColor: MColors.textFaint,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
       ),
-      dividerTheme: DividerThemeData(
-        color: colorScheme.outlineVariant,
-        thickness: 1,
-      ),
+      dividerTheme: const DividerThemeData(color: MColors.border, thickness: 0.5),
       chipTheme: ChipThemeData(
-        backgroundColor: colorScheme.surfaceContainerLow,
-        selectedColor: navy.withOpacity(0.12),
-        labelStyle: GoogleFonts.tajawal(fontSize: 13),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        side: BorderSide.none,
-      ),
-      drawerTheme: DrawerThemeData(
-        backgroundColor: colorScheme.surface,
-      ),
-      dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        backgroundColor: MColors.surfaceAlt,
+        selectedColor: MColors.primarySoft,
+        labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        side: const BorderSide(color: MColors.border, width: 0.5),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 16),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: MColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 0,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: MColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        elevation: 0,
       ),
     );
   }
 
-  // ====================================================================
-  // DARK THEME
-  // ====================================================================
   static ThemeData get darkTheme {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: navy,
+    const cs = ColorScheme(
       brightness: Brightness.dark,
-      primary: const Color(0xFFA8C8E8),
-      onPrimary: const Color(0xFF08243E),
-      primaryContainer: const Color(0xFF1A3A5C),
-      onPrimaryContainer: const Color(0xFFD4E3F5),
-      secondary: const Color(0xFF8CD5C2),
-      secondaryContainer: const Color(0xFF0F4D40),
-      tertiary: const Color(0xFFC9C0F0),
-      tertiaryContainer: const Color(0xFF443D6E),
-      error: const Color(0xFFFFB4AB),
-      errorContainer: const Color(0xFF93000A),
-      surface: const Color(0xFF111318),
-      onSurface: const Color(0xFFE2E2E6),
-      surfaceContainerLowest: const Color(0xFF0C0E13),
-      surfaceContainerLow: const Color(0xFF1A1C21),
-      surfaceContainer: const Color(0xFF1D2024),
-      surfaceContainerHigh: const Color(0xFF282A2F),
-      surfaceContainerHighest: const Color(0xFF33353A),
-      outline: const Color(0xFF8D9199),
-      outlineVariant: const Color(0xFF43474E),
+      primary: MColors.darkPrimary,
+      onPrimary: Colors.white,
+      primaryContainer: MColors.darkPrimarySoft,
+      onPrimaryContainer: MColors.darkPrimary,
+      secondary: MColors.darkAccent,
+      onSecondary: MColors.darkBg,
+      secondaryContainer: MColors.darkAccentSoft,
+      onSecondaryContainer: MColors.darkAccent,
+      tertiary: MColors.darkPurple,
+      onTertiary: Colors.white,
+      tertiaryContainer: MColors.darkPurpleSoft,
+      onTertiaryContainer: MColors.darkPurple,
+      error: MColors.darkError,
+      onError: MColors.darkBg,
+      errorContainer: MColors.darkErrorSoft,
+      onErrorContainer: MColors.darkError,
+      surface: MColors.darkSurface,
+      onSurface: MColors.darkText,
+      surfaceContainerLowest: MColors.darkBg,
+      surfaceContainerLow: MColors.darkSurface,
+      surfaceContainer: MColors.darkSurfaceAlt,
+      surfaceContainerHigh: MColors.darkSurfaceAlt,
+      outline: MColors.darkBorder,
+      outlineVariant: MColors.darkBorder,
+      inverseSurface: MColors.darkText,
+      onInverseSurface: MColors.darkBg,
     );
 
     final base = ThemeData.dark(useMaterial3: true);
     return base.copyWith(
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: colorScheme.surface,
+      colorScheme: cs,
+      scaffoldBackgroundColor: MColors.darkBg,
       extensions: const [AppSemanticColors.dark],
+      textTheme: _textTheme(base.textTheme).apply(
+        bodyColor: MColors.darkText,
+        displayColor: MColors.darkText,
+      ),
       appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surfaceContainer,
-        foregroundColor: colorScheme.onSurface,
+        backgroundColor: MColors.darkSurface,
+        foregroundColor: MColors.darkText,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.tajawal(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface,
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 16, fontWeight: FontWeight.w700, color: MColors.darkText,
+          letterSpacing: -0.3,
         ),
+        iconTheme: const IconThemeData(color: MColors.darkText),
       ),
       cardTheme: CardThemeData(
-        color: colorScheme.surfaceContainer,
+        color: MColors.darkSurface,
         elevation: 0,
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.4)),
+          side: const BorderSide(color: MColors.darkBorder, width: 0.5),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          minimumSize: const Size(double.infinity, 48),
+          backgroundColor: MColors.darkPrimary,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(double.infinity, 54),
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          textStyle: GoogleFonts.tajawal(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.primary,
-          side: BorderSide(color: colorScheme.primary),
-          minimumSize: const Size(double.infinity, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          foregroundColor: MColors.darkPrimary,
+          side: const BorderSide(color: MColors.darkPrimary),
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceContainerHigh,
+        fillColor: MColors.darkSurfaceAlt,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.darkBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.darkBorder),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.darkPrimary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.error),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: MColors.darkError),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
-      textTheme: GoogleFonts.tajawalTextTheme(base.textTheme).apply(
-        bodyColor: colorScheme.onSurface,
-        displayColor: colorScheme.onSurface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: MColors.darkTextSub),
+        hintStyle: GoogleFonts.inter(fontSize: 14, color: MColors.darkTextFaint),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colorScheme.primaryContainer,
-        foregroundColor: colorScheme.onPrimaryContainer,
-        elevation: 2,
+        backgroundColor: MColors.darkPrimary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: colorScheme.surfaceContainer,
-        selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurfaceVariant,
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: MColors.darkSurface,
+        selectedItemColor: MColors.darkPrimary,
+        unselectedItemColor: MColors.darkTextFaint,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
       ),
-      dividerTheme: DividerThemeData(
-        color: colorScheme.outlineVariant,
-        thickness: 1,
-      ),
+      dividerTheme: const DividerThemeData(color: MColors.darkBorder, thickness: 0.5),
       chipTheme: ChipThemeData(
-        backgroundColor: colorScheme.surfaceContainerHigh,
-        selectedColor: colorScheme.primary.withOpacity(0.15),
-        labelStyle: GoogleFonts.tajawal(fontSize: 13),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        side: BorderSide.none,
-      ),
-      drawerTheme: DrawerThemeData(
-        backgroundColor: colorScheme.surfaceContainer,
-      ),
-      dialogTheme: DialogThemeData(
-        backgroundColor: colorScheme.surfaceContainerHigh,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        backgroundColor: MColors.darkSurfaceAlt,
+        selectedColor: MColors.darkPrimarySoft,
+        labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        side: const BorderSide(color: MColors.darkBorder, width: 0.5),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 16),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: MColors.darkSurfaceAlt,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 0,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: MColors.darkSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        elevation: 0,
       ),
     );
   }

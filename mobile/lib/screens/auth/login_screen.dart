@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:erp_mobile/l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../config/theme.dart';
@@ -15,214 +14,407 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _obscure = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-
     final auth = context.read<AuthProvider>();
-    final success = await auth.login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
-
-    if (success && mounted) {
-      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-    }
+    final ok = await auth.login(_emailCtrl.text.trim(), _passCtrl.text);
+    if (ok && mounted) Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final auth = context.watch<AuthProvider>();
-    final locale = context.watch<LocaleProvider>();
+    final topPad = MediaQuery.of(context).padding.top;
+    final screenH = MediaQuery.of(context).size.height;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo / App icon
-                  Icon(
-                    Icons.business,
-                    size: 72,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.loginTitle,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.loginSubtitle,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.semantics(context).textMuted,
-                        ),
-                  ),
-                  const SizedBox(height: 32),
+      backgroundColor: isDark ? MColors.darkBg : MColors.bg,
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          // ── Gradient hero ─────────────────────────────────────────────
+          Positioned(
+            top: 0, left: 0, right: 0,
+            height: screenH * 0.40,
+            child: _HeroGradient(topPad: topPad),
+          ),
 
-                  // Error message
-                  if (auth.error != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Theme.of(context).colorScheme.error.withOpacity(0.4)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline,
-                              color: Theme.of(context).colorScheme.error, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              auth.error!,
-                              style: TextStyle(color: Theme.of(context).colorScheme.error),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  // Email field
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: l10n.email,
-                      hintText: l10n.emailHint,
-                      prefixIcon: const Icon(Icons.email_outlined),
-                    ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return l10n.emailHint;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Password field
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _login(),
-                    decoration: InputDecoration(
-                      labelText: l10n.password,
-                      hintText: l10n.passwordHint,
-                      prefixIcon: const Icon(Icons.lock_outlined),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                        ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
-                      ),
-                    ),
-                    validator: (v) {
-                      if (v == null || v.isEmpty) {
-                        return l10n.passwordHint;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Login button
-                  ElevatedButton(
-                    onPressed: auth.isLoading ? null : _login,
-                    child: auth.isLoading
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          )
-                        : Text(l10n.loginButton),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Language selector
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          // ── White card over hero ──────────────────────────────────────
+          Positioned(
+            top: screenH * 0.36,
+            left: 0, right: 0, bottom: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? MColors.darkSurface : MColors.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                boxShadow: const [BoxShadow(color: Color(0x10000000), blurRadius: 40, offset: Offset(0, -8))],
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _LangChip(
-                        label: 'العربية',
-                        locale: const Locale('ar'),
-                        current: locale.locale,
+                      Text(
+                        'Welcome back',
+                        style: TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.w700,
+                          letterSpacing: -0.4,
+                          color: isDark ? MColors.darkText : MColors.text,
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      _LangChip(
-                        label: 'English',
-                        locale: const Locale('en'),
-                        current: locale.locale,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Sign in to continue to Meridian Group',
+                        style: TextStyle(
+                          fontSize: 14, color: isDark ? MColors.darkTextSub : MColors.textSub,
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      _LangChip(
-                        label: 'Indonesia',
-                        locale: const Locale('id'),
-                        current: locale.locale,
+
+                      if (auth.error != null) ...[
+                        const SizedBox(height: 20),
+                        _ErrorBanner(message: auth.error!),
+                      ],
+
+                      const SizedBox(height: 24),
+                      _FormField(
+                        controller: _emailCtrl,
+                        label: 'Email',
+                        hint: 'your@email.com',
+                        icon: Icons.mail_outline_rounded,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your email' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _FormField(
+                        controller: _passCtrl,
+                        label: 'Password',
+                        hint: '••••••••••',
+                        icon: Icons.lock_outline_rounded,
+                        obscureText: _obscure,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _login(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            size: 18,
+                            color: isDark ? MColors.darkTextSub : MColors.textSub,
+                          ),
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                        ),
+                        validator: (v) => (v == null || v.isEmpty) ? 'Enter your password' : null,
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Sign in button
+                      SizedBox(
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: auth.isLoading ? null : _login,
+                          child: auth.isLoading
+                              ? const SizedBox(
+                                  width: 20, height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : const Text('Sign In', style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                      // Language selector
+                      const _LangSelector(),
+
+                      const SizedBox(height: 16),
+                      Center(
+                        child: Text(
+                          'By signing in you agree to the Terms & Privacy Policy.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? MColors.darkTextFaint : MColors.textFaint,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Hero gradient ────────────────────────────────────────────────────────────
+
+class _HeroGradient extends StatelessWidget {
+  final double topPad;
+  const _HeroGradient({required this.topPad});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [MColors.primary, MColors.primaryDeep, Color(0xFF1E1B4B)],
+          stops: [0.0, 0.6, 1.0],
         ),
       ),
+      child: Stack(
+        children: [
+          // Decorative circles
+          Positioned(
+            top: -80, right: -60,
+            child: Container(
+              width: 240, height: 240,
+              decoration: const BoxDecoration(
+                color: Color(0x0FFFFFFF),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 40, right: 80,
+            child: Container(
+              width: 100, height: 100,
+              decoration: const BoxDecoration(
+                color: Color(0x0AFFFFFF),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(28, topPad + 36, 28, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0x26FFFFFF),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0x3FFFFFFF)),
+                  ),
+                  child: Center(
+                    child: Transform.rotate(
+                      angle: 0.785,
+                      child: Container(
+                        width: 20, height: 20,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Meridian',
+                  style: TextStyle(
+                    fontSize: 32, fontWeight: FontWeight.w700,
+                    color: Colors.white, letterSpacing: -0.8, height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Your workplace, in one app.',
+                  style: TextStyle(fontSize: 15, color: Color(0xBFFFFFFF)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Form field ───────────────────────────────────────────────────────────────
+
+class _FormField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final IconData icon;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
+  final void Function(String)? onSubmitted;
+
+  const _FormField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    this.keyboardType,
+    this.textInputAction,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.validator,
+    this.onSubmitted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12, fontWeight: FontWeight.w600,
+            letterSpacing: 0.1,
+            color: isDark ? MColors.darkTextMid : MColors.textMid,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          obscureText: obscureText,
+          onFieldSubmitted: onSubmitted,
+          validator: validator,
+          style: TextStyle(
+            fontSize: 15, fontWeight: FontWeight.w500,
+            color: isDark ? MColors.darkText : MColors.text,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon, size: 18, color: isDark ? MColors.darkTextSub : MColors.textSub),
+            suffixIcon: suffixIcon,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Error banner ─────────────────────────────────────────────────────────────
+
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+  const _ErrorBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final sem = AppTheme.semantics(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: sem.dangerContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded, color: sem.danger, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(message, style: TextStyle(color: sem.danger, fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Language selector ────────────────────────────────────────────────────────
+
+class _LangSelector extends StatelessWidget {
+  const _LangSelector();
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = context.watch<LocaleProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Language: ',
+          style: TextStyle(
+            fontSize: 12.5, color: isDark ? MColors.darkTextSub : MColors.textSub,
+          ),
+        ),
+        const SizedBox(width: 6),
+        _LangChip(label: 'EN', localeStr: 'en', current: locale.locale, provider: locale),
+        const SizedBox(width: 6),
+        _LangChip(label: 'عربي', localeStr: 'ar', current: locale.locale, provider: locale),
+        const SizedBox(width: 6),
+        _LangChip(label: 'ID', localeStr: 'id', current: locale.locale, provider: locale),
+      ],
     );
   }
 }
 
 class _LangChip extends StatelessWidget {
   final String label;
-  final Locale locale;
+  final String localeStr;
   final Locale current;
+  final LocaleProvider provider;
 
   const _LangChip({
     required this.label,
-    required this.locale,
+    required this.localeStr,
     required this.current,
+    required this.provider,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = locale == current;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        context.read<LocaleProvider>().setLocale(locale);
-      },
+    final isSelected = current.languageCode == localeStr;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: () => provider.setLocale(Locale(localeStr)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? MColors.darkPrimary : MColors.primary)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: isSelected
+                ? (isDark ? MColors.darkPrimary : MColors.primary)
+                : (isDark ? MColors.darkBorder : MColors.border),
+            width: 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12, fontWeight: FontWeight.w600,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? MColors.darkTextMid : MColors.textMid),
+          ),
+        ),
+      ),
     );
   }
 }

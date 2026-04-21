@@ -82,7 +82,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.errorContainer,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Theme.of(context).colorScheme.error.withOpacity(0.4)),
+                    border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.4)),
                   ),
                   child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 ),

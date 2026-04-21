@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:erp_mobile/l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../config/theme.dart';
 import '../../providers/pos_provider.dart';
-import '../../widgets/app_drawer.dart';
-import '../../widgets/loading_indicator.dart';
-import '../../widgets/empty_state.dart';
 
 class TerminalSelectScreen extends StatefulWidget {
   const TerminalSelectScreen({super.key});
@@ -26,119 +22,251 @@ class _TerminalSelectScreenState extends State<TerminalSelectScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final pos = context.watch<POSProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.selectTerminal)),
-      drawer: const AppDrawer(),
-      body: pos.isLoading
-          ? LoadingIndicator(message: l10n.loading)
-          : RefreshIndicator(
-              onRefresh: () => pos.loadTerminals(),
-              child: pos.terminals.isEmpty
-                  ? EmptyState(
-                      icon: Icons.point_of_sale_outlined,
-                      message: l10n.noData,
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: pos.terminals.length,
-                      itemBuilder: (context, index) {
-                        final terminal = pos.terminals[index];
-                        return Card(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                              child: Icon(Icons.point_of_sale,
-                                  color: Theme.of(context).primaryColor),
-                            ),
-                            title: Text(terminal.name),
-                            subtitle: Text(terminal.location.isNotEmpty
-                                ? terminal.location
-                                : terminal.code),
-                            trailing: terminal.hasOpenSession
-                                ? Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.semantics(context).successContainer,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      terminal.openSessionNumber ?? 'Open',
-                                      style: TextStyle(
-                                          color: AppTheme.semantics(context).success,
-                                          fontSize: 12),
-                                    ),
-                                  )
-                                : null,
-                            onTap: () => _handleTerminalTap(terminal),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-    );
-  }
-
-  void _handleTerminalTap(dynamic terminal) {
-    if (terminal.hasOpenSession) {
-      // Resume existing session
-      final pos = context.read<POSProvider>();
-      pos.loadSession(terminal.openSessionId);
-      Navigator.pushNamed(context, AppRoutes.posMain);
-    } else {
-      // Open new session
-      _showOpenSessionDialog(terminal);
-    }
-  }
-
-  void _showOpenSessionDialog(dynamic terminal) {
-    final l10n = AppLocalizations.of(context)!;
-    final balanceController = TextEditingController(text: '0');
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.openSession),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+      backgroundColor: isDark ? MColors.darkBg : MColors.bg,
+      body: SafeArea(
+        child: Column(
           children: [
-            Text('${terminal.name}'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: balanceController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: l10n.openingBalance,
-                prefixIcon: const Icon(Icons.attach_money),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.maybePop(context),
+                    child: Icon(Icons.arrow_back_ios_new_rounded, size: 20,
+                        color: isDark ? MColors.darkText : MColors.text),
+                  ),
+                  const Spacer(),
+                  Text('Select Terminal', style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700,
+                    color: isDark ? MColors.darkText : MColors.text,
+                  )),
+                  const Spacer(),
+                  const SizedBox(width: 20),
+                ],
               ),
+            ),
+            Expanded(
+              child: pos.isLoading
+                  ? const _Shimmer()
+                  : pos.terminals.isEmpty
+                      ? const _Empty()
+                      : RefreshIndicator(
+                          onRefresh: () => pos.loadTerminals(),
+                          color: isDark ? MColors.darkPrimary : MColors.primary,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                            itemCount: pos.terminals.length,
+                            itemBuilder: (ctx, i) => _TerminalCard(
+                              terminal: pos.terminals[i],
+                              isDark: isDark,
+                              onTap: () => _handleTap(pos.terminals[i]),
+                            ),
+                          ),
+                        ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final pos = context.read<POSProvider>();
-              final success = await pos.openSession(
-                terminal.id,
-                balanceController.text,
-              );
-              if (success && mounted) {
-                Navigator.pushNamed(context, AppRoutes.posMain);
-              }
-            },
-            child: Text(l10n.openSession),
-          ),
-        ],
       ),
     );
   }
+
+  void _handleTap(dynamic terminal) {
+    if (terminal.hasOpenSession) {
+      context.read<POSProvider>().loadSession(terminal.openSessionId);
+      Navigator.pushNamed(context, AppRoutes.posMain);
+    } else {
+      _showOpenDialog(terminal);
+    }
+  }
+
+  void _showOpenDialog(dynamic terminal) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final balanceCtrl = TextEditingController(text: '0');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? MColors.darkSurface : MColors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36, height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? MColors.darkBorder : MColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('Open Session', style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w700,
+                  color: isDark ? MColors.darkText : MColors.text)),
+              const SizedBox(height: 4),
+              Text(terminal.name, style: TextStyle(
+                  fontSize: 13, color: isDark ? MColors.darkTextSub : MColors.textSub)),
+              const SizedBox(height: 16),
+              Text('Opening balance', style: TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w600,
+                  color: isDark ? MColors.darkTextSub : MColors.textSub)),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: balanceCtrl,
+                keyboardType: TextInputType.number,
+                style: TextStyle(fontSize: 14, color: isDark ? MColors.darkText : MColors.text),
+                decoration: const InputDecoration(isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        final ok = await context.read<POSProvider>()
+                            .openSession(terminal.id, balanceCtrl.text);
+                        if (ok && mounted) {
+                          Navigator.pushNamed(context, AppRoutes.posMain);
+                        }
+                      },
+                      child: const Text('Open Session',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TerminalCard extends StatelessWidget {
+  final dynamic terminal;
+  final bool isDark;
+  final VoidCallback onTap;
+  const _TerminalCard({required this.terminal, required this.isDark, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final sem = AppTheme.semantics(context);
+    final hasSession = terminal.hasOpenSession as bool;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? MColors.darkSurface : MColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDark ? MColors.darkBorder : MColors.border, width: 0.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: isDark ? MColors.darkPrimarySoft : MColors.primarySoft,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.point_of_sale_outlined, size: 22,
+                  color: isDark ? MColors.darkPrimary : MColors.primary),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(terminal.name, style: TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w700,
+                      color: isDark ? MColors.darkText : MColors.text)),
+                  const SizedBox(height: 2),
+                  Text(terminal.location.isNotEmpty ? terminal.location : terminal.code,
+                      style: TextStyle(fontSize: 12,
+                          color: isDark ? MColors.darkTextSub : MColors.textSub)),
+                ],
+              ),
+            ),
+            if (hasSession)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: sem.successContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(terminal.openSessionNumber ?? 'Open',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                        color: sem.success)),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isDark ? MColors.darkPrimarySoft : MColors.primarySoft,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text('Open', style: TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w600,
+                    color: isDark ? MColors.darkPrimary : MColors.primary)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Shimmer extends StatelessWidget {
+  const _Shimmer();
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0);
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: List.generate(4, (_) => Container(
+        height: 80, margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(16)),
+      ))),
+    );
+  }
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty();
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.point_of_sale_outlined, size: 56,
+          color: AppTheme.semantics(context).textFaint),
+      const SizedBox(height: 12),
+      Text('No terminals available',
+          style: TextStyle(color: AppTheme.semantics(context).textSub)),
+    ]),
+  );
 }

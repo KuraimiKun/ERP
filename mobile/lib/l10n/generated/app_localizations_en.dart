@@ -469,4 +469,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get systemMode => 'System Default';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get gender => 'Gender';
+
+  @override
+  String get dateOfBirth => 'Date of Birth';
+
+  @override
+  String get nationality => 'Nationality';
+
+  @override
+  String get hireDate => 'Hire Date';
+
+  @override
+  String get employmentType => 'Employment Type';
+
+  @override
+  String get branch => 'Branch';
+
+  @override
+  String get employeeId => 'Employee ID';
+
+  @override
+  String get language => 'Language';
 }

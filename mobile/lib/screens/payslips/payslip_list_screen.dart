@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:erp_mobile/l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../config/theme.dart';
+import '../../models/payslip.dart';
 import '../../providers/payslip_provider.dart';
-import '../../widgets/app_drawer.dart';
-import '../../widgets/loading_indicator.dart';
-import '../../widgets/empty_state.dart';
+import '../../widgets/status_badge.dart';
 
 class PayslipListScreen extends StatefulWidget {
   const PayslipListScreen({super.key});
@@ -26,69 +24,135 @@ class _PayslipListScreenState extends State<PayslipListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final provider = context.watch<PayslipProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.payslips)),
-      drawer: const AppDrawer(),
-      body: provider.isLoading
-          ? LoadingIndicator(message: l10n.loading)
-          : RefreshIndicator(
-              onRefresh: () => provider.loadPayslips(),
-              child: provider.payslips.isEmpty
-                  ? EmptyState(
-                      icon: Icons.receipt_long_outlined,
-                      message: l10n.noData,
-                    )
-                  : ListView.builder(
-                      itemCount: provider.payslips.length,
-                      padding: const EdgeInsets.all(16),
-                      itemBuilder: (context, index) {
-                        final p = provider.payslips[index];
-                        return Card(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: AppTheme.semantics(context).successContainer,
-                              child: Icon(Icons.receipt_long,
-                                  color: AppTheme.semantics(context).success),
-                            ),
-                            title: Text(
-                                '${p.periodStart} - ${p.periodEnd}'),
-                            subtitle: Text(
-                              '${l10n.netSalary}: ${p.netSalary}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: p.status == 'paid'
-                                    ? AppTheme.semantics(context).successContainer
-                                    : Theme.of(context).colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                p.status,
-                                style: TextStyle(
-                                  color: p.status == 'paid'
-                                      ? AppTheme.semantics(context).success
-                                      : Theme.of(context).colorScheme.primary,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              AppRoutes.payslipDetail,
-                              arguments: p.id,
+      backgroundColor: isDark ? MColors.darkBg : MColors.bg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.maybePop(context),
+                    child: Icon(Icons.arrow_back_ios_new_rounded, size: 20,
+                        color: isDark ? MColors.darkText : MColors.text),
+                  ),
+                  const Spacer(),
+                  Text('Payslips', style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700,
+                    color: isDark ? MColors.darkText : MColors.text,
+                  )),
+                  const Spacer(),
+                  const SizedBox(width: 20),
+                ],
+              ),
+            ),
+            Expanded(
+              child: provider.isLoading
+                  ? const _Shimmer()
+                  : provider.payslips.isEmpty
+                      ? const _Empty()
+                      : RefreshIndicator(
+                          onRefresh: () => provider.loadPayslips(),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                            itemCount: provider.payslips.length,
+                            itemBuilder: (ctx, i) => _PayslipTile(
+                              payslip: provider.payslips[i],
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
             ),
+          ],
+        ),
+      ),
     );
   }
+}
+
+class _PayslipTile extends StatelessWidget {
+  final PayslipSummary payslip;
+  const _PayslipTile({required this.payslip});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.payslipDetail, arguments: payslip.id),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? MColors.darkSurface : MColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDark ? MColors.darkBorder : MColors.border, width: 0.5),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    payslip.periodStart,
+                    style: TextStyle(
+                      fontSize: 11.5, fontWeight: FontWeight.w600,
+                      color: isDark ? MColors.darkTextSub : MColors.textSub,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    payslip.netSalary,
+                    style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                      color: isDark ? MColors.darkText : MColors.text,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  StatusBadge(kind: statusToBadge(payslip.status), small: true),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, size: 18,
+                color: isDark ? MColors.darkTextFaint : MColors.textFaint),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Shimmer extends StatelessWidget {
+  const _Shimmer();
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0);
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: List.generate(5, (_) => Container(
+        height: 90, margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(16)),
+      ))),
+    );
+  }
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty();
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.receipt_long_outlined, size: 56, color: AppTheme.semantics(context).textFaint),
+      const SizedBox(height: 12),
+      Text('No payslips yet', style: TextStyle(color: AppTheme.semantics(context).textSub)),
+    ]),
+  );
 }

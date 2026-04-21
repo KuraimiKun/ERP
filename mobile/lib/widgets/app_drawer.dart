@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:erp_mobile/l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../config/routes.dart';
+import '../config/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
@@ -17,39 +18,22 @@ class AppDrawer extends StatelessWidget {
     final perms = auth.permissions;
     final locale = context.watch<LocaleProvider>();
     final themeProvider = context.watch<ThemeProvider>();
-    final cs = Theme.of(context).colorScheme;
 
     return Drawer(
       child: Column(
         children: [
-          UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
-              color: cs.primary,
-            ),
-            accountName: Text(
-              locale.locale.languageCode == 'ar'
-                  ? (employee?.fullNameAr ?? '')
-                  : (employee?.fullName ?? ''),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            accountEmail: Text(employee?.email ?? ''),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: cs.onPrimary,
-              child: Text(
-                employee?.firstName.isNotEmpty == true
-                    ? employee!.firstName[0].toUpperCase()
-                    : '?',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: cs.primary,
-                ),
-              ),
-            ),
+          _DrawerHeader(
+            name: locale.locale.languageCode == 'ar'
+                ? (employee?.fullNameAr ?? '')
+                : (employee?.fullName ?? ''),
+            email: employee?.email ?? '',
+            initials: employee?.firstName.isNotEmpty == true
+                ? employee!.firstName[0].toUpperCase()
+                : '?',
           ),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
                 _DrawerItem(
                   icon: Icons.dashboard_outlined,
@@ -92,7 +76,10 @@ class AppDrawer extends StatelessWidget {
                     title: l10n.pos,
                     route: AppRoutes.posTerminals,
                   ),
-                const Divider(),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Divider(height: 1),
+                ),
                 _DrawerItem(
                   icon: Icons.person_outlined,
                   title: l10n.profile,
@@ -103,11 +90,19 @@ class AppDrawer extends StatelessWidget {
                   title: l10n.notifications,
                   route: AppRoutes.notifications,
                 ),
-                const Divider(),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Divider(height: 1),
+                ),
+
                 // Language switcher
                 ExpansionTile(
                   leading: const Icon(Icons.language),
-                  title: Text(locale.languageName),
+                  title: Text(l10n.language),
+                  subtitle: Text(locale.languageName,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.semantics(context).textMuted)),
                   children: [
                     _LanguageTile(
                       label: 'العربية',
@@ -126,6 +121,7 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ],
                 ),
+
                 // Dark mode toggle
                 ListTile(
                   leading: Icon(
@@ -139,10 +135,14 @@ class AppDrawer extends StatelessWidget {
                     onChanged: (_) => themeProvider.toggle(),
                   ),
                 ),
+
+                // Logout
                 ListTile(
-                  leading: Icon(Icons.logout, color: cs.error),
+                  leading: Icon(Icons.logout,
+                      color: Theme.of(context).colorScheme.error),
                   title: Text(l10n.logout,
-                      style: TextStyle(color: cs.error)),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error)),
                   onTap: () => _confirmLogout(context, l10n),
                 ),
               ],
@@ -175,14 +175,90 @@ class AppDrawer extends StatelessWidget {
                 (_) => false,
               );
             },
-            child: Text(l10n.logout,
-                style: TextStyle(color: cs.error)),
+            child:
+                Text(l10n.logout, style: TextStyle(color: cs.error)),
           ),
         ],
       ),
     );
   }
 }
+
+// ── Gradient drawer header ────────────────────────────────────────────────────
+
+class _DrawerHeader extends StatelessWidget {
+  final String name;
+  final String email;
+  final String initials;
+
+  const _DrawerHeader({
+    required this.name,
+    required this.email,
+    required this.initials,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(20, topPadding + 20, 20, 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [MColors.primary, const Color(0xFF4338CA), MColors.primaryDeep],
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            child: Text(
+              initials,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  email,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Drawer item with filled active highlight ──────────────────────────────────
 
 class _DrawerItem extends StatelessWidget {
   final IconData icon;
@@ -201,26 +277,46 @@ class _DrawerItem extends StatelessWidget {
     final isActive = current == route;
     final cs = Theme.of(context).colorScheme;
 
-    return ListTile(
-      leading: Icon(icon,
-          color: isActive ? cs.primary : null),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-          color: isActive ? cs.primary : null,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+      child: Material(
+        color: isActive ? cs.primaryContainer : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.pop(context);
+            if (!isActive) {
+              Navigator.pushReplacementNamed(context, route);
+            }
+          },
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Icon(icon,
+                    size: 22,
+                    color: isActive ? cs.onPrimaryContainer : null),
+                const SizedBox(width: 14),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight:
+                        isActive ? FontWeight.w700 : FontWeight.normal,
+                    color: isActive ? cs.onPrimaryContainer : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      selected: isActive,
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-        if (!isActive) {
-          Navigator.pushReplacementNamed(context, route);
-        }
-      },
     );
   }
 }
+
+// ── Language tile ─────────────────────────────────────────────────────────────
 
 class _LanguageTile extends StatelessWidget {
   final String label;
@@ -238,7 +334,7 @@ class _LanguageTile extends StatelessWidget {
     final isSelected = locale == current;
     final cs = Theme.of(context).colorScheme;
     return ListTile(
-      contentPadding: const EdgeInsetsDirectional.only(start: 72),
+      contentPadding: const EdgeInsetsDirectional.only(start: 72, end: 16),
       title: Text(
         label,
         style: TextStyle(
@@ -247,11 +343,9 @@ class _LanguageTile extends StatelessWidget {
         ),
       ),
       trailing: isSelected
-          ? Icon(Icons.check, color: cs.primary)
+          ? Icon(Icons.check_circle, size: 18, color: cs.primary)
           : null,
-      onTap: () {
-        context.read<LocaleProvider>().setLocale(locale);
-      },
+      onTap: () => context.read<LocaleProvider>().setLocale(locale),
     );
   }
 }

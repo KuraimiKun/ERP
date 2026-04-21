@@ -1023,6 +1023,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System Default'**
   String get systemMode;
+
+  /// View all action
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get viewAll;
+
+  /// All filter option
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// Gender label
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get gender;
+
+  /// Date of birth label
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dateOfBirth;
+
+  /// Nationality label
+  ///
+  /// In en, this message translates to:
+  /// **'Nationality'**
+  String get nationality;
+
+  /// Hire date label
+  ///
+  /// In en, this message translates to:
+  /// **'Hire Date'**
+  String get hireDate;
+
+  /// Employment type label
+  ///
+  /// In en, this message translates to:
+  /// **'Employment Type'**
+  String get employmentType;
+
+  /// Branch label
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get branch;
+
+  /// Employee ID label
+  ///
+  /// In en, this message translates to:
+  /// **'Employee ID'**
+  String get employeeId;
+
+  /// Language selector label
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
 }
 
 class _AppLocalizationsDelegate

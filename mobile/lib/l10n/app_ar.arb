@@ -153,5 +153,15 @@
   "appearance": "المظهر",
   "darkMode": "الوضع الداكن",
   "lightMode": "الوضع الفاتح",
-  "systemMode": "إعداد النظام"
+  "systemMode": "إعداد النظام",
+  "viewAll": "عرض الكل",
+  "all": "الكل",
+  "gender": "الجنس",
+  "dateOfBirth": "تاريخ الميلاد",
+  "nationality": "الجنسية",
+  "hireDate": "تاريخ التعيين",
+  "employmentType": "نوع التوظيف",
+  "branch": "الفرع",
+  "employeeId": "رقم الموظف",
+  "language": "اللغة"
 }

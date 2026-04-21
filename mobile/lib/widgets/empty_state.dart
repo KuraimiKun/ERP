@@ -18,6 +18,7 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sem = AppTheme.semantics(context);
+    final cs = Theme.of(context).colorScheme;
 
     return Center(
       child: Padding(
@@ -25,8 +26,16 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: sem.textMuted),
-            const SizedBox(height: 16),
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHigh,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 44, color: sem.textMuted),
+            ),
+            const SizedBox(height: 20),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -35,7 +44,7 @@ class EmptyState extends StatelessWidget {
                   ),
             ),
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: onAction,
                 child: Text(actionLabel!),

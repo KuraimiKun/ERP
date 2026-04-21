@@ -469,4 +469,34 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get systemMode => 'Default Sistem';
+
+  @override
+  String get viewAll => 'Lihat Semua';
+
+  @override
+  String get all => 'Semua';
+
+  @override
+  String get gender => 'Jenis Kelamin';
+
+  @override
+  String get dateOfBirth => 'Tanggal Lahir';
+
+  @override
+  String get nationality => 'Kewarganegaraan';
+
+  @override
+  String get hireDate => 'Tanggal Bergabung';
+
+  @override
+  String get employmentType => 'Jenis Pekerjaan';
+
+  @override
+  String get branch => 'Cabang';
+
+  @override
+  String get employeeId => 'ID Karyawan';
+
+  @override
+  String get language => 'Bahasa';
 }

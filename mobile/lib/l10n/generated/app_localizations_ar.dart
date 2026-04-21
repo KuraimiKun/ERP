@@ -469,4 +469,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get systemMode => 'إعداد النظام';
+
+  @override
+  String get viewAll => 'عرض الكل';
+
+  @override
+  String get all => 'الكل';
+
+  @override
+  String get gender => 'الجنس';
+
+  @override
+  String get dateOfBirth => 'تاريخ الميلاد';
+
+  @override
+  String get nationality => 'الجنسية';
+
+  @override
+  String get hireDate => 'تاريخ التعيين';
+
+  @override
+  String get employmentType => 'نوع التوظيف';
+
+  @override
+  String get branch => 'الفرع';
+
+  @override
+  String get employeeId => 'رقم الموظف';
+
+  @override
+  String get language => 'اللغة';
 }

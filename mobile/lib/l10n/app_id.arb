@@ -153,5 +153,15 @@
   "appearance": "Tampilan",
   "darkMode": "Mode Gelap",
   "lightMode": "Mode Terang",
-  "systemMode": "Default Sistem"
+  "systemMode": "Default Sistem",
+  "viewAll": "Lihat Semua",
+  "all": "Semua",
+  "gender": "Jenis Kelamin",
+  "dateOfBirth": "Tanggal Lahir",
+  "nationality": "Kewarganegaraan",
+  "hireDate": "Tanggal Bergabung",
+  "employmentType": "Jenis Pekerjaan",
+  "branch": "Cabang",
+  "employeeId": "ID Karyawan",
+  "language": "Bahasa"
 }

@@ -1,11 +1,9 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:erp_mobile/l10n/generated/app_localizations.dart';
 import 'package:provider/provider.dart';
-import '../../providers/pos_provider.dart';
+import '../../config/theme.dart';
 import '../../models/pos/stats.dart';
-import '../../widgets/loading_indicator.dart';
+import '../../providers/pos_provider.dart';
 
 class POSStatsScreen extends StatefulWidget {
   const POSStatsScreen({super.key});
@@ -32,319 +30,297 @@ class _POSStatsScreenState extends State<POSStatsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final pos = context.watch<POSProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final stats = pos.stats;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.myPerformance),
-      ),
-      body: pos.statsLoading
-          ? LoadingIndicator(message: l10n.loading)
-          : stats == null
-              ? Center(child: Text(l10n.noData))
-              : RefreshIndicator(
-                  onRefresh: () => pos.loadStats(period: _period),
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      // Period toggle
-                      _buildPeriodChips(l10n),
-                      const SizedBox(height: 16),
-
-                      // Summary cards
-                      _buildSummaryCards(l10n, stats.summary),
-                      const SizedBox(height: 20),
-
-                      // Hourly sales chart
-                      if (stats.hourlySales.isNotEmpty) ...[
-                        _buildSectionTitle(l10n.hourlySalesTitle),
-                        const SizedBox(height: 8),
-                        _buildHourlyChart(stats.hourlySales),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Payment breakdown
-                      if (stats.paymentBreakdown.isNotEmpty) ...[
-                        _buildSectionTitle(l10n.paymentBreakdown),
-                        const SizedBox(height: 8),
-                        _buildPaymentBreakdown(stats.paymentBreakdown),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Top products
-                      if (stats.topProducts.isNotEmpty) ...[
-                        _buildSectionTitle(l10n.topProducts),
-                        const SizedBox(height: 8),
-                        _buildTopProducts(stats.topProducts),
-                        const SizedBox(height: 20),
-                      ],
-
-                      // Recent sessions
-                      if (stats.recentSessions.isNotEmpty) ...[
-                        _buildSectionTitle(l10n.recentSessions),
-                        const SizedBox(height: 8),
-                        _buildRecentSessions(l10n, stats.recentSessions),
-                      ],
-                    ],
-                  ),
-                ),
-    );
-  }
-
-  Widget _buildPeriodChips(AppLocalizations l10n) {
-    return Row(
-      children: [
-        _periodChip(l10n.periodToday, 'today'),
-        const SizedBox(width: 8),
-        _periodChip(l10n.periodWeek, 'week'),
-        const SizedBox(width: 8),
-        _periodChip(l10n.periodMonth, 'month'),
-      ],
-    );
-  }
-
-  Widget _periodChip(String label, String value) {
-    final selected = _period == value;
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => _changePeriod(value),
-    );
-  }
-
-  Widget _buildSummaryCards(AppLocalizations l10n, SalesSummary summary) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _statCard(
-                l10n.totalSalesLabel,
-                summary.totalSales,
-                Icons.attach_money,
-                Colors.green,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _statCard(
-                l10n.totalOrdersLabel,
-                summary.totalOrders.toString(),
-                Icons.receipt_long,
-                Colors.blue,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _statCard(
-                l10n.avgOrderLabel,
-                summary.averageOrder,
-                Icons.trending_up,
-                Colors.orange,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _statCard(
-                l10n.itemsSoldLabel,
-                summary.totalItemsSold,
-                Icons.inventory_2,
-                Colors.purple,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _statCard(String label, String value, IconData icon, Color color) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: isDark ? MColors.darkBg : MColors.bg,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
-  Widget _buildHourlyChart(List<HourlySales> hourlySales) {
-    final maxTotal = hourlySales
-        .map((h) => double.tryParse(h.total) ?? 0)
-        .reduce(max);
-    final chartMax = maxTotal > 0 ? maxTotal : 1.0;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SizedBox(
-          height: 160,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: hourlySales.map((h) {
-              final value = double.tryParse(h.total) ?? 0;
-              final fraction = value / chartMax;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        h.count.toString(),
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                      const SizedBox(height: 4),
-                      Flexible(
-                        child: FractionallySizedBox(
-                          heightFactor: fraction.clamp(0.05, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
-                              borderRadius:
-                                  const BorderRadius.vertical(top: Radius.circular(4)),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${h.hour}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentBreakdown(List<PaymentBreakdown> payments) {
-    final totalAll = payments.fold<double>(
-        0, (sum, p) => sum + (double.tryParse(p.total) ?? 0));
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: payments.map((p) {
-            final amount = double.tryParse(p.total) ?? 0;
-            final fraction = totalAll > 0 ? amount / totalAll : 0.0;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        p.method,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        '${p.total} (${p.count})',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ],
+                  GestureDetector(
+                    onTap: () => Navigator.maybePop(context),
+                    child: Icon(Icons.arrow_back_ios_new_rounded, size: 20,
+                        color: isDark ? MColors.darkText : MColors.text),
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: fraction,
-                      minHeight: 8,
-                      backgroundColor: Colors.grey[200],
-                    ),
-                  ),
+                  const Spacer(),
+                  Text('My Performance', style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w700,
+                    color: isDark ? MColors.darkText : MColors.text,
+                  )),
+                  const Spacer(),
+                  const SizedBox(width: 20),
                 ],
               ),
-            );
-          }).toList(),
+            ),
+            Expanded(
+              child: pos.statsLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : stats == null
+                      ? Center(child: Text('No data',
+                          style: TextStyle(color: AppTheme.semantics(context).textSub)))
+                      : RefreshIndicator(
+                          onRefresh: () => pos.loadStats(period: _period),
+                          color: isDark ? MColors.darkPrimary : MColors.primary,
+                          child: ListView(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                            children: [
+                              // Period tabs
+                              Row(children: [
+                                _periodChip('Today', 'today', _period, isDark,
+                                    () => _changePeriod('today')),
+                                const SizedBox(width: 8),
+                                _periodChip('Week', 'week', _period, isDark,
+                                    () => _changePeriod('week')),
+                                const SizedBox(width: 8),
+                                _periodChip('Month', 'month', _period, isDark,
+                                    () => _changePeriod('month')),
+                              ]),
+                              const SizedBox(height: 16),
+
+                              // Summary KPIs
+                              _SummaryGrid(summary: stats.summary, isDark: isDark),
+                              const SizedBox(height: 16),
+
+                              // Hourly chart
+                              if (stats.hourlySales.isNotEmpty) ...[
+                                _SectionTitle('Hourly Sales', isDark: isDark),
+                                const SizedBox(height: 8),
+                                _HourlyChart(data: stats.hourlySales, isDark: isDark),
+                                const SizedBox(height: 16),
+                              ],
+
+                              // Payment breakdown
+                              if (stats.paymentBreakdown.isNotEmpty) ...[
+                                _SectionTitle('Payment Breakdown', isDark: isDark),
+                                const SizedBox(height: 8),
+                                _PaymentBreakdown(data: stats.paymentBreakdown, isDark: isDark),
+                                const SizedBox(height: 16),
+                              ],
+
+                              // Top products
+                              if (stats.topProducts.isNotEmpty) ...[
+                                _SectionTitle('Top Products', isDark: isDark),
+                                const SizedBox(height: 8),
+                                _TopProducts(products: stats.topProducts, isDark: isDark),
+                                const SizedBox(height: 16),
+                              ],
+
+                              // Recent sessions
+                              if (stats.recentSessions.isNotEmpty) ...[
+                                _SectionTitle('Recent Sessions', isDark: isDark),
+                                const SizedBox(height: 8),
+                                ...stats.recentSessions.map((s) =>
+                                    _SessionCard(session: s, isDark: isDark)),
+                              ],
+                            ],
+                          ),
+                        ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildTopProducts(List<TopProduct> products) {
-    return Card(
+Widget _periodChip(String label, String value, String current, bool isDark, VoidCallback onTap) {
+  final sel = current == value;
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: sel ? (isDark ? MColors.darkPrimary : MColors.primary) : Colors.transparent,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: sel ? (isDark ? MColors.darkPrimary : MColors.primary)
+              : (isDark ? MColors.darkBorder : MColors.border),
+          width: 0.5,
+        ),
+      ),
+      child: Text(label, style: TextStyle(
+          fontSize: 12.5, fontWeight: FontWeight.w600,
+          color: sel ? Colors.white : (isDark ? MColors.darkTextMid : MColors.textMid))),
+    ),
+  );
+}
+
+class _SummaryGrid extends StatelessWidget {
+  final SalesSummary summary;
+  final bool isDark;
+  const _SummaryGrid({required this.summary, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      ('Total Sales', summary.totalSales, Icons.attach_money_rounded, const Color(0xFF10B981)),
+      ('Orders', summary.totalOrders.toString(), Icons.receipt_long_outlined, const Color(0xFF3B82F6)),
+      ('Avg Order', summary.averageOrder, Icons.trending_up_rounded, const Color(0xFFF59E0B)),
+      ('Items Sold', summary.totalItemsSold, Icons.inventory_2_outlined, const Color(0xFF8B5CF6)),
+    ];
+    return GridView.count(
+      crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10,
+      childAspectRatio: 1.6, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+      children: items.map((e) => _KpiCard(
+          label: e.$1, value: e.$2, icon: e.$3, color: e.$4, isDark: isDark)).toList(),
+    );
+  }
+}
+
+class _KpiCard extends StatelessWidget {
+  final String label, value;
+  final IconData icon;
+  final Color color;
+  final bool isDark;
+  const _KpiCard({required this.label, required this.value, required this.icon,
+      required this.color, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? MColors.darkSurface : MColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? MColors.darkBorder : MColors.border, width: 0.5),
+      ),
       child: Column(
-        children: products.asMap().entries.map((entry) {
-          final i = entry.key;
-          final p = entry.value;
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor.withAlpha(30),
-              child: Text(
-                '${i + 1}',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(fontSize: 11,
+                color: isDark ? MColors.darkTextSub : MColors.textSub)),
+          ]),
+          const Spacer(),
+          Text(value, style: TextStyle(
+              fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.4,
+              color: isDark ? MColors.darkText : MColors.text)),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final bool isDark;
+  const _SectionTitle(this.title, {required this.isDark});
+
+  @override
+  Widget build(BuildContext context) => Text(title, style: TextStyle(
+      fontSize: 13, fontWeight: FontWeight.w700,
+      color: isDark ? MColors.darkText : MColors.text));
+}
+
+class _HourlyChart extends StatelessWidget {
+  final List<HourlySales> data;
+  final bool isDark;
+  const _HourlyChart({required this.data, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final maxVal = data.map((h) => double.tryParse(h.total) ?? 0).reduce(max);
+    final chartMax = maxVal > 0 ? maxVal : 1.0;
+    final primary = isDark ? MColors.darkPrimary : MColors.primary;
+
+    return Container(
+      height: 150,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? MColors.darkSurface : MColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? MColors.darkBorder : MColors.border, width: 0.5),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: data.map((h) {
+          final val = double.tryParse(h.total) ?? 0;
+          final frac = val / chartMax;
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 1.5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (h.count > 0)
+                    Text('${h.count}', style: TextStyle(fontSize: 8,
+                        color: isDark ? MColors.darkTextFaint : MColors.textFaint)),
+                  const SizedBox(height: 2),
+                  Flexible(child: FractionallySizedBox(
+                    heightFactor: frac.clamp(0.05, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: primary,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                      ),
+                    ),
+                  )),
+                  const SizedBox(height: 3),
+                  Text('${h.hour}', style: TextStyle(fontSize: 8,
+                      color: isDark ? MColors.darkTextFaint : MColors.textFaint)),
+                ],
               ),
             ),
-            title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text(p.sku),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _PaymentBreakdown extends StatelessWidget {
+  final List<PaymentBreakdown> data;
+  final bool isDark;
+  const _PaymentBreakdown({required this.data, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = data.fold<double>(0, (s, p) => s + (double.tryParse(p.total) ?? 0));
+    final primary = isDark ? MColors.darkPrimary : MColors.primary;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? MColors.darkSurface : MColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? MColors.darkBorder : MColors.border, width: 0.5),
+      ),
+      child: Column(
+        children: data.map((p) {
+          final amt = double.tryParse(p.total) ?? 0;
+          final frac = total > 0 ? amt / total : 0.0;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  p.total,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(p.method, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
+                        color: isDark ? MColors.darkText : MColors.text)),
+                    Text('${p.total} (${p.count})', style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600,
+                        color: isDark ? MColors.darkText : MColors.text)),
+                  ],
                 ),
-                Text(
-                  '${p.quantity} pcs',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: frac.clamp(0.0, 1.0),
+                    minHeight: 6,
+                    backgroundColor: isDark ? MColors.darkBorder : MColors.border,
+                    valueColor: AlwaysStoppedAnimation(primary),
+                  ),
                 ),
               ],
             ),
@@ -353,81 +329,146 @@ class _POSStatsScreenState extends State<POSStatsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildRecentSessions(
-      AppLocalizations l10n, List<RecentSession> sessions) {
-    return Column(
-      children: sessions.map((s) {
-        final diff = double.tryParse(s.cashDifference) ?? 0;
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+class _TopProducts extends StatelessWidget {
+  final List<TopProduct> products;
+  final bool isDark;
+  const _TopProducts({required this.products, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? MColors.darkSurface : MColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? MColors.darkBorder : MColors.border, width: 0.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: products.asMap().entries.map((e) {
+          final i = e.key; final p = e.value;
+          return Container(
+            decoration: BoxDecoration(
+              border: i > 0 ? Border(top: BorderSide(
+                  color: isDark ? MColors.darkBorder : MColors.borderSoft, width: 0.5)) : null,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Container(
+                  width: 28, height: 28,
+                  decoration: BoxDecoration(
+                    color: isDark ? MColors.darkPrimarySoft : MColors.primarySoft,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(child: Text('${i + 1}', style: TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w700,
+                      color: isDark ? MColors.darkPrimary : MColors.primary))),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      s.sessionNumber,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Chip(
-                      label: Text(
-                        s.status,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      backgroundColor: s.status == 'closed'
-                          ? Colors.grey[200]
-                          : Colors.green[100],
-                    ),
+                    Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                            color: isDark ? MColors.darkText : MColors.text)),
+                    Text(p.sku, style: TextStyle(fontSize: 11,
+                        color: isDark ? MColors.darkTextSub : MColors.textSub)),
                   ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  s.terminalName,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-                const Divider(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _sessionStat(l10n.totalSalesLabel, s.totalSales),
-                    _sessionStat(l10n.totalOrdersLabel, s.totalOrders.toString()),
-                    _sessionStat(
-                      l10n.cashDifference,
-                      diff >= 0 ? '+${s.cashDifference}' : s.cashDifference,
-                      color: diff < 0 ? Colors.red : Colors.green,
-                    ),
-                  ],
-                ),
+                )),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text(p.total, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                      color: isDark ? MColors.darkText : MColors.text)),
+                  Text('${p.quantity} pcs', style: TextStyle(fontSize: 11,
+                      color: isDark ? MColors.darkTextSub : MColors.textSub)),
+                ]),
               ],
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
+}
 
-  Widget _sessionStat(String label, String value, {Color? color}) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: color,
+class _SessionCard extends StatelessWidget {
+  final RecentSession session;
+  final bool isDark;
+  const _SessionCard({required this.session, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final sem = AppTheme.semantics(context);
+    final diff = double.tryParse(session.cashDifference) ?? 0;
+    final isClosed = session.status == 'closed';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? MColors.darkSurface : MColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? MColors.darkBorder : MColors.border, width: 0.5),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(session.sessionNumber, style: TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w700,
+                  color: isDark ? MColors.darkText : MColors.text))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isClosed
+                      ? (isDark ? MColors.darkBorder : MColors.border)
+                      : sem.successContainer,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Text(session.status, style: TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w600,
+                    color: isClosed
+                        ? (isDark ? MColors.darkTextSub : MColors.textSub)
+                        : sem.success)),
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Align(alignment: Alignment.centerLeft,
+              child: Text(session.terminalName, style: TextStyle(
+                  fontSize: 12, color: isDark ? MColors.darkTextSub : MColors.textSub))),
+          Divider(height: 14, color: isDark ? MColors.darkBorder : MColors.border),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _SessionStat('Sales', session.totalSales, isDark: isDark),
+              _SessionStat('Orders', '${session.totalOrders}', isDark: isDark),
+              _SessionStat('Cash diff',
+                  diff >= 0 ? '+${session.cashDifference}' : session.cashDifference,
+                  isDark: isDark,
+                  color: diff < 0 ? sem.danger : sem.success),
+            ],
+          ),
+        ],
+      ),
     );
   }
+}
+
+class _SessionStat extends StatelessWidget {
+  final String label, value;
+  final bool isDark;
+  final Color? color;
+  const _SessionStat(this.label, this.value, {required this.isDark, this.color});
+
+  @override
+  Widget build(BuildContext context) => Column(children: [
+    Text(label, style: TextStyle(fontSize: 11,
+        color: isDark ? MColors.darkTextSub : MColors.textSub)),
+    const SizedBox(height: 2),
+    Text(value, style: TextStyle(
+        fontSize: 13, fontWeight: FontWeight.w700,
+        color: color ?? (isDark ? MColors.darkText : MColors.text))),
+  ]);
 }
