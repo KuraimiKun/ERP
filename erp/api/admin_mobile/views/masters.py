@@ -430,8 +430,12 @@ class POSSessionViewSet(AdminMobileBaseViewSet):
                 closing_balance=closing_balance,
                 notes=request.data.get('notes', ''),
             )
-        except (ValueError, TypeError) as exc:
-            return Response({'detail': str(exc)}, status=400)
+        except (ValueError, TypeError):
+            logger.warning('Invalid close_session request for session %s', session.pk)
+            return Response(
+                {'detail': 'Invalid closing_balance or session state.'},
+                status=400,
+            )
         session.refresh_from_db()
         return Response(POSSessionMobileListSerializer(session).data)
 
