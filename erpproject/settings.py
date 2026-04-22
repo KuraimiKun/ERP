@@ -497,6 +497,15 @@ SPECTACULAR_SETTINGS = {
         {'name': 'shipments', 'description': 'Shipment notes'},
         {'name': 'reorder-rules', 'description': 'Automatic reorder rules'},
         {'name': 'valuation-config', 'description': 'Inventory valuation'},
+        # Admin Mobile API
+        {
+            'name': 'admin-mobile',
+            'description': (
+                'Admin-role endpoints for the Flutter admin mobile app '
+                '(mounted under /api/mobile/admin/v1/). Requires an active '
+                'owner/admin DatabaseAssignment.'
+            ),
+        },
     ],
 
     'SECURITY': [

@@ -113,3 +113,50 @@ class IsAdminOrReadOnly(BasePermission):
         if not (request.user and request.user.is_authenticated):
             return False
         return request.method in self.SAFE_METHODS or request.user.is_staff
+
+
+class IsCompanyAdmin(BasePermission):
+    """Allow access only to tenant admins/owners (admin mobile API gate).
+
+    A user is considered an admin when any of the following is true:
+
+    * ``request.user.is_superuser`` (platform support staff).
+    * They have an ``employee_profile`` linked to a company *and* an active
+      ``tenants.DatabaseAssignment`` with ``role in {'owner', 'admin'}``.
+
+    This mirrors the pattern already used by ``_can_approve_for_employee`` in
+    ``erp/api/views.py`` — ``DatabaseAssignment`` is the canonical source of
+    truth for "this user administers this tenant DB" and lives in the default
+    database alongside ``TenantUser`` / authtoken, so it works regardless of
+    which tenant DB the current request is routed to.
+    """
+
+    ADMIN_ROLES = frozenset({'owner', 'admin'})
+    message = (
+        'Admin access required. Your account is not assigned the owner or '
+        'admin role on this tenant.'
+    )
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not (user and user.is_authenticated):
+            return False
+
+        if user.is_superuser:
+            return True
+
+        # Must have an employee_profile bound to a company so that
+        # company-scoped querysets downstream have a well-defined tenant.
+        employee = getattr(user, 'employee_profile', None)
+        if employee is None or employee.company_id is None:
+            return False
+
+        # DatabaseAssignment lives in the default DB; querying through the
+        # user's reverse accessor respects that because the FK target is
+        # ``tenants.TenantUser`` which is itself a default-DB model.
+        from tenants.models import DatabaseAssignment
+        return DatabaseAssignment.objects.filter(
+            user=user,
+            role__in=self.ADMIN_ROLES,
+            is_active=True,
+        ).exists()
