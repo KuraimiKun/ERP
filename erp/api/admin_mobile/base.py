@@ -16,6 +16,7 @@ Subclasses only need to declare ``queryset`` and ``serializer_class``.
 
 from __future__ import annotations
 
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.exceptions import PermissionDenied
@@ -35,7 +36,7 @@ class AdminMobileBaseViewSet(viewsets.ModelViewSet):
     authentication_classes = [DefaultDbTokenAuthentication]
     permission_classes = [IsAuthenticated, IsCompanyAdmin]
     pagination_class = AdminMobilePagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     # Subclasses should set these explicitly; kept here only to document them.
     queryset = None
@@ -94,7 +95,7 @@ class AdminMobileReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [DefaultDbTokenAuthentication]
     permission_classes = [IsAuthenticated, IsCompanyAdmin]
     pagination_class = AdminMobilePagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     queryset = None
     serializer_class = None
