@@ -3,10 +3,9 @@
 A mobile-optimised REST API for company admins, consumed by the Flutter
 admin app. All endpoints live under `/api/mobile/admin/v1/`.
 
-This document covers what ships in the **Foundation PR**. Later PRs
-expand it with auth/dashboard, approval queues, master-data CRUD,
-reports, notifications, search, and settings as laid out in the
-full implementation plan.
+This document covers the full admin mobile API. Endpoints are grouped
+by concern (auth, dashboard, approvals, masters, reports, …) and all
+live beneath `/api/mobile/admin/v1/`.
 
 ## Base URL and versioning
 
@@ -92,11 +91,97 @@ Errors follow DRF's conventions:
 | 403    | `{"detail": "Admin access required. …"}`                 |
 | 404    | `{"detail": "Not found."}`                               |
 
-## Endpoints shipped by this PR
+## Endpoint catalogue
+
+Unless noted, every endpoint requires `IsCompanyAdmin` and returns
+company-scoped data. Serializer shapes live in
+`erp.api.admin_mobile.serializers`.
+
+### Auth & session
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET    | `/auth/me/` | Return the authenticated admin — user, employee, company, tenant role. Smoke-test endpoint for the Flutter client. |
+| POST   | `/auth/login/`           | Email + password → DRF token, role, employee, company, feature flags. |
+| POST   | `/auth/logout/`          | Invalidate the caller's token. |
+| GET    | `/auth/me/`              | Who am I? Returns user/employee/company/role. |
+| POST   | `/auth/change-password/` | Rotate the caller's password. |
+| POST   | `/devices/register/`     | Register an FCM / APNs device token (`platform ∈ {android, ios}`). |
+
+### Dashboard
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/dashboard/`          | Today revenue, cash-in-hand, pending approval counts, low-stock items, open POS sessions, overdue invoice amount, month-to-date revenue/expenses. Cached 5 min per company. |
+| GET | `/dashboard/activity/` | Recent activity timeline (invoices, POs, leaves, notifications). |
+| GET | `/dashboard/kpis/`     | 30-day KPIs: revenue, expenses, net, new customers, new leads, invoices issued, payments received. |
+
+### Approval queues
+
+Each viewset lists only **pending** objects and exposes `approve`/`reject`
+detail-actions. Expense and supplier-invoice approval post journal
+entries via `erp.services.accounting`/`erp.services.inventory_accounting`.
+
+| Path | Actions |
+|------|---------|
+| `/leaves/pending/`             | `GET /`, `POST /{id}/approve/`, `POST /{id}/reject/` |
+| `/expenses/pending/`           | same |
+| `/purchase-orders/pending/`    | same |
+| `/quotes/pending/`             | same |
+| `/supplier-invoices/pending/`  | same |
+
+### Masters — CRUD
+
+Standard DRF CRUD (`list`, `retrieve`, `create`, `update`, `partial_update`,
+`destroy`) against the following routes. List responses use compact
+mobile serializers; detail/create/update reuse the v1 serializers.
+Deletes are soft-deletes via `ERPBaseModel.soft_delete`.
+
+HR: `/employees/`, `/departments/`, `/branches/`, `/attendance/`,
+`/leave-requests/`, `/payroll/`
+Finance: `/customers/`, `/invoices/`, `/payments/`, `/expenses/`;
+read-only `/accounts/`, `/tax-rates/`
+Supplier: `/suppliers/`, `/purchase-orders/`, `/supplier-invoices/`,
+`/supplier-payments/`
+Inventory: `/warehouses/`, `/products/`, `/goods-receipts/`,
+`/stock-adjustments/`; read-only `/stock-items/`, `/stock-movements/`
+POS: `/pos/terminals/`, `/pos/sessions/` (+ `POST /pos/sessions/{id}/close/`),
+read-only `/pos/orders/`
+CRM: `/leads/`, `/lead-activities/`, `/customer-interactions/`,
+`/tasks/`, `/campaigns/`
+Services: `/quotes/`, read-only `/service-pricing/`
+
+### Reports
+
+All reports return JSON, with `Decimal` fields serialised as strings.
+Financial reports delegate to `erp.services.financial_reports` so the
+numbers match `/api/finance/reports/*` exactly.
+
+| Method | Path | Query | Returns |
+|--------|------|-------|---------|
+| GET | `/reports/trial-balance/`     | `start`, `end` (ISO) | Trial balance for the period (falls back to the active fiscal year). |
+| GET | `/reports/profit-and-loss/`   | `start`, `end`       | P&L for the period. |
+| GET | `/reports/balance-sheet/`     | `as_of` (ISO)        | Balance sheet at a point in time. |
+| GET | `/reports/cash-flow/`         | `start`, `end`       | Cash flow for the period. |
+| GET | `/reports/sales-summary/`     | `period ∈ {day,week,month,year}` | Revenue, paid, outstanding, count. |
+| GET | `/reports/top-products/`      | `period`, `limit`    | Top products by revenue (POS). |
+| GET | `/reports/top-customers/`     | `period`, `limit`    | Top customers by revenue. |
+| GET | `/reports/aging-receivables/` | —                    | 0–30, 31–60, 61–90, 90+ aging buckets for customer invoices. |
+| GET | `/reports/aging-payables/`    | —                    | Same buckets for supplier invoices. |
+
+### Notifications, audit, search, settings
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET  | `/notifications/`                 | Inbox (`?unread=1` filter). |
+| POST | `/notifications/read/`            | `{"ids":[...]}` marks listed notifications read. |
+| POST | `/notifications/read-all/`        | Mark every notification read. |
+| GET  | `/notifications/unread-count/`    | `{"count": N}`. |
+| GET  | `/audit-logs/`                    | Audit entries (`?model=`, `?since=`, `?actor=`, `?action=`). |
+| GET  | `/search/?q=&types=`              | Federated search over employees/customers/products/invoices. |
+| GET \| PATCH | `/company/`               | Read or update a whitelisted subset of the caller's company (`name`, `name_ar`, `email`, `phone`, `address`, `city`, `country`). |
+| GET  | `/company/feature-flags/`         | `{"ai_enabled": bool}`. |
+| GET  | `/fiscal-years/`                  | Read-only list. |
+| GET  | `/currencies/`                    | Read-only list (not company-scoped). |
 
 ## OpenAPI / Swagger
 
