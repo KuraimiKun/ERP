@@ -144,6 +144,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # RequestIDMiddleware runs first so every downstream log record produced
+    # during the request — including security/CORS/tenant routing — carries
+    # the same correlation id.
+    'erpproject.request_id.RequestIDMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -548,13 +552,22 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@erp.local')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        # Injects the current request id onto every log record so formatters
+        # can reference %(request_id)s / {request_id}.  Records emitted
+        # outside a request (e.g. management commands, Celery tasks without
+        # wiring) get '-'.
+        'request_id': {
+            '()': 'erpproject.request_id.RequestIDFilter',
+        },
+    },
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'format': '{levelname} {asctime} [{request_id}] {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
         'simple': {
-            'format': '{levelname} {message}',
+            'format': '{levelname} [{request_id}] {message}',
             'style': '{',
         },
     },
@@ -566,10 +579,12 @@ LOGGING = {
             'maxBytes': 10 * 1024 * 1024,  # 10 MB per file
             'backupCount': 5,
             'formatter': 'verbose',
+            'filters': ['request_id'],
         },
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+            'filters': ['request_id'],
         },
     },
     'root': {

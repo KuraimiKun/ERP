@@ -43,6 +43,11 @@ from .inventory_views import (
     ReorderRuleViewSet, InventoryValuationConfigViewSet,
 )
 
+from .reports_views import (
+    TrialBalanceAPIView, ProfitAndLossAPIView,
+    BalanceSheetAPIView, CashFlowAPIView,
+)
+
 # Create router
 router = SimpleRouter()
 
@@ -121,5 +126,27 @@ router.register(r'valuation-config', InventoryValuationConfigViewSet, basename='
 
 # URL patterns
 urlpatterns = [
+    # Financial report endpoints are declared before the router so they
+    # resolve even if a future router registration uses the same prefix.
+    path(
+        'finance/reports/trial-balance/',
+        TrialBalanceAPIView.as_view(),
+        name='finance-report-trial-balance',
+    ),
+    path(
+        'finance/reports/profit-and-loss/',
+        ProfitAndLossAPIView.as_view(),
+        name='finance-report-profit-and-loss',
+    ),
+    path(
+        'finance/reports/balance-sheet/',
+        BalanceSheetAPIView.as_view(),
+        name='finance-report-balance-sheet',
+    ),
+    path(
+        'finance/reports/cash-flow/',
+        CashFlowAPIView.as_view(),
+        name='finance-report-cash-flow',
+    ),
     path('', include(router.urls)),
 ]
