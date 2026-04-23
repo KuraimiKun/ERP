@@ -40,6 +40,9 @@ urlpatterns = [
 
     # Mobile API - outside i18n_patterns (uses Accept-Language header instead)
     path('api/mobile/', include('erp.api.mobile_urls')),
+    # Admin Mobile API (v1) — admin-role, mobile-shaped endpoints for the
+    # Flutter admin app. See docs/admin_mobile_api.md.
+    path('api/mobile/admin/v1/', include('erp.api.admin_mobile.urls')),
 ]
 
 urlpatterns += i18n_patterns(
