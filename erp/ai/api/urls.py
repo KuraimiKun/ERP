@@ -32,6 +32,26 @@ urlpatterns = [
     path('trigger/kpi-checks/', views.trigger_kpi_checks,
          name='ai-trigger-kpi-checks'),
 
+    # On-demand retraining
+    path('trigger/retrain/lead-scoring/', views.trigger_retrain_lead_scoring,
+         name='ai-retrain-lead-scoring'),
+    path('trigger/retrain/late-payment/', views.trigger_retrain_late_payment,
+         name='ai-retrain-late-payment'),
+    path('trigger/retrain/attrition/', views.trigger_retrain_attrition,
+         name='ai-retrain-attrition'),
+    path('trigger/retrain/demand-forecast/', views.trigger_retrain_demand_forecast,
+         name='ai-retrain-demand-forecast'),
+    path('trigger/retrain/all/', views.trigger_retrain_all_models,
+         name='ai-retrain-all-models'),
+
+    # Training status / history / cancel
+    path('training/status/', views.training_status,
+         name='ai-training-status'),
+    path('training/history/', views.training_history,
+         name='ai-training-history'),
+    path('training/cancel/', views.cancel_training_run,
+         name='ai-training-cancel'),
+
     # Cash flow
     path('cashflow/', views.cash_flow_forecast, name='ai-cashflow'),
 

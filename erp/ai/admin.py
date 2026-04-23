@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MLModel, PredictionLog, AIInsight
+from .models import MLModel, PredictionLog, AIInsight, AITrainingRun
 from erp.admin.mixins import CompanyIsolatedAdmin
 
 
@@ -30,3 +30,20 @@ class AIInsightAdmin(CompanyIsolatedAdmin):
     list_filter = ('category', 'severity', 'is_dismissed')
     search_fields = ('title', 'description')
     date_hierarchy = 'created_at'
+
+
+@admin.register(AITrainingRun)
+class AITrainingRunAdmin(CompanyIsolatedAdmin):
+    list_display = (
+        'company', 'run_type', 'status', 'requested_by',
+        'evaluate', 'started_at', 'finished_at',
+    )
+    list_filter = ('run_type', 'status', 'evaluate', 'company')
+    search_fields = ('summary_message', 'error_message')
+    readonly_fields = (
+        'company', 'requested_by', 'run_type', 'evaluate', 'status',
+        'started_at', 'finished_at', 'duration_seconds',
+        'summary_message', 'results', 'error_message',
+        'created_at', 'updated_at',
+    )
+    date_hierarchy = 'started_at'

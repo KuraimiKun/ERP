@@ -325,14 +325,30 @@ class TenantDatabase(models.Model):
         dynamically-added databases behave identically to statically
         defined ones (Django's ConnectionHandler.databases only applies
         setdefault() on initial load, not on later additions).
+
+        When running inside a Docker container and the server is a Docker-type
+        server with a container name, uses the container name + internal port
+        (5432) so that intra-container networking works correctly.
         """
+        import os
+        in_docker = os.path.exists('/.dockerenv')
+        if (
+            in_docker
+            and self.server.server_type == 'docker'
+            and self.server.docker_container_name
+        ):
+            host = self.server.docker_container_name
+            port = '5432'
+        else:
+            host = self.server.host
+            port = str(self.server.port)
         return {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': self.name,
             'USER': self.db_username,
             'PASSWORD': self.db_password,
-            'HOST': self.server.host,
-            'PORT': str(self.server.port),
+            'HOST': host,
+            'PORT': port,
             'ATOMIC_REQUESTS': False,
             'AUTOCOMMIT': True,
             'CONN_MAX_AGE': 600,

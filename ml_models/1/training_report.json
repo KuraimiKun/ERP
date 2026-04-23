@@ -1,46 +1,64 @@
 {
   "company_id": 1,
   "company_name": "Maines",
-  "timestamp": "2026-03-17T16:19:40.250794",
+  "timestamp": "2026-04-22T22:38:50.975781",
   "results": {
     "lead_scoring": {
       "status": "trained",
       "auc": 0.9448,
       "samples": 4112,
-      "elapsed_seconds": 9.96
+      "evaluation": {
+        "leads_scored": 150,
+        "hot": 45,
+        "warm": 51,
+        "cold": 54
+      },
+      "elapsed_seconds": 16.11
     },
     "late_payment": {
       "status": "trained",
-      "auc": 0.6358,
-      "samples": 97638,
+      "auc": 0.6406,
+      "samples": 97641,
       "late_ratio": 0.094,
       "feature_importance": {
-        "invoice_amount": 0.1131,
-        "amount_log": 0.1071,
-        "days_to_due": 0.2271,
-        "invoice_month": 0.0293,
-        "month_sin": 0.0249,
-        "month_cos": 0.0494,
-        "invoice_day_of_week": 0.0233,
-        "invoice_quarter": 0.0138,
-        "cust_total_invoices": 0.0047,
-        "cust_avg_amount": 0.036,
-        "cust_avg_days_to_due": 0.0051,
-        "cust_payment_delay_mean": 0.0154,
-        "cust_late_ratio": 0.0077,
-        "customer_type_code": 0.012,
-        "amount_vs_cust_avg": 0.0205,
-        "amount_percentile": 0.1002,
-        "is_large_invoice": 0.0027,
-        "payment_term_bucket": 0.2077
+        "invoice_amount": 0.0833,
+        "amount_log": 0.0935,
+        "days_to_due": 0.2543,
+        "invoice_month": 0.0324,
+        "month_sin": 0.0245,
+        "month_cos": 0.0418,
+        "invoice_day_of_week": 0.0183,
+        "invoice_quarter": 0.0173,
+        "cust_total_invoices": 0.0123,
+        "cust_avg_amount": 0.0228,
+        "cust_avg_days_to_due": 0.0064,
+        "cust_payment_delay_mean": 0.0128,
+        "cust_late_ratio": 0.0054,
+        "customer_type_code": 0.0231,
+        "amount_vs_cust_avg": 0.0226,
+        "amount_percentile": 0.0801,
+        "is_large_invoice": 0.0048,
+        "payment_term_bucket": 0.2443
       },
-      "elapsed_seconds": 125.26
+      "evaluation": {
+        "invoices_scored": 9514,
+        "high_risk": 706,
+        "medium_risk": 8606,
+        "low_risk": 202
+      },
+      "elapsed_seconds": 185.02
     },
     "attrition": {
       "status": "trained",
-      "auc": 0.9761,
+      "auc": 0.963,
       "samples": 1720,
-      "elapsed_seconds": 2.88
+      "evaluation": {
+        "employees_scored": 1483,
+        "high_risk": 6,
+        "medium_risk": 54,
+        "low_risk": 1423
+      },
+      "elapsed_seconds": 56.01
     },
     "expense_anomaly": {
       "status": "completed",
@@ -95,7 +113,7 @@
         "recall": 0.3146,
         "f1_score": 0.1721
       },
-      "elapsed_seconds": 3.7
+      "elapsed_seconds": 4.93
     },
     "attendance_anomaly": {
       "status": "completed",
@@ -158,28 +176,28 @@
       "status": "skipped",
       "rules_updated": 0,
       "results": [],
-      "elapsed_seconds": 1.13
+      "elapsed_seconds": 1.41
     },
     "cash_flow": {
       "status": "completed",
       "summary": {
         "30d": {
-          "inflows": 725087.99,
-          "outflows": 645578.63,
-          "net": 79509.36,
-          "cumulative": 79509.36
+          "inflows": 146855.7,
+          "outflows": 538867.5,
+          "net": -392011.8,
+          "cumulative": -392011.8
         },
         "60d": {
-          "inflows": 871773.69,
-          "outflows": 1180971.22,
-          "net": -309197.53,
-          "cumulative": -309197.53
+          "inflows": 146855.7,
+          "outflows": 830924.11,
+          "net": -684068.41,
+          "cumulative": -684068.41
         },
         "90d": {
-          "inflows": 871773.69,
-          "outflows": 1575560.75,
-          "net": -703787.06,
-          "cumulative": -703787.06
+          "inflows": 146855.7,
+          "outflows": 830924.11,
+          "net": -684068.41,
+          "cumulative": -684068.41
         }
       },
       "data_points": 90,
@@ -192,19 +210,19 @@
           "check": "overdue_invoices",
           "severity": "critical",
           "value": 9175,
-          "ratio": 0.491
+          "ratio": 0.4909
         },
         {
           "check": "Inventory Movements",
           "severity": "critical",
           "check_value": 0,
-          "mean": 61.23,
-          "std": 1.22,
-          "z_score": -50.25
+          "mean": 61.1,
+          "std": 1.31,
+          "z_score": -46.61
         }
       ],
       "alert_count": 2,
-      "elapsed_seconds": 0.15
+      "elapsed_seconds": 0.1
     }
   }
 }

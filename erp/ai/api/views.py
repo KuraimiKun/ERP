@@ -4,6 +4,7 @@ AI API Views – REST endpoints for the AI / ML module.
 
 import logging
 from django.db.models import Count, Q
+from django.utils import timezone
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
@@ -15,13 +16,228 @@ from erp.ratelimit import HeavyOperationThrottle
 from erp.api.permissions import IsCompanyUser, IsAIEnabled
 
 from erp.views._common import get_user_company
-from erp.ai.models import MLModel, PredictionLog, AIInsight, ExplanationResult
+from erp.ai.models import (
+    MLModel,
+    PredictionLog,
+    AIInsight,
+    ExplanationResult,
+    AITrainingRun,
+)
 from erp.ai.api import (
     MLModelSerializer, PredictionLogSerializer, AIInsightSerializer,
-    AssistantQuerySerializer, ExplanationResultSerializer, ExplainRequestSerializer,
+    AssistantQuerySerializer, ExplanationResultSerializer,
+    ExplainRequestSerializer, AITrainingRunSerializer,
 )
 
 logger = logging.getLogger('erp.ai.api')
+
+
+def _as_bool(value, default=False):
+    """Parse loose bool-like values from JSON payloads."""
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+    return bool(value)
+
+
+def _wants_evaluation(request) -> bool:
+    data = getattr(request, 'data', {}) or {}
+    return _as_bool(data.get('evaluate'), default=False)
+
+
+def _retrain_lead_scoring(company, evaluate=False):
+    from erp.ai.services.crm import LeadScorer
+
+    scorer = LeadScorer(company)
+    result = scorer.train()
+    payload = {
+        'status': result.get('status', 'unknown'),
+        'auc': result.get('auc'),
+        'samples': result.get('samples', 0),
+        'reason': result.get('reason', ''),
+    }
+    if payload['status'] == 'trained' and evaluate:
+        scored = scorer.score_all_active_leads()
+        payload['evaluation'] = {
+            'leads_scored': len(scored),
+            'hot': sum(1 for s in scored if s.get('level') == 'hot'),
+            'warm': sum(1 for s in scored if s.get('level') == 'warm'),
+            'cold': sum(1 for s in scored if s.get('level') == 'cold'),
+        }
+    return payload
+
+
+def _retrain_late_payment(company, evaluate=False):
+    from erp.ai.services.finance import LatePaymentPredictor
+
+    predictor = LatePaymentPredictor(company)
+    result = predictor.train()
+    payload = {
+        'status': result.get('status', 'unknown'),
+        'auc': result.get('auc'),
+        'samples': result.get('samples', 0),
+        'reason': result.get('reason', ''),
+    }
+    if payload['status'] == 'trained' and evaluate:
+        scored = predictor.score_all_open_invoices()
+        payload['evaluation'] = {
+            'invoices_scored': len(scored),
+            'high_risk': sum(1 for s in scored if s.get('risk_level') == 'high'),
+            'medium_risk': sum(1 for s in scored if s.get('risk_level') == 'medium'),
+            'low_risk': sum(1 for s in scored if s.get('risk_level') == 'low'),
+        }
+    return payload
+
+
+def _retrain_attrition(company, evaluate=False):
+    from erp.ai.services.hr import AttritionPredictor
+
+    predictor = AttritionPredictor(company)
+    result = predictor.train()
+    payload = {
+        'status': result.get('status', 'unknown'),
+        'auc': result.get('auc'),
+        'samples': result.get('samples', 0),
+        'reason': result.get('reason', ''),
+    }
+    if payload['status'] == 'trained' and evaluate:
+        scored = predictor.score_all_active_employees()
+        payload['evaluation'] = {
+            'employees_scored': len(scored),
+            'high_risk': sum(1 for s in scored if s.get('risk_level') == 'high'),
+            'medium_risk': sum(1 for s in scored if s.get('risk_level') == 'medium'),
+            'low_risk': sum(1 for s in scored if s.get('risk_level') == 'low'),
+        }
+    return payload
+
+
+def _retrain_demand_forecast(company):
+    try:
+        from prophet import Prophet  # noqa: F401
+    except Exception:
+        return {
+            'status': 'skipped',
+            'reason': 'prophet_not_installed',
+            'rules_updated': 0,
+        }
+
+    from erp.ai.services.demand import DemandForecaster
+
+    results = DemandForecaster(company).update_all_reorder_rules()
+    if not results:
+        return {
+            'status': 'skipped',
+            'reason': 'no_reorder_rules_updated',
+            'rules_updated': 0,
+        }
+    return {
+        'status': 'completed',
+        'rules_updated': len(results),
+    }
+
+
+def _safe_retrain_step(step_name, fn):
+    try:
+        return fn()
+    except Exception as exc:
+        logger.exception('Retrain step failed for %s: %s', step_name, exc)
+        return {'status': 'error', 'error': str(exc)}
+
+
+_STUCK_RUN_TIMEOUT_MINUTES = 30
+
+
+def _expire_stuck_runs(company):
+    """Mark any IN_PROGRESS runs older than _STUCK_RUN_TIMEOUT_MINUTES as FAILED."""
+    from datetime import timedelta
+    cutoff = timezone.now() - timedelta(minutes=_STUCK_RUN_TIMEOUT_MINUTES)
+    stuck = AITrainingRun.objects.filter(
+        company=company,
+        status=AITrainingRun.Status.IN_PROGRESS,
+        started_at__lt=cutoff,
+    )
+    for run in stuck:
+        _finalize_training_run(
+            run,
+            status=AITrainingRun.Status.FAILED,
+            error_message=(
+                f'Training timed out after {_STUCK_RUN_TIMEOUT_MINUTES} minutes. '
+                'No Celery ML worker processed the task.'
+            ),
+        )
+        logger.warning('Expired stuck training run pk=%s for company=%s', run.pk, company.pk)
+
+
+def _get_active_training_run(company):
+    return AITrainingRun.objects.filter(
+        company=company,
+        status=AITrainingRun.Status.IN_PROGRESS,
+    ).select_related('requested_by').order_by('-started_at').first()
+
+
+def _start_training_run(company, user, run_type, evaluate):
+    return AITrainingRun.objects.create(
+        company=company,
+        requested_by=user,
+        run_type=run_type,
+        evaluate=evaluate,
+        status=AITrainingRun.Status.IN_PROGRESS,
+        started_at=timezone.now(),
+    )
+
+
+def _coerce_run_status(result_status):
+    if result_status in {'trained', 'completed'}:
+        return AITrainingRun.Status.COMPLETED
+    if result_status == 'skipped':
+        return AITrainingRun.Status.SKIPPED
+    return AITrainingRun.Status.FAILED
+
+
+def _finalize_training_run(
+    run,
+    status,
+    summary_message='',
+    results=None,
+    error_message='',
+):
+    finished_at = timezone.now()
+    run.status = status
+    run.finished_at = finished_at
+    if run.started_at:
+        run.duration_seconds = round(
+            (finished_at - run.started_at).total_seconds(), 2,
+        )
+    run.summary_message = summary_message[:500]
+    run.results = results or {}
+    run.error_message = error_message
+    run.save(update_fields=[
+        'status', 'finished_at', 'duration_seconds',
+        'summary_message', 'results', 'error_message', 'updated_at',
+    ])
+    return run
+
+
+def _single_run_message(label, result):
+    status = result.get('status', 'unknown')
+    if status in {'trained', 'completed'}:
+        return f'{label} retraining completed.'
+    if status == 'skipped':
+        reason = result.get('reason') or 'no_data'
+        return f'{label} retraining skipped ({reason}).'
+    return f'{label} retraining failed.'
+
+
+def _parse_limit(query_value, default=20, max_limit=50):
+    try:
+        return max(1, min(int(query_value), max_limit))
+    except (TypeError, ValueError):
+        return default
 
 
 class MLModelViewSet(viewsets.ReadOnlyModelViewSet):
@@ -204,6 +420,241 @@ def trigger_kpi_checks(request):
         'status': 'ok',
         'results': results,
         'message': f'{len(results)} alerts generated',
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+@throttle_classes([HeavyOperationThrottle])
+def trigger_retrain_lead_scoring(request):
+    """Retrain lead scoring model on demand (async via Celery)."""
+    from tenants.routers import get_current_db_alias
+    from erp.ai.tasks import async_retrain_lead_scoring
+
+    company = get_user_company(request.user)
+    evaluate = _wants_evaluation(request)
+    db_alias = get_current_db_alias() or 'default'
+
+    active_run = _get_active_training_run(company)
+    if active_run:
+        return Response({
+            'status': 'in_progress',
+            'message': 'Another training run is already in progress.',
+            'active_run': AITrainingRunSerializer(active_run).data,
+        }, status=409)
+
+    run = _start_training_run(
+        company, request.user,
+        AITrainingRun.RunType.LEAD_SCORING,
+        evaluate,
+    )
+
+    async_retrain_lead_scoring.delay(company.pk, run.pk, db_alias, evaluate)
+
+    return Response({
+        'status': 'started',
+        'message': 'Lead scoring retraining started.',
+        'run': AITrainingRunSerializer(run).data,
+    }, status=202)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+@throttle_classes([HeavyOperationThrottle])
+def trigger_retrain_late_payment(request):
+    """Retrain late-payment model on demand (async via Celery)."""
+    from tenants.routers import get_current_db_alias
+    from erp.ai.tasks import async_retrain_late_payment
+
+    company = get_user_company(request.user)
+    evaluate = _wants_evaluation(request)
+    db_alias = get_current_db_alias() or 'default'
+
+    active_run = _get_active_training_run(company)
+    if active_run:
+        return Response({
+            'status': 'in_progress',
+            'message': 'Another training run is already in progress.',
+            'active_run': AITrainingRunSerializer(active_run).data,
+        }, status=409)
+
+    run = _start_training_run(
+        company, request.user,
+        AITrainingRun.RunType.LATE_PAYMENT,
+        evaluate,
+    )
+
+    async_retrain_late_payment.delay(company.pk, run.pk, db_alias, evaluate)
+
+    return Response({
+        'status': 'started',
+        'message': 'Late-payment retraining started.',
+        'run': AITrainingRunSerializer(run).data,
+    }, status=202)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+@throttle_classes([HeavyOperationThrottle])
+def trigger_retrain_attrition(request):
+    """Retrain attrition model on demand (async via Celery)."""
+    from tenants.routers import get_current_db_alias
+    from erp.ai.tasks import async_retrain_attrition
+
+    company = get_user_company(request.user)
+    evaluate = _wants_evaluation(request)
+    db_alias = get_current_db_alias() or 'default'
+
+    active_run = _get_active_training_run(company)
+    if active_run:
+        return Response({
+            'status': 'in_progress',
+            'message': 'Another training run is already in progress.',
+            'active_run': AITrainingRunSerializer(active_run).data,
+        }, status=409)
+
+    run = _start_training_run(
+        company, request.user,
+        AITrainingRun.RunType.ATTRITION,
+        evaluate,
+    )
+
+    async_retrain_attrition.delay(company.pk, run.pk, db_alias, evaluate)
+
+    return Response({
+        'status': 'started',
+        'message': 'Attrition retraining started.',
+        'run': AITrainingRunSerializer(run).data,
+    }, status=202)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+@throttle_classes([HeavyOperationThrottle])
+def trigger_retrain_demand_forecast(request):
+    """Retrain demand forecast model on demand (async via Celery)."""
+    from tenants.routers import get_current_db_alias
+    from erp.ai.tasks import async_retrain_demand_forecast
+
+    company = get_user_company(request.user)
+    db_alias = get_current_db_alias() or 'default'
+
+    active_run = _get_active_training_run(company)
+    if active_run:
+        return Response({
+            'status': 'in_progress',
+            'message': 'Another training run is already in progress.',
+            'active_run': AITrainingRunSerializer(active_run).data,
+        }, status=409)
+
+    run = _start_training_run(
+        company, request.user,
+        AITrainingRun.RunType.DEMAND_FORECAST,
+        evaluate=False,
+    )
+
+    async_retrain_demand_forecast.delay(company.pk, run.pk, db_alias)
+
+    return Response({
+        'status': 'started',
+        'message': 'Demand forecast retraining started.',
+        'run': AITrainingRunSerializer(run).data,
+    }, status=202)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+@throttle_classes([HeavyOperationThrottle])
+def trigger_retrain_all_models(request):
+    """Retrain all major models from the dashboard (async via Celery)."""
+    from tenants.routers import get_current_db_alias
+    from erp.ai.tasks import async_retrain_all_models
+
+    company = get_user_company(request.user)
+    evaluate = _wants_evaluation(request)
+    db_alias = get_current_db_alias() or 'default'
+
+    active_run = _get_active_training_run(company)
+    if active_run:
+        return Response({
+            'status': 'in_progress',
+            'message': 'Another training run is already in progress.',
+            'active_run': AITrainingRunSerializer(active_run).data,
+        }, status=409)
+
+    run = _start_training_run(
+        company, request.user,
+        AITrainingRun.RunType.ALL_MODELS,
+        evaluate,
+    )
+
+    async_retrain_all_models.delay(company.pk, run.pk, db_alias, evaluate)
+
+    return Response({
+        'status': 'started',
+        'message': 'All-models retraining started.',
+        'run': AITrainingRunSerializer(run).data,
+    }, status=202)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+def training_status(request):
+    """Return the active run (if any) and latest finished run."""
+    company = get_user_company(request.user)
+
+    # Auto-expire runs that have been in-progress too long (worker likely down).
+    _expire_stuck_runs(company)
+
+    active_run = _get_active_training_run(company)
+    latest_run = AITrainingRun.objects.filter(
+        company=company,
+    ).select_related('requested_by').order_by('-created_at').first()
+
+    return Response({
+        'has_active': bool(active_run),
+        'active_run': (
+            AITrainingRunSerializer(active_run).data if active_run else None
+        ),
+        'latest_run': (
+            AITrainingRunSerializer(latest_run).data if latest_run else None
+        ),
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+def cancel_training_run(request):
+    """Cancel (mark as failed) any active training run for this company."""
+    company = get_user_company(request.user)
+    active_run = _get_active_training_run(company)
+    if not active_run:
+        return Response({'status': 'ok', 'message': 'No active run to cancel.'}, status=200)
+
+    _finalize_training_run(
+        active_run,
+        status=AITrainingRun.Status.FAILED,
+        error_message='Cancelled by user.',
+    )
+    return Response({'status': 'cancelled', 'message': 'Training run cancelled.'}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsCompanyUser])
+def training_history(request):
+    """Return recent retraining history for the current company."""
+    company = get_user_company(request.user)
+    limit = _parse_limit(request.query_params.get('limit'))
+
+    runs = list(
+        AITrainingRun.objects.filter(company=company)
+        .select_related('requested_by')
+        .order_by('-created_at')[:limit]
+    )
+
+    return Response({
+        'count': len(runs),
+        'results': AITrainingRunSerializer(runs, many=True).data,
     })
 
 

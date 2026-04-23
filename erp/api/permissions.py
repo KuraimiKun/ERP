@@ -50,13 +50,21 @@ class IsCompanyUser(BasePermission):
     message = 'Your account is not associated with any company.'
 
     def has_permission(self, request, view):
-        return (
-            request.user
-            and request.user.is_authenticated
-            and hasattr(request.user, 'employee_profile')
-            and request.user.employee_profile is not None
-            and request.user.employee_profile.company_id is not None
-        )
+        if not (request.user and request.user.is_authenticated):
+            return False
+        # Primary: user has an employee profile linked to a company
+        try:
+            if (
+                hasattr(request.user, 'employee_profile')
+                and request.user.employee_profile is not None
+                and request.user.employee_profile.company_id is not None
+            ):
+                return True
+        except Exception:
+            pass
+        # Fallback: user is the company owner (created_by), matching get_user_company()
+        from erp.models import Company
+        return Company.objects.filter(created_by=request.user).exists()
 
 
 class IsAIEnabled(BasePermission):

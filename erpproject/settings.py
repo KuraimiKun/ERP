@@ -528,6 +528,9 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 
+# Rate limiting — set to False to disable all login throttling and account lockouts
+RATELIMIT_ENABLED = os.getenv('RATELIMIT_ENABLED', 'True').lower() in ('true', '1', 'yes')
+
 # Docker settings for local PostgreSQL containers
 DOCKER_ENABLED = os.getenv('DOCKER_ENABLED', 'True').lower() in ('true', '1', 'yes')
 DOCKER_POSTGRES_IMAGE = os.getenv('DOCKER_POSTGRES_IMAGE', 'postgres:15-alpine')

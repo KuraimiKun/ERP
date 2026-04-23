@@ -93,6 +93,8 @@ services:
       - .env
     # Override host names so services reach each other by container name.
     # DOCKER_HOST points to the restricted socket proxy, NOT the raw socket.
+    # DOCKER_NETWORK ensures any tenant DB containers spawned at runtime join
+    # this compose network so all app services can reach them by container name.
     environment:
       DB_HOST: postgres
       DB_PORT: "5432"
@@ -100,6 +102,7 @@ services:
       CELERY_BROKER_URL: "redis://:${REDIS_PASSWORD:-}@redis:6379/0"
       CELERY_RESULT_BACKEND: "redis://:${REDIS_PASSWORD:-}@redis:6379/0"
       DOCKER_HOST: "tcp://docker-socket-proxy:2375"
+      DOCKER_NETWORK: erpdjango_default
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8000/health/ || exit 1"]
       interval: 30s
@@ -146,6 +149,7 @@ services:
       CELERY_BROKER_URL: "redis://:${REDIS_PASSWORD:-}@redis:6379/0"
       CELERY_RESULT_BACKEND: "redis://:${REDIS_PASSWORD:-}@redis:6379/0"
       DOCKER_HOST: "tcp://docker-socket-proxy:2375"
+      DOCKER_NETWORK: erpdjango_default
     deploy:
       resources:
         limits:
@@ -188,6 +192,7 @@ services:
       REDIS_URL: "redis://:${REDIS_PASSWORD:-}@redis:6379/1"
       CELERY_BROKER_URL: "redis://:${REDIS_PASSWORD:-}@redis:6379/0"
       CELERY_RESULT_BACKEND: "redis://:${REDIS_PASSWORD:-}@redis:6379/0"
+      DOCKER_NETWORK: erpdjango_default
     deploy:
       resources:
         limits:

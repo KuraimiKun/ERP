@@ -4,6 +4,7 @@ AI / ML models – persisted artefact registry, prediction log, and insight stor
 
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from erp.models.base import TimeStampedModel
 
 
@@ -130,6 +131,81 @@ class AIInsight(TimeStampedModel):
 
     def __str__(self):
         return f'[{self.get_severity_display()}] {self.title}'
+
+
+class AITrainingRun(TimeStampedModel):
+    """Tracks user-triggered AI model retraining runs and outcomes."""
+
+    class RunType(models.TextChoices):
+        LEAD_SCORING = 'lead_scoring', 'Lead Scoring'
+        LATE_PAYMENT = 'late_payment', 'Late Payment'
+        ATTRITION = 'attrition', 'Attrition'
+        DEMAND_FORECAST = 'demand_forecast', 'Demand Forecast'
+        ALL_MODELS = 'all_models', 'All Primary Models'
+
+    class Status(models.TextChoices):
+        IN_PROGRESS = 'in_progress', 'In Progress'
+        COMPLETED = 'completed', 'Completed'
+        COMPLETED_WITH_WARNINGS = (
+            'completed_with_warnings', 'Completed With Warnings'
+        )
+        SKIPPED = 'skipped', 'Skipped'
+        FAILED = 'failed', 'Failed'
+
+    company = models.ForeignKey(
+        'erp.Company', on_delete=models.CASCADE,
+        related_name='ai_training_runs',
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='ai_training_runs',
+    )
+    run_type = models.CharField(max_length=30, choices=RunType.choices)
+    evaluate = models.BooleanField(default=False)
+    status = models.CharField(
+        max_length=30, choices=Status.choices, default=Status.IN_PROGRESS,
+    )
+
+    started_at = models.DateTimeField(default=timezone.now)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.FloatField(null=True, blank=True)
+
+    summary_message = models.CharField(max_length=500, blank=True)
+    results = models.JSONField(default=dict, blank=True)
+    error_message = models.TextField(blank=True)
+
+    # Live progress (updated by the Celery worker between steps)
+    progress_step = models.PositiveSmallIntegerField(default=0)
+    progress_total = models.PositiveSmallIntegerField(default=0)
+    progress_label = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        verbose_name = 'AI Training Run'
+        verbose_name_plural = 'AI Training Runs'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(
+                fields=['company', 'status', 'created_at'],
+                name='ai_trn_cmp_st_ct_idx',
+            ),
+            models.Index(
+                fields=['company', 'created_at'],
+                name='ai_trn_cmp_ct_idx',
+            ),
+            models.Index(
+                fields=['status', 'started_at'],
+                name='ai_trn_st_st_idx',
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f'{self.get_run_type_display()} | {self.get_status_display()} '
+            f'({self.company_id})'
+        )
 
 
 class ExplanationResult(models.Model):

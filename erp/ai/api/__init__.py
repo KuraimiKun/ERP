@@ -3,7 +3,13 @@ AI API Serializers for the ERP AI module.
 """
 
 from rest_framework import serializers
-from erp.ai.models import MLModel, PredictionLog, AIInsight, ExplanationResult
+from erp.ai.models import (
+    MLModel,
+    PredictionLog,
+    AIInsight,
+    ExplanationResult,
+    AITrainingRun,
+)
 
 
 class MLModelSerializer(serializers.ModelSerializer):
@@ -91,3 +97,40 @@ class ExplainRequestSerializer(serializers.Serializer):
         choices=[('shap', 'SHAP'), ('lime', 'LIME')],
         default='shap',
     )
+
+
+class AITrainingRunSerializer(serializers.ModelSerializer):
+    requested_by_name = serializers.SerializerMethodField()
+    run_type_display = serializers.CharField(
+        source='get_run_type_display', read_only=True,
+    )
+    status_display = serializers.CharField(
+        source='get_status_display', read_only=True,
+    )
+    progress_pct = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AITrainingRun
+        fields = [
+            'id', 'run_type', 'run_type_display',
+            'status', 'status_display',
+            'evaluate', 'requested_by_name',
+            'started_at', 'finished_at', 'duration_seconds',
+            'summary_message', 'error_message', 'results',
+            'progress_step', 'progress_total', 'progress_label', 'progress_pct',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = fields
+
+    def get_requested_by_name(self, obj):
+        if not obj.requested_by:
+            return ''
+        full_name = obj.requested_by.get_full_name()
+        if full_name:
+            return full_name
+        return getattr(obj.requested_by, 'username', '')
+
+    def get_progress_pct(self, obj):
+        if obj.progress_total and obj.progress_total > 0:
+            return round(obj.progress_step / obj.progress_total * 100)
+        return None

@@ -199,6 +199,37 @@
                         <i class="bi bi-speedometer2 me-2"></i>{% trans "Run KPI Checks" %}
                     </button>
                 </div>
+
+                <hr class="my-4">
+
+                <h6 class="mb-2"><i class="bi bi-arrow-repeat me-2"></i>{% trans "Retrain Models" %}</h6>
+                <p class="text-muted small mb-2">
+                    {% trans "Train model artifacts using current tenant data. This can take a few minutes." %}
+                </p>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="ai-retrain-evaluate" checked>
+                    <label class="form-check-label small" for="ai-retrain-evaluate">
+                        {% trans "Run scoring evaluation after retraining" %}
+                    </label>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-warning ai-retrain-btn" data-url="{% url 'erp:ai-retrain-lead-scoring' %}">
+                        <i class="bi bi-bullseye me-2"></i>{% trans "Retrain Lead Scoring" %}
+                    </button>
+                    <button class="btn btn-outline-warning ai-retrain-btn" data-url="{% url 'erp:ai-retrain-late-payment' %}">
+                        <i class="bi bi-receipt-cutoff me-2"></i>{% trans "Retrain Late Payment" %}
+                    </button>
+                    <button class="btn btn-outline-warning ai-retrain-btn" data-url="{% url 'erp:ai-retrain-attrition' %}">
+                        <i class="bi bi-people me-2"></i>{% trans "Retrain Attrition" %}
+                    </button>
+                    <button class="btn btn-outline-warning ai-retrain-btn" data-url="{% url 'erp:ai-retrain-demand-forecast' %}">
+                        <i class="bi bi-graph-up-arrow me-2"></i>{% trans "Retrain Demand Forecast" %}
+                    </button>
+                    <button class="btn btn-warning ai-retrain-btn" data-url="{% url 'erp:ai-retrain-all-models' %}">
+                        <i class="bi bi-cpu-fill me-2"></i>{% trans "Retrain All Primary Models" %}
+                    </button>
+                </div>
+                <div id="ai-retrain-result" class="alert alert-secondary small py-2 px-3 mt-3 d-none"></div>
             </div>
         </div>
     </div>
@@ -255,6 +286,46 @@
                 </div>
                 {% endif %}
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Training Status & History -->
+<div class="card mb-4" id="ai-training-tracker-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-hourglass-split me-2"></i>{% trans "Training Status & History" %}</h5>
+        <small class="text-muted" id="ai-training-refresh-note">{% trans "Auto-refresh every 10s" %}</small>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+            <span class="badge bg-secondary" id="ai-training-current-badge">{% trans "Idle" %}</span>
+            <span class="small text-muted" id="ai-training-current-text">{% trans "No active training run." %}</span>
+            <button class="btn btn-sm btn-outline-danger ms-auto d-none" id="ai-cancel-training-btn">
+                <i class="bi bi-x-circle me-1"></i>{% trans "Cancel" %}
+            </button>
+        </div>
+        <div class="small text-muted mb-3" id="ai-training-current-meta"></div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>{% trans "Started" %}</th>
+                        <th>{% trans "Run" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "By" %}</th>
+                        <th>{% trans "Duration" %}</th>
+                        <th>{% trans "Summary" %}</th>
+                    </tr>
+                </thead>
+                <tbody id="ai-training-history-body">
+                    <tr>
+                        <td colspan="6" class="text-muted text-center py-3">
+                            {% trans "Loading training history..." %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -323,6 +394,179 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const trainingStatusUrl = "{% url 'erp:ai-training-status' %}";
+    const trainingHistoryUrl = "{% url 'erp:ai-training-history' %}";
+    const trainingCancelUrl = "{% url 'erp:ai-training-cancel' %}";
+    const trainingHistoryBody = document.getElementById('ai-training-history-body');
+    const trainingCurrentBadge = document.getElementById('ai-training-current-badge');
+    const trainingCurrentText = document.getElementById('ai-training-current-text');
+    const trainingCurrentMeta = document.getElementById('ai-training-current-meta');
+    const cancelTrainingBtn = document.getElementById('ai-cancel-training-btn');
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function formatDateTime(isoValue) {
+        if (!isoValue) return '—';
+        const dt = new Date(isoValue);
+        if (Number.isNaN(dt.getTime())) return '—';
+        return dt.toLocaleString();
+    }
+
+    function formatDuration(seconds) {
+        if (seconds === null || seconds === undefined) return '—';
+        const n = Number(seconds);
+        if (Number.isNaN(n)) return '—';
+        if (n < 60) return `${n.toFixed(1)}s`;
+        const minutes = Math.floor(n / 60);
+        const rem = Math.round(n % 60);
+        return `${minutes}m ${rem}s`;
+    }
+
+    function statusBadgeClass(status) {
+        if (status === 'in_progress') return 'bg-primary';
+        if (status === 'completed') return 'bg-success';
+        if (status === 'completed_with_warnings') return 'bg-warning text-dark';
+        if (status === 'skipped') return 'bg-secondary';
+        if (status === 'failed') return 'bg-danger';
+        return 'bg-secondary';
+    }
+
+    function renderTrainingStatus(payload) {
+        const active = payload?.active_run;
+        const latest = payload?.latest_run;
+
+        if (active) {
+            trainingCurrentBadge.className = `badge ${statusBadgeClass(active.status)}`;
+            trainingCurrentBadge.textContent = active.status_display || active.status || '{% trans "In Progress" %}';
+            trainingCurrentText.textContent = (active.run_type_display || '{% trans "Training" %}') + ' {% trans "is currently running." %}';
+            trainingCurrentMeta.textContent = '{% trans "Started" %}: ' + formatDateTime(active.started_at)
+                + ' | {% trans "Requested by" %}: ' + (active.requested_by_name || 'System');
+            cancelTrainingBtn.classList.remove('d-none');
+
+            // Progress bar
+            let progressHtml = '';
+            const pct = active.progress_pct;
+            const label = active.progress_label || '';
+            const step = active.progress_step || 0;
+            const total = active.progress_total || 0;
+            if (total > 0) {
+                const barPct = pct !== null ? pct : Math.round(step / total * 100);
+                const barLabel = label || `${step} / ${total}`;
+                progressHtml = `
+                    <div class="mt-2">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>${escapeHtml(barLabel)}</span>
+                            <span>${barPct}%</span>
+                        </div>
+                        <div class="progress" style="height:8px;" role="progressbar"
+                             aria-valuenow="${barPct}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 style="width:${barPct}%"></div>
+                        </div>
+                    </div>`;
+            } else {
+                progressHtml = `
+                    <div class="mt-2">
+                        <div class="progress" style="height:8px;" role="progressbar"
+                             aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary"
+                                 style="width:100%"></div>
+                        </div>
+                        <div class="small text-muted mt-1">{% trans "Waiting for worker\u2026" %}</div>
+                    </div>`;
+            }
+            trainingCurrentMeta.innerHTML = trainingCurrentMeta.textContent + progressHtml;
+            trainingCurrentMeta.textContent = ''; // clear plain text — innerHTML already set
+            trainingCurrentMeta.innerHTML = '{% trans "Started" %}: ' + escapeHtml(formatDateTime(active.started_at))
+                + ' | {% trans "Requested by" %}: ' + escapeHtml(active.requested_by_name || 'System')
+                + progressHtml;
+            return;
+        }
+
+        cancelTrainingBtn.classList.add('d-none');
+
+        if (latest) {
+            trainingCurrentBadge.className = `badge ${statusBadgeClass(latest.status)}`;
+            trainingCurrentBadge.textContent = latest.status_display || latest.status || '{% trans "Completed" %}';
+            trainingCurrentText.textContent = '{% trans "No active run. Last run:" %} ' + (latest.run_type_display || '—');
+            trainingCurrentMeta.textContent = '{% trans "Finished" %}: ' + formatDateTime(latest.finished_at)
+                + ' | {% trans "Duration" %}: ' + formatDuration(latest.duration_seconds);
+            return;
+        }
+
+        trainingCurrentBadge.className = 'badge bg-secondary';
+        trainingCurrentBadge.textContent = '{% trans "Idle" %}';
+        trainingCurrentText.textContent = '{% trans "No active training run." %}';
+        trainingCurrentMeta.textContent = '{% trans "No training history available yet." %}';
+    }
+
+    function renderTrainingHistory(items) {
+        if (!items || !items.length) {
+            trainingHistoryBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-muted text-center py-3">{% trans "No previous training runs found." %}</td>
+                </tr>
+            `;
+            return;
+        }
+
+        trainingHistoryBody.innerHTML = items.map(function (run) {
+            const statusClass = statusBadgeClass(run.status);
+            const summary = run.summary_message || run.error_message || '—';
+            return `
+                <tr>
+                    <td>${escapeHtml(formatDateTime(run.started_at))}</td>
+                    <td>${escapeHtml(run.run_type_display || run.run_type || '—')}</td>
+                    <td><span class="badge ${statusClass}">${escapeHtml(run.status_display || run.status || '—')}</span></td>
+                    <td>${escapeHtml(run.requested_by_name || 'System')}</td>
+                    <td>${escapeHtml(formatDuration(run.duration_seconds))}</td>
+                    <td class="small">${escapeHtml(summary)}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function refreshTrainingTracker() {
+        Promise.all([
+            fetch(trainingStatusUrl, { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
+            fetch(trainingHistoryUrl + '?limit=12', { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
+        ])
+        .then(function ([statusData, historyData]) {
+            renderTrainingStatus(statusData || {});
+            renderTrainingHistory((historyData && historyData.results) || []);
+        })
+        .catch(function () {
+            trainingCurrentBadge.className = 'badge bg-danger';
+            trainingCurrentBadge.textContent = '{% trans "Error" %}';
+            trainingCurrentText.textContent = '{% trans "Could not load training status." %}';
+            trainingCurrentMeta.textContent = '{% trans "Please refresh the page or check server logs." %}';
+        });
+    }
+
+    refreshTrainingTracker();
+    setInterval(refreshTrainingTracker, 10000);
+
+    // Cancel button
+    cancelTrainingBtn.addEventListener('click', function () {
+        if (!confirm('{% trans "Cancel the current training run?" %}')) return;
+        this.disabled = true;
+        fetch(trainingCancelUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        })
+        .then(function () { refreshTrainingTracker(); })
+        .catch(function () { refreshTrainingTracker(); })
+        .finally(function () { cancelTrainingBtn.disabled = false; });
+    });
+
     // On-demand trigger buttons
     document.querySelectorAll('.ai-trigger-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -355,6 +599,89 @@ document.addEventListener('DOMContentLoaded', function () {
                     this.disabled = false;
                 }, 3000);
             });
+        });
+    });
+
+    // Retrain buttons
+    const retrainResultBox = document.getElementById('ai-retrain-result');
+    document.querySelectorAll('.ai-retrain-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url;
+            const evaluate = document.getElementById('ai-retrain-evaluate')?.checked || false;
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{% trans "Retraining..." %}';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+                        || '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ evaluate: evaluate }),
+            })
+            .then(async (r) => ({
+                ok: r.ok,
+                statusCode: r.status,
+                data: await r.json(),
+            }))
+            .then(({ ok, statusCode, data }) => {
+                const status = data.status || 'ok';
+
+                retrainResultBox.classList.remove('d-none', 'alert-secondary', 'alert-success', 'alert-warning', 'alert-danger');
+
+                if (status === 'started' || statusCode === 202) {
+                    // Async dispatch accepted — show blue info banner, re-enable button
+                    retrainResultBox.classList.add('alert-info');
+                    retrainResultBox.textContent = data.message || '{% trans "Retraining started in background." %}';
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                } else if (status === 'error' || (!ok && statusCode >= 500)) {
+                    retrainResultBox.classList.add('alert-danger');
+                    retrainResultBox.textContent = data.message || '{% trans "Retraining failed." %}';
+                    this.innerHTML = '<i class="bi bi-x-circle me-2"></i>{% trans "Error" %}';
+                    setTimeout(() => { this.innerHTML = originalText; this.disabled = false; }, 3000);
+                } else if (status === 'in_progress' || statusCode === 409 || status === 'warning') {
+                    retrainResultBox.classList.add('alert-warning');
+                    retrainResultBox.textContent = data.message || '{% trans "Already in progress." %}';
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                } else if (status === 'skipped') {
+                    retrainResultBox.classList.add('alert-warning');
+                    retrainResultBox.textContent = data.message || '{% trans "Retraining skipped." %}';
+                    this.innerHTML = '<i class="bi bi-check-circle me-2"></i>{% trans "Done" %}';
+                    setTimeout(() => { this.innerHTML = originalText; this.disabled = false; }, 3000);
+                } else if (!ok) {
+                    retrainResultBox.classList.add('alert-danger');
+                    retrainResultBox.textContent = data.detail || data.message || `{% trans "Request failed" %} (${statusCode}).`;
+                    this.innerHTML = '<i class="bi bi-x-circle me-2"></i>{% trans "Error" %}';
+                    setTimeout(() => { this.innerHTML = originalText; this.disabled = false; }, 3000);
+                } else {
+                    retrainResultBox.classList.add('alert-success');
+                    retrainResultBox.textContent = data.message || '{% trans "Retraining completed." %}';
+                    this.innerHTML = '<i class="bi bi-check-circle me-2"></i>' + (data.message || '{% trans "Done" %}');
+                    setTimeout(() => { this.innerHTML = originalText; this.disabled = false; }, 3000);
+                }
+
+                refreshTrainingTracker();
+            })
+            .catch(() => {
+                retrainResultBox.classList.remove('d-none', 'alert-secondary', 'alert-success', 'alert-warning');
+                retrainResultBox.classList.add('alert-danger');
+                retrainResultBox.textContent = '{% trans "Retraining failed. Check server logs for details." %}';
+
+                this.innerHTML = '<i class="bi bi-x-circle me-2"></i>{% trans "Error" %}';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 3000);
+
+                refreshTrainingTracker();
+            });
+
+            refreshTrainingTracker();
         });
     });
 

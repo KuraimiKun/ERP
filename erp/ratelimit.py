@@ -76,6 +76,10 @@ def ratelimit(*, group, rate, method="POST", block=True):
 
         @wraps(view_func)
         def _wrapped(request, *args, **kwargs):
+            from django.conf import settings as _s
+            if not getattr(_s, 'RATELIMIT_ENABLED', True):
+                return view_func(request, *args, **kwargs)
+
             if method != "ALL" and request.method != method:
                 return view_func(request, *args, **kwargs)
 
@@ -186,6 +190,9 @@ def _lockout_key(username):
 
 def record_failed_login(username):
     """Record one failed login attempt for *username*."""
+    from django.conf import settings as _s
+    if not getattr(_s, 'RATELIMIT_ENABLED', True):
+        return
     key = _lockout_key(username)
     now = time.time()
     history = cache.get(key, [])
@@ -199,6 +206,9 @@ def record_failed_login(username):
 
 def check_account_lockout(username):
     """Return (is_locked, message) for *username*."""
+    from django.conf import settings as _s
+    if not getattr(_s, 'RATELIMIT_ENABLED', True):
+        return False, ""
     key = _lockout_key(username)
     now = time.time()
     history = cache.get(key, [])
