@@ -28,6 +28,16 @@ import 'screens/pos/receipt_screen.dart';
 import 'screens/pos/order_history_screen.dart';
 import 'screens/pos/pos_stats_screen.dart';
 import 'screens/notifications/notification_screen.dart';
+import 'screens/admin/admin_dashboard_screen.dart';
+import 'screens/admin/admin_approvals_screen.dart';
+import 'screens/admin/admin_notifications_screen.dart';
+import 'screens/admin/admin_search_screen.dart';
+import 'screens/admin/admin_reports_screen.dart';
+import 'screens/admin/admin_profile_screen.dart';
+import 'screens/admin/admin_change_password_screen.dart';
+import 'screens/admin/admin_list_screen.dart';
+import 'screens/admin/admin_record_detail_screen.dart';
+import 'config/admin_sections.dart';
 
 class ERPApp extends StatefulWidget {
   const ERPApp({super.key});
@@ -67,11 +77,21 @@ class _ERPAppState extends State<ERPApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       home: authProvider.isLoggedIn
-          ? const DashboardScreen()
+          ? (authProvider.isAdmin
+              ? const AdminDashboardScreen()
+              : const DashboardScreen())
           : const LoginScreen(),
       routes: {
         AppRoutes.login: (_) => const LoginScreen(),
         AppRoutes.dashboard: (_) => const DashboardScreen(),
+        AppRoutes.adminDashboard: (_) => const AdminDashboardScreen(),
+        AppRoutes.adminApprovals: (_) => const AdminApprovalsScreen(),
+        AppRoutes.adminNotifications: (_) => const AdminNotificationsScreen(),
+        AppRoutes.adminSearch: (_) => const AdminSearchScreen(),
+        AppRoutes.adminReports: (_) => const AdminReportsScreen(),
+        AppRoutes.adminProfile: (_) => const AdminProfileScreen(),
+        AppRoutes.adminChangePassword: (_) =>
+            const AdminChangePasswordScreen(),
         AppRoutes.attendance: (_) => const AttendanceListScreen(),
         AppRoutes.qrScanner: (_) => const QRScannerScreen(),
         AppRoutes.leaves: (_) => const LeaveListScreen(),
@@ -113,6 +133,28 @@ class _ERPAppState extends State<ERPApp> {
           final orderId = settings.arguments as int;
           return MaterialPageRoute(
             builder: (_) => ReceiptScreen(orderId: orderId),
+          );
+        }
+        if (settings.name == AppRoutes.adminList) {
+          final key = settings.arguments as String;
+          final section = findSection(key);
+          if (section == null) return null;
+          return MaterialPageRoute(
+            builder: (_) => AdminListScreen(section: section),
+          );
+        }
+        if (settings.name == AppRoutes.adminDetail) {
+          final args = settings.arguments as Map;
+          final section = findSection(args['section'] as String);
+          if (section == null) return null;
+          final id = args['id'] as int?;
+          if (id == null) return null;
+          return MaterialPageRoute(
+            builder: (_) => AdminRecordDetailScreen(
+              section: section,
+              id: id,
+              initial: args['initial'] as Map<String, dynamic>?,
+            ),
           );
         }
         return null;

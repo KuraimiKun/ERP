@@ -78,10 +78,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginSubtitle => 'سجّل الدخول إلى حسابك';
 
   @override
-  String get emailHint => 'أدخل بريدك الإلكتروني';
+  String get emailHint => 'your@email.com';
 
   @override
-  String get passwordHint => 'أدخل كلمة المرور';
+  String get passwordHint => '••••••••••';
 
   @override
   String get loginButton => 'تسجيل الدخول';
@@ -499,4 +499,267 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get language => 'اللغة';
+
+  @override
+  String get adminPortal => 'بوابة المسؤول';
+
+  @override
+  String get allSections => 'جميع الأقسام';
+
+  @override
+  String get approvals => 'الموافقات';
+
+  @override
+  String get reports => 'التقارير';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get noResults => 'لا توجد نتائج';
+
+  @override
+  String get recordId => 'معرّف السجل';
+
+  @override
+  String get details => 'التفاصيل';
+
+  @override
+  String get items => 'العناصر';
+
+  @override
+  String copied(String name) {
+    return 'تم نسخ \"$name\"';
+  }
+
+  @override
+  String get approve => 'موافقة';
+
+  @override
+  String get reject => 'رفض';
+
+  @override
+  String get rejectionReason => 'سبب الرفض';
+
+  @override
+  String get nothingToApprove => 'لا يوجد ما يتطلب الموافقة';
+
+  @override
+  String get theme => 'المظهر';
+
+  @override
+  String get systemTheme => 'النظام';
+
+  @override
+  String get english => 'الإنجليزية';
+
+  @override
+  String get arabic => 'العربية';
+
+  @override
+  String get indonesian => 'الإندونيسية';
+
+  @override
+  String get groupOperations => 'العمليات';
+
+  @override
+  String get groupHr => 'الموارد البشرية';
+
+  @override
+  String get groupFinance => 'المالية';
+
+  @override
+  String get groupSuppliers => 'الموردون';
+
+  @override
+  String get groupInventory => 'المخزون';
+
+  @override
+  String get groupCrm => 'إدارة العملاء';
+
+  @override
+  String get groupPos => 'نقطة البيع';
+
+  @override
+  String get reportTrialBalance => 'ميزان المراجعة';
+
+  @override
+  String get reportProfitLoss => 'الأرباح والخسائر';
+
+  @override
+  String get reportBalanceSheet => 'الميزانية العمومية';
+
+  @override
+  String get reportCashFlow => 'التدفق النقدي';
+
+  @override
+  String get reportSalesSummary => 'ملخص المبيعات';
+
+  @override
+  String get reportTopProducts => 'أفضل المنتجات';
+
+  @override
+  String get reportTopCustomers => 'أفضل العملاء';
+
+  @override
+  String get reportArAging => 'أعمار الذمم المدينة';
+
+  @override
+  String get reportApAging => 'أعمار الذمم الدائنة';
+
+  @override
+  String get approvalsLeaves => 'الإجازات';
+
+  @override
+  String get approvalsExpenses => 'النفقات';
+
+  @override
+  String get approvalsTasks => 'المهام';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get pendingApprovalsTitle => 'الموافقات المعلقة';
+
+  @override
+  String get alertsOperations => 'التنبيهات والعمليات';
+
+  @override
+  String periodPerformance(int days) {
+    return 'الأداء خلال $days يومًا';
+  }
+
+  @override
+  String get recentActivity => 'النشاط الأخير';
+
+  @override
+  String get unableToLoadDashboard => 'تعذّر تحميل لوحة التحكم';
+
+  @override
+  String get goodMorning => 'صباح الخير';
+
+  @override
+  String get goodAfternoon => 'مساء الخير';
+
+  @override
+  String get goodEvening => 'مساء الخير';
+
+  @override
+  String get kpiTodayRevenue => 'إيرادات اليوم';
+
+  @override
+  String get kpiCashInHand => 'النقد في الخزينة';
+
+  @override
+  String get kpiThisMonthRevenue => 'إيرادات هذا الشهر';
+
+  @override
+  String get kpiThisMonthExpenses => 'مصاريف هذا الشهر';
+
+  @override
+  String get kpiPurchaseOrders => 'أوامر الشراء';
+
+  @override
+  String get kpiOverdueInvoices => 'الفواتير المتأخرة';
+
+  @override
+  String get kpiLowStockItems => 'أصناف منخفضة المخزون';
+
+  @override
+  String get kpiOpenPosSessions => 'جلسات نقاط البيع المفتوحة';
+
+  @override
+  String get kpiRevenue => 'الإيرادات';
+
+  @override
+  String get kpiExpenses => 'المصاريف';
+
+  @override
+  String get kpiNet => 'الصافي';
+
+  @override
+  String get kpiPaymentsReceived => 'المدفوعات المستلمة';
+
+  @override
+  String get kpiInvoicesIssued => 'الفواتير الصادرة';
+
+  @override
+  String get kpiNewCustomers => 'عملاء جدد';
+
+  @override
+  String get kpiNewLeads => 'عملاء محتملون جدد';
+
+  @override
+  String get approvalsPos => 'أوامر الشراء';
+
+  @override
+  String get approvalsQuotes => 'عروض الأسعار';
+
+  @override
+  String get approvalsSupplierInvoices => 'فواتير الموردين';
+
+  @override
+  String get noItems => 'لا توجد عناصر';
+
+  @override
+  String get showAll => 'عرض الكل';
+
+  @override
+  String get showUnreadOnly => 'غير المقروءة فقط';
+
+  @override
+  String get company => 'الشركة';
+
+  @override
+  String get nameField => 'الاسم';
+
+  @override
+  String get arabicName => 'الاسم بالعربية';
+
+  @override
+  String get aiEnabled => 'الذكاء الاصطناعي مفعّل';
+
+  @override
+  String get employeeProfile => 'ملف الموظف';
+
+  @override
+  String get jobTitle => 'المسمى الوظيفي';
+
+  @override
+  String get role => 'الدور';
+
+  @override
+  String get requiredField => 'مطلوب';
+
+  @override
+  String get passwordTooShort => '8 أحرف على الأقل';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get updatePassword => 'تحديث كلمة المرور';
+
+  @override
+  String get welcomeBack => 'مرحبًا بعودتك';
+
+  @override
+  String get signInToContinue => 'سجّل الدخول لمتابعة Kuraimi Group';
+
+  @override
+  String get signIn => 'تسجيل الدخول';
+
+  @override
+  String get enterYourEmail => 'أدخل بريدك الإلكتروني';
+
+  @override
+  String get enterYourPassword => 'أدخل كلمة المرور';
+
+  @override
+  String get termsAndPrivacy =>
+      'بتسجيل الدخول فإنّك توافق على الشروط وسياسة الخصوصية.';
+
+  @override
+  String get kuraimiTagline => 'مكان عملك في تطبيق واحد.';
 }

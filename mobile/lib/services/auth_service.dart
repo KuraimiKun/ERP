@@ -1,7 +1,8 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../config/api_config.dart';
 import '../models/employee.dart';
+import '../models/admin/admin_user.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
 
@@ -11,7 +12,7 @@ class AuthService {
 
   AuthService(this._api, this._storage);
 
-  /// Login and return employee data
+  /// Employee login.
   Future<LoginResult> login(String email, String password) async {
     try {
       final response = await _api.post(ApiConfig.login, data: {
@@ -20,16 +21,11 @@ class AuthService {
       });
 
       final data = response.data;
-
-      // Save token and tenant DB
       await _storage.saveToken(data['token']);
       await _storage.saveTenantDb(data['tenant_db']);
 
-      // Parse employee
       final employee = Employee.fromJson(data['employee']);
       final company = CompanyInfo.fromJson(data['company']);
-
-      // Save employee data for offline access
       await _storage.saveEmployeeData(jsonEncode(data['employee']));
 
       return LoginResult(
@@ -42,23 +38,83 @@ class AuthService {
     }
   }
 
-  /// Logout
+  /// Employee logout.
   Future<void> logout() async {
     try {
       await _api.post(ApiConfig.logout);
     } catch (_) {
-      // Ignore logout errors
+      // ignore
     }
     await _storage.clearAll();
   }
 
-  /// Check if user has a stored token
+  /// Admin logout.
+  Future<void> adminLogout() async {
+    try {
+      await _api.post(ApiConfig.adminLogout);
+    } catch (_) {
+      // ignore
+    }
+    await _storage.clearAll();
+  }
+
+  /// Try admin login first; on 403 (non-admin) fall back to employee login.
+  /// Returns either an [AdminLoginResult] or a [LoginResult].
+  Future<Object> loginWithRoleDetection(
+    String email,
+    String password,
+  ) async {
+    // â”€â”€ Try admin endpoint first â”€â”€
+    try {
+      final response = await _api.post(
+        ApiConfig.adminLogin,
+        data: {'email': email, 'password': password},
+      );
+      final data = response.data as Map<String, dynamic>;
+
+      await _storage.saveToken(data['token']);
+      await _storage.saveTenantDb(data['tenant_db']);
+      await _storage.saveUserRole(data['role'] ?? 'admin');
+
+      final admin = AdminUser.fromLoginJson(data);
+      await _storage.saveAdminUser(jsonEncode(admin.toJson()));
+
+      return AdminLoginResult(admin: admin, tenantDb: data['tenant_db']);
+    } on DioException catch (e) {
+      // 403 = not an admin; fall through. Any other error is surfaced.
+      final status = e.response?.statusCode;
+      if (status != 403) {
+        throw AuthException(ApiService.getErrorMessage(e));
+      }
+    }
+
+    // â”€â”€ Fallback: employee login â”€â”€
+    final employeeResult = await login(email, password);
+    await _storage.saveUserRole('employee');
+    return employeeResult;
+  }
+
+  /// Stored admin user (if any).
+  AdminUser? getStoredAdminUser() {
+    final json = _storage.getAdminUser();
+    if (json == null) return null;
+    try {
+      return AdminUser.fromStoredJson(jsonDecode(json));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Current stored role (`admin`, `owner`, `employee`, or null).
+  String? getStoredRole() => _storage.getUserRole();
+
+  /// Check if user has a stored token.
   Future<bool> isLoggedIn() async {
     final token = await _storage.getToken();
     return token != null && token.isNotEmpty;
   }
 
-  /// Get stored employee from local storage
+  /// Get stored employee from local storage.
   Employee? getStoredEmployee() {
     final json = _storage.getEmployeeData();
     if (json == null) return null;
@@ -69,7 +125,7 @@ class AuthService {
     }
   }
 
-  /// Change password
+  /// Change password.
   Future<String> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -101,6 +157,13 @@ class LoginResult {
     required this.company,
     required this.tenantDb,
   });
+}
+
+class AdminLoginResult {
+  final AdminUser admin;
+  final String tenantDb;
+
+  AdminLoginResult({required this.admin, required this.tenantDb});
 }
 
 class CompanyInfo {

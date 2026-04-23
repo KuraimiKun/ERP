@@ -5,6 +5,8 @@ class StorageService {
   static const _tokenKey = 'auth_token';
   static const _tenantDbKey = 'tenant_db';
   static const _employeeKey = 'employee_data';
+  static const _adminUserKey = 'admin_user_data';
+  static const _userRoleKey = 'user_role'; // 'admin' | 'owner' | 'employee'
   static const _localeKey = 'app_locale';
   static const _themeModeKey = 'theme_mode';
 
@@ -52,6 +54,34 @@ class StorageService {
 
   Future<void> deleteEmployeeData() async {
     await _prefs.remove(_employeeKey);
+  }
+
+  // Admin user (JSON string)
+  Future<void> saveAdminUser(String json) async {
+    await _prefs.setString(_adminUserKey, json);
+  }
+
+  String? getAdminUser() {
+    return _prefs.getString(_adminUserKey);
+  }
+
+  Future<void> deleteAdminUser() async {
+    await _prefs.remove(_adminUserKey);
+  }
+
+  // User role
+  Future<void> saveUserRole(String role) async {
+    await _prefs.setString(_userRoleKey, role);
+  }
+
+  String? getUserRole() {
+    return _prefs.getString(_userRoleKey);
+  }
+
+  Future<void> deleteUserRole() async {
+    await _prefs.remove(_adminUserKey);
+    await _prefs.remove(_userRoleKey);
+    await _prefs.remove(_userRoleKey);
   }
 
   // Locale

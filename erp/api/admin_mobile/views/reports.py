@@ -22,6 +22,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from erp.api.admin_mobile.helpers import resolve_admin_company
 from erp.api.permissions import DefaultDbTokenAuthentication, IsCompanyAdmin
 from erp.services import financial_reports as reports
 
@@ -36,10 +37,10 @@ def _parse_iso_date(value: str, field: str) -> _date:
 
 
 def _get_company(request):
-    employee = getattr(request.user, 'employee_profile', None)
-    if employee is None or employee.company_id is None:
-        raise ValidationError({'detail': 'No employee profile found for this user.'})
-    return employee.company
+    company = resolve_admin_company(request.user)
+    if company is None:
+        raise ValidationError({'detail': 'No company found for this user.'})
+    return company
 
 
 def _resolve_period(request: Request, company) -> tuple[_date, _date]:

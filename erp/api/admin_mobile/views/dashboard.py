@@ -21,16 +21,14 @@ from rest_framework.response import Response
 
 from erp.api.permissions import DefaultDbTokenAuthentication, IsCompanyAdmin
 from erp.api.admin_mobile.serializers import AuditLogMobileSerializer
+from erp.api.admin_mobile.helpers import resolve_admin_company
 
 ZERO = Decimal('0')
 
 
 def _get_company(user):
     """Return the authenticated admin's company, or None."""
-    employee = getattr(user, 'employee_profile', None)
-    if employee is None:
-        return None
-    return getattr(employee, 'company', None)
+    return resolve_admin_company(user)
 
 
 def _dec(v):

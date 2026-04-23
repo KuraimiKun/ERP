@@ -241,13 +241,13 @@ abstract class AppLocalizations {
   /// Email input hint
   ///
   /// In en, this message translates to:
-  /// **'Enter your email'**
+  /// **'your@email.com'**
   String get emailHint;
 
   /// Password input hint
   ///
   /// In en, this message translates to:
-  /// **'Enter your password'**
+  /// **'••••••••••'**
   String get passwordHint;
 
   /// Login button text
@@ -1083,6 +1083,522 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language'**
   String get language;
+
+  /// Admin portal brand label
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Portal'**
+  String get adminPortal;
+
+  /// Open drawer with all admin sections
+  ///
+  /// In en, this message translates to:
+  /// **'All sections'**
+  String get allSections;
+
+  /// Approvals nav label
+  ///
+  /// In en, this message translates to:
+  /// **'Approvals'**
+  String get approvals;
+
+  /// Reports nav label
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get reports;
+
+  /// Refresh action
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// Empty search results
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get noResults;
+
+  /// Record id footer label
+  ///
+  /// In en, this message translates to:
+  /// **'Record ID'**
+  String get recordId;
+
+  /// Details section header
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// Items section header
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get items;
+
+  /// Toast shown after copying a field value
+  ///
+  /// In en, this message translates to:
+  /// **'Copied \"{name}\"'**
+  String copied(String name);
+
+  /// Approve action
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// Reject action
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// Dialog title for reject reason
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection reason'**
+  String get rejectionReason;
+
+  /// Empty approvals queue
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to approve'**
+  String get nothingToApprove;
+
+  /// Theme selector label
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// Follow system theme
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get systemTheme;
+
+  /// English language name
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// Arabic language name
+  ///
+  /// In en, this message translates to:
+  /// **'العربية'**
+  String get arabic;
+
+  /// Indonesian language name
+  ///
+  /// In en, this message translates to:
+  /// **'Bahasa Indonesia'**
+  String get indonesian;
+
+  /// No description provided for @groupOperations.
+  ///
+  /// In en, this message translates to:
+  /// **'Operations'**
+  String get groupOperations;
+
+  /// No description provided for @groupHr.
+  ///
+  /// In en, this message translates to:
+  /// **'HR'**
+  String get groupHr;
+
+  /// No description provided for @groupFinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance'**
+  String get groupFinance;
+
+  /// No description provided for @groupSuppliers.
+  ///
+  /// In en, this message translates to:
+  /// **'Suppliers'**
+  String get groupSuppliers;
+
+  /// No description provided for @groupInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get groupInventory;
+
+  /// No description provided for @groupCrm.
+  ///
+  /// In en, this message translates to:
+  /// **'CRM'**
+  String get groupCrm;
+
+  /// No description provided for @groupPos.
+  ///
+  /// In en, this message translates to:
+  /// **'POS'**
+  String get groupPos;
+
+  /// No description provided for @reportTrialBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial Balance'**
+  String get reportTrialBalance;
+
+  /// No description provided for @reportProfitLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'P & L'**
+  String get reportProfitLoss;
+
+  /// No description provided for @reportBalanceSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance Sheet'**
+  String get reportBalanceSheet;
+
+  /// No description provided for @reportCashFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash Flow'**
+  String get reportCashFlow;
+
+  /// No description provided for @reportSalesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales Summary'**
+  String get reportSalesSummary;
+
+  /// No description provided for @reportTopProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Products'**
+  String get reportTopProducts;
+
+  /// No description provided for @reportTopCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Customers'**
+  String get reportTopCustomers;
+
+  /// No description provided for @reportArAging.
+  ///
+  /// In en, this message translates to:
+  /// **'AR Aging'**
+  String get reportArAging;
+
+  /// No description provided for @reportApAging.
+  ///
+  /// In en, this message translates to:
+  /// **'AP Aging'**
+  String get reportApAging;
+
+  /// No description provided for @approvalsLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaves'**
+  String get approvalsLeaves;
+
+  /// No description provided for @approvalsExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get approvalsExpenses;
+
+  /// No description provided for @approvalsTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get approvalsTasks;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @pendingApprovalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending approvals'**
+  String get pendingApprovalsTitle;
+
+  /// No description provided for @alertsOperations.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts & operations'**
+  String get alertsOperations;
+
+  /// Section heading for n-day performance KPIs
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day performance'**
+  String periodPerformance(int days);
+
+  /// No description provided for @recentActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent activity'**
+  String get recentActivity;
+
+  /// No description provided for @unableToLoadDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load dashboard'**
+  String get unableToLoadDashboard;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorning;
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoon;
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEvening;
+
+  /// No description provided for @kpiTodayRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Today revenue'**
+  String get kpiTodayRevenue;
+
+  /// No description provided for @kpiCashInHand.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash in hand'**
+  String get kpiCashInHand;
+
+  /// No description provided for @kpiThisMonthRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'This month revenue'**
+  String get kpiThisMonthRevenue;
+
+  /// No description provided for @kpiThisMonthExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'This month expenses'**
+  String get kpiThisMonthExpenses;
+
+  /// No description provided for @kpiPurchaseOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase orders'**
+  String get kpiPurchaseOrders;
+
+  /// No description provided for @kpiOverdueInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue invoices'**
+  String get kpiOverdueInvoices;
+
+  /// No description provided for @kpiLowStockItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock items'**
+  String get kpiLowStockItems;
+
+  /// No description provided for @kpiOpenPosSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Open POS sessions'**
+  String get kpiOpenPosSessions;
+
+  /// No description provided for @kpiRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get kpiRevenue;
+
+  /// No description provided for @kpiExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get kpiExpenses;
+
+  /// No description provided for @kpiNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get kpiNet;
+
+  /// No description provided for @kpiPaymentsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments received'**
+  String get kpiPaymentsReceived;
+
+  /// No description provided for @kpiInvoicesIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoices issued'**
+  String get kpiInvoicesIssued;
+
+  /// No description provided for @kpiNewCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'New customers'**
+  String get kpiNewCustomers;
+
+  /// No description provided for @kpiNewLeads.
+  ///
+  /// In en, this message translates to:
+  /// **'New leads'**
+  String get kpiNewLeads;
+
+  /// No description provided for @approvalsPos.
+  ///
+  /// In en, this message translates to:
+  /// **'POs'**
+  String get approvalsPos;
+
+  /// No description provided for @approvalsQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Quotes'**
+  String get approvalsQuotes;
+
+  /// No description provided for @approvalsSupplierInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier invoices'**
+  String get approvalsSupplierInvoices;
+
+  /// No description provided for @noItems.
+  ///
+  /// In en, this message translates to:
+  /// **'No items'**
+  String get noItems;
+
+  /// No description provided for @showAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get showAll;
+
+  /// No description provided for @showUnreadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Show unread'**
+  String get showUnreadOnly;
+
+  /// No description provided for @company.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get company;
+
+  /// No description provided for @nameField.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get nameField;
+
+  /// No description provided for @arabicName.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic name'**
+  String get arabicName;
+
+  /// No description provided for @aiEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'AI enabled'**
+  String get aiEnabled;
+
+  /// No description provided for @employeeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee profile'**
+  String get employeeProfile;
+
+  /// No description provided for @jobTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Job title'**
+  String get jobTitle;
+
+  /// No description provided for @role.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get role;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get requiredField;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get passwordTooShort;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords differ'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @updatePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Update password'**
+  String get updatePassword;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// No description provided for @signInToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to continue to Kuraimi Group'**
+  String get signInToContinue;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
+  /// No description provided for @enterYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get enterYourEmail;
+
+  /// No description provided for @enterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get enterYourPassword;
+
+  /// No description provided for @termsAndPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'By signing in you agree to the Terms & Privacy Policy.'**
+  String get termsAndPrivacy;
+
+  /// No description provided for @kuraimiTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your workplace, in one app.'**
+  String get kuraimiTagline;
 }
 
 class _AppLocalizationsDelegate

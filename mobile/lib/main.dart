@@ -15,6 +15,7 @@ import 'providers/task_provider.dart';
 import 'providers/profile_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/pos_provider.dart';
+import 'providers/admin_dashboard_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider<ApiService>.value(value: apiService),
+        Provider<StorageService>.value(value: storage),
         ChangeNotifierProvider(create: (_) => LocaleProvider(storage)),
         ChangeNotifierProvider(create: (_) => ThemeProvider(storage)),
         ChangeNotifierProvider(create: (_) => AuthProvider(authService, storage)),
@@ -39,6 +42,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ProfileProvider(apiService, storage)),
         ChangeNotifierProvider(create: (_) => NotificationProvider(apiService)),
         ChangeNotifierProvider(create: (_) => POSProvider(apiService)),
+        ChangeNotifierProvider(create: (_) => AdminDashboardProvider(apiService)),
       ],
       child: const ERPApp(),
     ),

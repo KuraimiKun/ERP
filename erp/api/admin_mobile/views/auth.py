@@ -156,16 +156,11 @@ def admin_login(request):
     if db_alias != 'default':
         set_current_db_alias(db_alias)
 
-    # Locate an Employee record for the user (optional — superusers may not have one).
-    from erp.models import Employee
-    employee = getattr(user, 'employee_profile', None)
-    if employee is None:
-        try:
-            employee = Employee.objects.get(email=user.email)
-        except Employee.DoesNotExist:
-            employee = None
-        except Exception:
-            employee = None
+    # Locate the admin's Employee record. The shared helper back-fills
+    # ``Employee.user_id`` so subsequent authenticated requests resolve
+    # through ``user.employee_profile`` instead of the email fallback.
+    from erp.api.admin_mobile.helpers import resolve_admin_employee
+    employee = resolve_admin_employee(user)
 
     token, _ = Token.objects.using('default').get_or_create(user=user)
 

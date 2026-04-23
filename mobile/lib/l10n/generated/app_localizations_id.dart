@@ -78,10 +78,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get loginSubtitle => 'Masuk ke akun Anda';
 
   @override
-  String get emailHint => 'Masukkan email Anda';
+  String get emailHint => 'your@email.com';
 
   @override
-  String get passwordHint => 'Masukkan kata sandi Anda';
+  String get passwordHint => '••••••••••';
 
   @override
   String get loginButton => 'Masuk';
@@ -499,4 +499,267 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get language => 'Bahasa';
+
+  @override
+  String get adminPortal => 'Portal Admin';
+
+  @override
+  String get allSections => 'Semua Bagian';
+
+  @override
+  String get approvals => 'Persetujuan';
+
+  @override
+  String get reports => 'Laporan';
+
+  @override
+  String get refresh => 'Muat Ulang';
+
+  @override
+  String get noResults => 'Tidak ada hasil';
+
+  @override
+  String get recordId => 'ID Catatan';
+
+  @override
+  String get details => 'Detail';
+
+  @override
+  String get items => 'Item';
+
+  @override
+  String copied(String name) {
+    return 'Disalin \"$name\"';
+  }
+
+  @override
+  String get approve => 'Setujui';
+
+  @override
+  String get reject => 'Tolak';
+
+  @override
+  String get rejectionReason => 'Alasan penolakan';
+
+  @override
+  String get nothingToApprove => 'Tidak ada yang perlu disetujui';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get systemTheme => 'Sistem';
+
+  @override
+  String get english => 'Inggris';
+
+  @override
+  String get arabic => 'Arab';
+
+  @override
+  String get indonesian => 'Indonesia';
+
+  @override
+  String get groupOperations => 'Operasional';
+
+  @override
+  String get groupHr => 'SDM';
+
+  @override
+  String get groupFinance => 'Keuangan';
+
+  @override
+  String get groupSuppliers => 'Pemasok';
+
+  @override
+  String get groupInventory => 'Inventaris';
+
+  @override
+  String get groupCrm => 'CRM';
+
+  @override
+  String get groupPos => 'Kasir';
+
+  @override
+  String get reportTrialBalance => 'Neraca Saldo';
+
+  @override
+  String get reportProfitLoss => 'Laba Rugi';
+
+  @override
+  String get reportBalanceSheet => 'Neraca';
+
+  @override
+  String get reportCashFlow => 'Arus Kas';
+
+  @override
+  String get reportSalesSummary => 'Ringkasan Penjualan';
+
+  @override
+  String get reportTopProducts => 'Produk Teratas';
+
+  @override
+  String get reportTopCustomers => 'Pelanggan Teratas';
+
+  @override
+  String get reportArAging => 'Umur Piutang';
+
+  @override
+  String get reportApAging => 'Umur Hutang';
+
+  @override
+  String get approvalsLeaves => 'Cuti';
+
+  @override
+  String get approvalsExpenses => 'Pengeluaran';
+
+  @override
+  String get approvalsTasks => 'Tugas';
+
+  @override
+  String get today => 'Hari ini';
+
+  @override
+  String get pendingApprovalsTitle => 'Persetujuan tertunda';
+
+  @override
+  String get alertsOperations => 'Peringatan & operasi';
+
+  @override
+  String periodPerformance(int days) {
+    return 'Kinerja $days hari';
+  }
+
+  @override
+  String get recentActivity => 'Aktivitas terbaru';
+
+  @override
+  String get unableToLoadDashboard => 'Tidak dapat memuat dasbor';
+
+  @override
+  String get goodMorning => 'Selamat pagi';
+
+  @override
+  String get goodAfternoon => 'Selamat siang';
+
+  @override
+  String get goodEvening => 'Selamat malam';
+
+  @override
+  String get kpiTodayRevenue => 'Pendapatan hari ini';
+
+  @override
+  String get kpiCashInHand => 'Kas di tangan';
+
+  @override
+  String get kpiThisMonthRevenue => 'Pendapatan bulan ini';
+
+  @override
+  String get kpiThisMonthExpenses => 'Pengeluaran bulan ini';
+
+  @override
+  String get kpiPurchaseOrders => 'Pesanan pembelian';
+
+  @override
+  String get kpiOverdueInvoices => 'Faktur jatuh tempo';
+
+  @override
+  String get kpiLowStockItems => 'Stok menipis';
+
+  @override
+  String get kpiOpenPosSessions => 'Sesi POS terbuka';
+
+  @override
+  String get kpiRevenue => 'Pendapatan';
+
+  @override
+  String get kpiExpenses => 'Pengeluaran';
+
+  @override
+  String get kpiNet => 'Bersih';
+
+  @override
+  String get kpiPaymentsReceived => 'Pembayaran diterima';
+
+  @override
+  String get kpiInvoicesIssued => 'Faktur diterbitkan';
+
+  @override
+  String get kpiNewCustomers => 'Pelanggan baru';
+
+  @override
+  String get kpiNewLeads => 'Prospek baru';
+
+  @override
+  String get approvalsPos => 'PO';
+
+  @override
+  String get approvalsQuotes => 'Penawaran';
+
+  @override
+  String get approvalsSupplierInvoices => 'Faktur pemasok';
+
+  @override
+  String get noItems => 'Tidak ada item';
+
+  @override
+  String get showAll => 'Tampilkan semua';
+
+  @override
+  String get showUnreadOnly => 'Belum dibaca saja';
+
+  @override
+  String get company => 'Perusahaan';
+
+  @override
+  String get nameField => 'Nama';
+
+  @override
+  String get arabicName => 'Nama Arab';
+
+  @override
+  String get aiEnabled => 'AI diaktifkan';
+
+  @override
+  String get employeeProfile => 'Profil karyawan';
+
+  @override
+  String get jobTitle => 'Jabatan';
+
+  @override
+  String get role => 'Peran';
+
+  @override
+  String get requiredField => 'Wajib diisi';
+
+  @override
+  String get passwordTooShort => 'Minimal 8 karakter';
+
+  @override
+  String get passwordsDoNotMatch => 'Kata sandi tidak cocok';
+
+  @override
+  String get updatePassword => 'Perbarui kata sandi';
+
+  @override
+  String get welcomeBack => 'Selamat datang kembali';
+
+  @override
+  String get signInToContinue => 'Masuk untuk melanjutkan ke Kuraimi Group';
+
+  @override
+  String get signIn => 'Masuk';
+
+  @override
+  String get enterYourEmail => 'Masukkan email Anda';
+
+  @override
+  String get enterYourPassword => 'Masukkan kata sandi Anda';
+
+  @override
+  String get termsAndPrivacy =>
+      'Dengan masuk, Anda menyetujui Syarat & Kebijakan Privasi.';
+
+  @override
+  String get kuraimiTagline => 'Tempat kerja Anda, dalam satu aplikasi.';
 }

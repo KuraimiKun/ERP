@@ -78,10 +78,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSubtitle => 'Sign in to your account';
 
   @override
-  String get emailHint => 'Enter your email';
+  String get emailHint => 'your@email.com';
 
   @override
-  String get passwordHint => 'Enter your password';
+  String get passwordHint => '••••••••••';
 
   @override
   String get loginButton => 'Sign In';
@@ -499,4 +499,267 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get language => 'Language';
+
+  @override
+  String get adminPortal => 'Admin Portal';
+
+  @override
+  String get allSections => 'All sections';
+
+  @override
+  String get approvals => 'Approvals';
+
+  @override
+  String get reports => 'Reports';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get noResults => 'No results';
+
+  @override
+  String get recordId => 'Record ID';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get items => 'Items';
+
+  @override
+  String copied(String name) {
+    return 'Copied \"$name\"';
+  }
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get rejectionReason => 'Rejection reason';
+
+  @override
+  String get nothingToApprove => 'Nothing to approve';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get systemTheme => 'System';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get arabic => 'العربية';
+
+  @override
+  String get indonesian => 'Bahasa Indonesia';
+
+  @override
+  String get groupOperations => 'Operations';
+
+  @override
+  String get groupHr => 'HR';
+
+  @override
+  String get groupFinance => 'Finance';
+
+  @override
+  String get groupSuppliers => 'Suppliers';
+
+  @override
+  String get groupInventory => 'Inventory';
+
+  @override
+  String get groupCrm => 'CRM';
+
+  @override
+  String get groupPos => 'POS';
+
+  @override
+  String get reportTrialBalance => 'Trial Balance';
+
+  @override
+  String get reportProfitLoss => 'P & L';
+
+  @override
+  String get reportBalanceSheet => 'Balance Sheet';
+
+  @override
+  String get reportCashFlow => 'Cash Flow';
+
+  @override
+  String get reportSalesSummary => 'Sales Summary';
+
+  @override
+  String get reportTopProducts => 'Top Products';
+
+  @override
+  String get reportTopCustomers => 'Top Customers';
+
+  @override
+  String get reportArAging => 'AR Aging';
+
+  @override
+  String get reportApAging => 'AP Aging';
+
+  @override
+  String get approvalsLeaves => 'Leaves';
+
+  @override
+  String get approvalsExpenses => 'Expenses';
+
+  @override
+  String get approvalsTasks => 'Tasks';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get pendingApprovalsTitle => 'Pending approvals';
+
+  @override
+  String get alertsOperations => 'Alerts & operations';
+
+  @override
+  String periodPerformance(int days) {
+    return '$days-day performance';
+  }
+
+  @override
+  String get recentActivity => 'Recent activity';
+
+  @override
+  String get unableToLoadDashboard => 'Unable to load dashboard';
+
+  @override
+  String get goodMorning => 'Good morning';
+
+  @override
+  String get goodAfternoon => 'Good afternoon';
+
+  @override
+  String get goodEvening => 'Good evening';
+
+  @override
+  String get kpiTodayRevenue => 'Today revenue';
+
+  @override
+  String get kpiCashInHand => 'Cash in hand';
+
+  @override
+  String get kpiThisMonthRevenue => 'This month revenue';
+
+  @override
+  String get kpiThisMonthExpenses => 'This month expenses';
+
+  @override
+  String get kpiPurchaseOrders => 'Purchase orders';
+
+  @override
+  String get kpiOverdueInvoices => 'Overdue invoices';
+
+  @override
+  String get kpiLowStockItems => 'Low stock items';
+
+  @override
+  String get kpiOpenPosSessions => 'Open POS sessions';
+
+  @override
+  String get kpiRevenue => 'Revenue';
+
+  @override
+  String get kpiExpenses => 'Expenses';
+
+  @override
+  String get kpiNet => 'Net';
+
+  @override
+  String get kpiPaymentsReceived => 'Payments received';
+
+  @override
+  String get kpiInvoicesIssued => 'Invoices issued';
+
+  @override
+  String get kpiNewCustomers => 'New customers';
+
+  @override
+  String get kpiNewLeads => 'New leads';
+
+  @override
+  String get approvalsPos => 'POs';
+
+  @override
+  String get approvalsQuotes => 'Quotes';
+
+  @override
+  String get approvalsSupplierInvoices => 'Supplier invoices';
+
+  @override
+  String get noItems => 'No items';
+
+  @override
+  String get showAll => 'Show all';
+
+  @override
+  String get showUnreadOnly => 'Show unread';
+
+  @override
+  String get company => 'Company';
+
+  @override
+  String get nameField => 'Name';
+
+  @override
+  String get arabicName => 'Arabic name';
+
+  @override
+  String get aiEnabled => 'AI enabled';
+
+  @override
+  String get employeeProfile => 'Employee profile';
+
+  @override
+  String get jobTitle => 'Job title';
+
+  @override
+  String get role => 'Role';
+
+  @override
+  String get requiredField => 'Required';
+
+  @override
+  String get passwordTooShort => 'At least 8 characters';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords differ';
+
+  @override
+  String get updatePassword => 'Update password';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get signInToContinue => 'Sign in to continue to Kuraimi Group';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get enterYourEmail => 'Enter your email';
+
+  @override
+  String get enterYourPassword => 'Enter your password';
+
+  @override
+  String get termsAndPrivacy =>
+      'By signing in you agree to the Terms & Privacy Policy.';
+
+  @override
+  String get kuraimiTagline => 'Your workplace, in one app.';
 }

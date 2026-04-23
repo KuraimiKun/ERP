@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../config/theme.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/locale_provider.dart';
 
@@ -29,7 +30,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
     final ok = await auth.login(_emailCtrl.text.trim(), _passCtrl.text);
-    if (ok && mounted) Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+    if (ok && mounted) {
+      final route = auth.isAdmin
+          ? AppRoutes.adminDashboard
+          : AppRoutes.dashboard;
+      Navigator.pushReplacementNamed(context, route);
+    }
   }
 
   @override
@@ -38,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final topPad = MediaQuery.of(context).padding.top;
     final screenH = MediaQuery.of(context).size.height;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: isDark ? MColors.darkBg : MColors.bg,
@@ -46,7 +53,9 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           // ── Gradient hero ─────────────────────────────────────────────
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             height: screenH * 0.40,
             child: _HeroGradient(topPad: topPad),
           ),
@@ -54,12 +63,22 @@ class _LoginScreenState extends State<LoginScreen> {
           // ── White card over hero ──────────────────────────────────────
           Positioned(
             top: screenH * 0.36,
-            left: 0, right: 0, bottom: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             child: Container(
               decoration: BoxDecoration(
                 color: isDark ? MColors.darkSurface : MColors.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                boxShadow: const [BoxShadow(color: Color(0x10000000), blurRadius: 40, offset: Offset(0, -8))],
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x10000000),
+                    blurRadius: 40,
+                    offset: Offset(0, -8),
+                  ),
+                ],
               ),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
@@ -69,18 +88,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Welcome back',
+                        l10n.welcomeBack,
                         style: TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.w700,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: -0.4,
                           color: isDark ? MColors.darkText : MColors.text,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Sign in to continue to Meridian Group',
+                        l10n.signInToContinue,
                         style: TextStyle(
-                          fontSize: 14, color: isDark ? MColors.darkTextSub : MColors.textSub,
+                          fontSize: 14,
+                          color: isDark ? MColors.darkTextSub : MColors.textSub,
                         ),
                       ),
 
@@ -92,31 +113,39 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 24),
                       _FormField(
                         controller: _emailCtrl,
-                        label: 'Email',
-                        hint: 'your@email.com',
+                        label: l10n.email,
+                        hint: l10n.emailHint,
                         icon: Icons.mail_outline_rounded,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your email' : null,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? l10n.enterYourEmail
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       _FormField(
                         controller: _passCtrl,
-                        label: 'Password',
-                        hint: '••••••••••',
+                        label: l10n.password,
+                        hint: l10n.passwordHint,
                         icon: Icons.lock_outline_rounded,
                         obscureText: _obscure,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _login(),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscure
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                             size: 18,
-                            color: isDark ? MColors.darkTextSub : MColors.textSub,
+                            color: isDark
+                                ? MColors.darkTextSub
+                                : MColors.textSub,
                           ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
-                        validator: (v) => (v == null || v.isEmpty) ? 'Enter your password' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? l10n.enterYourPassword
+                            : null,
                       ),
 
                       const SizedBox(height: 24),
@@ -128,10 +157,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: auth.isLoading ? null : _login,
                           child: auth.isLoading
                               ? const SizedBox(
-                                  width: 20, height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
-                              : const Text('Sign In', style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600)),
+                              : Text(
+                                  l10n.signIn,
+                                  style: const TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
 
@@ -142,11 +181,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 16),
                       Center(
                         child: Text(
-                          'By signing in you agree to the Terms & Privacy Policy.',
+                          l10n.termsAndPrivacy,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 11.5,
-                            color: isDark ? MColors.darkTextFaint : MColors.textFaint,
+                            color: isDark
+                                ? MColors.darkTextFaint
+                                : MColors.textFaint,
                           ),
                         ),
                       ),
@@ -183,9 +224,11 @@ class _HeroGradient extends StatelessWidget {
         children: [
           // Decorative circles
           Positioned(
-            top: -80, right: -60,
+            top: -80,
+            right: -60,
             child: Container(
-              width: 240, height: 240,
+              width: 240,
+              height: 240,
               decoration: const BoxDecoration(
                 color: Color(0x0FFFFFFF),
                 shape: BoxShape.circle,
@@ -193,9 +236,11 @@ class _HeroGradient extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 40, right: 80,
+            top: 40,
+            right: 80,
             child: Container(
-              width: 100, height: 100,
+              width: 100,
+              height: 100,
               decoration: const BoxDecoration(
                 color: Color(0x0AFFFFFF),
                 shape: BoxShape.circle,
@@ -208,7 +253,8 @@ class _HeroGradient extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 48, height: 48,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: const Color(0x26FFFFFF),
                     borderRadius: BorderRadius.circular(12),
@@ -218,7 +264,8 @@ class _HeroGradient extends StatelessWidget {
                     child: Transform.rotate(
                       angle: 0.785,
                       child: Container(
-                        width: 20, height: 20,
+                        width: 20,
+                        height: 20,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(4),
@@ -229,16 +276,23 @@ class _HeroGradient extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'Meridian',
+                  'Kuraimi',
                   style: TextStyle(
-                    fontSize: 32, fontWeight: FontWeight.w700,
-                    color: Colors.white, letterSpacing: -0.8, height: 1.1,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.8,
+                    height: 1.1,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Your workplace, in one app.',
-                  style: TextStyle(fontSize: 15, color: Color(0xBFFFFFFF)),
+                Text(
+                  AppLocalizations.of(context)?.kuraimiTagline ??
+                      'Your workplace, in one app.',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xBFFFFFFF),
+                  ),
                 ),
               ],
             ),
@@ -285,7 +339,8 @@ class _FormField extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 12, fontWeight: FontWeight.w600,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
             letterSpacing: 0.1,
             color: isDark ? MColors.darkTextMid : MColors.textMid,
           ),
@@ -299,12 +354,17 @@ class _FormField extends StatelessWidget {
           onFieldSubmitted: onSubmitted,
           validator: validator,
           style: TextStyle(
-            fontSize: 15, fontWeight: FontWeight.w500,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
             color: isDark ? MColors.darkText : MColors.text,
           ),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, size: 18, color: isDark ? MColors.darkTextSub : MColors.textSub),
+            prefixIcon: Icon(
+              icon,
+              size: 18,
+              color: isDark ? MColors.darkTextSub : MColors.textSub,
+            ),
             suffixIcon: suffixIcon,
           ),
         ),
@@ -333,7 +393,10 @@ class _ErrorBanner extends StatelessWidget {
           Icon(Icons.error_outline_rounded, color: sem.danger, size: 18),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(message, style: TextStyle(color: sem.danger, fontSize: 13)),
+            child: Text(
+              message,
+              style: TextStyle(color: sem.danger, fontSize: 13),
+            ),
           ),
         ],
       ),
@@ -355,17 +418,33 @@ class _LangSelector extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Language: ',
+          '${AppLocalizations.of(context)?.language ?? 'Language'}: ',
           style: TextStyle(
-            fontSize: 12.5, color: isDark ? MColors.darkTextSub : MColors.textSub,
+            fontSize: 12.5,
+            color: isDark ? MColors.darkTextSub : MColors.textSub,
           ),
         ),
         const SizedBox(width: 6),
-        _LangChip(label: 'EN', localeStr: 'en', current: locale.locale, provider: locale),
+        _LangChip(
+          label: 'EN',
+          localeStr: 'en',
+          current: locale.locale,
+          provider: locale,
+        ),
         const SizedBox(width: 6),
-        _LangChip(label: 'عربي', localeStr: 'ar', current: locale.locale, provider: locale),
+        _LangChip(
+          label: 'عربي',
+          localeStr: 'ar',
+          current: locale.locale,
+          provider: locale,
+        ),
         const SizedBox(width: 6),
-        _LangChip(label: 'ID', localeStr: 'id', current: locale.locale, provider: locale),
+        _LangChip(
+          label: 'ID',
+          localeStr: 'id',
+          current: locale.locale,
+          provider: locale,
+        ),
       ],
     );
   }
@@ -408,7 +487,8 @@ class _LangChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 12, fontWeight: FontWeight.w600,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
             color: isSelected
                 ? Colors.white
                 : (isDark ? MColors.darkTextMid : MColors.textMid),

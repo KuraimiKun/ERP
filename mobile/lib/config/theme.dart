@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ── Meridian design tokens ───────────────────────────────────────────────────
+// ── Kuraimi design tokens ───────────────────────────────────────────────────
 
 class MColors {
   // Light palette
@@ -143,14 +143,24 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 
   @override
   AppSemanticColors copyWith({
-    Color? success, Color? successContainer,
-    Color? warning, Color? warningContainer,
-    Color? info, Color? infoContainer,
-    Color? danger, Color? dangerContainer,
-    Color? purple, Color? purpleContainer,
-    Color? accent, Color? accentContainer,
-    Color? textMuted, Color? textSub, Color? textFaint,
-    Color? border, Color? borderSoft, Color? surfaceAlt,
+    Color? success,
+    Color? successContainer,
+    Color? warning,
+    Color? warningContainer,
+    Color? info,
+    Color? infoContainer,
+    Color? danger,
+    Color? dangerContainer,
+    Color? purple,
+    Color? purpleContainer,
+    Color? accent,
+    Color? accentContainer,
+    Color? textMuted,
+    Color? textSub,
+    Color? textFaint,
+    Color? border,
+    Color? borderSoft,
+    Color? surfaceAlt,
   }) => AppSemanticColors(
     success: success ?? this.success,
     successContainer: successContainer ?? this.successContainer,
@@ -177,9 +187,17 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     if (other is! AppSemanticColors) return this;
     return AppSemanticColors(
       success: Color.lerp(success, other.success, t)!,
-      successContainer: Color.lerp(successContainer, other.successContainer, t)!,
+      successContainer: Color.lerp(
+        successContainer,
+        other.successContainer,
+        t,
+      )!,
       warning: Color.lerp(warning, other.warning, t)!,
-      warningContainer: Color.lerp(warningContainer, other.warningContainer, t)!,
+      warningContainer: Color.lerp(
+        warningContainer,
+        other.warningContainer,
+        t,
+      )!,
       info: Color.lerp(info, other.info, t)!,
       infoContainer: Color.lerp(infoContainer, other.infoContainer, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
@@ -206,7 +224,8 @@ class AppTheme {
   static AppSemanticColors semantics(BuildContext context) =>
       Theme.of(context).extension<AppSemanticColors>()!;
 
-  static TextTheme _textTheme(TextTheme base) => GoogleFonts.interTextTheme(base);
+  static TextTheme _textTheme(TextTheme base) =>
+      GoogleFonts.interTextTheme(base);
 
   static ThemeData get lightTheme {
     const cs = ColorScheme(
@@ -252,7 +271,9 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: true,
         titleTextStyle: GoogleFonts.inter(
-          fontSize: 16, fontWeight: FontWeight.w700, color: MColors.text,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: MColors.text,
           letterSpacing: -0.3,
         ),
         iconTheme: const IconThemeData(color: MColors.text),
@@ -272,8 +293,13 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 54),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -281,7 +307,9 @@ class AppTheme {
           foregroundColor: MColors.primary,
           side: const BorderSide(color: MColors.primary),
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -303,8 +331,15 @@ class AppTheme {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: MColors.error),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: MColors.textSub),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        labelStyle: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: MColors.textSub,
+        ),
         hintStyle: GoogleFonts.inter(fontSize: 14, color: MColors.textFaint),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -320,11 +355,17 @@ class AppTheme {
         elevation: 0,
         type: BottomNavigationBarType.fixed,
       ),
-      dividerTheme: const DividerThemeData(color: MColors.border, thickness: 0.5),
+      dividerTheme: const DividerThemeData(
+        color: MColors.border,
+        thickness: 0.5,
+      ),
       chipTheme: ChipThemeData(
         backgroundColor: MColors.surfaceAlt,
         selectedColor: MColors.primarySoft,
-        labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+        labelStyle: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         side: const BorderSide(color: MColors.border, width: 0.5),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -387,10 +428,9 @@ class AppTheme {
       colorScheme: cs,
       scaffoldBackgroundColor: MColors.darkBg,
       extensions: const [AppSemanticColors.dark],
-      textTheme: _textTheme(base.textTheme).apply(
-        bodyColor: MColors.darkText,
-        displayColor: MColors.darkText,
-      ),
+      textTheme: _textTheme(
+        base.textTheme,
+      ).apply(bodyColor: MColors.darkText, displayColor: MColors.darkText),
       appBarTheme: AppBarTheme(
         backgroundColor: MColors.darkSurface,
         foregroundColor: MColors.darkText,
@@ -398,7 +438,9 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: true,
         titleTextStyle: GoogleFonts.inter(
-          fontSize: 16, fontWeight: FontWeight.w700, color: MColors.darkText,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: MColors.darkText,
           letterSpacing: -0.3,
         ),
         iconTheme: const IconThemeData(color: MColors.darkText),
@@ -418,8 +460,13 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 54),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -427,7 +474,9 @@ class AppTheme {
           foregroundColor: MColors.darkPrimary,
           side: const BorderSide(color: MColors.darkPrimary),
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -449,9 +498,19 @@ class AppTheme {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: MColors.darkError),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: MColors.darkTextSub),
-        hintStyle: GoogleFonts.inter(fontSize: 14, color: MColors.darkTextFaint),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        labelStyle: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: MColors.darkTextSub,
+        ),
+        hintStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: MColors.darkTextFaint,
+        ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: MColors.darkPrimary,
@@ -466,11 +525,17 @@ class AppTheme {
         elevation: 0,
         type: BottomNavigationBarType.fixed,
       ),
-      dividerTheme: const DividerThemeData(color: MColors.darkBorder, thickness: 0.5),
+      dividerTheme: const DividerThemeData(
+        color: MColors.darkBorder,
+        thickness: 0.5,
+      ),
       chipTheme: ChipThemeData(
         backgroundColor: MColors.darkSurfaceAlt,
         selectedColor: MColors.darkPrimarySoft,
-        labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+        labelStyle: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         side: const BorderSide(color: MColors.darkBorder, width: 0.5),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

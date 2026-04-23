@@ -51,11 +51,12 @@ class AdminMobileBaseViewSet(viewsets.ModelViewSet):
         Mirrors ``ERPBaseViewSet.get_company`` so every admin-mobile
         endpoint scopes data the same way as the web API.
         """
-        user = self.request.user
-        employee = getattr(user, 'employee_profile', None)
-        if employee is None or employee.company_id is None:
-            raise PermissionDenied('No employee profile found for this user.')
-        return employee.company
+        from .helpers import resolve_admin_company
+
+        company = resolve_admin_company(self.request.user)
+        if company is None:
+            raise PermissionDenied('No company found for this tenant.')
+        return company
 
     def get_queryset(self):
         """Filter the base queryset by the admin's company when possible."""
@@ -101,11 +102,12 @@ class AdminMobileReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = None
 
     def get_company(self):
-        user = self.request.user
-        employee = getattr(user, 'employee_profile', None)
-        if employee is None or employee.company_id is None:
-            raise PermissionDenied('No employee profile found for this user.')
-        return employee.company
+        from .helpers import resolve_admin_company
+
+        company = resolve_admin_company(self.request.user)
+        if company is None:
+            raise PermissionDenied('No company found for this tenant.')
+        return company
 
     def get_queryset(self):
         queryset = super().get_queryset()

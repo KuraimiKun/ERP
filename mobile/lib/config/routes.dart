@@ -18,4 +18,15 @@ class AppRoutes {
   static const String posReceipt = '/pos/receipt';
   static const String posOrderHistory = '/pos/orders';
   static const String posStats = '/pos/stats';
+
+  // Admin portal
+  static const String adminDashboard = '/admin/dashboard';
+  static const String adminApprovals = '/admin/approvals';
+  static const String adminNotifications = '/admin/notifications';
+  static const String adminSearch = '/admin/search';
+  static const String adminReports = '/admin/reports';
+  static const String adminList = '/admin/list';
+  static const String adminDetail = '/admin/detail';
+  static const String adminProfile = '/admin/profile';
+  static const String adminChangePassword = '/admin/change-password';
 }

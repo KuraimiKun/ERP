@@ -153,15 +153,10 @@ class IsCompanyAdmin(BasePermission):
         if user.is_superuser:
             return True
 
-        # Must have an employee_profile bound to a company so that
-        # company-scoped querysets downstream have a well-defined tenant.
-        employee = getattr(user, 'employee_profile', None)
-        if employee is None or employee.company_id is None:
-            return False
-
-        # DatabaseAssignment lives in the default DB; querying through the
-        # user's reverse accessor respects that because the FK target is
-        # ``tenants.TenantUser`` which is itself a default-DB model.
+        # The canonical source of truth is ``DatabaseAssignment``: a user
+        # administers a tenant iff they have an active owner/admin row
+        # for it.  An ``Employee`` is NOT required — tenant owners often
+        # manage the company without being employed by it.
         from tenants.models import DatabaseAssignment
         return DatabaseAssignment.objects.filter(
             user=user,
