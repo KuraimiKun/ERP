@@ -585,7 +585,7 @@ class LeadMobileListSerializer(serializers.ModelSerializer):
             "email",
             "phone",
             "status",
-            "lead_score",
+            "probability",
         ]
 
 
