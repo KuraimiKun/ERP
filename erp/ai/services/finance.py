@@ -12,7 +12,6 @@ from datetime import timedelta, date as dt_date
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier, IsolationForest
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, classification_report
 from sklearn.preprocessing import LabelEncoder
 from django.conf import settings
@@ -32,6 +31,8 @@ from .base import (
     load_model_artefact,
     log_prediction,
     create_or_update_insight,
+    evaluate_classifier,
+    shuffle_label_auc,
 )
 
 logger = logging.getLogger("erp.ai.finance")
@@ -210,31 +211,36 @@ class LatePaymentPredictor:
 
     # ── Training ────────────────────────────────────────────────────────
 
-    def train(self) -> dict:
-        """Train (or retrain) the late-payment model."""
+    def train(self, shuffle_labels: bool = False) -> dict:
+        """Train (or retrain) the late-payment model.
+
+        Uses a time-based train/test split on ``invoice_date`` (older 80 %
+        for training, newest 20 % for holdout) instead of a random split,
+        so the reported score reflects the real production use-case of
+        predicting *future* invoices from *past* history.
+        """
         df = self._build_dataset()
         if df.empty:
             logger.info("Insufficient data for late-payment model (company %d)", self.company.pk)
             return {"status": "skipped", "reason": "insufficient_data"}
 
+        # df is already sorted by invoice_date_dt in _build_dataset().
         X = df[self.FEATURE_COLS].values
         y = df["late"].values
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X,
-            y,
-            test_size=0.2,
-            random_state=42,
-            stratify=y,
-        )
+        # Time-based split: earlier 80 % → train, latest 20 % → test.
+        split_idx = int(len(df) * 0.8)
+        X_train, X_test = X[:split_idx], X[split_idx:]
+        y_train, y_test = y[:split_idx], y[split_idx:]
+        train_cutoff = df["invoice_date_dt"].iloc[split_idx - 1] if split_idx > 0 else None
 
-        # Compute sample weights to handle class imbalance
-        late_ratio = y_train.mean()
-        weights = np.where(
-            y_train == 1,
-            1.0 / max(late_ratio, 0.01),
-            1.0 / max(1 - late_ratio, 0.01),
-        )
+        def _weights(y_tr: np.ndarray) -> np.ndarray:
+            r = y_tr.mean()
+            return np.where(
+                y_tr == 1,
+                1.0 / max(r, 0.01),
+                1.0 / max(1 - r, 0.01),
+            )
 
         clf = GradientBoostingClassifier(
             n_estimators=500,
@@ -248,15 +254,44 @@ class LatePaymentPredictor:
             n_iter_no_change=30,
             tol=1e-4,
         )
-        clf.fit(X_train, y_train, sample_weight=weights)
 
-        y_proba = clf.predict_proba(X_test)[:, 1]
-        auc = roc_auc_score(y_test, y_proba) if len(set(y_test)) > 1 else 0.0
+        # Shuffle-label sanity check — return without persisting.
+        if shuffle_labels:
+            shuffled = shuffle_label_auc(clf, X, y, n_repeats=5, sample_weight_fn=_weights)
+            return {
+                "status": "shuffle_check",
+                "shuffled_auc": shuffled,
+                "samples": len(df),
+                "note": "AUC > 0.55 with shuffled labels indicates target leakage.",
+            }
 
-        # Feature importance for interpretability
+        # Stratified K-fold CV for robust metrics + baseline (independent
+        # of the time split above, which is used for the reported hold-out
+        # numbers).
+        cv_metrics = evaluate_classifier(clf, X, y, sample_weight_fn=_weights)
+        shuffle_auc = shuffle_label_auc(clf, X, y, sample_weight_fn=_weights)
+
+        # Time-split hold-out evaluation.
+        clf.fit(X_train, y_train, sample_weight=_weights(y_train))
+        if len(set(y_test)) > 1 and len(y_test) > 0:
+            y_proba = clf.predict_proba(X_test)[:, 1]
+            holdout_auc = roc_auc_score(y_test, y_proba)
+            holdout_class_report = classification_report(
+                y_test, (y_proba > 0.5).astype(int), output_dict=True, zero_division=0
+            )
+        else:
+            holdout_auc = 0.0
+            holdout_class_report = {}
+
+        # Re-fit on ALL data so the persisted artefact uses every sample.
+        clf.fit(X, y, sample_weight=_weights(y))
+
         feat_imp = dict(zip(self.FEATURE_COLS, clf.feature_importances_.round(4).tolist()))
 
-        # Persist
+        # Head-line score = CV mean AUC (robust) when available, else
+        # fall back to the time-split hold-out AUC.
+        auc = cv_metrics.get("auc_mean") or holdout_auc or 0.0
+
         registry = get_or_create_registry(
             self.company,
             MLModel.ModelType.LATE_PAYMENT,
@@ -268,11 +303,14 @@ class LatePaymentPredictor:
             "feature_cols": self.FEATURE_COLS,
             "feature_importance": feat_imp,
             "late_ratio": round(float(y.mean()), 4),
-            "class_report": classification_report(
-                y_test,
-                (y_proba > 0.5).astype(int),
-                output_dict=True,
-            ),
+            "cv_metrics": cv_metrics,
+            "shuffled_label_auc": shuffle_auc,
+            "time_split": {
+                "train_cutoff": str(train_cutoff) if train_cutoff is not None else None,
+                "holdout_auc": round(float(holdout_auc), 4),
+                "holdout_samples": int(len(y_test)),
+                "class_report": holdout_class_report,
+            },
         }
         save_model_artefact(
             registry,
@@ -285,13 +323,22 @@ class LatePaymentPredictor:
         self._model = clf
         self._registry = registry
 
-        logger.info("Late-payment model trained: AUC=%.4f samples=%d late_ratio=%.2f%%", auc, len(df), y.mean() * 100)
+        logger.info(
+            "Late-payment model trained: cv_AUC=%.4f holdout_AUC=%.4f samples=%d late_ratio=%.2f%%",
+            auc,
+            holdout_auc,
+            len(df),
+            y.mean() * 100,
+        )
         return {
             "status": "trained",
             "auc": round(auc, 4),
             "samples": len(df),
             "late_ratio": round(float(y.mean()), 4),
             "feature_importance": feat_imp,
+            "cv_metrics": cv_metrics,
+            "shuffled_label_auc": shuffle_auc,
+            "holdout_auc": round(float(holdout_auc), 4),
         }
 
     # ── Prediction ──────────────────────────────────────────────────────

@@ -106,6 +106,16 @@ class Command(BaseCommand):
             action="store_true",
             help="After training, run predictions/detection on live data.",
         )
+        parser.add_argument(
+            "--shuffle-labels",
+            action="store_true",
+            help=(
+                "Leakage sanity check: for each supervised model, retrain "
+                "on randomly shuffled labels and report the resulting AUC. "
+                "A value noticeably above 0.5 indicates that features are "
+                "inadvertently encoding the target."
+            ),
+        )
 
     def handle(self, *args, **options):
         db_alias = self._activate_tenant(options["tenant"])
@@ -141,6 +151,7 @@ class Command(BaseCommand):
             selected_keys = [k.strip() for k in options["models"].split(",")]
 
         do_evaluate = options.get("evaluate", False)
+        shuffle_labels = options.get("shuffle_labels", False)
 
         # ── Run training pipeline ─────────────────────────────────────
         self.stdout.write("")
@@ -160,7 +171,7 @@ class Command(BaseCommand):
 
             t0 = time.time()
             try:
-                result = self._train_model(key, do_evaluate)
+                result = self._train_model(key, do_evaluate, shuffle_labels)
                 elapsed = time.time() - t0
                 result["elapsed_seconds"] = round(elapsed, 2)
                 results[key] = result
@@ -198,15 +209,15 @@ class Command(BaseCommand):
     #  Per-model training & evaluation
     # ==================================================================
 
-    def _train_model(self, key: str, do_evaluate: bool) -> dict:
+    def _train_model(self, key: str, do_evaluate: bool, shuffle_labels: bool = False) -> dict:
         """Train a single model and optionally evaluate."""
 
         if key == "lead_scoring":
-            return self._train_lead_scoring(do_evaluate)
+            return self._train_lead_scoring(do_evaluate, shuffle_labels)
         elif key == "late_payment":
-            return self._train_late_payment(do_evaluate)
+            return self._train_late_payment(do_evaluate, shuffle_labels)
         elif key == "attrition":
-            return self._train_attrition(do_evaluate)
+            return self._train_attrition(do_evaluate, shuffle_labels)
         elif key == "expense_anomaly":
             return self._run_expense_anomaly()
         elif key == "attendance_anomaly":
@@ -222,11 +233,11 @@ class Command(BaseCommand):
 
     # ── 1. Lead Scoring ─────────────────────────────────────────────────
 
-    def _train_lead_scoring(self, do_evaluate: bool) -> dict:
+    def _train_lead_scoring(self, do_evaluate: bool, shuffle_labels: bool = False) -> dict:
         from erp.ai.services.crm import LeadScorer
 
         scorer = LeadScorer(self.company)
-        result = scorer.train()
+        result = scorer.train(shuffle_labels=shuffle_labels)
 
         if result.get("status") == "trained" and do_evaluate:
             self.stdout.write("  Running evaluation on active leads …")
@@ -241,11 +252,11 @@ class Command(BaseCommand):
 
     # ── 2. Late Payment ─────────────────────────────────────────────────
 
-    def _train_late_payment(self, do_evaluate: bool) -> dict:
+    def _train_late_payment(self, do_evaluate: bool, shuffle_labels: bool = False) -> dict:
         from erp.ai.services.finance import LatePaymentPredictor
 
         predictor = LatePaymentPredictor(self.company)
-        result = predictor.train()
+        result = predictor.train(shuffle_labels=shuffle_labels)
 
         if result.get("status") == "trained" and do_evaluate:
             self.stdout.write("  Running evaluation on open invoices …")
@@ -260,11 +271,11 @@ class Command(BaseCommand):
 
     # ── 3. Attrition ────────────────────────────────────────────────────
 
-    def _train_attrition(self, do_evaluate: bool) -> dict:
+    def _train_attrition(self, do_evaluate: bool, shuffle_labels: bool = False) -> dict:
         from erp.ai.services.hr import AttritionPredictor
 
         predictor = AttritionPredictor(self.company)
-        result = predictor.train()
+        result = predictor.train(shuffle_labels=shuffle_labels)
 
         if result.get("status") == "trained" and do_evaluate:
             self.stdout.write("  Running evaluation on active employees …")
@@ -405,6 +416,49 @@ class Command(BaseCommand):
                 style(f"  [OK] TRAINED | {model_info['metric']}: {metric_val} | Samples: {samples} | Time: {elapsed}s")
             )
 
+            # Rich CV metrics (mean ± std) alongside the baseline
+            cv = result.get("cv_metrics") or {}
+            if cv.get("cv_status") == "ok":
+                def _fmt(name, std_name=None):
+                    v = cv.get(name)
+                    if v is None:
+                        return "—"
+                    if std_name:
+                        s = cv.get(std_name)
+                        return f"{v:.4f} ± {s:.4f}" if s is not None else f"{v:.4f}"
+                    return f"{v:.4f}"
+
+                self.stdout.write(
+                    f"  {cv.get('n_splits', 0)}-fold CV  "
+                    f"AUC={_fmt('auc_mean', 'auc_std')}  "
+                    f"PR-AUC={_fmt('pr_auc_mean', 'pr_auc_std')}  "
+                    f"F1={_fmt('f1_mean', 'f1_std')}  "
+                    f"Brier={_fmt('brier_mean', 'brier_std')}"
+                )
+                topk_keys = [k for k in cv if k.startswith("precision_at_top_")]
+                if topk_keys:
+                    k0 = topk_keys[0]
+                    self.stdout.write(
+                        f"  {k0}: {cv[k0]:.4f}  (positives={cv.get('n_positives', '-')}"
+                        f" / {cv.get('n_samples', '-')})"
+                    )
+                dummy = cv.get("dummy_auc_mean")
+                if dummy is not None:
+                    lift = (cv.get("auc_mean") or 0) - dummy
+                    self.stdout.write(f"  Baseline (stratified dummy) AUC: {dummy:.4f}   (lift: {lift:+.4f})")
+
+            # Leakage sanity check (shuffled labels)
+            shuf = result.get("shuffled_label_auc")
+            if shuf is not None:
+                tag = "[LEAKAGE?]" if shuf > 0.55 else "[OK]"
+                style_func = self.style.WARNING if shuf > 0.55 else self.style.SUCCESS
+                self.stdout.write(style_func(f"  Shuffled-label AUC: {shuf:.4f}  {tag} (want ≈ 0.5)"))
+
+            # Time-based hold-out (late-payment model)
+            ts = result.get("holdout_auc")
+            if ts is not None:
+                self.stdout.write(f"  Time-split hold-out AUC: {ts:.4f}")
+
             # Feature importance for classifiers
             feat_imp = result.get("feature_importance", {})
             if feat_imp:
@@ -433,6 +487,22 @@ class Command(BaseCommand):
                 self.stdout.write("  Evaluation:")
                 for ek, ev in eval_data.items():
                     self.stdout.write(f"    {ek}: {ev}")
+
+        elif status == "shuffle_check":
+            shuf = result.get("shuffled_auc")
+            samples = result.get("samples", 0)
+            if shuf is None:
+                self.stdout.write(self.style.WARNING("  [SKIP] Shuffle check: insufficient data"))
+            else:
+                tag = "[LEAKAGE?]" if shuf > 0.55 else "[OK]"
+                style_func = self.style.WARNING if shuf > 0.55 else self.style.SUCCESS
+                self.stdout.write(
+                    style_func(
+                        f"  [SHUFFLE-CHECK] AUC on shuffled labels: {shuf:.4f}  "
+                        f"{tag}  Samples: {samples}  Time: {elapsed}s"
+                    )
+                )
+                self.stdout.write("  (want ≈ 0.5; >0.55 suggests remaining target leakage)")
 
         elif status == "completed":
             style = self.style.SUCCESS

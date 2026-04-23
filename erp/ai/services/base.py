@@ -9,6 +9,18 @@ import logging
 import joblib
 from datetime import timedelta
 from pathlib import Path
+
+import numpy as np
+from sklearn.base import clone
+from sklearn.dummy import DummyClassifier
+from sklearn.metrics import (
+    average_precision_score,
+    brier_score_loss,
+    f1_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import StratifiedKFold
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -133,6 +145,176 @@ def bump_version(ml_model: MLModel) -> MLModel:
         model_type=ml_model.model_type,
     ).exclude(pk=new.pk).update(is_active=False)
     return new
+
+
+def evaluate_classifier(
+    estimator,
+    X: np.ndarray,
+    y: np.ndarray,
+    *,
+    n_splits: int = 5,
+    sample_weight_fn=None,
+    top_k_fraction: float = 0.10,
+    random_state: int = 42,
+) -> dict:
+    """Stratified K-fold CV evaluation with rich metrics.
+
+    Returns a dict with mean ± std of AUC, PR-AUC, F1, Brier score, plus
+    precision@top-K and a naive ``DummyClassifier`` baseline AUC so that
+    the headline score can be put in context.
+
+    The ``estimator`` must be an unfitted sklearn-compatible classifier.
+    It is cloned on each fold so the caller can refit it on the full
+    dataset afterwards if desired.  ``sample_weight_fn(y_train)`` may
+    return a per-sample weight vector to pass to ``.fit``.
+
+    Gracefully falls back to a single 80/20 split when there are too few
+    samples / classes for meaningful K-fold.
+    """
+    X = np.asarray(X)
+    y = np.asarray(y)
+    classes = np.unique(y)
+    metrics: dict = {
+        "n_samples": int(len(y)),
+        "n_splits": 0,
+        "positive_rate": float(np.mean(y)) if len(y) else 0.0,
+    }
+
+    if len(classes) < 2 or len(y) < max(n_splits * 2, 10):
+        # Not enough data / class diversity for stratified K-fold.
+        metrics["cv_status"] = "insufficient_data_for_cv"
+        return metrics
+
+    # Cap K so every fold has at least one positive.
+    min_class = int(np.min(np.bincount(y.astype(int))))
+    k = max(2, min(n_splits, min_class))
+    skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=random_state)
+
+    auc_scores, pr_auc_scores, f1_scores, brier_scores, top_k_prec = [], [], [], [], []
+    dummy_auc_scores = []
+
+    for train_idx, test_idx in skf.split(X, y):
+        X_tr, X_te = X[train_idx], X[test_idx]
+        y_tr, y_te = y[train_idx], y[test_idx]
+
+        if len(np.unique(y_te)) < 2 or len(np.unique(y_tr)) < 2:
+            continue
+
+        est = clone(estimator)
+        fit_kwargs = {}
+        if sample_weight_fn is not None:
+            fit_kwargs["sample_weight"] = sample_weight_fn(y_tr)
+        try:
+            est.fit(X_tr, y_tr, **fit_kwargs)
+        except TypeError:
+            # Estimator does not support sample_weight kwarg
+            est.fit(X_tr, y_tr)
+
+        proba = est.predict_proba(X_te)[:, 1]
+        preds = (proba >= 0.5).astype(int)
+
+        auc_scores.append(roc_auc_score(y_te, proba))
+        pr_auc_scores.append(average_precision_score(y_te, proba))
+        f1_scores.append(f1_score(y_te, preds, zero_division=0))
+        brier_scores.append(brier_score_loss(y_te, proba))
+
+        # Precision @ top-K: fraction of positives in the top-K ranked rows.
+        k_rows = max(1, int(np.ceil(len(y_te) * top_k_fraction)))
+        order = np.argsort(-proba)[:k_rows]
+        top_k_prec.append(float(np.mean(y_te[order])))
+
+        # Baseline: stratified dummy classifier on the same fold.
+        dummy = DummyClassifier(strategy="stratified", random_state=random_state)
+        dummy.fit(X_tr, y_tr)
+        dummy_proba = dummy.predict_proba(X_te)[:, 1]
+        try:
+            dummy_auc_scores.append(roc_auc_score(y_te, dummy_proba))
+        except ValueError:
+            dummy_auc_scores.append(0.5)
+
+    def _mean_std(xs):
+        if not xs:
+            return None, None
+        return float(np.mean(xs)), float(np.std(xs))
+
+    auc_mean, auc_std = _mean_std(auc_scores)
+    pr_auc_mean, pr_auc_std = _mean_std(pr_auc_scores)
+    f1_mean, f1_std = _mean_std(f1_scores)
+    brier_mean, brier_std = _mean_std(brier_scores)
+    topk_mean, _ = _mean_std(top_k_prec)
+    dummy_auc_mean, _ = _mean_std(dummy_auc_scores)
+
+    metrics.update(
+        {
+            "cv_status": "ok",
+            "n_splits": k,
+            "auc_mean": auc_mean,
+            "auc_std": auc_std,
+            "pr_auc_mean": pr_auc_mean,
+            "pr_auc_std": pr_auc_std,
+            "f1_mean": f1_mean,
+            "f1_std": f1_std,
+            "brier_mean": brier_mean,
+            "brier_std": brier_std,
+            "precision_at_top_{}pct".format(int(top_k_fraction * 100)): topk_mean,
+            "dummy_auc_mean": dummy_auc_mean,
+            "n_positives": int(np.sum(y == 1)),
+            "n_negatives": int(np.sum(y == 0)),
+        }
+    )
+    return metrics
+
+
+def shuffle_label_auc(
+    estimator,
+    X: np.ndarray,
+    y: np.ndarray,
+    *,
+    n_repeats: int = 3,
+    sample_weight_fn=None,
+    random_state: int = 42,
+) -> float | None:
+    """Train on randomly shuffled labels and report the mean AUC.
+
+    This is a **leakage sanity check**: if a model can still achieve an
+    AUC noticeably above 0.5 on shuffled labels, the feature set is
+    inadvertently encoding the target.  Returns None when the input is
+    too small or single-class to evaluate.
+    """
+    X = np.asarray(X)
+    y = np.asarray(y)
+    if len(np.unique(y)) < 2 or len(y) < 20:
+        return None
+
+    rng = np.random.default_rng(random_state)
+    from sklearn.model_selection import train_test_split
+
+    aucs = []
+    for i in range(n_repeats):
+        y_shuf = y.copy()
+        rng.shuffle(y_shuf)
+        try:
+            X_tr, X_te, y_tr, y_te = train_test_split(
+                X, y_shuf, test_size=0.2, stratify=y_shuf, random_state=random_state + i
+            )
+        except ValueError:
+            continue
+        if len(np.unique(y_te)) < 2:
+            continue
+        est = clone(estimator)
+        fit_kwargs = {}
+        if sample_weight_fn is not None:
+            fit_kwargs["sample_weight"] = sample_weight_fn(y_tr)
+        try:
+            est.fit(X_tr, y_tr, **fit_kwargs)
+        except TypeError:
+            est.fit(X_tr, y_tr)
+        proba = est.predict_proba(X_te)[:, 1]
+        aucs.append(roc_auc_score(y_te, proba))
+
+    if not aucs:
+        return None
+    return float(np.mean(aucs))
 
 
 def log_prediction(
