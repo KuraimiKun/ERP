@@ -126,8 +126,8 @@ logger = logging.getLogger("erp.api.admin_mobile")
 class _DualSerializerMixin:
     """Pick ``list_serializer_class`` on list, ``detail_serializer_class`` elsewhere."""
 
-    list_serializer_class = None
-    detail_serializer_class = None
+    list_serializer_class: type | None = None
+    detail_serializer_class: type | None = None
 
     def get_serializer_class(self):
         if self.action == "list" and self.list_serializer_class is not None:

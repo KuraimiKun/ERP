@@ -51,7 +51,7 @@ def _as_bool(value, default=False):
 
 def _wants_evaluation(request) -> bool:
     data = getattr(request, "data", {}) or {}
-    return _as_bool(data.get("evaluate"), default=False)
+    return bool(_as_bool(data.get("evaluate"), default=False))
 
 
 def _retrain_lead_scoring(company, evaluate=False):

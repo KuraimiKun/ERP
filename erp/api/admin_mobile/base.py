@@ -16,11 +16,15 @@ Subclasses only need to declare ``queryset`` and ``serializer_class``.
 
 from __future__ import annotations
 
+from typing import Any, ClassVar
+
+from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.serializers import BaseSerializer
 
 from erp.api.permissions import DefaultDbTokenAuthentication, IsCompanyAdmin
 
@@ -39,8 +43,8 @@ class AdminMobileBaseViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     # Subclasses should set these explicitly; kept here only to document them.
-    queryset = None
-    serializer_class = None
+    queryset: ClassVar[QuerySet[Any, Any] | None] = None
+    serializer_class: ClassVar[type[BaseSerializer] | None] = None
 
     # ------------------------------------------------------------------
     # Tenancy helpers
@@ -98,8 +102,8 @@ class AdminMobileReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = AdminMobilePagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
-    queryset = None
-    serializer_class = None
+    queryset: ClassVar[QuerySet[Any, Any] | None] = None
+    serializer_class: ClassVar[type[BaseSerializer] | None] = None
 
     def get_company(self):
         from .helpers import resolve_admin_company

@@ -14,7 +14,7 @@ requests hit the fast path.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, cast
 
 from django.db import transaction
 
@@ -77,7 +77,7 @@ def resolve_admin_company(user) -> Optional[object]:
     """
     employee = resolve_admin_employee(user)
     if employee is not None and employee.company_id is not None:
-        return employee.company
+        return cast("object | None", employee.company)
 
     from erp.models import Company
     from tenants.routers import get_current_db_alias
@@ -86,6 +86,7 @@ def resolve_admin_company(user) -> Optional[object]:
     if db_alias == "default":
         return None
     try:
-        return Company.objects.using(db_alias).order_by("id").first()
+        company = Company.objects.using(db_alias).order_by("id").first()
+        return cast("object | None", company)
     except Exception:
         return None
