@@ -613,7 +613,7 @@ class CustomerInteractionMobileSerializer(serializers.ModelSerializer):
             "customer",
             "interaction_type",
             "subject",
-            "notes",
+            "description",
             "interaction_date",
             "created_at",
         ]
