@@ -386,15 +386,26 @@ class Command(BaseCommand):
             self.stdout.write(f"  Skipping — {existing_count} attendance records already exist.")
             return
 
-        active_employees = [e for e in self.employees if e.employment_status == "active"]
-        # Generate 90 days of attendance for active employees
+        # Generate attendance for BOTH active and terminated employees.
+        # Previously only active employees got attendance records; this
+        # status-leaks into the Attrition model because any employee
+        # whose attendance-rate feature falls back to the imputed
+        # distribution is (almost by definition) a leaver.
         end_date = REFERENCE_DATE
         start_date = end_date - timedelta(days=90)
 
         all_records = []
-        for emp in active_employees:
+        for emp in self.employees:
+            # For terminated/resigned employees we only generate
+            # attendance up to the day they left.
+            emp_end = end_date
+            if emp.termination_date:
+                emp_end = min(end_date, emp.termination_date)
+            if emp_end < start_date:
+                # They left before the 90-day window started; skip.
+                continue
             current = max(start_date, emp.hire_date)
-            while current <= end_date:
+            while current <= emp_end:
                 # Skip weekends
                 if current.weekday() >= 5:
                     current += timedelta(days=1)

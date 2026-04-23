@@ -7,67 +7,73 @@
 {% block page_title %}{% trans "Explainable AI" %}{% endblock %}
 
 {% block content %}
-<!-- XAI Dashboard Header -->
-<div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
-    <div>
-        <h4 class="mb-1"><i class="bi bi-lightbulb"></i> {% trans "Explainable AI (XAI)" %}</h4>
-        <p class="text-muted mb-0">
-            {% trans "Understand why your AI models make specific predictions using SHAP and LIME explanations." %}
-        </p>
+<!-- Hero -->
+<section class="ai-hero">
+    <div class="ai-hero-inner">
+        <div class="ai-hero-body">
+            <div class="ai-hero-icon"><i class="bi bi-stars"></i></div>
+            <div>
+                <h1 class="ai-hero-title">{% trans "Explainable AI (XAI)" %}</h1>
+                <p class="ai-hero-subtitle">
+                    {% trans "See exactly why your models make each prediction with SHAP and LIME feature attributions." %}
+                </p>
+            </div>
+        </div>
+        <div class="ai-hero-actions">
+            <a href="{% url 'erp:xai_explain' %}" class="btn btn-light">
+                <i class="bi bi-search me-1"></i>{% trans "Explain a Prediction" %}
+            </a>
+            <a href="{% url 'erp:xai_history' %}" class="btn btn-outline-light">
+                <i class="bi bi-clock-history me-1"></i>{% trans "History" %}
+            </a>
+        </div>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{% url 'erp:xai_explain' %}" class="btn btn-primary">
-            <i class="bi bi-search me-1"></i>{% trans "Explain a Prediction" %}
-        </a>
-        <a href="{% url 'erp:xai_history' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-clock-history me-1"></i>{% trans "History" %}
-        </a>
-    </div>
-</div>
+</section>
 
-<!-- Model Cards -->
+<!-- Model Grid -->
+<div class="ai-section-header">
+    <h5><i class="bi bi-diagram-3"></i> {% trans "Available Models" %}</h5>
+    <span class="ai-section-hint">{% trans "Click a model to view its global feature importance." %}</span>
+</div>
 <div class="row g-3 mb-4">
     {% for card in model_cards %}
     <div class="col-md-6 col-xl-3">
-        <div class="card shadow-sm h-100">
-            <div class="card-body">
-                <h6 class="card-title">
-                    <i class="bi bi-diagram-3 text-primary me-1"></i>
-                    {{ card.label }}
-                </h6>
-                <p class="text-muted small mb-2">
-                    {% trans "Entity:" %} <strong>{{ card.entity_type }}</strong>
-                </p>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small">{% trans "Version" %}</span>
-                    <span class="badge bg-secondary">v{{ card.model.version }}</span>
+        <div class="xai-model-tile">
+            <div class="xai-model-head">
+                <div class="xai-model-icon"><i class="bi bi-diagram-3-fill"></i></div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="xai-model-title text-truncate">{{ card.label }}</div>
+                    <div class="xai-model-sub">{% trans "Entity:" %} <strong>{{ card.entity_type }}</strong></div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small">{% trans "Accuracy" %}</span>
-                    <span class="fw-semibold">
-                        {% if card.model.accuracy_score %}
-                            {{ card.model.accuracy_score|floatformat:1 }}%
-                        {% else %}
-                            —
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted small">{% trans "Explanations" %}</span>
-                    <span class="badge bg-info">{{ card.explanation_count }}</span>
-                </div>
-                <a href="{% url 'erp:xai_global' card.model.model_type %}"
-                   class="btn btn-sm btn-outline-primary w-100">
-                    <i class="bi bi-bar-chart me-1"></i>{% trans "Global Importance" %}
-                </a>
             </div>
+            <div class="xai-model-stats">
+                <div class="xai-model-stat">
+                    <div class="xai-model-stat-value">v{{ card.model.version }}</div>
+                    <div class="xai-model-stat-label">{% trans "Version" %}</div>
+                </div>
+                <div class="xai-model-stat">
+                    <div class="xai-model-stat-value">
+                        {% if card.model.accuracy_score %}{{ card.model.accuracy_score|floatformat:2 }}{% else %}—{% endif %}
+                    </div>
+                    <div class="xai-model-stat-label">{% trans "Accuracy" %}</div>
+                </div>
+                <div class="xai-model-stat">
+                    <div class="xai-model-stat-value">{{ card.explanation_count }}</div>
+                    <div class="xai-model-stat-label">{% trans "Explains" %}</div>
+                </div>
+            </div>
+            <a href="{% url 'erp:xai_global' card.model.model_type %}"
+               class="btn btn-sm btn-primary w-100 mt-auto">
+                <i class="bi bi-bar-chart-line me-1"></i>{% trans "Global Importance" %}
+            </a>
         </div>
     </div>
     {% empty %}
     <div class="col-12">
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle me-1"></i>
-            {% trans "No trained models available for XAI yet. Train your ML models first." %}
+        <div class="ai-empty">
+            <div class="ai-empty-icon"><i class="bi bi-diagram-3"></i></div>
+            <h5>{% trans "No explainable models yet" %}</h5>
+            <p>{% trans "Train one of your ML models first, then come back to inspect its reasoning." %}</p>
         </div>
     </div>
     {% endfor %}
@@ -75,12 +81,19 @@
 
 <!-- Recent Explanations -->
 {% if recent_explanations %}
-<div class="card shadow-sm">
-    <div class="card-header">
-        <h6 class="mb-0"><i class="bi bi-clock-history me-1"></i> {% trans "Recent Explanations" %}</h6>
+<div class="card">
+    <div class="card-header bg-transparent border-bottom">
+        <div class="d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fs-6 fw-bold">
+                <i class="bi bi-clock-history text-primary me-1"></i>{% trans "Recent Explanations" %}
+            </h5>
+            <a href="{% url 'erp:xai_history' %}" class="btn btn-sm btn-link text-decoration-none">
+                {% trans "View all" %} <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0 align-middle">
             <thead>
                 <tr>
                     <th>{% trans "Model" %}</th>
@@ -88,7 +101,7 @@
                     <th>{% trans "Method" %}</th>
                     <th>{% trans "Prediction" %}</th>
                     <th>{% trans "Top Factor" %}</th>
-                    <th>{% trans "Date" %}</th>
+                    <th class="text-end pe-3">{% trans "Date" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -99,23 +112,26 @@
                             {{ exp.model.get_model_type_display }}
                         </span>
                     </td>
-                    <td>{{ exp.entity_type }} #{{ exp.entity_id }}</td>
+                    <td>
+                        <span class="small text-muted">{{ exp.entity_type }}</span>
+                        <strong>#{{ exp.entity_id }}</strong>
+                    </td>
                     <td>
                         <span class="badge {% if exp.method == 'shap' %}bg-success{% else %}bg-warning text-dark{% endif %}">
                             {{ exp.get_method_display }}
                         </span>
                     </td>
-                    <td>{{ exp.prediction_score|floatformat:4 }}</td>
+                    <td><span class="fw-semibold">{{ exp.prediction_score|floatformat:4 }}</span></td>
                     <td>
                         {% with top=exp.top_features.0 %}
                             {% if top %}
-                                <small>{{ top.feature }}: {{ top.impact }}</small>
+                                <small><code>{{ top.feature }}</code>: {{ top.impact }}</small>
                             {% else %}
                                 —
                             {% endif %}
                         {% endwith %}
                     </td>
-                    <td><small class="text-muted">{{ exp.created_at|naturaltime }}</small></td>
+                    <td class="text-end pe-3 text-muted small">{{ exp.created_at|naturaltime }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -124,3 +140,4 @@
 </div>
 {% endif %}
 {% endblock %}
+

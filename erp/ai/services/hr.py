@@ -11,8 +11,6 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from django.conf import settings
 from django.db.models import Count, Avg, Q
@@ -26,6 +24,8 @@ from .base import (
     load_model_artefact,
     log_prediction,
     create_or_update_insight,
+    evaluate_classifier,
+    shuffle_label_auc,
 )
 
 logger = logging.getLogger("erp.ai.hr")
@@ -83,9 +83,18 @@ class AttritionPredictor:
         # Label: 1 = left (terminated / resigned), 0 = still active
         df["left"] = df["employment_status"].isin(["terminated", "resigned"]).astype(int)
 
+        # Deterministic RNG for any random draws inside this builder so
+        # retrains are reproducible (previously np.random.normal was called
+        # without a seed, causing AUC jitter between runs).
+        rng = np.random.default_rng(42)
+
         now = timezone.now().date()
-        df["tenure_days"] = df.apply(
-            lambda r: ((r["termination_date"] or now) - r["hire_date"]).days if r["hire_date"] else 0, axis=1
+        # IMPORTANT: Do NOT include termination_date in tenure — that leaks
+        # the label.  Tenure is always measured from hire_date to the
+        # current observation date, exactly as it would be at prediction
+        # time for an active employee.
+        df["tenure_days"] = df["hire_date"].apply(
+            lambda d: (now - d).days if d else 0
         )
 
         df["salary"] = df["basic_salary"].astype(float)
@@ -107,17 +116,19 @@ class AttritionPredictor:
         emp_types = {"full_time": 0, "part_time": 1, "contract": 2, "intern": 3, "freelance": 4}
         df["employment_type_code"] = df["employment_type"].map(emp_types).fillna(0).astype(int)
 
-        # Department turnover rate
+        # Department turnover rate — **leave-one-out** to avoid target
+        # leakage.  For each row, compute the fraction of OTHER employees
+        # in the same department who left.  Using the full aggregate that
+        # includes the current row lets a tree trivially recover the label
+        # for small / homogeneous departments.
         dept_stats = (
             df.groupby("department_id").agg(dept_total=("id", "count"), dept_left=("left", "sum")).reset_index()
         )
-        dept_stats["department_turnover_rate"] = dept_stats["dept_left"] / dept_stats["dept_total"].clip(lower=1)
-        df = df.merge(
-            dept_stats[["department_id", "department_turnover_rate"]],
-            on="department_id",
-            how="left",
-        )
-        df["department_turnover_rate"] = df["department_turnover_rate"].fillna(0)
+        df = df.merge(dept_stats, on="department_id", how="left")
+        df["department_turnover_rate"] = (
+            (df["dept_left"] - df["left"]) / (df["dept_total"] - 1).clip(lower=1)
+        ).fillna(0).clip(0, 1)
+        df = df.drop(columns=["dept_total", "dept_left"])
 
         df["has_reports_to"] = df["reports_to_id"].notna().astype(int)
         df["leave_balance_ratio"] = (
@@ -144,7 +155,7 @@ class AttritionPredictor:
         ot_missing = df["avg_overtime_hours"].isna()
         if len(ot_known) > 0 and ot_missing.any():
             ot_mu, ot_sig = ot_known.mean(), max(ot_known.std(), 0.01)
-            df.loc[ot_missing, "avg_overtime_hours"] = np.random.normal(
+            df.loc[ot_missing, "avg_overtime_hours"] = rng.normal(
                 ot_mu,
                 ot_sig,
                 size=ot_missing.sum(),
@@ -175,7 +186,7 @@ class AttritionPredictor:
         if len(att_known) > 0 and att_missing.any():
             att_mu, att_sig = att_known.mean(), max(att_known.std(), 0.01)
             df["attendance_rate"] = df["attendance_rate"].copy()
-            df.loc[att_missing, "attendance_rate"] = np.random.normal(
+            df.loc[att_missing, "attendance_rate"] = rng.normal(
                 att_mu,
                 att_sig,
                 size=att_missing.sum(),
@@ -219,7 +230,7 @@ class AttritionPredictor:
 
     # ── Training ────────────────────────────────────────────────────────
 
-    def train(self) -> dict:
+    def train(self, shuffle_labels: bool = False) -> dict:
         df = self._build_dataset()
         if df.empty:
             return {"status": "skipped", "reason": "insufficient_data"}
@@ -230,14 +241,6 @@ class AttritionPredictor:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_scaled,
-            y,
-            test_size=0.2,
-            random_state=42,
-            stratify=y if len(set(y)) > 1 else None,
-        )
-
         clf = RandomForestClassifier(
             n_estimators=500,
             max_depth=10,
@@ -246,11 +249,29 @@ class AttritionPredictor:
             random_state=42,
             max_features="sqrt",
         )
-        clf.fit(X_train, y_train)
 
-        auc = 0.0
-        if len(set(y_test)) > 1:
-            auc = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1])
+        # ── Stratified K-fold evaluation with baseline ──────────────────
+        cv_metrics = evaluate_classifier(clf, X_scaled, y)
+        shuffle_auc = shuffle_label_auc(clf, X_scaled, y) if not shuffle_labels else None
+
+        # If caller wants the shuffle sanity check, run with shuffled
+        # labels and return early without persisting anything.
+        if shuffle_labels:
+            shuffled = shuffle_label_auc(clf, X_scaled, y, n_repeats=5)
+            return {
+                "status": "shuffle_check",
+                "shuffled_auc": shuffled,
+                "samples": len(df),
+                "note": "AUC > 0.55 with shuffled labels indicates target leakage.",
+            }
+
+        # Final model refit on full data for production use.
+        clf.fit(X_scaled, y)
+
+        # Feature importance (from fitted forest) for interpretability.
+        feat_imp = dict(zip(self.FEATURE_COLS, np.round(clf.feature_importances_, 4).tolist()))
+
+        auc = cv_metrics.get("auc_mean") or 0.0
 
         registry = get_or_create_registry(
             self.company,
@@ -259,6 +280,12 @@ class AttritionPredictor:
         )
         registry.training_samples = len(df)
         registry.accuracy_score = auc
+        registry.parameters = {
+            "feature_cols": self.FEATURE_COLS,
+            "feature_importance": feat_imp,
+            "cv_metrics": cv_metrics,
+            "shuffled_label_auc": shuffle_auc,
+        }
         save_model_artefact(
             registry,
             {
@@ -273,7 +300,14 @@ class AttritionPredictor:
         self._registry = registry
 
         logger.info("Attrition model trained: AUC=%.4f samples=%d", auc, len(df))
-        return {"status": "trained", "auc": round(auc, 4), "samples": len(df)}
+        return {
+            "status": "trained",
+            "auc": round(auc, 4),
+            "samples": len(df),
+            "feature_importance": feat_imp,
+            "cv_metrics": cv_metrics,
+            "shuffled_label_auc": shuffle_auc,
+        }
 
     # ── Prediction ──────────────────────────────────────────────────────
 

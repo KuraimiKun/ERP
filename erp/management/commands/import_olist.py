@@ -487,11 +487,18 @@ class Command(BaseCommand):
                     }
                 )
 
-            # Status — all delivered orders are considered paid
-            status = "paid"
-            # But make ~15% of orders "overdue" to train Late Payment model
-            if is_late or random.random() < 0.12:
-                status = random.choice(["overdue", "partial"])
+            # Status is derived *deterministically* from delivery lateness
+            # — no random noise.  Previously ~12 % of on-time orders were
+            # randomly flipped to "overdue" which capped the achievable
+            # AUC of the Late-Payment model at well under its true signal
+            # ceiling.  Additionally, genuinely-late deliveries are now
+            # spread between "overdue" (unpaid) and "partial" (half paid)
+            # using a deterministic hash of the order id so the split is
+            # reproducible across runs.
+            if is_late:
+                status = "overdue" if (hash(oid) & 1) == 0 else "partial"
+            else:
+                status = "paid"
 
             invoice = Invoice(
                 company=self.company,
@@ -603,12 +610,25 @@ class Command(BaseCommand):
             method_key = row["method"] if row["method"] in self.payment_methods else "not_defined"
             pm = self.payment_methods.get(method_key, list(self.payment_methods.values())[0])
 
+            # Payment date:
+            #   * paid (on-time) → 0–15 days after invoice (< due_date)
+            #   * partial (late) → shortly AFTER the due_date so the
+            #     Late-Payment label is consistent: first payment past
+            #     due. Previously all payments were <15 days after the
+            #     invoice, making "late paid" invoices indistinguishable
+            #     from on-time ones in the payment record.
+            if invoice.status == "partial":
+                days_past_due = random.randint(1, 30)
+                payment_day_offset = (invoice.due_date - invoice.invoice_date).days + days_past_due
+            else:
+                payment_day_offset = random.randint(0, 15)
+
             payment = Payment(
                 company=self.company,
                 customer=invoice.customer,
                 payment_number=pay_num,
                 payment_type="received",
-                payment_date=invoice.invoice_date + timedelta(days=random.randint(0, 15)),
+                payment_date=invoice.invoice_date + timedelta(days=payment_day_offset),
                 payment_method=pm,
                 currency=self.currency,
                 amount=pay_amount,

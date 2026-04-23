@@ -1,0 +1,32 @@
+{% load i18n %}
+{# Renders a single insight using the ai-insight-card component. #}
+{# Expected context: insight, sev_mod, sev_icon, sev_badge. #}
+<div class="ai-insight-card ai-insight-card--{{ sev_mod }}{% if insight.is_dismissed %} dismissed{% endif %}">
+    <div class="ai-insight-icon"><i class="bi {{ sev_icon }}"></i></div>
+    <div class="ai-insight-body">
+        <h3 class="ai-insight-title">
+            <span>{{ insight.title }}</span>
+            <span class="badge {{ sev_badge }}">{{ insight.get_severity_display }}</span>
+            <span class="badge bg-secondary">{{ insight.get_category_display }}</span>
+            {% if insight.is_dismissed %}
+            <span class="badge bg-light text-dark border">{% trans "Dismissed" %}</span>
+            {% endif %}
+        </h3>
+        <p class="ai-insight-description">{{ insight.description }}</p>
+        {% if insight.recommendation %}
+        <div class="ai-insight-rec">
+            <strong>{% trans "Recommendation" %}:</strong> {{ insight.recommendation }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="ai-insight-meta">
+        <span class="ai-insight-time">
+            <i class="bi bi-clock me-1"></i>{{ insight.created_at|timesince }} {% trans "ago" %}
+        </span>
+        {% if insight.action_url %}
+        <a href="{{ insight.action_url }}" class="btn btn-sm btn-outline-primary">
+            {% trans "View" %} <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>

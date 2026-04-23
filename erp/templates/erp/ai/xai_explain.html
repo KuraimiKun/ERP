@@ -7,21 +7,36 @@
 {% block page_title %}{% trans "Explain Prediction" %}{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h4 class="mb-1"><i class="bi bi-search"></i> {% trans "Explain a Prediction" %}</h4>
-    <p class="text-muted mb-0">
-        {% trans "Select a model and entity to understand why the AI made its prediction." %}
-    </p>
-</div>
+<section class="ai-hero">
+    <div class="ai-hero-inner">
+        <div class="ai-hero-body">
+            <div class="ai-hero-icon"><i class="bi bi-search-heart"></i></div>
+            <div>
+                <h1 class="ai-hero-title">{% trans "Explain a Prediction" %}</h1>
+                <p class="ai-hero-subtitle">
+                    {% trans "Pick a model and entity to see exactly which features drove the prediction." %}
+                </p>
+            </div>
+        </div>
+        <div class="ai-hero-actions">
+            <a href="{% url 'erp:xai_history' %}" class="btn btn-outline-light">
+                <i class="bi bi-clock-history me-1"></i>{% trans "History" %}
+            </a>
+            <a href="{% url 'erp:xai_dashboard' %}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left me-1"></i>{% trans "Back to XAI" %}
+            </a>
+        </div>
+    </div>
+</section>
 
 <!-- Explanation Request Form -->
-<div class="card shadow-sm mb-4">
+<div class="card mb-4">
     <div class="card-body">
         <form method="post" novalidate>
             {% csrf_token %}
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label for="model_type" class="form-label">{% trans "Model" %}</label>
+                <div class="col-md-4">
+                    <label for="model_type" class="form-label small fw-semibold mb-1">{% trans "Model" %}</label>
                     <select name="model_type" id="model_type" class="form-select" required>
                         <option value="">{% trans "— Select Model —" %}</option>
                         {% for key, info in xai_models.items %}
@@ -32,26 +47,26 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="entity_id" class="form-label">{% trans "Entity ID" %}</label>
+                    <label for="entity_id" class="form-label small fw-semibold mb-1">{% trans "Entity ID" %}</label>
                     <input type="number" name="entity_id" id="entity_id"
                            class="form-control" min="1"
                            value="{{ selected_entity }}"
                            placeholder="{% trans 'e.g. 42' %}" required>
                 </div>
                 <div class="col-md-3">
-                    <label for="method" class="form-label">{% trans "Method" %}</label>
+                    <label for="method" class="form-label small fw-semibold mb-1">{% trans "Method" %}</label>
                     <select name="method" id="method" class="form-select">
                         <option value="shap" {% if selected_method == 'shap' %}selected{% endif %}>
-                            SHAP (Tree-based)
+                            SHAP {% trans "(Tree-based)" %}
                         </option>
                         <option value="lime" {% if selected_method == 'lime' %}selected{% endif %}>
-                            LIME (Model-agnostic)
+                            LIME {% trans "(Model-agnostic)" %}
                         </option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-lightning me-1"></i>{% trans "Explain" %}
+                        <i class="bi bi-lightning-charge-fill me-1"></i>{% trans "Explain" %}
                     </button>
                 </div>
             </div>
@@ -60,8 +75,9 @@
 </div>
 
 {% if error %}
-<div class="alert alert-danger">
-    <i class="bi bi-exclamation-triangle me-1"></i> {{ error }}
+<div class="alert alert-danger d-flex align-items-center">
+    <i class="bi bi-exclamation-triangle-fill fs-4 me-2"></i>
+    <div>{{ error }}</div>
 </div>
 {% endif %}
 
@@ -69,58 +85,87 @@
 <!-- Prediction Summary -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
-        <div class="stat-card border-start border-primary border-4">
-            <div class="stat-value text-primary">{{ result.prediction|floatformat:4 }}</div>
-            <div class="stat-label">{% trans "Prediction Score" %}</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-card border-start border-secondary border-4">
-            <div class="stat-value text-secondary">{{ result.base_value|floatformat:4 }}</div>
-            <div class="stat-label">{% trans "Base Value" %}</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-card border-start border-info border-4">
-            <div class="stat-value text-info">
-                <span class="badge {% if result.method == 'shap' %}bg-success{% else %}bg-warning text-dark{% endif %}">
-                    {{ result.method|upper }}
-                </span>
+        <div class="stat-card stat-card--primary">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ result.prediction|floatformat:4 }}</div>
+                    <div class="stat-label">{% trans "Prediction Score" %}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
             </div>
-            <div class="stat-label">{% trans "Explanation Method" %}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card stat-card--info">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ result.base_value|floatformat:4 }}</div>
+                    <div class="stat-label">{% trans "Base Value" %}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-bullseye"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card {% if result.method == 'shap' %}stat-card--success{% else %}stat-card--warning{% endif %}">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ result.method|upper }}</div>
+                    <div class="stat-label">{% trans "Explanation Method" %}</div>
+                </div>
+                <div class="stat-icon"><i class="bi bi-braces"></i></div>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Top Contributing Features -->
-<div class="card shadow-sm mb-4">
-    <div class="card-header">
-        <h6 class="mb-0"><i class="bi bi-stars me-1"></i> {% trans "Top Contributing Features" %}</h6>
+<div class="card mb-4">
+    <div class="card-header bg-transparent">
+        <div class="d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fs-6 fw-bold">
+                <i class="bi bi-stars text-primary me-1"></i>{% trans "Top Contributing Features" %}
+            </h5>
+            <div class="xai-legend mb-0">
+                <span class="xai-legend-item"><span class="xai-legend-swatch xai-legend-swatch--positive"></span>{% trans "Increases score" %}</span>
+                <span class="xai-legend-item"><span class="xai-legend-swatch xai-legend-swatch--negative"></span>{% trans "Decreases score" %}</span>
+            </div>
+        </div>
     </div>
     <div class="card-body">
-        {% for feat in result.top_features %}
-        <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <strong>{{ feat.feature }}</strong>
-                <span class="badge {% if feat.direction == 'increases' %}bg-danger{% else %}bg-success{% endif %}">
+        <div class="xai-feature-list">
+            {% for feat in result.top_features %}
+            {% with val=feat.shap_value|default:feat.lime_weight %}
+            {% with abs_val=val|stringformat:"s" %}
+            <div class="xai-feature-item">
+                <code class="xai-feature-name" title="{{ feat.feature }}">{{ feat.feature }}</code>
+                <div class="xai-feature-bar-wrap">
+                    {# width percentage is crude but visually proportional; cap at 50% of the half-bar #}
+                    <div class="xai-feature-bar {% if feat.direction == 'increases' %}xai-feature-bar--positive{% else %}xai-feature-bar--negative{% endif %}"
+                         style="width: calc(min(40%, {{ forloop.revcounter0|add:5 }}% + 5%));"></div>
+                </div>
+                <span class="xai-feature-impact {% if feat.direction == 'increases' %}positive{% else %}negative{% endif %}">
+                    <i class="bi {% if feat.direction == 'increases' %}bi-arrow-up-right{% else %}bi-arrow-down-right{% endif %} me-1"></i>
                     {% if feat.shap_value %}{{ feat.shap_value|floatformat:4 }}{% else %}{{ feat.lime_weight|floatformat:4 }}{% endif %}
-                    {{ feat.direction }}
                 </span>
             </div>
-            <small class="text-muted">{{ feat.impact }}</small>
-            {% with val=feat.shap_value|default:feat.lime_weight %}
-            {% widthratio val 1 100 as bar_pct %}
+            {% if feat.impact %}
+            <div class="small text-muted ps-2" style="margin-top:-0.25rem;">{{ feat.impact }}</div>
+            {% endif %}
             {% endwith %}
+            {% endwith %}
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 
 <!-- Waterfall Chart -->
 {% if result.waterfall_data %}
-<div class="card shadow-sm mb-4">
-    <div class="card-header">
-        <h6 class="mb-0"><i class="bi bi-bar-chart-steps me-1"></i> {% trans "Waterfall Chart" %}</h6>
+<div class="card mb-4">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 fs-6 fw-bold">
+            <i class="bi bi-bar-chart-steps text-primary me-1"></i>{% trans "Waterfall Chart" %}
+        </h5>
     </div>
     <div class="card-body">
         <div id="waterfall-chart" style="width:100%; height:500px;"></div>
@@ -128,19 +173,21 @@
 </div>
 {% endif %}
 
-<!-- All Feature Contributions Table -->
-<div class="card shadow-sm">
-    <div class="card-header">
-        <h6 class="mb-0"><i class="bi bi-table me-1"></i> {% trans "All Feature Contributions" %}</h6>
+<!-- All Feature Contributions -->
+<div class="card">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 fs-6 fw-bold">
+            <i class="bi bi-table text-primary me-1"></i>{% trans "All Feature Contributions" %}
+        </h5>
     </div>
     <div class="table-responsive">
-        <table class="table table-sm table-hover mb-0">
+        <table class="table table-hover mb-0 align-middle">
             <thead>
                 <tr>
                     <th>{% trans "Feature" %}</th>
                     <th>{% trans "Value" %}</th>
                     <th>{% trans "Impact" %}</th>
-                    <th>{% trans "Direction" %}</th>
+                    <th class="text-end pe-3">{% trans "Direction" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -149,11 +196,13 @@
                     <td><code>{{ name }}</code></td>
                     <td>{{ data.feature_value|floatformat:4 }}</td>
                     <td>
-                        {% if data.shap_value %}{{ data.shap_value|floatformat:6 }}{% else %}{{ data.lime_weight|floatformat:6 }}{% endif %}
+                        <span class="fw-semibold">
+                            {% if data.shap_value %}{{ data.shap_value|floatformat:6 }}{% else %}{{ data.lime_weight|floatformat:6 }}{% endif %}
+                        </span>
                     </td>
-                    <td>
-                        <span class="{% if data.direction == 'increases' %}text-danger{% else %}text-success{% endif %}">
-                            <i class="bi {% if data.direction == 'increases' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                    <td class="text-end pe-3">
+                        <span class="badge {% if data.direction == 'increases' %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %}">
+                            <i class="bi {% if data.direction == 'increases' %}bi-arrow-up{% else %}bi-arrow-down{% endif %} me-1"></i>
                             {{ data.direction }}
                         </span>
                     </td>
@@ -178,18 +227,21 @@
         x: data.labels,
         y: data.values,
         measure: data.measures,
-        connector: { line: { color: 'rgb(63, 63, 63)' } },
-        increasing: { marker: { color: '#dc3545' } },
-        decreasing: { marker: { color: '#198754' } },
-        totals: { marker: { color: '#0d6efd' } },
+        connector: { line: { color: 'rgba(148, 163, 184, 0.6)' } },
+        increasing: { marker: { color: '#ef4444' } },
+        decreasing: { marker: { color: '#10b981' } },
+        totals: { marker: { color: '#6366f1' } },
     }], {
         title: { text: 'Feature Contribution Waterfall', font: { size: 14 } },
         xaxis: { tickangle: -30 },
         yaxis: { title: 'Contribution to Prediction' },
         margin: { t: 50, b: 120 },
         showlegend: false,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
     }, { responsive: true });
 })();
 </script>
 {% endif %}
 {% endblock %}
+

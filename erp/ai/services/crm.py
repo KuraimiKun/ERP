@@ -10,11 +10,9 @@ import logging
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from django.conf import settings
-from django.db.models import Count, Min, Max
+from django.db.models import Min, Max
 from django.utils import timezone
 
 from erp.models import Lead, LeadActivity
@@ -25,6 +23,8 @@ from .base import (
     load_model_artefact,
     log_prediction,
     create_or_update_insight,
+    evaluate_classifier,
+    shuffle_label_auc,
 )
 
 logger = logging.getLogger("erp.ai.crm")
@@ -98,54 +98,64 @@ class LeadScorer:
         df["_created"] = pd.to_datetime(df["created_at"], utc=True)
         df.loc[df["_ref_date"].isna(), "_ref_date"] = df.loc[df["_ref_date"].isna(), "_created"] + pd.Timedelta(days=30)
 
-        # Activity counts
-        activity_counts = dict(
+        # Activity counts — only count activities that occurred at or
+        # before the lead's reference date (outcome timestamp) so features
+        # don't leak post-conversion activity.
+        ref_dates = {
+            row["id"]: row["_ref_date"]
+            for _, row in df[["id", "_ref_date"]].iterrows()
+        }
+        ref_ids = list(ref_dates.keys())
+
+        all_activities = list(
             LeadActivity.objects.filter(
                 lead__company=self.company,
-                lead__status__in=["won", "lost"],
+                lead_id__in=ref_ids,
+            ).values("lead_id", "activity_type", "activity_date")
+        )
+        # Pre-convert to pandas Timestamp (UTC) once.
+        acts_df = pd.DataFrame(all_activities)
+        if not acts_df.empty:
+            acts_df["activity_date"] = pd.to_datetime(
+                acts_df["activity_date"], utc=True, errors="coerce"
             )
-            .values("lead_id")
-            .annotate(cnt=Count("id"))
-            .values_list("lead_id", "cnt")
+            ref_series = pd.Series(ref_dates, name="_ref_date")
+            ref_series.index.name = "lead_id"
+            acts_df = acts_df.merge(ref_series, left_on="lead_id", right_index=True)
+            acts_df = acts_df[acts_df["activity_date"] <= acts_df["_ref_date"]]
+
+        activity_counts = (
+            acts_df.groupby("lead_id").size().to_dict() if not acts_df.empty else {}
         )
         df["activity_count"] = df["id"].map(activity_counts).fillna(0).astype(int)
 
-        # Activity type breakdowns
+        # Activity type breakdowns (from the same leak-safe filtered set)
         for atype in ["call", "email", "meeting", "note"]:
-            type_counts = dict(
-                LeadActivity.objects.filter(
-                    lead__company=self.company,
-                    lead__status__in=["won", "lost"],
-                    activity_type=atype,
+            if not acts_df.empty:
+                type_counts = (
+                    acts_df[acts_df["activity_type"] == atype]
+                    .groupby("lead_id")
+                    .size()
+                    .to_dict()
                 )
-                .values("lead_id")
-                .annotate(cnt=Count("id"))
-                .values_list("lead_id", "cnt")
-            )
+            else:
+                type_counts = {}
             df[f"{atype}_count"] = df["id"].map(type_counts).fillna(0).astype(int)
 
-        # Engagement velocity: avg days between activities
-        activity_dates = (
-            LeadActivity.objects.filter(
-                lead__company=self.company,
-                lead__status__in=["won", "lost"],
-            )
-            .values("lead_id")
-            .annotate(
-                first_act=Min("activity_date"),
-                last_act=Max("activity_date"),
-                act_count=Count("id"),
-            )
-        )
+        # Engagement velocity: avg days between activities (leak-safe)
         velocity_map = {}
         recency_map = {}
-        for row in activity_dates:
-            if row["act_count"] > 1 and row["first_act"] and row["last_act"]:
-                span = (row["last_act"] - row["first_act"]).days
-                velocity_map[row["lead_id"]] = span / max(row["act_count"] - 1, 1)
-            else:
-                velocity_map[row["lead_id"]] = 0
-            recency_map[row["lead_id"]] = row["last_act"]
+        if not acts_df.empty:
+            grouped = acts_df.groupby("lead_id")["activity_date"].agg(
+                first_act="min", last_act="max", act_count="count"
+            )
+            for lead_id, row in grouped.iterrows():
+                if row["act_count"] > 1:
+                    span = (row["last_act"] - row["first_act"]).days
+                    velocity_map[lead_id] = span / max(row["act_count"] - 1, 1)
+                else:
+                    velocity_map[lead_id] = 0
+                recency_map[lead_id] = row["last_act"]
 
         df["avg_days_between_activities"] = df["id"].map(velocity_map).fillna(0)
         # Days from last activity to reference date (lead close)
@@ -165,21 +175,25 @@ class LeadScorer:
         df["has_email"] = (df["email"].fillna("").str.len() > 0).astype(int)
         df["has_phone"] = (df["phone"].fillna("").str.len() > 0).astype(int)
 
-        # Source conversion rate (leave-one-out to prevent leakage)
+        # Source conversion rate — **true** leave-one-out (previously the
+        # full-group mean was used, which includes the current row's label
+        # and therefore leaks).
         source_stats = df.groupby("source")["label"].agg(src_total="count", src_won="sum").reset_index()
-        source_stats["source_conversion_rate"] = source_stats["src_won"] / source_stats["src_total"].clip(lower=1)
         df = df.merge(
-            source_stats[["source", "source_conversion_rate"]],
+            source_stats,
             on="source",
             how="left",
         )
-        df["source_conversion_rate"] = df["source_conversion_rate"].fillna(0)
+        df["source_conversion_rate"] = (
+            (df["src_won"] - df["label"]) / (df["src_total"] - 1).clip(lower=1)
+        ).fillna(0).clip(0, 1)
+        df = df.drop(columns=["src_total", "src_won"])
 
         return df
 
     # ── Training ────────────────────────────────────────────────────────
 
-    def train(self) -> dict:
+    def train(self, shuffle_labels: bool = False) -> dict:
         """Train the lead scoring model."""
         df = self._build_dataset()
         if df.empty:
@@ -192,21 +206,14 @@ class LeadScorer:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_scaled,
-            y,
-            test_size=0.2,
-            random_state=42,
-            stratify=y if len(set(y)) > 1 else None,
-        )
-
-        # Compute sample weights for class imbalance
-        pos_ratio = y_train.mean()
-        weights = np.where(
-            y_train == 1,
-            1.0 / max(pos_ratio, 0.01),
-            1.0 / max(1 - pos_ratio, 0.01),
-        )
+        # Sample-weight function (closed over class imbalance of y_tr)
+        def _weights(y_tr: np.ndarray) -> np.ndarray:
+            pos = y_tr.mean()
+            return np.where(
+                y_tr == 1,
+                1.0 / max(pos, 0.01),
+                1.0 / max(1 - pos, 0.01),
+            )
 
         clf = GradientBoostingClassifier(
             n_estimators=400,
@@ -219,12 +226,25 @@ class LeadScorer:
             validation_fraction=0.1,
             n_iter_no_change=30,
         )
-        clf.fit(X_train, y_train, sample_weight=weights)
 
-        auc = 0.0
-        if len(set(y_test)) > 1:
-            y_proba = clf.predict_proba(X_test)[:, 1]
-            auc = roc_auc_score(y_test, y_proba)
+        # Shuffle-label sanity check run — return without persisting.
+        if shuffle_labels:
+            shuffled = shuffle_label_auc(clf, X_scaled, y, n_repeats=5, sample_weight_fn=_weights)
+            return {
+                "status": "shuffle_check",
+                "shuffled_auc": shuffled,
+                "samples": len(df),
+                "note": "AUC > 0.55 with shuffled labels indicates target leakage.",
+            }
+
+        # Stratified K-fold evaluation with baseline.
+        cv_metrics = evaluate_classifier(clf, X_scaled, y, sample_weight_fn=_weights)
+        shuffle_auc = shuffle_label_auc(clf, X_scaled, y, sample_weight_fn=_weights)
+
+        # Final refit on full data for production use.
+        clf.fit(X_scaled, y, sample_weight=_weights(y))
+
+        auc = cv_metrics.get("auc_mean") or 0.0
 
         registry = get_or_create_registry(
             self.company,
@@ -236,6 +256,8 @@ class LeadScorer:
         registry.parameters = {
             "feature_cols": self.FEATURE_COLS,
             "source_map": self._source_map,
+            "cv_metrics": cv_metrics,
+            "shuffled_label_auc": shuffle_auc,
         }
 
         # Build source conversion rate lookup for prediction
@@ -258,7 +280,13 @@ class LeadScorer:
         self._source_conv_rates = source_conv_rates
 
         logger.info("Lead scoring model trained: AUC=%.4f samples=%d", auc, len(df))
-        return {"status": "trained", "auc": round(auc, 4), "samples": len(df)}
+        return {
+            "status": "trained",
+            "auc": round(auc, 4),
+            "samples": len(df),
+            "cv_metrics": cv_metrics,
+            "shuffled_label_auc": shuffle_auc,
+        }
 
     # ── Prediction ──────────────────────────────────────────────────────
 
