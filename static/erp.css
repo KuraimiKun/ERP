@@ -446,6 +446,7 @@ a:hover { color: var(--clr-primary-hover); }
 .stat-card--primary::before { opacity: 1; background: var(--gradient-primary); }
 .stat-card--success::before { opacity: 1; background: var(--gradient-success); }
 .stat-card--warning::before { opacity: 1; background: var(--gradient-warning); }
+.stat-card--danger::before  { opacity: 1; background: var(--gradient-danger); }
 .stat-card--info::before    { opacity: 1; background: var(--gradient-info); }
 
 .stat-card .stat-icon {
@@ -1826,4 +1827,620 @@ th:hover .erp-sort-icon-idle,
   .data-toolbar, .btn-back { display: none !important; }
   .erp-main { margin: 0 !important; padding: 0 !important; }
   .erp-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   36. AI / ML MODULE
+   Shared design primitives used across erp/ai/* templates. Builds on the
+   same tokens (--gradient-*, --clr-*, --shadow-*) as the rest of the app.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Hero banner ─────────────────────────────────────────────────────── */
+.ai-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--border-radius-lg);
+  background: var(--gradient-indigo);
+  color: #fff;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+.ai-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% -10%, rgba(255,255,255,0.22), transparent 45%),
+    radial-gradient(circle at 10% 120%, rgba(255,255,255,0.14), transparent 40%);
+  pointer-events: none;
+}
+.ai-hero-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.ai-hero-body { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.ai-hero-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  backdrop-filter: blur(6px);
+}
+.ai-hero-title { font-size: 1.25rem; font-weight: 700; margin: 0; line-height: 1.25; }
+.ai-hero-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 60ch;
+}
+.ai-hero-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.ai-hero-actions .btn-light {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: var(--clr-primary);
+  font-weight: 600;
+}
+.ai-hero-actions .btn-light:hover {
+  background: #fff;
+  color: var(--clr-primary-hover);
+}
+.ai-hero-actions .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #fff;
+  font-weight: 500;
+}
+.ai-hero-actions .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.8);
+  color: #fff;
+}
+
+/* ── Section heading (sits above a grid of cards/tiles) ──────────────── */
+.ai-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.875rem;
+}
+.ai-section-header h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-gray-900);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ai-section-header h5 i { color: var(--clr-primary); }
+.ai-section-header .ai-section-hint {
+  font-size: 0.8rem;
+  color: var(--clr-gray-500);
+}
+
+/* ── Action tile (used in "Run AI Analysis" and "Retrain Models") ───── */
+.ai-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+.ai-action-tile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--clr-gray-800);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: start;
+  cursor: pointer;
+  transition: var(--transition-base);
+  width: 100%;
+}
+.ai-action-tile:hover:not(:disabled) {
+  border-color: var(--clr-primary);
+  background: var(--clr-primary-light);
+  color: var(--clr-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.ai-action-tile:disabled { opacity: 0.7; cursor: progress; }
+.ai-action-tile .ai-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-sm);
+  background: var(--clr-primary-light);
+  color: var(--clr-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  transition: var(--transition-base);
+}
+.ai-action-tile:hover .ai-action-icon {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: var(--shadow-primary);
+}
+.ai-action-tile--warning .ai-action-icon { background: var(--clr-warning-light); color: var(--clr-warning-dark); }
+.ai-action-tile--warning:hover { border-color: var(--clr-warning); background: var(--clr-warning-light); color: var(--clr-warning-dark); }
+.ai-action-tile--warning:hover .ai-action-icon { background: var(--gradient-warning); color: #fff; }
+.ai-action-tile--primary-filled {
+  background: var(--gradient-primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: var(--shadow-primary);
+}
+.ai-action-tile--primary-filled .ai-action-icon { background: rgba(255,255,255,0.22); color: #fff; }
+.ai-action-tile--primary-filled:hover { color: #fff; background: var(--gradient-primary); filter: brightness(1.05); }
+.ai-action-tile .ai-action-label { flex: 1; min-width: 0; line-height: 1.2; }
+
+/* ── Insight cards (critical / warning / info / success) ─────────────── */
+.ai-insight-stack { display: flex; flex-direction: column; gap: 0.625rem; }
+.ai-insight-card {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.125rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition-base);
+}
+.ai-insight-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.ai-insight-card::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  border-top-left-radius: var(--border-radius);
+  border-bottom-left-radius: var(--border-radius);
+}
+html[dir="rtl"] .ai-insight-card::before {
+  border-top-left-radius: 0; border-bottom-left-radius: 0;
+  border-top-right-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius);
+}
+.ai-insight-card--critical::before { background: var(--gradient-danger); }
+.ai-insight-card--warning::before  { background: var(--gradient-warning); }
+.ai-insight-card--info::before     { background: var(--gradient-info); }
+.ai-insight-card--success::before  { background: var(--gradient-success); }
+.ai-insight-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--border-radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+.ai-insight-card--critical .ai-insight-icon { background: var(--clr-danger-light);  color: var(--clr-danger); }
+.ai-insight-card--warning  .ai-insight-icon { background: var(--clr-warning-light); color: var(--clr-warning-dark); }
+.ai-insight-card--info     .ai-insight-icon { background: var(--clr-info-light);    color: var(--clr-info-dark); }
+.ai-insight-card--success  .ai-insight-icon { background: var(--clr-success-light); color: var(--clr-success-dark); }
+.ai-insight-body { flex: 1; min-width: 0; }
+.ai-insight-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--clr-gray-900);
+  margin: 0 0 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.ai-insight-description {
+  font-size: 0.85rem;
+  color: var(--clr-gray-600);
+  margin: 0;
+  line-height: 1.5;
+}
+.ai-insight-rec {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-surface);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+  color: var(--clr-gray-700);
+  border-inline-start: 3px solid var(--clr-primary);
+}
+.ai-insight-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  text-align: end;
+}
+.ai-insight-meta .ai-insight-time {
+  font-size: 0.72rem;
+  color: var(--clr-gray-500);
+  white-space: nowrap;
+}
+.ai-insight-card.dismissed { opacity: 0.6; }
+
+/* ── ML Model registry cards ─────────────────────────────────────────── */
+.ai-model-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.ai-model-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-card);
+  transition: var(--transition-base);
+}
+.ai-model-row:hover { border-color: var(--clr-primary); box-shadow: var(--shadow-xs); }
+.ai-model-row .ai-model-head { display: flex; align-items: center; gap: 0.625rem; min-width: 0; }
+.ai-model-row .ai-model-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--border-radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--clr-primary-light);
+  color: var(--clr-primary);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.ai-model-row .ai-model-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-gray-900);
+  line-height: 1.2;
+}
+.ai-model-row .ai-model-sub {
+  font-size: 0.72rem;
+  color: var(--clr-gray-500);
+  margin-top: 2px;
+}
+.ai-accuracy-meter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 140px;
+}
+.ai-accuracy-meter .ai-accuracy-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--clr-gray-200);
+  overflow: hidden;
+}
+.ai-accuracy-meter .ai-accuracy-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--gradient-primary);
+}
+.ai-accuracy-meter.good  .ai-accuracy-fill { background: var(--gradient-success); }
+.ai-accuracy-meter.ok    .ai-accuracy-fill { background: var(--gradient-warning); }
+.ai-accuracy-meter.poor  .ai-accuracy-fill { background: var(--gradient-danger); }
+.ai-accuracy-meter .ai-accuracy-val {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--clr-gray-800);
+  min-width: 40px;
+  text-align: end;
+}
+
+/* ── XAI model card (grid tile on xai_dashboard) ─────────────────────── */
+.xai-model-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1.125rem;
+  transition: var(--transition-slow);
+  height: 100%;
+  overflow: hidden;
+}
+.xai-model-tile::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gradient-indigo);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.xai-model-tile:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); border-color: var(--clr-primary); }
+.xai-model-tile:hover::before { opacity: 1; }
+.xai-model-tile .xai-model-head {
+  display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.75rem;
+}
+.xai-model-tile .xai-model-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--border-radius-sm);
+  background: var(--gradient-indigo);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+}
+.xai-model-tile .xai-model-title {
+  font-size: 0.95rem; font-weight: 700; color: var(--clr-gray-900); line-height: 1.2;
+}
+.xai-model-tile .xai-model-sub { font-size: 0.75rem; color: var(--clr-gray-500); margin-top: 2px; }
+.xai-model-tile .xai-model-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  margin: 0.5rem 0;
+  border-top: 1px dashed var(--border-color);
+  border-bottom: 1px dashed var(--border-color);
+}
+.xai-model-tile .xai-model-stat { text-align: center; }
+.xai-model-tile .xai-model-stat-value {
+  font-size: 0.9rem; font-weight: 700; color: var(--clr-gray-900); line-height: 1.15;
+}
+.xai-model-tile .xai-model-stat-label {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--clr-gray-500); margin-top: 2px;
+}
+
+/* ── XAI feature contribution bars ───────────────────────────────────── */
+.xai-feature-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.xai-feature-item {
+  display: grid;
+  grid-template-columns: minmax(140px, 26%) 1fr auto;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+}
+.xai-feature-item .xai-feature-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--clr-gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xai-feature-item code.xai-feature-name {
+  font-family: inherit;
+  background: transparent;
+  padding: 0;
+}
+.xai-feature-bar-wrap {
+  position: relative;
+  height: 18px;
+  background: var(--bg-surface);
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex; align-items: center;
+}
+.xai-feature-bar-wrap::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--clr-gray-300);
+}
+.xai-feature-bar {
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: 999px;
+}
+.xai-feature-bar--positive { background: var(--gradient-danger); inset-inline-start: 50%; }
+.xai-feature-bar--negative { background: var(--gradient-success); inset-inline-end: 50%; }
+.xai-feature-impact {
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-width: 80px;
+  text-align: end;
+  white-space: nowrap;
+}
+.xai-feature-impact.positive { color: var(--clr-danger); }
+.xai-feature-impact.negative { color: var(--clr-success); }
+
+.xai-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--clr-gray-600);
+  margin-top: 0.5rem;
+}
+.xai-legend-item { display: flex; align-items: center; gap: 0.375rem; }
+.xai-legend-swatch {
+  width: 14px; height: 10px; border-radius: 3px;
+}
+.xai-legend-swatch--positive { background: var(--gradient-danger); }
+.xai-legend-swatch--negative { background: var(--gradient-success); }
+
+/* ── AI Assistant (chat-style) ───────────────────────────────────────── */
+.ai-assistant {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+}
+.ai-assistant-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.ai-assistant-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--gradient-indigo);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+  flex-shrink: 0;
+}
+.ai-assistant-intro {
+  font-size: 0.85rem;
+  color: var(--clr-gray-600);
+  margin: 0;
+}
+.ai-assistant-intro strong { color: var(--clr-gray-900); }
+.ai-assistant-examples {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--clr-gray-700);
+  background: var(--clr-primary-light);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+.ai-chip:hover {
+  background: var(--clr-primary);
+  color: #fff;
+  border-color: var(--clr-primary);
+}
+.ai-assistant-inputbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.375rem 0.375rem 0.375rem 0.875rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-pill);
+  transition: var(--transition-base);
+}
+.ai-assistant-inputbar:focus-within {
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 4px var(--clr-primary-ring);
+}
+.ai-assistant-inputbar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+  color: var(--clr-gray-900);
+  min-width: 0;
+}
+.ai-assistant-inputbar input::placeholder { color: var(--clr-gray-500); }
+.ai-assistant-inputbar .btn {
+  border-radius: var(--border-radius-pill);
+  padding: 0.375rem 1.1rem;
+}
+.ai-answer-card {
+  margin-top: 1rem;
+  padding: 1rem 1.125rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-inline-start: 3px solid var(--clr-primary);
+  border-radius: var(--border-radius-sm);
+}
+.ai-answer-card pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--clr-gray-800);
+}
+
+/* ── Training status panel ───────────────────────────────────────────── */
+.ai-training-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.125rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+}
+.ai-training-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--clr-gray-400);
+  flex-shrink: 0;
+  margin-top: 6px;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2);
+}
+.ai-training-dot.active {
+  background: var(--clr-primary);
+  box-shadow: 0 0 0 3px var(--clr-primary-ring);
+  animation: ai-pulse 1.4s ease-in-out infinite;
+}
+.ai-training-dot.success { background: var(--clr-success); box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+.ai-training-dot.warning { background: var(--clr-warning); box-shadow: 0 0 0 3px rgba(245,158,11,0.2); }
+.ai-training-dot.danger  { background: var(--clr-danger);  box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
+@keyframes ai-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.2); opacity: 0.75; }
+}
+.ai-training-body { flex: 1; min-width: 0; }
+.ai-training-headline {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+.ai-training-headline-text {
+  font-size: 0.9rem; font-weight: 600; color: var(--clr-gray-900);
+}
+.ai-training-meta {
+  font-size: 0.8rem;
+  color: var(--clr-gray-600);
+  line-height: 1.5;
+}
+.ai-training-progress {
+  margin-top: 0.625rem;
+}
+.ai-training-progress .progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--clr-gray-200);
+  overflow: hidden;
+}
+.ai-training-progress .progress-bar {
+  background: var(--gradient-primary);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.ai-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--clr-gray-500);
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius);
+}
+.ai-empty-icon {
+  width: 64px; height: 64px;
+  margin: 0 auto 0.75rem;
+  border-radius: 50%;
+  background: var(--clr-primary-light);
+  color: var(--clr-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.75rem;
+}
+.ai-empty h5 { font-size: 1rem; font-weight: 700; color: var(--clr-gray-800); margin: 0 0 0.25rem; }
+.ai-empty p { font-size: 0.85rem; margin: 0; }
+
+/* ── Responsive tweaks ───────────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .ai-hero { padding: 1.25rem; }
+  .ai-hero-title { font-size: 1.1rem; }
+  .ai-hero-icon { width: 48px; height: 48px; font-size: 1.3rem; }
+  .ai-insight-card { flex-wrap: wrap; }
+  .ai-insight-meta { flex-direction: row; align-items: center; width: 100%; }
+  .ai-model-row { grid-template-columns: 1fr; gap: 0.5rem; }
+  .xai-feature-item { grid-template-columns: 1fr; }
 }

@@ -6,128 +6,178 @@
 {% block page_title %}{% trans "AI Settings" %}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="bi bi-cpu me-2"></i>{% trans "AI Configuration" %}</h5>
-      </div>
-      <div class="card-body">
-        <p class="text-muted mb-4">
-          {% trans "Configure your AI settings below. Each tenant has its own isolated AI configuration." %}
-        </p>
-
-        <form method="post" novalidate>
-          {% csrf_token %}
-
-          <!-- AI Enabled Toggle -->
-          <div class="mb-4">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" role="switch"
-                     id="ai_enabled" name="ai_enabled"
-                     {% if company.ai_enabled %}checked{% endif %}>
-              <label class="form-check-label fw-bold" for="ai_enabled">
-                {% trans "Enable AI Features" %}
-              </label>
+<!-- Hero -->
+<section class="ai-hero">
+    <div class="ai-hero-inner">
+        <div class="ai-hero-body">
+            <div class="ai-hero-icon"><i class="bi bi-sliders"></i></div>
+            <div>
+                <h1 class="ai-hero-title">{% trans "AI Configuration" %}</h1>
+                <p class="ai-hero-subtitle">
+                    {% trans "Manage AI features, the OpenAI assistant, and model preferences for your tenant." %}
+                </p>
             </div>
-            <small class="text-muted">
-              {% trans "When disabled, all AI/ML services (predictions, insights, assistant) will be paused for your company." %}
-            </small>
-          </div>
-
-          <hr>
-
-          <!-- OpenAI API Key -->
-          <div class="mb-4">
-            <label for="openai_api_key" class="form-label fw-bold">
-              {% trans "OpenAI API Key" %}
-            </label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-key"></i></span>
-              <input type="password" class="form-control" id="openai_api_key"
-                     name="openai_api_key"
-                     placeholder="sk-..."
-                     autocomplete="off">
-            </div>
-            {% if has_api_key %}
-              <small class="text-success mt-1 d-block">
-                <i class="bi bi-check-circle me-1"></i>{% trans "API key is configured. Leave blank to keep the current key." %}
-              </small>
-            {% else %}
-              <small class="text-warning mt-1 d-block">
-                <i class="bi bi-exclamation-triangle me-1"></i>{% trans "No API key set. The AI assistant requires an OpenAI API key to function." %}
-              </small>
-            {% endif %}
-            <small class="text-muted d-block mt-1">
-              {% trans "Your API key is stored securely in your tenant database and is never shared with other tenants." %}
-            </small>
-          </div>
-
-          <!-- OpenAI Model -->
-          <div class="mb-4">
-            <label for="openai_model" class="form-label fw-bold">
-              {% trans "OpenAI Model" %}
-            </label>
-            <select class="form-select" id="openai_model" name="openai_model">
-              <optgroup label="{% trans 'GPT-5 Series' %}">
-                <option value="gpt-5.2" {% if company.openai_model == 'gpt-5.2' %}selected{% endif %}>gpt-5.2</option>
-                <option value="gpt-5.2-pro" {% if company.openai_model == 'gpt-5.2-pro' %}selected{% endif %}>gpt-5.2-pro</option>
-                <option value="gpt-5.1" {% if company.openai_model == 'gpt-5.1' %}selected{% endif %}>gpt-5.1</option>
-                <option value="gpt-5" {% if company.openai_model == 'gpt-5' %}selected{% endif %}>gpt-5</option>
-                <option value="gpt-5-pro" {% if company.openai_model == 'gpt-5-pro' %}selected{% endif %}>gpt-5-pro</option>
-                <option value="gpt-5-mini" {% if company.openai_model == 'gpt-5-mini' %}selected{% endif %}>gpt-5-mini</option>
-                <option value="gpt-5-nano" {% if company.openai_model == 'gpt-5-nano' %}selected{% endif %}>gpt-5-nano</option>
-              </optgroup>
-              <optgroup label="{% trans 'GPT-4.1 Series' %}">
-                <option value="gpt-4.1" {% if company.openai_model == 'gpt-4.1' %}selected{% endif %}>gpt-4.1</option>
-                <option value="gpt-4.1-mini" {% if company.openai_model == 'gpt-4.1-mini' %}selected{% endif %}>gpt-4.1-mini</option>
-                <option value="gpt-4.1-nano" {% if company.openai_model == 'gpt-4.1-nano' %}selected{% endif %}>gpt-4.1-nano</option>
-              </optgroup>
-              <optgroup label="{% trans 'GPT-4o Series' %}">
-                <option value="gpt-4o" {% if company.openai_model == 'gpt-4o' %}selected{% endif %}>gpt-4o</option>
-                <option value="gpt-4o-mini" {% if company.openai_model == 'gpt-4o-mini' %}selected{% endif %}>gpt-4o-mini {% trans "(default)" %}</option>
-              </optgroup>
-              <optgroup label="{% trans 'Reasoning (o-series)' %}">
-                <option value="o3" {% if company.openai_model == 'o3' %}selected{% endif %}>o3</option>
-                <option value="o3-mini" {% if company.openai_model == 'o3-mini' %}selected{% endif %}>o3-mini</option>
-                <option value="o4-mini" {% if company.openai_model == 'o4-mini' %}selected{% endif %}>o4-mini</option>
-                <option value="o1" {% if company.openai_model == 'o1' %}selected{% endif %}>o1</option>
-              </optgroup>
-              <optgroup label="{% trans 'GPT-3.5 Series' %}">
-                <option value="gpt-3.5-turbo" {% if company.openai_model == 'gpt-3.5-turbo' %}selected{% endif %}>gpt-3.5-turbo</option>
-              </optgroup>
-            </select>
-            <small class="text-muted d-block mt-1">
-              {% trans "Choose the model your API key has access to. gpt-4o-mini is the default." %}
-            </small>
-          </div>
-
-          <hr>
-
-          <!-- Info box -->
-          <div class="alert alert-info mb-4">
-            <h6 class="alert-heading"><i class="bi bi-info-circle me-1"></i>{% trans "How it works" %}</h6>
-            <ul class="mb-0 small">
-              <li>{% trans "AI data (models, predictions, insights) is fully isolated to your tenant database." %}</li>
-              <li>{% trans "The OpenAI API key is used only for the AI Assistant (natural-language queries)." %}</li>
-              <li>{% trans "ML models (demand forecasting, lead scoring, etc.) run locally and do not require an API key." %}</li>
-              <li>{% trans "You can get an API key from" %} <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.</li>
-            </ul>
-          </div>
-
-          <div class="d-flex justify-content-between">
-            <a href="{% url 'erp:ai_dashboard' %}" class="btn btn-outline-secondary">
-              <i class="bi bi-arrow-left me-1"></i>{% trans "Back to Dashboard" %}
+        </div>
+        <div class="ai-hero-actions">
+            <a href="{% url 'erp:ai_dashboard' %}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left me-1"></i>{% trans "Back to AI" %}
             </a>
-            <button type="submit" class="btn btn-primary">
-              <i class="bi bi-check-lg me-1"></i>{% trans "Save Settings" %}
-            </button>
-          </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <!-- Feature toggle -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">
+                                <i class="bi bi-power text-primary me-1"></i>{% trans "Enable AI Features" %}
+                            </h6>
+                            <p class="text-muted small mb-0">
+                                {% trans "When disabled, all AI/ML services (predictions, insights, assistant) are paused for your company." %}
+                            </p>
+                        </div>
+                        <div class="form-check form-switch fs-5 mb-0">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="ai_enabled" name="ai_enabled"
+                                   {% if company.ai_enabled %}checked{% endif %}>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Key -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <label for="openai_api_key" class="form-label fw-bold">
+                        <i class="bi bi-key-fill text-primary me-1"></i>{% trans "OpenAI API Key" %}
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                        <input type="password" class="form-control" id="openai_api_key"
+                               name="openai_api_key"
+                               placeholder="sk-..."
+                               autocomplete="off">
+                        <button type="button" class="btn btn-outline-secondary" id="toggle-api-key"
+                                title="{% trans 'Show / hide' %}">
+                            <i class="bi bi-eye" id="toggle-api-key-icon"></i>
+                        </button>
+                    </div>
+                    {% if has_api_key %}
+                        <div class="small text-success mt-2">
+                            <i class="bi bi-check-circle-fill me-1"></i>{% trans "API key is configured. Leave blank to keep the current key." %}
+                        </div>
+                    {% else %}
+                        <div class="small text-warning mt-2">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>{% trans "No API key set. The AI assistant requires an OpenAI API key to function." %}
+                        </div>
+                    {% endif %}
+                    <div class="small text-muted mt-1">
+                        {% trans "Your API key is stored securely in your tenant database and is never shared with other tenants." %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <label for="openai_model" class="form-label fw-bold">
+                        <i class="bi bi-cpu-fill text-primary me-1"></i>{% trans "OpenAI Model" %}
+                    </label>
+                    <select class="form-select" id="openai_model" name="openai_model">
+                        <optgroup label="{% trans 'GPT-5 Series' %}">
+                            <option value="gpt-5.2" {% if company.openai_model == 'gpt-5.2' %}selected{% endif %}>gpt-5.2</option>
+                            <option value="gpt-5.2-pro" {% if company.openai_model == 'gpt-5.2-pro' %}selected{% endif %}>gpt-5.2-pro</option>
+                            <option value="gpt-5.1" {% if company.openai_model == 'gpt-5.1' %}selected{% endif %}>gpt-5.1</option>
+                            <option value="gpt-5" {% if company.openai_model == 'gpt-5' %}selected{% endif %}>gpt-5</option>
+                            <option value="gpt-5-pro" {% if company.openai_model == 'gpt-5-pro' %}selected{% endif %}>gpt-5-pro</option>
+                            <option value="gpt-5-mini" {% if company.openai_model == 'gpt-5-mini' %}selected{% endif %}>gpt-5-mini</option>
+                            <option value="gpt-5-nano" {% if company.openai_model == 'gpt-5-nano' %}selected{% endif %}>gpt-5-nano</option>
+                        </optgroup>
+                        <optgroup label="{% trans 'GPT-4.1 Series' %}">
+                            <option value="gpt-4.1" {% if company.openai_model == 'gpt-4.1' %}selected{% endif %}>gpt-4.1</option>
+                            <option value="gpt-4.1-mini" {% if company.openai_model == 'gpt-4.1-mini' %}selected{% endif %}>gpt-4.1-mini</option>
+                            <option value="gpt-4.1-nano" {% if company.openai_model == 'gpt-4.1-nano' %}selected{% endif %}>gpt-4.1-nano</option>
+                        </optgroup>
+                        <optgroup label="{% trans 'GPT-4o Series' %}">
+                            <option value="gpt-4o" {% if company.openai_model == 'gpt-4o' %}selected{% endif %}>gpt-4o</option>
+                            <option value="gpt-4o-mini" {% if company.openai_model == 'gpt-4o-mini' %}selected{% endif %}>gpt-4o-mini {% trans "(default)" %}</option>
+                        </optgroup>
+                        <optgroup label="{% trans 'Reasoning (o-series)' %}">
+                            <option value="o3" {% if company.openai_model == 'o3' %}selected{% endif %}>o3</option>
+                            <option value="o3-mini" {% if company.openai_model == 'o3-mini' %}selected{% endif %}>o3-mini</option>
+                            <option value="o4-mini" {% if company.openai_model == 'o4-mini' %}selected{% endif %}>o4-mini</option>
+                            <option value="o1" {% if company.openai_model == 'o1' %}selected{% endif %}>o1</option>
+                        </optgroup>
+                        <optgroup label="{% trans 'GPT-3.5 Series' %}">
+                            <option value="gpt-3.5-turbo" {% if company.openai_model == 'gpt-3.5-turbo' %}selected{% endif %}>gpt-3.5-turbo</option>
+                        </optgroup>
+                    </select>
+                    <div class="small text-muted mt-2">
+                        {% trans "Choose the model your API key has access to. gpt-4o-mini is the default." %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'erp:ai_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>{% trans "Cancel" %}
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>{% trans "Save Settings" %}
+                </button>
+            </div>
         </form>
-      </div>
     </div>
 
-  </div>
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="fw-bold mb-2"><i class="bi bi-info-circle-fill text-primary me-1"></i>{% trans "How it works" %}</h6>
+                <ul class="small text-muted mb-0 ps-3" style="line-height:1.65;">
+                    <li>{% trans "AI data (models, predictions, insights) is fully isolated to your tenant database." %}</li>
+                    <li>{% trans "The OpenAI API key is used only for the AI Assistant (natural-language queries)." %}</li>
+                    <li>{% trans "ML models (demand forecasting, lead scoring, etc.) run locally and do not require an API key." %}</li>
+                    <li>
+                        {% trans "You can get an API key from" %}
+                        <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>.
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h6 class="fw-bold mb-2"><i class="bi bi-shield-check text-success me-1"></i>{% trans "Privacy" %}</h6>
+                <p class="small text-muted mb-0">
+                    {% trans "Your API key is encrypted at rest and only decrypted when an assistant request is made. Other tenants cannot access it." %}
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const toggleBtn = document.getElementById('toggle-api-key');
+    const input = document.getElementById('openai_api_key');
+    const icon = document.getElementById('toggle-api-key-icon');
+    if (toggleBtn && input) {
+        toggleBtn.addEventListener('click', function () {
+            const isPwd = input.type === 'password';
+            input.type = isPwd ? 'text' : 'password';
+            icon.classList.toggle('bi-eye', !isPwd);
+            icon.classList.toggle('bi-eye-slash', isPwd);
+        });
+    }
+})();
+</script>
+{% endblock %}
+
