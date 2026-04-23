@@ -23,3 +23,12 @@ CACHES = {
 # Disable HTTPS redirects during pure unit tests since the test client
 # makes unencrypted HTTP requests by default.
 SECURE_SSL_REDIRECT = False
+
+# Disable DRF throttling in tests — the LocMemCache is shared across the
+# whole test process, so the 60/min burst throttle otherwise spills between
+# unrelated tests and causes spurious 429 responses.
+REST_FRAMEWORK = {  # noqa: F405
+    **REST_FRAMEWORK,  # type: ignore[name-defined]  # noqa: F405
+    "DEFAULT_THROTTLE_CLASSES": [],
+    "DEFAULT_THROTTLE_RATES": {},
+}
