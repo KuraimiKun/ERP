@@ -42,19 +42,26 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--tenant", type=str, default=None,
+            "--tenant",
+            type=str,
+            default=None,
             help="Tenant DB name. Defaults to first active tenant.",
         )
         parser.add_argument(
-            "--company-id", type=int, default=None,
+            "--company-id",
+            type=int,
+            default=None,
             help="Company ID. Defaults to first company.",
         )
         parser.add_argument(
-            "--limit", type=int, default=None,
+            "--limit",
+            type=int,
+            default=None,
             help="Max number of expenses to import.",
         )
         parser.add_argument(
-            "--clear", action="store_true",
+            "--clear",
+            action="store_true",
             help="Delete previously imported expense data before importing.",
         )
 
@@ -69,15 +76,12 @@ class Command(BaseCommand):
             tenant_db = TenantDatabase.objects.filter(status="active").first()
             if not tenant_db:
                 raise CommandError("No active tenant. Pass --tenant <name>.")
-            self.stdout.write(self.style.WARNING(
-                f"No --tenant given; using first active tenant: {tenant_db.name}"
-            ))
+            self.stdout.write(self.style.WARNING(f"No --tenant given; using first active tenant: {tenant_db.name}"))
         else:
             try:
                 tenant_db = TenantDatabase.objects.get(name=tenant_name)
             except TenantDatabase.DoesNotExist:
-                avail = list(TenantDatabase.objects.filter(status="active")
-                             .values_list("name", flat=True))
+                avail = list(TenantDatabase.objects.filter(status="active").values_list("name", flat=True))
                 raise CommandError(f"Tenant '{tenant_name}' not found. Available: {avail}")
         return add_tenant_database(tenant_db)
 
@@ -111,10 +115,7 @@ class Command(BaseCommand):
         # Load CSV
         csv_path = DATASET_DIR / "expense_claims_dataset.csv"
         if not csv_path.exists():
-            raise CommandError(
-                f"Dataset not found: {csv_path}\n"
-                "Run: python datasets/generate_synthetic.py"
-            )
+            raise CommandError(f"Dataset not found: {csv_path}\nRun: python datasets/generate_synthetic.py")
         df = pd.read_csv(csv_path)
         if options["limit"]:
             df = df.head(options["limit"])
@@ -131,22 +132,30 @@ class Command(BaseCommand):
     def _ensure_currency(self):
         cur, _ = Currency.objects.using(self.db).get_or_create(
             code="USD",
-            defaults={"name": "US Dollar", "symbol": "$",
-                       "is_base": True, "exchange_rate": 1},
+            defaults={"name": "US Dollar", "symbol": "$", "is_base": True, "exchange_rate": 1},
         )
         return cur
 
     def _ensure_categories(self):
         cat_names = [
-            'Travel', 'Office Supplies', 'Software', 'Meals & Entertain',
-            'Equipment', 'Professional Svcs', 'Utilities', 'Marketing',
-            'Training', 'Maintenance', 'Miscellaneous',
+            "Travel",
+            "Office Supplies",
+            "Software",
+            "Meals & Entertain",
+            "Equipment",
+            "Professional Svcs",
+            "Utilities",
+            "Marketing",
+            "Training",
+            "Maintenance",
+            "Miscellaneous",
         ]
         cat_map = {}
         for name in cat_names:
-            code = name.upper().replace(' ', '_').replace('&', 'AND')[:20]
+            code = name.upper().replace(" ", "_").replace("&", "AND")[:20]
             cat, _ = ExpenseCategory.objects.using(self.db).get_or_create(
-                company=self.company, name=name,
+                company=self.company,
+                name=name,
                 defaults={"code": code, "is_active": True},
             )
             cat_map[name] = cat
@@ -154,14 +163,19 @@ class Command(BaseCommand):
 
     def _ensure_departments(self):
         dept_codes = {
-            'Sales': 'SALES', 'R&D': 'R_D', 'HR': 'HR',
-            'Finance': 'FIN', 'Operations': 'OPS',
-            'Marketing': 'MKT', 'IT': 'IT',
+            "Sales": "SALES",
+            "R&D": "R_D",
+            "HR": "HR",
+            "Finance": "FIN",
+            "Operations": "OPS",
+            "Marketing": "MKT",
+            "IT": "IT",
         }
         dept_map = {}
         for name, code in dept_codes.items():
             dept, _ = Department.objects.using(self.db).get_or_create(
-                company=self.company, code=code,
+                company=self.company,
+                code=code,
                 defaults={"name": name, "is_active": True},
             )
             dept_map[name] = dept
@@ -170,16 +184,18 @@ class Command(BaseCommand):
     def _get_employees(self):
         employees = list(
             Employee.objects.using(self.db).filter(
-                company=self.company, employment_status='active',
+                company=self.company,
+                employment_status="active",
             )[:200]
         )
         return employees if employees else None
 
     def _ensure_payment_methods(self):
         methods = {}
-        for code, name in [('cash', 'Cash'), ('bank', 'Bank Transfer'), ('card', 'Credit Card')]:
+        for code, name in [("cash", "Cash"), ("bank", "Bank Transfer"), ("card", "Credit Card")]:
             pm, _ = PaymentMethod.objects.using(self.db).get_or_create(
-                company=self.company, code=code,
+                company=self.company,
+                code=code,
                 defaults={"name": name, "is_active": True},
             )
             methods[code] = pm
@@ -187,9 +203,7 @@ class Command(BaseCommand):
 
     def _clear_expense_data(self):
         self.stdout.write(self.style.WARNING("Clearing previously imported expense data …"))
-        cnt = Expense.all_objects.using(self.db).filter(
-            expense_number__startswith="EXP-"
-        ).delete()[0]
+        cnt = Expense.all_objects.using(self.db).filter(expense_number__startswith="EXP-").delete()[0]
         self.stdout.write(f"  Expenses deleted: {cnt}")
 
     # ==================================================================
@@ -205,12 +219,12 @@ class Command(BaseCommand):
         pm_list = list(self.payment_methods.values())
 
         for _, row in df.iterrows():
-            exp_num = row['expense_number']
+            exp_num = row["expense_number"]
             if exp_num in existing:
                 skipped += 1
                 continue
 
-            cat = self.categories.get(row['category'])
+            cat = self.categories.get(row["category"])
             if not cat:
                 continue
 
@@ -218,22 +232,22 @@ class Command(BaseCommand):
             employee = None
             if self.employees:
                 # Deterministic mapping from dataset employee_id to DB employees
-                emp_idx = hash(row.get('employee_id', '')) % len(self.employees)
+                emp_idx = hash(row.get("employee_id", "")) % len(self.employees)
                 employee = self.employees[emp_idx]
 
             expense = Expense(
                 company=self.company,
                 expense_number=exp_num,
-                expense_date=pd.to_datetime(row['expense_date']).date(),
+                expense_date=pd.to_datetime(row["expense_date"]).date(),
                 category=cat,
                 employee=employee,
-                description=row.get('description', f"Expense {exp_num}"),
+                description=row.get("description", f"Expense {exp_num}"),
                 currency=self.currency,
-                amount=Decimal(str(row['amount'])),
-                tax_amount=Decimal(str(row.get('tax_amount', 0))),
-                total_amount=Decimal(str(row.get('total_amount', row['amount']))),
+                amount=Decimal(str(row["amount"])),
+                tax_amount=Decimal(str(row.get("tax_amount", 0))),
+                total_amount=Decimal(str(row.get("total_amount", row["amount"]))),
                 payment_method=random.choice(pm_list),
-                status=row.get('status', 'approved'),
+                status=row.get("status", "approved"),
             )
             expense.save(using=self.db)
             created += 1
@@ -245,12 +259,10 @@ class Command(BaseCommand):
 
     # ==================================================================
     def _print_summary(self):
-        expenses = Expense.objects.using(self.db).filter(
-            company=self.company, expense_number__startswith="EXP-"
-        )
+        expenses = Expense.objects.using(self.db).filter(company=self.company, expense_number__startswith="EXP-")
         total = expenses.count()
-        total_amount = sum(float(e.total_amount) for e in expenses.only('total_amount')[:10000])
-        approved = expenses.filter(status='approved').count()
+        total_amount = sum(float(e.total_amount) for e in expenses.only("total_amount")[:10000])
+        approved = expenses.filter(status="approved").count()
 
         self.stdout.write("\n  Summary:")
         self.stdout.write(f"    Expenses:     {total}")

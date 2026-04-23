@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
-from rest_framework import serializers, status, viewsets
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import (
     action,
     api_view,
@@ -19,7 +19,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from erp.api.admin_mobile.base import (
-    AdminMobileBaseViewSet,
     AdminMobileReadOnlyViewSet,
 )
 from erp.api.admin_mobile.pagination import AdminMobilePagination
@@ -51,14 +50,15 @@ class NotificationViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         from erp.models import Notification
+
         return Notification.objects.filter(recipient=self.request.user).order_by(
-            '-created_at',
+            "-created_at",
         )
 
-    @extend_schema(tags=['admin-mobile'], summary='List notifications')
+    @extend_schema(tags=["admin-mobile"], summary="List notifications")
     def list(self, request):
         qs = self.get_queryset()
-        unread_only = request.query_params.get('unread') in ('1', 'true', 'True')
+        unread_only = request.query_params.get("unread") in ("1", "true", "True")
         if unread_only:
             qs = qs.filter(is_read=False)
         page = self.paginate_queryset(qs)
@@ -68,36 +68,46 @@ class NotificationViewSet(viewsets.GenericViewSet):
         return Response(serializer.data)
 
     @extend_schema(
-        tags=['admin-mobile'],
-        summary='Mark selected notifications as read',
+        tags=["admin-mobile"],
+        summary="Mark selected notifications as read",
         request=inline_serializer(
-            name='AdminNotificationReadRequest',
-            fields={'ids': serializers.ListField(child=serializers.IntegerField())},
+            name="AdminNotificationReadRequest",
+            fields={"ids": serializers.ListField(child=serializers.IntegerField())},
         ),
     )
-    @action(detail=False, methods=['post'], url_path='read')
+    @action(detail=False, methods=["post"], url_path="read")
     def mark_read(self, request):
-        ids = request.data.get('ids') or []
+        ids = request.data.get("ids") or []
         if not isinstance(ids, list):
-            return Response({'detail': 'ids must be a list of integers.'}, status=400)
-        updated = self.get_queryset().filter(id__in=ids, is_read=False).update(
-            is_read=True, read_at=timezone.now(),
+            return Response({"detail": "ids must be a list of integers."}, status=400)
+        updated = (
+            self.get_queryset()
+            .filter(id__in=ids, is_read=False)
+            .update(
+                is_read=True,
+                read_at=timezone.now(),
+            )
         )
-        return Response({'updated': updated})
+        return Response({"updated": updated})
 
-    @extend_schema(tags=['admin-mobile'], summary='Mark all notifications as read')
-    @action(detail=False, methods=['post'], url_path='read-all')
+    @extend_schema(tags=["admin-mobile"], summary="Mark all notifications as read")
+    @action(detail=False, methods=["post"], url_path="read-all")
     def mark_all_read(self, request):
-        updated = self.get_queryset().filter(is_read=False).update(
-            is_read=True, read_at=timezone.now(),
+        updated = (
+            self.get_queryset()
+            .filter(is_read=False)
+            .update(
+                is_read=True,
+                read_at=timezone.now(),
+            )
         )
-        return Response({'updated': updated})
+        return Response({"updated": updated})
 
-    @extend_schema(tags=['admin-mobile'], summary='Unread notification count')
-    @action(detail=False, methods=['get'], url_path='unread-count')
+    @extend_schema(tags=["admin-mobile"], summary="Unread notification count")
+    @action(detail=False, methods=["get"], url_path="unread-count")
     def unread_count(self, request):
         count = self.get_queryset().filter(is_read=False).count()
-        return Response({'count': count})
+        return Response({"count": count})
 
 
 # ---------------------------------------------------------------------------
@@ -107,14 +117,15 @@ class NotificationViewSet(viewsets.GenericViewSet):
 
 class AuditLogViewSet(AdminMobileReadOnlyViewSet):
     serializer_class = AuditLogMobileSerializer
-    filterset_fields = ['action', 'user']
-    ordering = ['-created_at']
+    filterset_fields = ["action", "user"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         from erp.models import AuditLog
-        qs = AuditLog.objects.select_related('user', 'content_type').order_by('-created_at')
 
-        model_name = self.request.query_params.get('model')
+        qs = AuditLog.objects.select_related("user", "content_type").order_by("-created_at")
+
+        model_name = self.request.query_params.get("model")
         if model_name:
             ct = ContentType.objects.filter(model=model_name.lower()).first()
             if ct:
@@ -122,7 +133,7 @@ class AuditLogViewSet(AdminMobileReadOnlyViewSet):
             else:
                 qs = qs.none()
 
-        since_raw = self.request.query_params.get('since')
+        since_raw = self.request.query_params.get("since")
         if since_raw:
             try:
                 since = datetime.fromisoformat(since_raw)
@@ -130,7 +141,7 @@ class AuditLogViewSet(AdminMobileReadOnlyViewSet):
             except ValueError:
                 pass
 
-        actor = self.request.query_params.get('actor')
+        actor = self.request.query_params.get("actor")
         if actor:
             qs = qs.filter(user_id=actor)
 
@@ -142,28 +153,28 @@ class AuditLogViewSet(AdminMobileReadOnlyViewSet):
 # ---------------------------------------------------------------------------
 
 
-_COMPANY_WRITABLE_FIELDS = {'name', 'name_ar', 'email', 'phone', 'address', 'city', 'country'}
+_COMPANY_WRITABLE_FIELDS = {"name", "name_ar", "email", "phone", "address", "city", "country"}
 
 
-@extend_schema(tags=['admin-mobile'], summary='Retrieve or update the company profile')
-@api_view(['GET', 'PATCH'])
+@extend_schema(tags=["admin-mobile"], summary="Retrieve or update the company profile")
+@api_view(["GET", "PATCH"])
 @authentication_classes([DefaultDbTokenAuthentication])
 @permission_classes([IsAuthenticated, IsCompanyAdmin])
 def company_detail(request):
     """GET → current company. PATCH → update whitelisted fields only."""
-    employee = getattr(request.user, 'employee_profile', None)
+    employee = getattr(request.user, "employee_profile", None)
     if employee is None or employee.company is None:
-        return Response({'detail': 'No company for user.'}, status=404)
+        return Response({"detail": "No company for user."}, status=404)
     company = employee.company
 
-    if request.method == 'GET':
+    if request.method == "GET":
         return Response(CompanyMobileSerializer(company).data)
 
     # PATCH — restrict to safe fields.
     data = {k: v for k, v in request.data.items() if k in _COMPANY_WRITABLE_FIELDS}
     if not data:
         return Response(
-            {'detail': f'No writable fields in request. Allowed: {sorted(_COMPANY_WRITABLE_FIELDS)}'},
+            {"detail": f"No writable fields in request. Allowed: {sorted(_COMPANY_WRITABLE_FIELDS)}"},
             status=400,
         )
     serializer = CompanyMobileSerializer(company, data=data, partial=True)
@@ -172,25 +183,28 @@ def company_detail(request):
     return Response(serializer.data)
 
 
-@extend_schema(tags=['admin-mobile'], summary='Feature flags for the Flutter app')
-@api_view(['GET'])
+@extend_schema(tags=["admin-mobile"], summary="Feature flags for the Flutter app")
+@api_view(["GET"])
 @authentication_classes([DefaultDbTokenAuthentication])
 @permission_classes([IsAuthenticated, IsCompanyAdmin])
 def feature_flags(request):
-    employee = getattr(request.user, 'employee_profile', None)
-    company = getattr(employee, 'company', None) if employee else None
-    return Response({
-        'ai_enabled': bool(getattr(company, 'ai_enabled', False)) if company else False,
-    })
+    employee = getattr(request.user, "employee_profile", None)
+    company = getattr(employee, "company", None) if employee else None
+    return Response(
+        {
+            "ai_enabled": bool(getattr(company, "ai_enabled", False)) if company else False,
+        }
+    )
 
 
 class FiscalYearReadOnlyViewSet(AdminMobileReadOnlyViewSet):
     serializer_class = FiscalYearMobileSerializer
-    filterset_fields = ['is_current', 'is_closed']
-    ordering = ['-start_date']
+    filterset_fields = ["is_current", "is_closed"]
+    ordering = ["-start_date"]
 
     def get_queryset(self):
         from erp.models import FiscalYear
+
         return FiscalYear.objects.all()
 
 
@@ -201,10 +215,11 @@ class CurrencyReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsCompanyAdmin]
     pagination_class = AdminMobilePagination
     serializer_class = CurrencyMobileSerializer
-    filterset_fields = ['is_active', 'is_base']
+    filterset_fields = ["is_active", "is_base"]
 
     def get_queryset(self):
         from erp.models import Currency
+
         return Currency.objects.all()
 
 
@@ -213,52 +228,51 @@ class CurrencyReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 # ---------------------------------------------------------------------------
 
 
-_SEARCH_TYPES = {'employee', 'customer', 'product', 'invoice'}
+_SEARCH_TYPES = {"employee", "customer", "product", "invoice"}
 _PER_TYPE_CAP = 10
 
 
 @extend_schema(
-    tags=['admin-mobile'],
-    summary='Federated search across employees, customers, products, invoices',
+    tags=["admin-mobile"],
+    summary="Federated search across employees, customers, products, invoices",
     parameters=[
-        OpenApiParameter('q', str, description='Search query (required)'),
+        OpenApiParameter("q", str, description="Search query (required)"),
         OpenApiParameter(
-            'types', str,
-            description=(
-                f'Comma-separated subset of {sorted(_SEARCH_TYPES)}. '
-                'Omit to search all types.'
-            ),
+            "types",
+            str,
+            description=(f"Comma-separated subset of {sorted(_SEARCH_TYPES)}. Omit to search all types."),
         ),
     ],
 )
-@api_view(['GET'])
+@api_view(["GET"])
 @authentication_classes([DefaultDbTokenAuthentication])
 @permission_classes([IsAuthenticated, IsCompanyAdmin])
 def search(request):
     from erp.models import Customer, Employee, Invoice, Product
 
-    q = (request.query_params.get('q') or '').strip()
+    q = (request.query_params.get("q") or "").strip()
     if not q:
-        return Response({'detail': 'Query parameter q is required.'}, status=400)
+        return Response({"detail": "Query parameter q is required."}, status=400)
 
-    types_raw = request.query_params.get('types')
+    types_raw = request.query_params.get("types")
     if types_raw:
-        requested = {t.strip() for t in types_raw.split(',') if t.strip()}
+        requested = {t.strip() for t in types_raw.split(",") if t.strip()}
         invalid = requested - _SEARCH_TYPES
         if invalid:
             return Response(
-                {'detail': f'Unknown type(s): {sorted(invalid)}.'}, status=400,
+                {"detail": f"Unknown type(s): {sorted(invalid)}."},
+                status=400,
             )
         active = requested
     else:
         active = set(_SEARCH_TYPES)
 
-    employee = getattr(request.user, 'employee_profile', None)
+    employee = getattr(request.user, "employee_profile", None)
     company = employee.company if employee and employee.company_id else None
 
     result = {}
 
-    if 'employee' in active and company:
+    if "employee" in active and company:
         qs = Employee.objects.filter(
             Q(company=company)
             & (
@@ -268,31 +282,23 @@ def search(request):
                 | Q(employee_id__icontains=q)
             )
         )[:_PER_TYPE_CAP]
-        result['employee'] = EmployeeMobileListSerializer(qs, many=True).data
+        result["employee"] = EmployeeMobileListSerializer(qs, many=True).data
 
-    if 'customer' in active and company:
+    if "customer" in active and company:
         qs = Customer.objects.filter(
             Q(company=company)
-            & (
-                Q(name__icontains=q)
-                | Q(email__icontains=q)
-                | Q(customer_id__icontains=q)
-                | Q(phone__icontains=q)
-            )
+            & (Q(name__icontains=q) | Q(email__icontains=q) | Q(customer_id__icontains=q) | Q(phone__icontains=q))
         )[:_PER_TYPE_CAP]
-        result['customer'] = CustomerMobileListSerializer(qs, many=True).data
+        result["customer"] = CustomerMobileListSerializer(qs, many=True).data
 
-    if 'product' in active and company:
-        qs = Product.objects.filter(
-            Q(company=company) & (Q(name__icontains=q) | Q(sku__icontains=q))
-        )[:_PER_TYPE_CAP]
-        result['product'] = ProductMobileListSerializer(qs, many=True).data
+    if "product" in active and company:
+        qs = Product.objects.filter(Q(company=company) & (Q(name__icontains=q) | Q(sku__icontains=q)))[:_PER_TYPE_CAP]
+        result["product"] = ProductMobileListSerializer(qs, many=True).data
 
-    if 'invoice' in active and company:
+    if "invoice" in active and company:
         qs = Invoice.objects.filter(
-            Q(company=company)
-            & (Q(invoice_number__icontains=q) | Q(customer__name__icontains=q))
+            Q(company=company) & (Q(invoice_number__icontains=q) | Q(customer__name__icontains=q))
         )[:_PER_TYPE_CAP]
-        result['invoice'] = InvoiceMobileListSerializer(qs, many=True).data
+        result["invoice"] = InvoiceMobileListSerializer(qs, many=True).data
 
-    return Response({'q': q, 'types': sorted(active), 'results': result})
+    return Response({"q": q, "types": sorted(active), "results": result})

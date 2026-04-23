@@ -14,18 +14,19 @@ def invoice_pdf(request, pk):
     company = get_user_company(request.user)
     invoice = get_object_or_404(Invoice, pk=pk, company=company)
     ctx = {
-        'company': company,
-        'invoice': invoice,
-        'lines': invoice.lines.all(),
+        "company": company,
+        "invoice": invoice,
+        "lines": invoice.lines.all(),
     }
     doc_type = {
-        'credit': 'credit_note',
-        'debit': 'debit_note',
-        'proforma': 'proforma',
-    }.get(invoice.invoice_type, 'invoice')
+        "credit": "credit_note",
+        "debit": "debit_note",
+        "proforma": "proforma",
+    }.get(invoice.invoice_type, "invoice")
     return render_to_pdf(
-        'erp/pdf/invoice_pdf.html', ctx,
-        filename=f'{doc_type}_{invoice.invoice_number}.pdf',
+        "erp/pdf/invoice_pdf.html",
+        ctx,
+        filename=f"{doc_type}_{invoice.invoice_number}.pdf",
     )
 
 
@@ -34,13 +35,14 @@ def quote_pdf(request, pk):
     company = get_user_company(request.user)
     quote = get_object_or_404(Quote, pk=pk, company=company)
     ctx = {
-        'company': company,
-        'quote': quote,
-        'lines': quote.lines.all(),
+        "company": company,
+        "quote": quote,
+        "lines": quote.lines.all(),
     }
     return render_to_pdf(
-        'erp/pdf/quote_pdf.html', ctx,
-        filename=f'quote_{quote.quote_number}.pdf',
+        "erp/pdf/quote_pdf.html",
+        ctx,
+        filename=f"quote_{quote.quote_number}.pdf",
     )
 
 
@@ -49,13 +51,14 @@ def purchase_order_pdf(request, pk):
     company = get_user_company(request.user)
     order = get_object_or_404(PurchaseOrder, pk=pk, company=company)
     ctx = {
-        'company': company,
-        'order': order,
-        'lines': order.lines.all(),
+        "company": company,
+        "order": order,
+        "lines": order.lines.all(),
     }
     return render_to_pdf(
-        'erp/pdf/po_pdf.html', ctx,
-        filename=f'po_{order.po_number}.pdf',
+        "erp/pdf/po_pdf.html",
+        ctx,
+        filename=f"po_{order.po_number}.pdf",
     )
 
 
@@ -66,12 +69,14 @@ def payslip_pdf(request, pk):
     # Verify employee belongs to this company
     if payroll.employee.company != company:
         from django.http import Http404
+
         raise Http404
     ctx = {
-        'company': company,
-        'payroll': payroll,
+        "company": company,
+        "payroll": payroll,
     }
     return render_to_pdf(
-        'erp/pdf/payslip_pdf.html', ctx,
-        filename=f'payslip_{payroll.employee.employee_id}_{payroll.period_start}.pdf',
+        "erp/pdf/payslip_pdf.html",
+        ctx,
+        filename=f"payslip_{payroll.employee.employee_id}_{payroll.period_start}.pdf",
     )

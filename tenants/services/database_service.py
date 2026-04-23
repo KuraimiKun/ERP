@@ -47,14 +47,14 @@ def sync_user_to_tenant_db(user, db_alias):
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
-        company_name=getattr(user, 'company_name', ''),
-        phone=getattr(user, 'phone', ''),
-        password=user.password,          # hashed – not used for login here
+        company_name=getattr(user, "company_name", ""),
+        phone=getattr(user, "phone", ""),
+        password=user.password,  # hashed – not used for login here
         is_active=user.is_active,
         is_staff=user.is_staff,
         is_superuser=user.is_superuser,
-        is_approved=getattr(user, 'is_approved', True),
-        approval_status=getattr(user, 'approval_status', 'approved'),
+        is_approved=getattr(user, "is_approved", True),
+        approval_status=getattr(user, "approval_status", "approved"),
     )
     logger.info(f"Synced user {user.email} to tenant DB {db_alias}")
 
@@ -62,7 +62,7 @@ def sync_user_to_tenant_db(user, db_alias):
 class DatabaseService:
     """
     Service for managing tenant databases.
-    
+
     Handles:
     - Creating databases on PostgreSQL servers
     - Running Django migrations on tenant databases
@@ -78,13 +78,14 @@ class DatabaseService:
         Returns the path to the file.  The caller MUST clean it up
         via ``_cleanup_pgpass`` (use a ``finally`` block).
         """
+
         # Escape colons and backslashes per pgpass format
         def _esc(v):
-            return str(v).replace('\\', '\\\\').replace(':', '\\:')
+            return str(v).replace("\\", "\\\\").replace(":", "\\:")
 
         line = f"{_esc(host)}:{_esc(port)}:{_esc(database)}:{_esc(user)}:{_esc(password)}\n"
 
-        fd, path = tempfile.mkstemp(prefix='.pgpass_', suffix='.tmp')
+        fd, path = tempfile.mkstemp(prefix=".pgpass_", suffix=".tmp")
         try:
             os.write(fd, line.encode())
         finally:
@@ -106,15 +107,15 @@ class DatabaseService:
             pass
 
     # ── connections ──────────────────────────────────────────────────────
-    
-    def get_admin_connection(self, server, database='postgres'):
+
+    def get_admin_connection(self, server, database="postgres"):
         """
         Get a connection to the PostgreSQL server using admin credentials.
-        
+
         Args:
             server: PostgresServer instance
             database: Database to connect to
-            
+
         Returns:
             psycopg2 connection
         """
@@ -124,21 +125,21 @@ class DatabaseService:
             user=server.admin_username,
             password=server.admin_password,
             database=database,
-            connect_timeout=10
+            connect_timeout=10,
         )
-    
+
     def check_server_health(self, server):
         """
         Check if a PostgreSQL server is healthy and accessible.
-        
+
         Args:
             server: PostgresServer instance
-            
+
         Returns:
             tuple: (is_healthy, message)
         """
         from ..models import ServerLog
-        
+
         try:
             conn = self.get_admin_connection(server)
             cursor = conn.cursor()
@@ -146,50 +147,47 @@ class DatabaseService:
             version = cursor.fetchone()[0]
             cursor.close()
             conn.close()
-            
+
             # Update server status
-            server.status = 'active'
+            server.status = "active"
             server.last_health_check = timezone.now()
             server.health_check_message = f"Healthy: {version[:50]}"
             server.save()
-            
+
             ServerLog.objects.create(
                 server=server,
-                action='server_health_check',
-                level='success',
-                message='Server is healthy',
-                details={'version': version}
+                action="server_health_check",
+                level="success",
+                message="Server is healthy",
+                details={"version": version},
             )
-            
+
             return True, version
-            
+
         except Exception as e:
             error_msg = str(e)
-            
-            server.status = 'error'
+
+            server.status = "error"
             server.last_health_check = timezone.now()
             server.health_check_message = f"Error: {error_msg[:200]}"
             server.save()
-            
+
             ServerLog.objects.create(
-                server=server,
-                action='server_health_check',
-                level='error',
-                message=f'Health check failed: {error_msg}'
+                server=server, action="server_health_check", level="error", message=f"Health check failed: {error_msg}"
             )
-            
+
             return False, error_msg
-    
+
     def create_database(self, server, db_name, db_username, db_password):
         """
         Create a new database and user on a PostgreSQL server.
-        
+
         Args:
             server: PostgresServer instance
             db_name: Name for the new database
             db_username: Username for database access
             db_password: Password for the database user
-            
+
         Returns:
             bool: Success status
         """
@@ -199,52 +197,45 @@ class DatabaseService:
             conn = self.get_admin_connection(server)
             conn.autocommit = True
             cursor = conn.cursor()
-            
+
             # Create user
             cursor.execute(
-                sql.SQL("CREATE USER {} WITH PASSWORD %s").format(
-                    sql.Identifier(db_username)
-                ),
-                [db_password]
+                sql.SQL("CREATE USER {} WITH PASSWORD %s").format(sql.Identifier(db_username)), [db_password]
             )
-            
+
             # Create database
             cursor.execute(
-                sql.SQL("CREATE DATABASE {} OWNER {}").format(
-                    sql.Identifier(db_name),
-                    sql.Identifier(db_username)
-                )
+                sql.SQL("CREATE DATABASE {} OWNER {}").format(sql.Identifier(db_name), sql.Identifier(db_username))
             )
-            
+
             # Grant privileges
             cursor.execute(
                 sql.SQL("GRANT ALL PRIVILEGES ON DATABASE {} TO {}").format(
-                    sql.Identifier(db_name),
-                    sql.Identifier(db_username)
+                    sql.Identifier(db_name), sql.Identifier(db_username)
                 )
             )
-            
+
             cursor.close()
             conn.close()
-            
+
             logger.info(f"Created database {db_name} on {server.name}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to create database: {str(e)}")
             if conn:
                 conn.close()
             raise
-    
+
     def drop_database(self, server, db_name, db_username):
         """
         Drop a database and user from a PostgreSQL server.
-        
+
         Args:
             server: PostgresServer instance
             db_name: Name of the database to drop
             db_username: Username to drop
-            
+
         Returns:
             bool: Success status
         """
@@ -253,7 +244,7 @@ class DatabaseService:
             conn = self.get_admin_connection(server)
             conn.autocommit = True
             cursor = conn.cursor()
-            
+
             # Terminate existing connections
             cursor.execute(
                 sql.SQL("""
@@ -262,238 +253,219 @@ class DatabaseService:
                     WHERE pg_stat_activity.datname = %s
                     AND pid <> pg_backend_pid()
                 """),
-                [db_name]
+                [db_name],
             )
-            
+
             # Drop database
-            cursor.execute(
-                sql.SQL("DROP DATABASE IF EXISTS {}").format(
-                    sql.Identifier(db_name)
-                )
-            )
-            
+            cursor.execute(sql.SQL("DROP DATABASE IF EXISTS {}").format(sql.Identifier(db_name)))
+
             # Drop user
-            cursor.execute(
-                sql.SQL("DROP USER IF EXISTS {}").format(
-                    sql.Identifier(db_username)
-                )
-            )
-            
+            cursor.execute(sql.SQL("DROP USER IF EXISTS {}").format(sql.Identifier(db_username)))
+
             cursor.close()
             conn.close()
-            
+
             logger.info(f"Dropped database {db_name} from {server.name}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to drop database: {str(e)}")
             if conn:
                 conn.close()
             raise
-    
+
     def create_tenant_database(self, server, name=None, display_name=None, created_by=None):
         """
         Create a new tenant database with full setup.
-        
+
         Args:
             server: PostgresServer instance
             name: Database name (auto-generated if not provided)
             display_name: Display name for the database
             created_by: User who created the database
-            
+
         Returns:
             TenantDatabase: The created database instance
         """
         from ..models import TenantDatabase, ServerLog, generate_db_password
-        
+
         if server.is_full:
             raise ValueError(f"Server {server.name} has reached its database limit")
-        
+
         # Create the database record first to get an ID
         tenant_db = TenantDatabase(
             server=server,
-            name=name or '',
-            display_name=display_name or '',
+            name=name or "",
+            display_name=display_name or "",
             db_password=generate_db_password(),
-            status='creating',
-            created_by=created_by
+            status="creating",
+            created_by=created_by,
         )
-        
+
         # Generate name and username if not provided
         if not tenant_db.name:
             tenant_db.name = f"erp_tenant_{str(tenant_db.id).replace('-', '')[:16]}"
         if not tenant_db.db_username:
             tenant_db.db_username = f"user_{str(tenant_db.id).replace('-', '')[:12]}"
-        
+
         tenant_db.save()
-        
+
         try:
             # Create the actual database
             self.create_database(
                 server=server,
                 db_name=tenant_db.name,
                 db_username=tenant_db.db_username,
-                db_password=tenant_db.db_password
+                db_password=tenant_db.db_password,
             )
-            
+
             # Update status
-            tenant_db.status = 'active'
+            tenant_db.status = "active"
             tenant_db.save()
-            
+
             ServerLog.objects.create(
                 server=server,
                 database=tenant_db,
-                action='database_create',
-                level='success',
-                message=f'Database {tenant_db.name} created successfully',
-                user=created_by
+                action="database_create",
+                level="success",
+                message=f"Database {tenant_db.name} created successfully",
+                user=created_by,
             )
-            
+
             # Run migrations
             self.run_migrations(tenant_db)
-            
+
             return tenant_db
-            
+
         except Exception as e:
-            tenant_db.status = 'error'
+            tenant_db.status = "error"
             tenant_db.error_message = str(e)
             tenant_db.save()
-            
+
             ServerLog.objects.create(
                 server=server,
                 database=tenant_db,
-                action='database_create',
-                level='error',
-                message=f'Failed to create database: {str(e)}',
-                user=created_by
+                action="database_create",
+                level="error",
+                message=f"Failed to create database: {str(e)}",
+                user=created_by,
             )
-            
+
             raise
-    
+
     def run_migrations(self, tenant_db):
         """
         Run Django migrations on a tenant database.
-        
+
         Args:
             tenant_db: TenantDatabase instance
-            
+
         Returns:
             bool: Success status
         """
         from ..models import ServerLog
-        
+
         # Add the database to Django settings
         db_alias = add_tenant_database(tenant_db)
-        
+
         try:
             out = StringIO()
-            
+
             # Run dependent app migrations first (ERP models have FKs
             # to auth.User / tenants.TenantUser and contenttypes)
-            for app in ('contenttypes', 'auth', 'authtoken', 'tenants', 'erp', 'erp_ai'):
-                call_command(
-                    'migrate',
-                    app,
-                    database=db_alias,
-                    verbosity=1,
-                    interactive=False,
-                    stdout=out
-                )
-            
+            for app in ("contenttypes", "auth", "authtoken", "tenants", "erp", "erp_ai"):
+                call_command("migrate", app, database=db_alias, verbosity=1, interactive=False, stdout=out)
+
             migration_output = out.getvalue()
-            
+
             # Update migration status
             tenant_db.is_migrated = True
             tenant_db.migrated_at = timezone.now()
-            tenant_db.last_migration = migration_output[-200:] if migration_output else 'No output'
+            tenant_db.last_migration = migration_output[-200:] if migration_output else "No output"
             tenant_db.save()
-            
+
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_migrate',
-                level='success',
-                message='Migrations completed successfully',
-                details={'output': migration_output[:1000]}
+                action="database_migrate",
+                level="success",
+                message="Migrations completed successfully",
+                details={"output": migration_output[:1000]},
             )
-            
+
             logger.info(f"Migrations completed for {tenant_db.name}")
             return True
-            
+
         except Exception as e:
             error_msg = str(e)
-            
+
             tenant_db.error_message = f"Migration error: {error_msg}"
             tenant_db.save()
-            
+
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_migrate',
-                level='error',
-                message=f'Migration failed: {error_msg}'
+                action="database_migrate",
+                level="error",
+                message=f"Migration failed: {error_msg}",
             )
-            
+
             logger.error(f"Migration failed for {tenant_db.name}: {error_msg}")
             raise
-    
+
     def delete_tenant_database(self, tenant_db):
         """
         Delete a tenant database.
-        
+
         Args:
             tenant_db: TenantDatabase instance
-            
+
         Returns:
             bool: Success status
         """
         from ..models import ServerLog
-        
-        tenant_db.status = 'deleting'
+
+        tenant_db.status = "deleting"
         tenant_db.save()
-        
+
         try:
-            self.drop_database(
-                server=tenant_db.server,
-                db_name=tenant_db.name,
-                db_username=tenant_db.db_username
-            )
-            
+            self.drop_database(server=tenant_db.server, db_name=tenant_db.name, db_username=tenant_db.db_username)
+
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_delete',
-                level='success',
-                message=f'Database {tenant_db.name} deleted'
+                action="database_delete",
+                level="success",
+                message=f"Database {tenant_db.name} deleted",
             )
-            
-            tenant_db.status = 'deleted'
+
+            tenant_db.status = "deleted"
             tenant_db.save()
-            
+
             return True
-            
+
         except Exception as e:
-            tenant_db.status = 'error'
+            tenant_db.status = "error"
             tenant_db.error_message = f"Delete error: {str(e)}"
             tenant_db.save()
-            
+
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_delete',
-                level='error',
-                message=f'Failed to delete database: {str(e)}'
+                action="database_delete",
+                level="error",
+                message=f"Failed to delete database: {str(e)}",
             )
-            
+
             raise
-    
+
     def test_database_connection(self, tenant_db):
         """
         Test connection to a tenant database using tenant credentials.
-        
+
         Args:
             tenant_db: TenantDatabase instance
-            
+
         Returns:
             tuple: (success, message)
         """
@@ -504,7 +476,7 @@ class DatabaseService:
                 user=tenant_db.db_username,
                 password=tenant_db.db_password,
                 database=tenant_db.name,
-                connect_timeout=10
+                connect_timeout=10,
             )
             conn.close()
             return True, "Connection successful"
@@ -528,10 +500,10 @@ class DatabaseService:
                     [tenant_db.name, tenant_db.name],
                 )
                 row = cur.fetchone()
-                return {'raw_bytes': row[0], 'pretty': row[1]}
+                return {"raw_bytes": row[0], "pretty": row[1]}
         except Exception as e:
             logger.error(f"Error getting database size for {tenant_db.name}: {e}")
-            return {'raw_bytes': 0, 'pretty': 'N/A'}
+            return {"raw_bytes": 0, "pretty": "N/A"}
         finally:
             if conn:
                 conn.close()
@@ -547,7 +519,8 @@ class DatabaseService:
         try:
             conn = self.get_admin_connection(tenant_db.server)
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT pid, usename, state, query,
                            client_addr::text, backend_start::text,
                            query_start::text, wait_event_type, wait_event,
@@ -555,7 +528,9 @@ class DatabaseService:
                     FROM pg_stat_activity
                     WHERE datname = %s
                     ORDER BY backend_start DESC
-                """, [tenant_db.name])
+                """,
+                    [tenant_db.name],
+                )
                 columns = [desc[0] for desc in cur.description]
                 return [dict(zip(columns, row)) for row in cur.fetchall()]
         except Exception as e:
@@ -586,11 +561,14 @@ class DatabaseService:
         try:
             conn = self.get_admin_connection(tenant_db.server)
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT pg_terminate_backend(pid)
                     FROM pg_stat_activity
                     WHERE datname = %s AND pid <> pg_backend_pid()
-                """, [tenant_db.name])
+                """,
+                    [tenant_db.name],
+                )
                 terminated = cur.rowcount
                 return terminated
         except Exception as e:
@@ -656,7 +634,8 @@ class DatabaseService:
 
             with conn.cursor() as cur:
                 # Cache hit ratio
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT
                         COALESCE(sum(blks_hit), 0) AS hits,
                         COALESCE(sum(blks_read), 0) AS reads,
@@ -664,36 +643,43 @@ class DatabaseService:
                              THEN round(100.0 * sum(blks_hit) / (sum(blks_hit) + sum(blks_read)), 2)
                              ELSE 0 END AS cache_hit_ratio
                     FROM pg_stat_database WHERE datname = %s
-                """, [tenant_db.name])
+                """,
+                    [tenant_db.name],
+                )
                 row = cur.fetchone()
-                result['cache_hits'] = row[0]
-                result['cache_reads'] = row[1]
-                result['cache_hit_ratio'] = float(row[2])
+                result["cache_hits"] = row[0]
+                result["cache_reads"] = row[1]
+                result["cache_hit_ratio"] = float(row[2])
 
                 # Transaction stats
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT xact_commit, xact_rollback, tup_returned, tup_fetched,
                            tup_inserted, tup_updated, tup_deleted, conflicts, deadlocks,
                            temp_files, temp_bytes, blk_read_time, blk_write_time
                     FROM pg_stat_database WHERE datname = %s
-                """, [tenant_db.name])
+                """,
+                    [tenant_db.name],
+                )
                 row = cur.fetchone()
                 if row:
-                    result.update({
-                        'xact_commit': row[0] or 0,
-                        'xact_rollback': row[1] or 0,
-                        'tup_returned': row[2] or 0,
-                        'tup_fetched': row[3] or 0,
-                        'tup_inserted': row[4] or 0,
-                        'tup_updated': row[5] or 0,
-                        'tup_deleted': row[6] or 0,
-                        'conflicts': row[7] or 0,
-                        'deadlocks': row[8] or 0,
-                        'temp_files': row[9] or 0,
-                        'temp_bytes': row[10] or 0,
-                        'blk_read_time_ms': float(row[11] or 0),
-                        'blk_write_time_ms': float(row[12] or 0),
-                    })
+                    result.update(
+                        {
+                            "xact_commit": row[0] or 0,
+                            "xact_rollback": row[1] or 0,
+                            "tup_returned": row[2] or 0,
+                            "tup_fetched": row[3] or 0,
+                            "tup_inserted": row[4] or 0,
+                            "tup_updated": row[5] or 0,
+                            "tup_deleted": row[6] or 0,
+                            "conflicts": row[7] or 0,
+                            "deadlocks": row[8] or 0,
+                            "temp_files": row[9] or 0,
+                            "temp_bytes": row[10] or 0,
+                            "blk_read_time_ms": float(row[11] or 0),
+                            "blk_write_time_ms": float(row[12] or 0),
+                        }
+                    )
 
                 # Index usage ratio
                 cur.execute("""
@@ -706,15 +692,15 @@ class DatabaseService:
                     FROM pg_stat_user_tables
                 """)
                 row = cur.fetchone()
-                result['index_scans'] = row[0]
-                result['sequential_scans'] = row[1]
-                result['index_usage_ratio'] = float(row[2])
+                result["index_scans"] = row[0]
+                result["sequential_scans"] = row[1]
+                result["index_usage_ratio"] = float(row[2])
 
                 # Total dead tuples
                 cur.execute("""
                     SELECT COALESCE(sum(n_dead_tup), 0) FROM pg_stat_user_tables
                 """)
-                result['total_dead_tuples'] = cur.fetchone()[0]
+                result["total_dead_tuples"] = cur.fetchone()[0]
 
             return result
         except Exception as e:
@@ -732,7 +718,8 @@ class DatabaseService:
         try:
             conn = self.get_admin_connection(tenant_db.server)
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT pid, usename, state, query, client_addr::text,
                            now() - query_start AS duration,
                            extract(epoch FROM now() - query_start)::int AS duration_secs,
@@ -743,7 +730,9 @@ class DatabaseService:
                       AND query NOT ILIKE '%%pg_stat_activity%%'
                       AND now() - query_start > interval '%s seconds'
                     ORDER BY duration DESC
-                """, [tenant_db.name, min_seconds])
+                """,
+                    [tenant_db.name, min_seconds],
+                )
                 columns = [desc[0] for desc in cur.description]
                 return [dict(zip(columns, row)) for row in cur.fetchall()]
         except Exception as e:
@@ -753,7 +742,7 @@ class DatabaseService:
             if conn:
                 conn.close()
 
-    def run_maintenance(self, tenant_db, operation='vacuum'):
+    def run_maintenance(self, tenant_db, operation="vacuum"):
         """
         Run maintenance operation on a tenant database.
         operation: 'vacuum', 'vacuum_full', 'analyze', 'vacuum_analyze', 'reindex'
@@ -768,28 +757,26 @@ class DatabaseService:
             conn.autocommit = True
 
             with conn.cursor() as cur:
-                if operation == 'vacuum':
+                if operation == "vacuum":
                     cur.execute("VACUUM")
-                elif operation == 'vacuum_full':
+                elif operation == "vacuum_full":
                     cur.execute("VACUUM FULL")
-                elif operation == 'analyze':
+                elif operation == "analyze":
                     cur.execute("ANALYZE")
-                elif operation == 'vacuum_analyze':
+                elif operation == "vacuum_analyze":
                     cur.execute("VACUUM ANALYZE")
-                elif operation == 'reindex':
-                    cur.execute(sql.SQL("REINDEX DATABASE {}").format(
-                        sql.Identifier(tenant_db.name)
-                    ))
+                elif operation == "reindex":
+                    cur.execute(sql.SQL("REINDEX DATABASE {}").format(sql.Identifier(tenant_db.name)))
                 else:
                     return False, f"Unknown operation: {operation}"
 
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_maintenance',
-                level='success',
-                message=f'Maintenance ({operation}) completed on {tenant_db.name}',
-                details={'operation': operation},
+                action="database_maintenance",
+                level="success",
+                message=f"Maintenance ({operation}) completed on {tenant_db.name}",
+                details={"operation": operation},
             )
 
             return True, f"{operation.upper()} completed successfully"
@@ -797,10 +784,10 @@ class DatabaseService:
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_maintenance',
-                level='error',
-                message=f'Maintenance ({operation}) failed: {str(e)}',
-                details={'operation': operation},
+                action="database_maintenance",
+                level="error",
+                message=f"Maintenance ({operation}) failed: {str(e)}",
+                details={"operation": operation},
             )
             return False, str(e)
         finally:
@@ -815,23 +802,29 @@ class DatabaseService:
         """
         from ..models import ServerLog
 
-        backup_dir = os.path.join(settings.BASE_DIR, 'private_backups')
+        backup_dir = os.path.join(settings.BASE_DIR, "private_backups")
         os.makedirs(backup_dir, exist_ok=True)
 
-        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{tenant_db.name}_{timestamp}_{uuid.uuid4().hex[:8]}.sql"
         filepath = os.path.join(backup_dir, filename)
 
         env = os.environ.copy()
 
         cmd = [
-            'pg_dump',
-            '-h', tenant_db.server.host,
-            '-p', str(tenant_db.server.port),
-            '-U', tenant_db.server.admin_username,
-            '-d', tenant_db.name,
-            '-F', 'p',  # plain SQL format
-            '-f', filepath,
+            "pg_dump",
+            "-h",
+            tenant_db.server.host,
+            "-p",
+            str(tenant_db.server.port),
+            "-U",
+            tenant_db.server.admin_username,
+            "-d",
+            tenant_db.name,
+            "-F",
+            "p",  # plain SQL format
+            "-f",
+            filepath,
         ]
 
         pgpass_path = None
@@ -843,21 +836,19 @@ class DatabaseService:
                 tenant_db.server.admin_username,
                 tenant_db.server.admin_password,
             )
-            env['PGPASSFILE'] = pgpass_path
+            env["PGPASSFILE"] = pgpass_path
 
-            result = subprocess.run(
-                cmd, env=env, capture_output=True, text=True, timeout=600
-            )
+            result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=600)
 
             if result.returncode == 0:
                 file_size = os.path.getsize(filepath)
                 ServerLog.objects.create(
                     server=tenant_db.server,
                     database=tenant_db,
-                    action='database_backup',
-                    level='success',
-                    message=f'Database exported: {filename} ({file_size} bytes)',
-                    details={'filename': filename, 'size': file_size},
+                    action="database_backup",
+                    level="success",
+                    message=f"Database exported: {filename} ({file_size} bytes)",
+                    details={"filename": filename, "size": file_size},
                 )
                 return True, filepath
             else:
@@ -865,9 +856,9 @@ class DatabaseService:
                 ServerLog.objects.create(
                     server=tenant_db.server,
                     database=tenant_db,
-                    action='database_backup',
-                    level='error',
-                    message=f'Export failed: {error}',
+                    action="database_backup",
+                    level="error",
+                    message=f"Export failed: {error}",
                 )
                 return False, error
         except FileNotFoundError:
@@ -875,8 +866,8 @@ class DatabaseService:
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_backup',
-                level='error',
+                action="database_backup",
+                level="error",
                 message=msg,
             )
             return False, msg
@@ -901,12 +892,17 @@ class DatabaseService:
         env = os.environ.copy()
 
         cmd = [
-            'psql',
-            '-h', tenant_db.server.host,
-            '-p', str(tenant_db.server.port),
-            '-U', tenant_db.server.admin_username,
-            '-d', tenant_db.name,
-            '-f', sql_file_path,
+            "psql",
+            "-h",
+            tenant_db.server.host,
+            "-p",
+            str(tenant_db.server.port),
+            "-U",
+            tenant_db.server.admin_username,
+            "-d",
+            tenant_db.name,
+            "-f",
+            sql_file_path,
         ]
 
         pgpass_path = None
@@ -918,19 +914,17 @@ class DatabaseService:
                 tenant_db.server.admin_username,
                 tenant_db.server.admin_password,
             )
-            env['PGPASSFILE'] = pgpass_path
+            env["PGPASSFILE"] = pgpass_path
 
-            result = subprocess.run(
-                cmd, env=env, capture_output=True, text=True, timeout=600
-            )
+            result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=600)
 
             if result.returncode == 0:
                 ServerLog.objects.create(
                     server=tenant_db.server,
                     database=tenant_db,
-                    action='database_restore',
-                    level='success',
-                    message=f'Database imported from {os.path.basename(sql_file_path)}',
+                    action="database_restore",
+                    level="success",
+                    message=f"Database imported from {os.path.basename(sql_file_path)}",
                 )
                 return True, "Import completed successfully"
             else:
@@ -938,9 +932,9 @@ class DatabaseService:
                 ServerLog.objects.create(
                     server=tenant_db.server,
                     database=tenant_db,
-                    action='database_restore',
-                    level='error',
-                    message=f'Import failed: {error}',
+                    action="database_restore",
+                    level="error",
+                    message=f"Import failed: {error}",
                 )
                 return False, error
         except FileNotFoundError:
@@ -990,10 +984,10 @@ class DatabaseService:
             ServerLog.objects.create(
                 server=source_db.server,
                 database=new_db,
-                action='database_clone',
-                level='success',
-                message=f'Cloned from {source_db.name} to {new_db.name}',
-                details={'source': source_db.name},
+                action="database_clone",
+                level="success",
+                message=f"Cloned from {source_db.name} to {new_db.name}",
+                details={"source": source_db.name},
             )
             return True, new_db
         else:
@@ -1008,10 +1002,7 @@ class DatabaseService:
         """
         from ..models import ServerLog
 
-        new_password = ''.join(
-            secrets.choice(string.ascii_letters + string.digits)
-            for _ in range(24)
-        )
+        new_password = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(24))
 
         conn = None
         try:
@@ -1019,9 +1010,7 @@ class DatabaseService:
             conn.autocommit = True
             with conn.cursor() as cur:
                 cur.execute(
-                    sql.SQL("ALTER USER {} WITH PASSWORD %s").format(
-                        sql.Identifier(tenant_db.db_username)
-                    ),
+                    sql.SQL("ALTER USER {} WITH PASSWORD %s").format(sql.Identifier(tenant_db.db_username)),
                     [new_password],
                 )
 
@@ -1031,9 +1020,9 @@ class DatabaseService:
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_update',
-                level='success',
-                message=f'Password reset for user {tenant_db.db_username}',
+                action="database_update",
+                level="success",
+                message=f"Password reset for user {tenant_db.db_username}",
             )
 
             return True, "Password reset successful"
@@ -1041,9 +1030,9 @@ class DatabaseService:
             ServerLog.objects.create(
                 server=tenant_db.server,
                 database=tenant_db,
-                action='database_update',
-                level='error',
-                message=f'Password reset failed: {str(e)}',
+                action="database_update",
+                level="error",
+                message=f"Password reset failed: {str(e)}",
             )
             return False, str(e)
         finally:
@@ -1056,7 +1045,8 @@ class DatabaseService:
         try:
             conn = self.get_admin_connection(tenant_db.server)
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT
                         l.pid,
                         a.usename,
@@ -1070,7 +1060,9 @@ class DatabaseService:
                     JOIN pg_stat_activity a ON l.pid = a.pid
                     WHERE a.datname = %s
                     ORDER BY l.granted, l.pid
-                """, [tenant_db.name])
+                """,
+                    [tenant_db.name],
+                )
                 columns = [desc[0] for desc in cur.description]
                 return [dict(zip(columns, row)) for row in cur.fetchall()]
         except Exception as e:
@@ -1149,20 +1141,33 @@ class DatabaseService:
         try:
             conn = self.get_admin_connection(server)
             important_settings = [
-                'max_connections', 'shared_buffers', 'effective_cache_size',
-                'work_mem', 'maintenance_work_mem', 'wal_buffers',
-                'checkpoint_completion_target', 'random_page_cost',
-                'effective_io_concurrency', 'max_worker_processes',
-                'max_parallel_workers', 'max_wal_size', 'min_wal_size',
-                'log_min_duration_statement', 'timezone', 'server_version',
+                "max_connections",
+                "shared_buffers",
+                "effective_cache_size",
+                "work_mem",
+                "maintenance_work_mem",
+                "wal_buffers",
+                "checkpoint_completion_target",
+                "random_page_cost",
+                "effective_io_concurrency",
+                "max_worker_processes",
+                "max_parallel_workers",
+                "max_wal_size",
+                "min_wal_size",
+                "log_min_duration_statement",
+                "timezone",
+                "server_version",
             ]
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT name, setting, unit, short_desc, category
                     FROM pg_settings
                     WHERE name = ANY(%s)
                     ORDER BY category, name
-                """, [important_settings])
+                """,
+                    [important_settings],
+                )
                 columns = [desc[0] for desc in cur.description]
                 return [dict(zip(columns, row)) for row in cur.fetchall()]
         except Exception as e:

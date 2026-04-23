@@ -26,7 +26,7 @@ from erp.api.permissions import DefaultDbTokenAuthentication, IsCompanyAdmin
 
 from .pagination import AdminMobilePagination
 
-ADMIN_MOBILE_TAG = 'admin-mobile'
+ADMIN_MOBILE_TAG = "admin-mobile"
 
 
 @extend_schema(tags=[ADMIN_MOBILE_TAG])
@@ -55,7 +55,7 @@ class AdminMobileBaseViewSet(viewsets.ModelViewSet):
 
         company = resolve_admin_company(self.request.user)
         if company is None:
-            raise PermissionDenied('No company found for this tenant.')
+            raise PermissionDenied("No company found for this tenant.")
         return company
 
     def get_queryset(self):
@@ -64,7 +64,7 @@ class AdminMobileBaseViewSet(viewsets.ModelViewSet):
         if queryset is None:
             return queryset
         company = self.get_company()
-        if company and hasattr(queryset.model, 'company'):
+        if company and hasattr(queryset.model, "company"):
             return queryset.filter(company=company)
         return queryset
 
@@ -78,7 +78,7 @@ class AdminMobileBaseViewSet(viewsets.ModelViewSet):
         """Soft-delete ERP models; hard-delete everything else."""
         from erp.models.base import ERPBaseModel
 
-        if isinstance(instance, ERPBaseModel) and hasattr(instance, 'soft_delete'):
+        if isinstance(instance, ERPBaseModel) and hasattr(instance, "soft_delete"):
             instance.soft_delete()
         else:
             instance.delete()
@@ -106,7 +106,7 @@ class AdminMobileReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 
         company = resolve_admin_company(self.request.user)
         if company is None:
-            raise PermissionDenied('No company found for this tenant.')
+            raise PermissionDenied("No company found for this tenant.")
         return company
 
     def get_queryset(self):
@@ -114,6 +114,6 @@ class AdminMobileReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         if queryset is None:
             return queryset
         company = self.get_company()
-        if company and hasattr(queryset.model, 'company'):
+        if company and hasattr(queryset.model, "company"):
             return queryset.filter(company=company)
         return queryset

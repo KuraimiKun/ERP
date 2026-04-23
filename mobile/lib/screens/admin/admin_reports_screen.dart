@@ -89,9 +89,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
           Expanded(
             child: TabBarView(
               controller: _tab,
-              children: [
-                for (final r in _reports) _ReportPane(def: r),
-              ],
+              children: [for (final r in _reports) _ReportPane(def: r)],
             ),
           ),
         ],
@@ -226,24 +224,20 @@ class _KvRow extends StatelessWidget {
   final Widget child;
   final int depth;
 
-  const _KvRow({
-    required this.label,
-    required this.child,
-    required this.depth,
-  });
+  const _KvRow({required this.label, required this.child, required this.depth});
 
   @override
   Widget build(BuildContext context) {
     final sem = AppTheme.semantics(context);
     return Padding(
-      padding: EdgeInsets.only(
-          left: depth * 4.0, top: 4, bottom: 4, right: 0),
+      padding: EdgeInsets.only(left: depth * 4.0, top: 4, bottom: 4, right: 0),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Cap label column at ~40% of the available width (and no more
           // than 160) so deeply-nested rows never blow past their parent.
-          final labelWidth =
-              constraints.maxWidth * 0.4 > 160 ? 160.0 : constraints.maxWidth * 0.4;
+          final labelWidth = constraints.maxWidth * 0.4 > 160
+              ? 160.0
+              : constraints.maxWidth * 0.4;
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -252,9 +246,9 @@ class _KvRow extends StatelessWidget {
                 child: Text(
                   _humanize(label),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: sem.textFaint,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: sem.textFaint,
+                    fontWeight: FontWeight.w600,
+                  ),
                   softWrap: true,
                 ),
               ),

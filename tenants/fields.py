@@ -29,12 +29,12 @@ def _get_fernet():
     """Return a cached Fernet instance (created on first call)."""
     global _fernet_instance
     if _fernet_instance is None:
-        key = getattr(settings, 'FIELD_ENCRYPTION_KEY', '')
+        key = getattr(settings, "FIELD_ENCRYPTION_KEY", "")
         if not key:
             raise RuntimeError(
-                'FIELD_ENCRYPTION_KEY is not set.  Generate one with:\n'
+                "FIELD_ENCRYPTION_KEY is not set.  Generate one with:\n"
                 '  python -c "from cryptography.fernet import Fernet; '
-                "print(Fernet.generate_key().decode())\""
+                'print(Fernet.generate_key().decode())"'
             )
         if isinstance(key, str):
             key = key.encode()
@@ -44,7 +44,7 @@ def _get_fernet():
 
 # Prefix stored in the DB column so we can distinguish encrypted values
 # from legacy plaintext values during the migration window.
-_ENC_PREFIX = 'enc::'
+_ENC_PREFIX = "enc::"
 
 
 class EncryptedCharField(models.CharField):
@@ -59,25 +59,25 @@ class EncryptedCharField(models.CharField):
     def get_prep_value(self, value):
         """Encrypt before storing."""
         value = super().get_prep_value(value)
-        if value is None or value == '':
+        if value is None or value == "":
             return value
         # Already encrypted (e.g. bulk update that passes raw DB value)
         if isinstance(value, str) and value.startswith(_ENC_PREFIX):
             return value
         token = _get_fernet().encrypt(value.encode()).decode()
-        return f'{_ENC_PREFIX}{token}'
+        return f"{_ENC_PREFIX}{token}"
 
     def from_db_value(self, value, expression, connection):
         """Decrypt when reading from the database."""
-        if value is None or value == '':
+        if value is None or value == "":
             return value
         if isinstance(value, str) and value.startswith(_ENC_PREFIX):
-            token = value[len(_ENC_PREFIX):]
+            token = value[len(_ENC_PREFIX) :]
             try:
                 return _get_fernet().decrypt(token.encode()).decode()
             except InvalidToken:
-                logger.error('Failed to decrypt field – wrong FIELD_ENCRYPTION_KEY?')
-                return ''
+                logger.error("Failed to decrypt field – wrong FIELD_ENCRYPTION_KEY?")
+                return ""
         # Legacy plaintext value – return as-is
         return value
 
@@ -85,4 +85,4 @@ class EncryptedCharField(models.CharField):
         # Fernet output is ~2.4x the input length; use TextField storage
         # if the column needs more room.  For CharField(max_length=255) the
         # encrypted output fits comfortably in 512 chars.
-        return 'CharField'
+        return "CharField"

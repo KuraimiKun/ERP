@@ -7,47 +7,85 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp_ai', '0003_add_explanation_result'),
+        ("erp_ai", "0003_add_explanation_result"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AITrainingRun',
+            name="AITrainingRun",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('run_type', models.CharField(choices=[('lead_scoring', 'Lead Scoring'), ('late_payment', 'Late Payment'), ('attrition', 'Attrition'), ('demand_forecast', 'Demand Forecast'), ('all_models', 'All Primary Models')], max_length=30)),
-                ('evaluate', models.BooleanField(default=False)),
-                ('status', models.CharField(choices=[('in_progress', 'In Progress'), ('completed', 'Completed'), ('completed_with_warnings', 'Completed With Warnings'), ('skipped', 'Skipped'), ('failed', 'Failed')], default='in_progress', max_length=30)),
-                ('started_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('finished_at', models.DateTimeField(blank=True, null=True)),
-                ('duration_seconds', models.FloatField(blank=True, null=True)),
-                ('summary_message', models.CharField(blank=True, max_length=500)),
-                ('results', models.JSONField(blank=True, default=dict)),
-                ('error_message', models.TextField(blank=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='ai_training_runs', to='erp.company')),
-                ('requested_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='ai_training_runs', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "run_type",
+                    models.CharField(
+                        choices=[
+                            ("lead_scoring", "Lead Scoring"),
+                            ("late_payment", "Late Payment"),
+                            ("attrition", "Attrition"),
+                            ("demand_forecast", "Demand Forecast"),
+                            ("all_models", "All Primary Models"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("evaluate", models.BooleanField(default=False)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("in_progress", "In Progress"),
+                            ("completed", "Completed"),
+                            ("completed_with_warnings", "Completed With Warnings"),
+                            ("skipped", "Skipped"),
+                            ("failed", "Failed"),
+                        ],
+                        default="in_progress",
+                        max_length=30,
+                    ),
+                ),
+                ("started_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("finished_at", models.DateTimeField(blank=True, null=True)),
+                ("duration_seconds", models.FloatField(blank=True, null=True)),
+                ("summary_message", models.CharField(blank=True, max_length=500)),
+                ("results", models.JSONField(blank=True, default=dict)),
+                ("error_message", models.TextField(blank=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="ai_training_runs", to="erp.company"
+                    ),
+                ),
+                (
+                    "requested_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="ai_training_runs",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'AI Training Run',
-                'verbose_name_plural': 'AI Training Runs',
-                'ordering': ['-created_at'],
+                "verbose_name": "AI Training Run",
+                "verbose_name_plural": "AI Training Runs",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.AddIndex(
-            model_name='aitrainingrun',
-            index=models.Index(fields=['company', 'status', 'created_at'], name='ai_trn_cmp_st_ct_idx'),
+            model_name="aitrainingrun",
+            index=models.Index(fields=["company", "status", "created_at"], name="ai_trn_cmp_st_ct_idx"),
         ),
         migrations.AddIndex(
-            model_name='aitrainingrun',
-            index=models.Index(fields=['company', 'created_at'], name='ai_trn_cmp_ct_idx'),
+            model_name="aitrainingrun",
+            index=models.Index(fields=["company", "created_at"], name="ai_trn_cmp_ct_idx"),
         ),
         migrations.AddIndex(
-            model_name='aitrainingrun',
-            index=models.Index(fields=['status', 'started_at'], name='ai_trn_st_st_idx'),
+            model_name="aitrainingrun",
+            index=models.Index(fields=["status", "started_at"], name="ai_trn_st_st_idx"),
         ),
     ]

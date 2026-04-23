@@ -100,100 +100,249 @@ from erp.models import (
 
 # Master-data row counts per scale
 MASTER_SCALE = {
-    "tiny":   dict(depts=3,  employees=5,   customers=10,  suppliers=5,   products=10,  services=5,   leads=10,  campaigns=2,  warehouses=1),
-    "small":  dict(depts=5,  employees=20,  customers=50,  suppliers=20,  products=50,  services=20,  leads=50,  campaigns=5,  warehouses=2),
-    "medium": dict(depts=8,  employees=50,  customers=200, suppliers=50,  products=200, services=50,  leads=200, campaigns=10, warehouses=3),
-    "large":  dict(depts=10, employees=100, customers=500, suppliers=100, products=500, services=100, leads=500, campaigns=20, warehouses=5),
-    "xl":     dict(depts=15, employees=200, customers=1000,suppliers=200, products=1000,services=200, leads=1000,campaigns=30, warehouses=7),
+    "tiny": dict(
+        depts=3, employees=5, customers=10, suppliers=5, products=10, services=5, leads=10, campaigns=2, warehouses=1
+    ),
+    "small": dict(
+        depts=5, employees=20, customers=50, suppliers=20, products=50, services=20, leads=50, campaigns=5, warehouses=2
+    ),
+    "medium": dict(
+        depts=8,
+        employees=50,
+        customers=200,
+        suppliers=50,
+        products=200,
+        services=50,
+        leads=200,
+        campaigns=10,
+        warehouses=3,
+    ),
+    "large": dict(
+        depts=10,
+        employees=100,
+        customers=500,
+        suppliers=100,
+        products=500,
+        services=100,
+        leads=500,
+        campaigns=20,
+        warehouses=5,
+    ),
+    "xl": dict(
+        depts=15,
+        employees=200,
+        customers=1000,
+        suppliers=200,
+        products=1000,
+        services=200,
+        leads=1000,
+        campaigns=30,
+        warehouses=7,
+    ),
 }
 
 # Transactional row counts per scale
 TRANSACTION_SCALE = {
-    "tiny":   dict(invoices=50,    pos=20,    quotes=30,   expenses=30,   journal_entries=50,   attendance_days=30,  payroll_months=2,  grns=10,   transfers=5,   adjustments=3,  counts=2,  assets=5),
-    "small":  dict(invoices=500,   pos=100,   quotes=200,  expenses=150,  journal_entries=300,  attendance_days=90,  payroll_months=3,  grns=40,   transfers=15,  adjustments=8,  counts=5,  assets=15),
-    "medium": dict(invoices=2000,  pos=400,   quotes=800,  expenses=600,  journal_entries=1000, attendance_days=180, payroll_months=6,  grns=150,  transfers=50,  adjustments=20, counts=10, assets=40),
-    "large":  dict(invoices=10000, pos=2000,  quotes=4000, expenses=2000, journal_entries=5000, attendance_days=365, payroll_months=12, grns=600,  transfers=200, adjustments=80, counts=30, assets=100),
-    "xl":     dict(invoices=50000, pos=10000, quotes=20000,expenses=8000, journal_entries=20000,attendance_days=730, payroll_months=24, grns=3000, transfers=800, adjustments=300,counts=100,assets=300),
+    "tiny": dict(
+        invoices=50,
+        pos=20,
+        quotes=30,
+        expenses=30,
+        journal_entries=50,
+        attendance_days=30,
+        payroll_months=2,
+        grns=10,
+        transfers=5,
+        adjustments=3,
+        counts=2,
+        assets=5,
+    ),
+    "small": dict(
+        invoices=500,
+        pos=100,
+        quotes=200,
+        expenses=150,
+        journal_entries=300,
+        attendance_days=90,
+        payroll_months=3,
+        grns=40,
+        transfers=15,
+        adjustments=8,
+        counts=5,
+        assets=15,
+    ),
+    "medium": dict(
+        invoices=2000,
+        pos=400,
+        quotes=800,
+        expenses=600,
+        journal_entries=1000,
+        attendance_days=180,
+        payroll_months=6,
+        grns=150,
+        transfers=50,
+        adjustments=20,
+        counts=10,
+        assets=40,
+    ),
+    "large": dict(
+        invoices=10000,
+        pos=2000,
+        quotes=4000,
+        expenses=2000,
+        journal_entries=5000,
+        attendance_days=365,
+        payroll_months=12,
+        grns=600,
+        transfers=200,
+        adjustments=80,
+        counts=30,
+        assets=100,
+    ),
+    "xl": dict(
+        invoices=50000,
+        pos=10000,
+        quotes=20000,
+        expenses=8000,
+        journal_entries=20000,
+        attendance_days=730,
+        payroll_months=24,
+        grns=3000,
+        transfers=800,
+        adjustments=300,
+        counts=100,
+        assets=300,
+    ),
 }
 
 
 # --- Inventory / Warehouse / Asset Reference Data ----------------------------
 
 _WAREHOUSE_TEMPLATES = [
-    {'code': 'WH-MAIN', 'name': 'Main Warehouse',           'name_ar': 'المستودع الرئيسي',        'city': 'Riyadh', 'country': 'Saudi Arabia'},
-    {'code': 'WH-DIST', 'name': 'Distribution Center',      'name_ar': 'مركز التوزيع',            'city': 'Jeddah', 'country': 'Saudi Arabia'},
-    {'code': 'WH-RAW',  'name': 'Raw Materials Store',      'name_ar': 'مستودع المواد الخام',      'city': 'Dammam', 'country': 'Saudi Arabia'},
-    {'code': 'WH-FIN',  'name': 'Finished Goods Warehouse', 'name_ar': 'مستودع المنتجات النهائية', 'city': 'Riyadh', 'country': 'Saudi Arabia'},
-    {'code': 'WH-QAR',  'name': 'QA & Returns Center',      'name_ar': 'مركز الجودة والمرتجعات',   'city': 'Riyadh', 'country': 'Saudi Arabia'},
-    {'code': 'WH-COLD', 'name': 'Cold Storage Facility',    'name_ar': 'مستودع التبريد',           'city': 'Jeddah', 'country': 'Saudi Arabia'},
-    {'code': 'WH-TEMP', 'name': 'Temporary Staging Area',   'name_ar': 'منطقة التجميع المؤقتة',    'city': 'Makkah', 'country': 'Saudi Arabia'},
+    {
+        "code": "WH-MAIN",
+        "name": "Main Warehouse",
+        "name_ar": "المستودع الرئيسي",
+        "city": "Riyadh",
+        "country": "Saudi Arabia",
+    },
+    {
+        "code": "WH-DIST",
+        "name": "Distribution Center",
+        "name_ar": "مركز التوزيع",
+        "city": "Jeddah",
+        "country": "Saudi Arabia",
+    },
+    {
+        "code": "WH-RAW",
+        "name": "Raw Materials Store",
+        "name_ar": "مستودع المواد الخام",
+        "city": "Dammam",
+        "country": "Saudi Arabia",
+    },
+    {
+        "code": "WH-FIN",
+        "name": "Finished Goods Warehouse",
+        "name_ar": "مستودع المنتجات النهائية",
+        "city": "Riyadh",
+        "country": "Saudi Arabia",
+    },
+    {
+        "code": "WH-QAR",
+        "name": "QA & Returns Center",
+        "name_ar": "مركز الجودة والمرتجعات",
+        "city": "Riyadh",
+        "country": "Saudi Arabia",
+    },
+    {
+        "code": "WH-COLD",
+        "name": "Cold Storage Facility",
+        "name_ar": "مستودع التبريد",
+        "city": "Jeddah",
+        "country": "Saudi Arabia",
+    },
+    {
+        "code": "WH-TEMP",
+        "name": "Temporary Staging Area",
+        "name_ar": "منطقة التجميع المؤقتة",
+        "city": "Makkah",
+        "country": "Saudi Arabia",
+    },
 ]
 
 _ZONE_TEMPLATES = [
-    {'code': 'RCV',  'name': 'Receiving Area',    'name_ar': 'منطقة الاستلام',   'zone_type': 'receiving'},
-    {'code': 'BULK', 'name': 'Bulk Storage',      'name_ar': 'تخزين بالجملة',    'zone_type': 'storage'},
-    {'code': 'PICK', 'name': 'Pick Face',         'name_ar': 'منطقة التجميع',    'zone_type': 'picking'},
-    {'code': 'PACK', 'name': 'Packing Area',      'name_ar': 'منطقة التعبئة',    'zone_type': 'packing'},
-    {'code': 'SHIP', 'name': 'Shipping Dock',     'name_ar': 'رصيف الشحن',      'zone_type': 'shipping'},
-    {'code': 'QRN',  'name': 'Quarantine',        'name_ar': 'منطقة الحجر',      'zone_type': 'quarantine'},
-    {'code': 'RET',  'name': 'Returns Processing','name_ar': 'معالجة المرتجعات',  'zone_type': 'returns'},
+    {"code": "RCV", "name": "Receiving Area", "name_ar": "منطقة الاستلام", "zone_type": "receiving"},
+    {"code": "BULK", "name": "Bulk Storage", "name_ar": "تخزين بالجملة", "zone_type": "storage"},
+    {"code": "PICK", "name": "Pick Face", "name_ar": "منطقة التجميع", "zone_type": "picking"},
+    {"code": "PACK", "name": "Packing Area", "name_ar": "منطقة التعبئة", "zone_type": "packing"},
+    {"code": "SHIP", "name": "Shipping Dock", "name_ar": "رصيف الشحن", "zone_type": "shipping"},
+    {"code": "QRN", "name": "Quarantine", "name_ar": "منطقة الحجر", "zone_type": "quarantine"},
+    {"code": "RET", "name": "Returns Processing", "name_ar": "معالجة المرتجعات", "zone_type": "returns"},
 ]
 
 _UOM_DATA = [
-    {'name': 'Piece',        'name_ar': 'قطعة',      'abbr': 'pc',  'category': 'unit',   'is_base': True},
-    {'name': 'Dozen',        'name_ar': 'درزن',      'abbr': 'dz',  'category': 'unit',   'is_base': False},
-    {'name': 'Box',          'name_ar': 'صندوق',     'abbr': 'box', 'category': 'unit',   'is_base': False},
-    {'name': 'Carton',       'name_ar': 'كرتون',     'abbr': 'ctn', 'category': 'unit',   'is_base': False},
-    {'name': 'Pallet',       'name_ar': 'طبلية',     'abbr': 'plt', 'category': 'unit',   'is_base': False},
-    {'name': 'Kilogram',     'name_ar': 'كيلوغرام',  'abbr': 'kg',  'category': 'weight', 'is_base': True},
-    {'name': 'Gram',         'name_ar': 'غرام',      'abbr': 'g',   'category': 'weight', 'is_base': False},
-    {'name': 'Metric Ton',   'name_ar': 'طن',        'abbr': 'ton', 'category': 'weight', 'is_base': False},
-    {'name': 'Liter',        'name_ar': 'لتر',       'abbr': 'L',   'category': 'volume', 'is_base': True},
-    {'name': 'Milliliter',   'name_ar': 'مليلتر',    'abbr': 'mL',  'category': 'volume', 'is_base': False},
-    {'name': 'Meter',        'name_ar': 'متر',       'abbr': 'm',   'category': 'length', 'is_base': True},
-    {'name': 'Centimeter',   'name_ar': 'سنتيمتر',   'abbr': 'cm',  'category': 'length', 'is_base': False},
-    {'name': 'Square Meter', 'name_ar': 'متر مربع',  'abbr': 'sqm', 'category': 'area',   'is_base': True},
-    {'name': 'Hour',         'name_ar': 'ساعة',      'abbr': 'hr',  'category': 'time',   'is_base': True},
+    {"name": "Piece", "name_ar": "قطعة", "abbr": "pc", "category": "unit", "is_base": True},
+    {"name": "Dozen", "name_ar": "درزن", "abbr": "dz", "category": "unit", "is_base": False},
+    {"name": "Box", "name_ar": "صندوق", "abbr": "box", "category": "unit", "is_base": False},
+    {"name": "Carton", "name_ar": "كرتون", "abbr": "ctn", "category": "unit", "is_base": False},
+    {"name": "Pallet", "name_ar": "طبلية", "abbr": "plt", "category": "unit", "is_base": False},
+    {"name": "Kilogram", "name_ar": "كيلوغرام", "abbr": "kg", "category": "weight", "is_base": True},
+    {"name": "Gram", "name_ar": "غرام", "abbr": "g", "category": "weight", "is_base": False},
+    {"name": "Metric Ton", "name_ar": "طن", "abbr": "ton", "category": "weight", "is_base": False},
+    {"name": "Liter", "name_ar": "لتر", "abbr": "L", "category": "volume", "is_base": True},
+    {"name": "Milliliter", "name_ar": "مليلتر", "abbr": "mL", "category": "volume", "is_base": False},
+    {"name": "Meter", "name_ar": "متر", "abbr": "m", "category": "length", "is_base": True},
+    {"name": "Centimeter", "name_ar": "سنتيمتر", "abbr": "cm", "category": "length", "is_base": False},
+    {"name": "Square Meter", "name_ar": "متر مربع", "abbr": "sqm", "category": "area", "is_base": True},
+    {"name": "Hour", "name_ar": "ساعة", "abbr": "hr", "category": "time", "is_base": True},
 ]
 
 _UOM_CONVERSIONS = [
-    ('dz',  'pc',  12),
-    ('box', 'pc',  24),
-    ('ctn', 'box', 10),
-    ('plt', 'ctn', 40),
-    ('kg',  'g',   1000),
-    ('ton', 'kg',  1000),
-    ('L',   'mL',  1000),
-    ('m',   'cm',  100),
+    ("dz", "pc", 12),
+    ("box", "pc", 24),
+    ("ctn", "box", 10),
+    ("plt", "ctn", 40),
+    ("kg", "g", 1000),
+    ("ton", "kg", 1000),
+    ("L", "mL", 1000),
+    ("m", "cm", 100),
 ]
 
 _ASSET_TEMPLATES = [
     # (name, name_ar, category_code, cost_lo, cost_hi)
-    ('Head Office Building',       'مبنى المكتب الرئيسي',        'FA-BLD', 500_000, 3_000_000),
-    ('Warehouse Building',         'مبنى المستودع',             'FA-BLD', 300_000, 1_500_000),
-    ('Executive Desk Set',         'طقم مكتب تنفيذي',           'FA-FRN', 3_000,   12_000),
-    ('Conference Room Furniture',  'أثاث غرفة الاجتماعات',       'FA-FRN', 8_000,   35_000),
-    ('Office Chairs (10 pcs)',     'كراسي مكتب (١٠ قطع)',        'FA-FRN', 5_000,   20_000),
-    ('Storage Shelving Units',     'وحدات أرفف تخزين',           'FA-FRN', 4_000,   15_000),
-    ('Delivery Van',               'شاحنة توصيل',               'FA-VEH', 60_000,  180_000),
-    ('Company Sedan',              'سيارة الشركة',               'FA-VEH', 80_000,  250_000),
-    ('Forklift',                   'رافعة شوكية',               'FA-VEH', 40_000,  120_000),
-    ('Dell PowerEdge Server',      'خادم Dell PowerEdge',       'FA-IT',  25_000,  100_000),
-    ('Laptop Fleet (10 units)',    'أسطول حواسيب محمولة (١٠)',    'FA-IT',  15_000,  50_000),
-    ('Network Switch & Cabling',   'مفتاح شبكة وتوصيلات',       'FA-IT',  10_000,  40_000),
-    ('CCTV Security System',       'نظام كاميرات مراقبة',        'FA-IT',  8_000,   30_000),
-    ('ERP Software License',       'ترخيص نظام ERP',            'FA-IT',  20_000,  80_000),
-    ('Office Interior Renovation', 'تجديد ديكور المكتب',         'FA-LHI', 50_000,  250_000),
-    ('Warehouse Fit-Out',          'تجهيز المستودع',             'FA-LHI', 40_000,  200_000),
+    ("Head Office Building", "مبنى المكتب الرئيسي", "FA-BLD", 500_000, 3_000_000),
+    ("Warehouse Building", "مبنى المستودع", "FA-BLD", 300_000, 1_500_000),
+    ("Executive Desk Set", "طقم مكتب تنفيذي", "FA-FRN", 3_000, 12_000),
+    ("Conference Room Furniture", "أثاث غرفة الاجتماعات", "FA-FRN", 8_000, 35_000),
+    ("Office Chairs (10 pcs)", "كراسي مكتب (١٠ قطع)", "FA-FRN", 5_000, 20_000),
+    ("Storage Shelving Units", "وحدات أرفف تخزين", "FA-FRN", 4_000, 15_000),
+    ("Delivery Van", "شاحنة توصيل", "FA-VEH", 60_000, 180_000),
+    ("Company Sedan", "سيارة الشركة", "FA-VEH", 80_000, 250_000),
+    ("Forklift", "رافعة شوكية", "FA-VEH", 40_000, 120_000),
+    ("Dell PowerEdge Server", "خادم Dell PowerEdge", "FA-IT", 25_000, 100_000),
+    ("Laptop Fleet (10 units)", "أسطول حواسيب محمولة (١٠)", "FA-IT", 15_000, 50_000),
+    ("Network Switch & Cabling", "مفتاح شبكة وتوصيلات", "FA-IT", 10_000, 40_000),
+    ("CCTV Security System", "نظام كاميرات مراقبة", "FA-IT", 8_000, 30_000),
+    ("ERP Software License", "ترخيص نظام ERP", "FA-IT", 20_000, 80_000),
+    ("Office Interior Renovation", "تجديد ديكور المكتب", "FA-LHI", 50_000, 250_000),
+    ("Warehouse Fit-Out", "تجهيز المستودع", "FA-LHI", 40_000, 200_000),
 ]
 
 _CARRIER_NAMES = [
-    'DHL Express', 'FedEx', 'Aramex', 'SMSA Express', 'UPS',
-    'Naqel Express', 'Saudi Post', 'Zajil Express', 'J&T Express',
+    "DHL Express",
+    "FedEx",
+    "Aramex",
+    "SMSA Express",
+    "UPS",
+    "Naqel Express",
+    "Saudi Post",
+    "Zajil Express",
+    "J&T Express",
 ]
 
 
 # --- Helpers ------------------------------------------------------------------
+
 
 def _uid(prefix: str = "", length: int = 8) -> str:
     """Short unique hex ID, optionally prefixed."""
@@ -232,6 +381,7 @@ def _bulk(model, objs, batch_size: int = 2000, msg_prefix: str = ""):
 
 
 # --- Command ------------------------------------------------------------------
+
 
 class Command(BaseCommand):
     help = "Seed realistic test data for a tenant company (hybrid Factory Boy + bulk_create)."
@@ -295,24 +445,15 @@ class Command(BaseCommand):
             tenant_db = TenantDatabase.objects.filter(status="active").first()
             if not tenant_db:
                 raise CommandError(
-                    "No active tenant database found. "
-                    "Run 'migrate_tenants' first or pass --tenant <name>."
+                    "No active tenant database found. Run 'migrate_tenants' first or pass --tenant <name>."
                 )
-            self.stdout.write(
-                self.style.WARNING(
-                    f"No --tenant specified; using first active tenant: {tenant_db.name}"
-                )
-            )
+            self.stdout.write(self.style.WARNING(f"No --tenant specified; using first active tenant: {tenant_db.name}"))
         else:
             try:
                 tenant_db = TenantDatabase.objects.get(name=tenant_name)
             except TenantDatabase.DoesNotExist:
-                available = list(
-                    TenantDatabase.objects.filter(status="active").values_list("name", flat=True)
-                )
-                raise CommandError(
-                    f"Tenant '{tenant_name}' not found. Available: {available or 'none'}"
-                )
+                available = list(TenantDatabase.objects.filter(status="active").values_list("name", flat=True))
+                raise CommandError(f"Tenant '{tenant_name}' not found. Available: {available or 'none'}")
         return add_tenant_database(tenant_db)
 
     def _run(self, options):
@@ -480,10 +621,10 @@ class Command(BaseCommand):
             "customer_ids": list(Customer.objects.filter(company=company).values_list("id", flat=True)),
             "supplier_ids": list(Supplier.objects.filter(company=company).values_list("id", flat=True)),
             "employee_ids": list(Employee.objects.filter(company=company).values_list("id", flat=True)),
-            "product_ids":  list(Product.objects.filter(company=company).values_list("id", flat=True)),
-            "service_ids":  list(ServicePricing.objects.filter(company=company).values_list("id", flat=True)),
-            "exp_cat_ids":  list(ExpenseCategory.objects.filter(company=company).values_list("id", flat=True)),
-            "currency_id":  currency.id,
+            "product_ids": list(Product.objects.filter(company=company).values_list("id", flat=True)),
+            "service_ids": list(ServicePricing.objects.filter(company=company).values_list("id", flat=True)),
+            "exp_cat_ids": list(ExpenseCategory.objects.filter(company=company).values_list("id", flat=True)),
+            "currency_id": currency.id,
             "warehouse_ids": list(Warehouse.objects.filter(company=company).values_list("id", flat=True)),
         }
 
@@ -511,22 +652,16 @@ class Command(BaseCommand):
         self.stdout.write(f"   [OK] {len(depts):>6,}  Departments")
 
         # Expense categories
-        exp_cats = ExpenseCategoryFactory.create_batch(
-            min(cfg["depts"] + 4, 10), company=company
-        )
+        exp_cats = ExpenseCategoryFactory.create_batch(min(cfg["depts"] + 4, 10), company=company)
         exp_cat_ids = [e.id for e in exp_cats]
         self.stdout.write(f"   [OK] {len(exp_cats):>6,}  Expense Categories")
 
         # Service categories
-        svc_cats = ServiceCategoryFactory.create_batch(
-            min(cfg["depts"], 8), company=company
-        )
+        svc_cats = ServiceCategoryFactory.create_batch(min(cfg["depts"], 8), company=company)
         self.stdout.write(f"   [OK] {len(svc_cats):>6,}  Service Categories")
 
         # Product categories
-        prod_cats = ProductCategoryFactory.create_batch(
-            min(cfg["depts"], 8), company=company
-        )
+        prod_cats = ProductCategoryFactory.create_batch(min(cfg["depts"], 8), company=company)
         self.stdout.write(f"   [OK] {len(prod_cats):>6,}  Product Categories")
 
         # Employees
@@ -637,35 +772,35 @@ class Command(BaseCommand):
             "customer_ids": customer_ids,
             "supplier_ids": supplier_ids,
             "employee_ids": employee_ids,
-            "product_ids":  product_ids,
-            "service_ids":  service_ids,
-            "exp_cat_ids":  exp_cat_ids,
-            "currency_id":  currency.id,
+            "product_ids": product_ids,
+            "service_ids": service_ids,
+            "exp_cat_ids": exp_cat_ids,
+            "currency_id": currency.id,
             **inv_ctx,
         }
 
     # --- Phase 2: Transactions via bulk_create -------------------------------
 
     def _seed_transactions(self, company, currency, fiscal_year, tax_rates, payment_methods, accounts, ctx, cfg):
-        customer_ids  = ctx["customer_ids"]
-        supplier_ids  = ctx["supplier_ids"]
-        employee_ids  = ctx["employee_ids"]
-        product_ids   = ctx["product_ids"]
-        service_ids   = ctx["service_ids"]
-        exp_cat_ids   = ctx["exp_cat_ids"]
-        currency_id   = ctx["currency_id"]
-        tax_rate_ids  = [t.id for t in tax_rates]
-        pm_ids        = [p.id for p in payment_methods]
+        customer_ids = ctx["customer_ids"]
+        supplier_ids = ctx["supplier_ids"]
+        employee_ids = ctx["employee_ids"]
+        product_ids = ctx["product_ids"]
+        service_ids = ctx["service_ids"]
+        exp_cat_ids = ctx["exp_cat_ids"]
+        currency_id = ctx["currency_id"]
+        tax_rate_ids = [t.id for t in tax_rates]
+        pm_ids = [p.id for p in payment_methods]
 
         if not customer_ids or not supplier_ids or not product_ids:
             self.stdout.write(self.style.WARNING("   [WARN] Not enough master data; skipping transactions."))
             return
 
         # Income/expense account IDs (fallback to any account if type missing)
-        income_acc_ids  = accounts.get("income")  or accounts.get("asset") or []
+        income_acc_ids = accounts.get("income") or accounts.get("asset") or []
         expense_acc_ids = accounts.get("expense") or accounts.get("asset") or []
-        asset_acc_ids   = accounts.get("asset")   or []
-        all_acc_ids     = income_acc_ids + expense_acc_ids + asset_acc_ids
+        asset_acc_ids = accounts.get("asset") or []
+        all_acc_ids = income_acc_ids + expense_acc_ids + asset_acc_ids
 
         # -- Invoices + Lines ---------------------------------------------------
         self._seed_invoices(company, customer_ids, currency_id, tax_rate_ids, cfg["invoices"])
@@ -702,24 +837,24 @@ class Command(BaseCommand):
 
     def _seed_invoices(self, company, customer_ids, currency_id, tax_rate_ids, count):
         STATUSES = ["draft", "sent", "partial", "paid", "overdue"]
-        TYPES    = ["standard", "standard", "standard", "credit", "debit"]  # weight standard
+        TYPES = ["standard", "standard", "standard", "credit", "debit"]  # weight standard
 
         # Global offset to avoid unique constraint collisions
         offset = Invoice.objects.count()
 
         invoice_objs = []
-        line_objs    = []
+        line_objs = []
 
         for n in range(count):
-            inv_date  = _rdate(730)
-            due_date  = inv_date + timedelta(days=random.choice([15, 30, 45, 60]))
-            subtotal  = _rdecimal(100, 50000)
-            tax_pct   = Decimal(random.choice(["0", "5", "15"]))
-            tax_amt   = round(subtotal * tax_pct / 100, 2)
-            total     = subtotal + tax_amt
-            status    = random.choice(STATUSES)
-            paid      = total if status == "paid" else (subtotal / 2 if status in ("partial",) else Decimal("0"))
-            balance   = total - paid
+            inv_date = _rdate(730)
+            due_date = inv_date + timedelta(days=random.choice([15, 30, 45, 60]))
+            subtotal = _rdecimal(100, 50000)
+            tax_pct = Decimal(random.choice(["0", "5", "15"]))
+            tax_amt = round(subtotal * tax_pct / 100, 2)
+            total = subtotal + tax_amt
+            status = random.choice(STATUSES)
+            paid = total if status == "paid" else (subtotal / 2 if status in ("partial",) else Decimal("0"))
+            balance = total - paid
 
             inv = Invoice(
                 company_id=company.id,
@@ -745,11 +880,11 @@ class Command(BaseCommand):
         # Lines: 1-5 lines per invoice
         for inv in created_invoices:
             lines_per_inv = random.randint(1, 5)
-            line_total    = round(inv.subtotal / lines_per_inv, 2)
+            line_total = round(inv.subtotal / lines_per_inv, 2)
             for _ in range(lines_per_inv):
-                qty       = Decimal(str(random.randint(1, 10)))
+                qty = Decimal(str(random.randint(1, 10)))
                 unit_price = round(line_total / qty, 2)
-                tax_r_id  = random.choice(tax_rate_ids) if tax_rate_ids else None
+                tax_r_id = random.choice(tax_rate_ids) if tax_rate_ids else None
                 line_objs.append(
                     InvoiceLine(
                         invoice_id=inv.id,
@@ -770,7 +905,7 @@ class Command(BaseCommand):
     def _seed_payments(self, company, customer_ids, currency_id, pm_ids, count):
         offset = Payment.objects.count()
         PTYPES = ["received", "received", "refund"]
-        objs   = []
+        objs = []
         for n in range(count):
             amt = _rdecimal(100, 20000)
             objs.append(
@@ -795,15 +930,15 @@ class Command(BaseCommand):
     def _seed_purchase_orders(self, company, supplier_ids, product_ids, currency_id, tax_rate_ids, count):
         offset = PurchaseOrder.objects.count()
         STATUSES = ["draft", "pending", "approved", "sent", "received"]
-        po_objs  = []
+        po_objs = []
         line_objs = []
 
         for n in range(count):
-            po_date   = _rdate(730)
-            exp_date  = po_date + timedelta(days=random.randint(7, 60))
-            subtotal  = _rdecimal(500, 100000)
-            tax_amt   = round(subtotal * Decimal("0.15"), 2)
-            total     = subtotal + tax_amt
+            po_date = _rdate(730)
+            exp_date = po_date + timedelta(days=random.randint(7, 60))
+            subtotal = _rdecimal(500, 100000)
+            tax_amt = round(subtotal * Decimal("0.15"), 2)
+            total = subtotal + tax_amt
 
             po = PurchaseOrder(
                 company_id=company.id,
@@ -826,10 +961,10 @@ class Command(BaseCommand):
         self.stdout.write(f"   [OK] {len(created_pos):>6,}  Purchase Orders")
 
         for po in created_pos:
-            n_lines   = random.randint(1, 6)
+            n_lines = random.randint(1, 6)
             line_total = round(po.subtotal / n_lines, 2)
             for _ in range(n_lines):
-                qty        = Decimal(str(random.randint(1, 20)))
+                qty = Decimal(str(random.randint(1, 20)))
                 unit_price = round(line_total / qty, 2)
                 line_objs.append(
                     PurchaseOrderLine(
@@ -853,14 +988,14 @@ class Command(BaseCommand):
         offset = Quote.objects.count()
         STATUSES = ["draft", "sent", "accepted", "declined", "expired"]
         quote_objs = []
-        line_objs  = []
+        line_objs = []
 
         for n in range(count):
-            q_date   = _rdate(730)
+            q_date = _rdate(730)
             valid_until = q_date + timedelta(days=random.randint(7, 30))
             subtotal = _rdecimal(200, 50000)
-            tax_amt  = round(subtotal * Decimal("0.15"), 2)
-            total    = subtotal + tax_amt
+            tax_amt = round(subtotal * Decimal("0.15"), 2)
+            total = subtotal + tax_amt
 
             quote_objs.append(
                 Quote(
@@ -883,10 +1018,10 @@ class Command(BaseCommand):
         self.stdout.write(f"   [OK] {len(created_quotes):>6,}  Quotes")
 
         for quote in created_quotes:
-            n_lines  = random.randint(1, 4)
+            n_lines = random.randint(1, 4)
             line_total = round(quote.subtotal / n_lines, 2)
             for _ in range(n_lines):
-                qty        = Decimal(str(random.randint(1, 10)))
+                qty = Decimal(str(random.randint(1, 10)))
                 unit_price = round(line_total / qty, 2)
                 line_objs.append(
                     QuoteLine(
@@ -909,13 +1044,13 @@ class Command(BaseCommand):
         if not exp_cat_ids:
             self.stdout.write("   [!]  No expense categories; skipping expenses.")
             return
-        offset   = Expense.objects.count()
+        offset = Expense.objects.count()
         STATUSES = ["draft", "submitted", "approved", "paid"]
-        objs     = []
+        objs = []
         for n in range(count):
-            amt    = _rdecimal(50, 5000)
-            tax    = round(amt * Decimal("0.15"), 2)
-            total  = amt + tax
+            amt = _rdecimal(50, 5000)
+            tax = round(amt * Decimal("0.15"), 2)
+            total = amt + tax
             objs.append(
                 Expense(
                     company_id=company.id,
@@ -941,9 +1076,10 @@ class Command(BaseCommand):
     def _seed_attendance(self, employee_ids, days_back: int):
         """Generate attendance records for each employee for the last N working days."""
         from datetime import date as date_cls
-        today    = date_cls.today()
-        objs     = []
-        seen     = set()   # (employee_id, date) -- unique_together constraint
+
+        today = date_cls.today()
+        objs = []
+        seen = set()  # (employee_id, date) -- unique_together constraint
 
         working_days = [
             today - timedelta(days=d)
@@ -957,11 +1093,11 @@ class Command(BaseCommand):
                 if key in seen:
                     continue
                 seen.add(key)
-                is_present  = random.random() > 0.05   # 95% attendance rate
-                is_late     = is_present and random.random() < 0.10
-                late_mins   = random.randint(5, 60) if is_late else 0
-                hours       = Decimal(str(round(random.uniform(6.5, 9.0), 2))) if is_present else Decimal("0")
-                overtime    = max(Decimal("0"), hours - Decimal("8"))
+                is_present = random.random() > 0.05  # 95% attendance rate
+                is_late = is_present and random.random() < 0.10
+                late_mins = random.randint(5, 60) if is_late else 0
+                hours = Decimal(str(round(random.uniform(6.5, 9.0), 2))) if is_present else Decimal("0")
+                overtime = max(Decimal("0"), hours - Decimal("8"))
                 objs.append(
                     Attendance(
                         employee_id=emp_id,
@@ -982,23 +1118,25 @@ class Command(BaseCommand):
     def _seed_payroll(self, employee_ids, currency_id, months: int):
         """Generate payroll for last N months for each employee."""
         from datetime import date as date_cls
-        today  = date_cls.today()
-        objs   = []
-        seen   = set()   # (employee_id, period_start, period_end)
+
+        today = date_cls.today()
+        objs = []
+        seen = set()  # (employee_id, period_start, period_end)
 
         # Fetch basic salaries once
         sal_map = dict(Employee.objects.filter(id__in=employee_ids).values_list("id", "basic_salary"))
 
         for month_offset in range(months):
             # Go back month_offset months
-            year  = today.year
+            year = today.year
             month = today.month - month_offset
             while month <= 0:
                 month += 12
-                year  -= 1
+                year -= 1
             from calendar import monthrange
+
             period_start = date_cls(year, month, 1)
-            period_end   = date_cls(year, month, monthrange(year, month)[1])
+            period_end = date_cls(year, month, monthrange(year, month)[1])
 
             for emp_id in employee_ids:
                 key = (emp_id, period_start, period_end)
@@ -1006,17 +1144,17 @@ class Command(BaseCommand):
                     continue
                 seen.add(key)
 
-                basic         = Decimal(str(sal_map.get(emp_id, 5000)))
-                housing       = round(basic * Decimal("0.25"), 2)
-                transport     = round(basic * Decimal("0.10"), 2)
-                other_allow   = _rdecimal(0, int(basic * Decimal("0.05")))
-                bonus         = _rdecimal(0, int(basic * Decimal("0.20")))
-                absence_ded   = _rdecimal(0, 200)
-                late_ded      = _rdecimal(0, 100)
-                social_ins    = round(basic * Decimal("0.09"), 2)
-                gross         = basic + housing + transport + other_allow + bonus
-                total_ded     = absence_ded + late_ded + social_ins
-                net           = gross - total_ded
+                basic = Decimal(str(sal_map.get(emp_id, 5000)))
+                housing = round(basic * Decimal("0.25"), 2)
+                transport = round(basic * Decimal("0.10"), 2)
+                other_allow = _rdecimal(0, int(basic * Decimal("0.05")))
+                bonus = _rdecimal(0, int(basic * Decimal("0.20")))
+                absence_ded = _rdecimal(0, 200)
+                late_ded = _rdecimal(0, 100)
+                social_ins = round(basic * Decimal("0.09"), 2)
+                gross = basic + housing + transport + other_allow + bonus
+                total_ded = absence_ded + late_ded + social_ins
+                net = gross - total_ded
 
                 objs.append(
                     Payroll(
@@ -1051,16 +1189,16 @@ class Command(BaseCommand):
     def _seed_journal_entries(self, company, fiscal_year, account_ids, count):
         """Balanced double-entry journal entries (debit == credit per entry)."""
         entry_objs = []
-        line_objs  = []
+        line_objs = []
 
         # Offset to avoid unique_together (company, entry_number) conflicts
         existing = JournalEntry.objects.filter(company=company).count()
-        TYPES    = ["manual", "adjustment", "manual", "manual"]  # weight manual
+        TYPES = ["manual", "adjustment", "manual", "manual"]  # weight manual
 
         for n in range(count):
             entry_date = _rdate(730)
-            amount     = _rdecimal(100, 25000)
-            desc       = f"JE memo {_uid()}"
+            amount = _rdecimal(100, 25000)
+            desc = f"JE memo {_uid()}"
 
             entry = JournalEntry(
                 company_id=company.id,
@@ -1080,9 +1218,9 @@ class Command(BaseCommand):
 
         # Each entry has exactly 2 balanced lines: one debit, one credit
         for entry in created:
-            debit_acc  = random.choice(account_ids)
+            debit_acc = random.choice(account_ids)
             credit_acc = random.choice(account_ids)
-            amount     = entry.total_debit
+            amount = entry.total_debit
             line_objs += [
                 JournalEntryLine(
                     journal_entry_id=entry.id,
@@ -1115,9 +1253,11 @@ class Command(BaseCommand):
         uom_map = {}
         for item in _UOM_DATA:
             uom, _ = UnitOfMeasure.objects.get_or_create(
-                company=company, abbreviation=item["abbr"],
+                company=company,
+                abbreviation=item["abbr"],
                 defaults={
-                    "name": item["name"], "name_ar": item["name_ar"],
+                    "name": item["name"],
+                    "name_ar": item["name_ar"],
                     "category": item["category"],
                     "is_base": item.get("is_base", False),
                 },
@@ -1130,7 +1270,8 @@ class Command(BaseCommand):
             if from_a in uom_map and to_a in uom_map:
                 UnitOfMeasureConversion.objects.get_or_create(
                     company=company,
-                    from_uom=uom_map[from_a], to_uom=uom_map[to_a],
+                    from_uom=uom_map[from_a],
+                    to_uom=uom_map[to_a],
                     defaults={"factor": Decimal(str(factor))},
                 )
                 conv_count += 1
@@ -1140,9 +1281,11 @@ class Command(BaseCommand):
         warehouses, all_zones, all_bins = [], [], []
         for wh_data in _WAREHOUSE_TEMPLATES[:n_warehouses]:
             wh, _ = Warehouse.objects.get_or_create(
-                company=company, code=wh_data["code"],
+                company=company,
+                code=wh_data["code"],
                 defaults={
-                    "name": wh_data["name"], "name_ar": wh_data["name_ar"],
+                    "name": wh_data["name"],
+                    "name_ar": wh_data["name_ar"],
                     "city": wh_data.get("city", ""),
                     "country": wh_data.get("country", ""),
                     "manager_id": random.choice(employee_ids) if employee_ids else None,
@@ -1152,17 +1295,21 @@ class Command(BaseCommand):
             warehouses.append(wh)
             for z_data in _ZONE_TEMPLATES:
                 zone, _ = WarehouseZone.objects.get_or_create(
-                    warehouse=wh, code=z_data["code"],
+                    warehouse=wh,
+                    code=z_data["code"],
                     defaults={
-                        "name": z_data["name"], "name_ar": z_data["name_ar"],
-                        "zone_type": z_data["zone_type"], "is_active": True,
+                        "name": z_data["name"],
+                        "name_ar": z_data["name_ar"],
+                        "zone_type": z_data["zone_type"],
+                        "is_active": True,
                     },
                 )
                 all_zones.append(zone)
                 for b in range(1, random.randint(3, 6) + 1):
                     bc = f"{z_data['code']}-{b:02d}"
                     bin_obj, _ = WarehouseBin.objects.get_or_create(
-                        zone=zone, code=bc,
+                        zone=zone,
+                        code=bc,
                         defaults={
                             "name": f"Bin {bc}",
                             "max_capacity": Decimal(str(random.randint(100, 1000))),
@@ -1198,9 +1345,9 @@ class Command(BaseCommand):
 
     def _seed_inventory_transactions(self, company, currency, fiscal_year, ctx, cfg):
         """Seed stock items, lots, GRNs, transfers, adjustments, cycle counts, pick/ship."""
-        wh_ids   = ctx.get("warehouse_ids", [])
+        wh_ids = ctx.get("warehouse_ids", [])
         prod_ids = ctx.get("product_ids", [])
-        sup_ids  = ctx.get("supplier_ids", [])
+        sup_ids = ctx.get("supplier_ids", [])
         cust_ids = ctx.get("customer_ids", [])
 
         if not wh_ids or not prod_ids:
@@ -1208,17 +1355,21 @@ class Command(BaseCommand):
             return
 
         # Stock Items (product x warehouse snapshots)
-        prod_sample = prod_ids[:min(len(prod_ids), 100)]
+        prod_sample = prod_ids[: min(len(prod_ids), 100)]
         stock_objs = []
         for wh_id in wh_ids:
             for pid in prod_sample:
                 oh = _rdecimal(10, 500)
-                stock_objs.append(StockItem(
-                    company=company, product_id=pid, warehouse_id=wh_id,
-                    on_hand=oh,
-                    allocated=_rdecimal(0, max(1, int(oh / 4))),
-                    unit_cost=_rdecimal(5, 200),
-                ))
+                stock_objs.append(
+                    StockItem(
+                        company=company,
+                        product_id=pid,
+                        warehouse_id=wh_id,
+                        on_hand=oh,
+                        allocated=_rdecimal(0, max(1, int(oh / 4))),
+                        unit_cost=_rdecimal(5, 200),
+                    )
+                )
         c = _bulk(StockItem, stock_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Stock Items")
 
@@ -1227,20 +1378,22 @@ class Command(BaseCommand):
         lot_objs = []
         for _ in range(n_lots):
             mfg = _rdate(365, 30)
-            lot_objs.append(LotBatch(
-                company=company, product_id=random.choice(prod_ids),
-                lot_number=f"LOT-{_uid()}",
-                manufacture_date=mfg,
-                expiry_date=mfg + timedelta(days=random.randint(180, 730)),
-                supplier_id=random.choice(sup_ids) if sup_ids else None,
-            ))
+            lot_objs.append(
+                LotBatch(
+                    company=company,
+                    product_id=random.choice(prod_ids),
+                    lot_number=f"LOT-{_uid()}",
+                    manufacture_date=mfg,
+                    expiry_date=mfg + timedelta(days=random.randint(180, 730)),
+                    supplier_id=random.choice(sup_ids) if sup_ids else None,
+                )
+            )
         c = _bulk(LotBatch, lot_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Lot Batches")
 
         # Goods Receipt Notes (linked to existing POs)
         po_list = list(
-            PurchaseOrder.objects.filter(company=company)
-            .values_list("id", "supplier_id")[:cfg.get("grns", 10) * 2]
+            PurchaseOrder.objects.filter(company=company).values_list("id", "supplier_id")[: cfg.get("grns", 10) * 2]
         )
         if po_list:
             self._seed_grns(company, wh_ids, prod_ids, po_list, cfg.get("grns", 10))
@@ -1256,32 +1409,41 @@ class Command(BaseCommand):
         self._seed_cycle_counts(company, wh_ids, prod_ids, cfg.get("counts", 2))
 
         # Pick Lists & Shipments
-        inv_ids = list(
-            Invoice.objects.filter(company=company).values_list("id", flat=True)[:500]
-        )
+        inv_ids = list(Invoice.objects.filter(company=company).values_list("id", flat=True)[:500])
         self._seed_pick_lists_and_shipments(
-            company, wh_ids, prod_ids, cust_ids, inv_ids, cfg,
+            company,
+            wh_ids,
+            prod_ids,
+            cust_ids,
+            inv_ids,
+            cfg,
         )
 
         # Reorder Rules
         rr_objs = []
         for wh_id in wh_ids[:2]:
-            for pid in prod_ids[:min(len(prod_ids), 50)]:
-                rr_objs.append(ReorderRule(
-                    company=company, product_id=pid, warehouse_id=wh_id,
-                    reorder_point=_rdecimal(10, 50),
-                    safety_stock=_rdecimal(5, 20),
-                    min_order_qty=Decimal(str(random.randint(1, 10))),
-                    max_order_qty=Decimal(str(random.randint(50, 500))),
-                    lead_time_days=random.randint(3, 30),
-                    preferred_supplier_id=random.choice(sup_ids) if sup_ids else None,
-                ))
+            for pid in prod_ids[: min(len(prod_ids), 50)]:
+                rr_objs.append(
+                    ReorderRule(
+                        company=company,
+                        product_id=pid,
+                        warehouse_id=wh_id,
+                        reorder_point=_rdecimal(10, 50),
+                        safety_stock=_rdecimal(5, 20),
+                        min_order_qty=Decimal(str(random.randint(1, 10))),
+                        max_order_qty=Decimal(str(random.randint(50, 500))),
+                        lead_time_days=random.randint(3, 30),
+                        preferred_supplier_id=random.choice(sup_ids) if sup_ids else None,
+                    )
+                )
         c = _bulk(ReorderRule, rr_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Reorder Rules")
 
         # Stock Movements (append-only ledger)
         self._seed_stock_movements(
-            company, wh_ids, prod_ids,
+            company,
+            wh_ids,
+            prod_ids,
             min(cfg.get("grns", 10) * 3, 500),
         )
 
@@ -1292,15 +1454,17 @@ class Command(BaseCommand):
         grn_objs = []
         for n in range(count):
             po_id, sup_id = random.choice(po_list)
-            grn_objs.append(GoodsReceiptNote(
-                company=company,
-                grn_number=f"GRN{offset + n + 1:09d}",
-                receipt_date=_rdate(365),
-                purchase_order_id=po_id,
-                supplier_id=sup_id,
-                warehouse_id=random.choice(wh_ids),
-                status=random.choice(["draft", "confirmed", "confirmed"]),
-            ))
+            grn_objs.append(
+                GoodsReceiptNote(
+                    company=company,
+                    grn_number=f"GRN{offset + n + 1:09d}",
+                    receipt_date=_rdate(365),
+                    purchase_order_id=po_id,
+                    supplier_id=sup_id,
+                    warehouse_id=random.choice(wh_ids),
+                    status=random.choice(["draft", "confirmed", "confirmed"]),
+                )
+            )
         created = GoodsReceiptNote.objects.bulk_create(grn_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created):>6,}  Goods Receipt Notes")
 
@@ -1309,12 +1473,17 @@ class Command(BaseCommand):
             for _ in range(random.randint(1, 5)):
                 qty = Decimal(str(random.randint(5, 100)))
                 uc = _rdecimal(5, 200)
-                line_objs.append(GoodsReceiptLine(
-                    grn=grn, product_id=random.choice(prod_ids),
-                    quantity_ordered=qty, quantity_received=qty,
-                    quantity_accepted=qty, quantity_rejected=Decimal("0"),
-                    unit_cost=uc,
-                ))
+                line_objs.append(
+                    GoodsReceiptLine(
+                        grn=grn,
+                        product_id=random.choice(prod_ids),
+                        quantity_ordered=qty,
+                        quantity_received=qty,
+                        quantity_accepted=qty,
+                        quantity_rejected=Decimal("0"),
+                        unit_cost=uc,
+                    )
+                )
         c = _bulk(GoodsReceiptLine, line_objs)
         self.stdout.write(f"   [OK] {c:>6,}  GRN Lines")
 
@@ -1327,26 +1496,32 @@ class Command(BaseCommand):
             from_wh, to_wh = random.sample(wh_ids, 2)
             dt = _rdate(365)
             status = random.choice(["draft", "in_transit", "received", "received"])
-            tr_objs.append(StockTransfer(
-                company=company,
-                transfer_number=f"STX{offset + n + 1:09d}",
-                transfer_date=dt,
-                from_warehouse_id=from_wh, to_warehouse_id=to_wh,
-                status=status,
-                shipped_date=dt if status != "draft" else None,
-                received_date=(dt + timedelta(days=random.randint(1, 5))) if status == "received" else None,
-            ))
+            tr_objs.append(
+                StockTransfer(
+                    company=company,
+                    transfer_number=f"STX{offset + n + 1:09d}",
+                    transfer_date=dt,
+                    from_warehouse_id=from_wh,
+                    to_warehouse_id=to_wh,
+                    status=status,
+                    shipped_date=dt if status != "draft" else None,
+                    received_date=(dt + timedelta(days=random.randint(1, 5))) if status == "received" else None,
+                )
+            )
         created = StockTransfer.objects.bulk_create(tr_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created):>6,}  Stock Transfers")
 
         line_objs = []
         for tr in created:
             for _ in range(random.randint(1, 4)):
-                line_objs.append(StockTransferLine(
-                    transfer=tr, product_id=random.choice(prod_ids),
-                    quantity=Decimal(str(random.randint(1, 50))),
-                    unit_cost=_rdecimal(5, 200),
-                ))
+                line_objs.append(
+                    StockTransferLine(
+                        transfer=tr,
+                        product_id=random.choice(prod_ids),
+                        quantity=Decimal(str(random.randint(1, 50))),
+                        unit_cost=_rdecimal(5, 200),
+                    )
+                )
         c = _bulk(StockTransferLine, line_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Transfer Lines")
 
@@ -1356,33 +1531,41 @@ class Command(BaseCommand):
         offset = StockAdjustment.objects.count()
         adj_types = ["gain", "loss", "write_off", "loss", "gain"]
         reasons = [
-            "Physical count discrepancy", "Damaged goods",
-            "Expired stock write-off", "Discovered during reorganisation",
-            "Packaging error correction", "Quality inspection rejection",
+            "Physical count discrepancy",
+            "Damaged goods",
+            "Expired stock write-off",
+            "Discovered during reorganisation",
+            "Packaging error correction",
+            "Quality inspection rejection",
             "Supplier over-shipment",
         ]
         adj_objs = []
         for n in range(count):
-            adj_objs.append(StockAdjustment(
-                company=company,
-                adjustment_number=f"ADJ{offset + n + 1:09d}",
-                adjustment_date=_rdate(365),
-                adjustment_type=random.choice(adj_types),
-                warehouse_id=random.choice(wh_ids),
-                reason=random.choice(reasons),
-                status=random.choice(["draft", "pending", "approved", "approved"]),
-            ))
+            adj_objs.append(
+                StockAdjustment(
+                    company=company,
+                    adjustment_number=f"ADJ{offset + n + 1:09d}",
+                    adjustment_date=_rdate(365),
+                    adjustment_type=random.choice(adj_types),
+                    warehouse_id=random.choice(wh_ids),
+                    reason=random.choice(reasons),
+                    status=random.choice(["draft", "pending", "approved", "approved"]),
+                )
+            )
         created = StockAdjustment.objects.bulk_create(adj_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created):>6,}  Stock Adjustments")
 
         line_objs = []
         for adj in created:
             for _ in range(random.randint(1, 3)):
-                line_objs.append(StockAdjustmentLine(
-                    adjustment=adj, product_id=random.choice(prod_ids),
-                    quantity=Decimal(str(random.randint(1, 20))),
-                    unit_cost=_rdecimal(5, 200),
-                ))
+                line_objs.append(
+                    StockAdjustmentLine(
+                        adjustment=adj,
+                        product_id=random.choice(prod_ids),
+                        quantity=Decimal(str(random.randint(1, 20))),
+                        unit_cost=_rdecimal(5, 200),
+                    )
+                )
         c = _bulk(StockAdjustmentLine, line_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Adjustment Lines")
 
@@ -1392,13 +1575,15 @@ class Command(BaseCommand):
         offset = CycleCount.objects.count()
         cc_objs = []
         for n in range(count):
-            cc_objs.append(CycleCount(
-                company=company,
-                count_number=f"CC{offset + n + 1:09d}",
-                count_date=_rdate(365),
-                warehouse_id=random.choice(wh_ids),
-                status=random.choice(["planned", "in_progress", "completed", "completed"]),
-            ))
+            cc_objs.append(
+                CycleCount(
+                    company=company,
+                    count_number=f"CC{offset + n + 1:09d}",
+                    count_date=_rdate(365),
+                    warehouse_id=random.choice(wh_ids),
+                    status=random.choice(["planned", "in_progress", "completed", "completed"]),
+                )
+            )
         created = CycleCount.objects.bulk_create(cc_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created):>6,}  Cycle Counts")
 
@@ -1407,11 +1592,14 @@ class Command(BaseCommand):
             for _ in range(random.randint(3, 10)):
                 sys_qty = _rdecimal(10, 200)
                 counted = sys_qty + Decimal(str(random.randint(-5, 5)))
-                line_objs.append(CycleCountLine(
-                    cycle_count=cc, product_id=random.choice(prod_ids),
-                    system_quantity=sys_qty,
-                    counted_quantity=max(Decimal("0"), counted),
-                ))
+                line_objs.append(
+                    CycleCountLine(
+                        cycle_count=cc,
+                        product_id=random.choice(prod_ids),
+                        system_quantity=sys_qty,
+                        counted_quantity=max(Decimal("0"), counted),
+                    )
+                )
         c = _bulk(CycleCountLine, line_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Cycle Count Lines")
 
@@ -1423,14 +1611,16 @@ class Command(BaseCommand):
         offset_pk = PickList.objects.count()
         pk_objs = []
         for n in range(n_picks):
-            pk_objs.append(PickList(
-                company=company,
-                pick_number=f"PK{offset_pk + n + 1:09d}",
-                pick_date=_rdate(365),
-                warehouse_id=random.choice(wh_ids),
-                invoice_id=random.choice(inv_ids) if inv_ids else None,
-                status=random.choice(["draft", "in_progress", "picked", "picked"]),
-            ))
+            pk_objs.append(
+                PickList(
+                    company=company,
+                    pick_number=f"PK{offset_pk + n + 1:09d}",
+                    pick_date=_rdate(365),
+                    warehouse_id=random.choice(wh_ids),
+                    invoice_id=random.choice(inv_ids) if inv_ids else None,
+                    status=random.choice(["draft", "in_progress", "picked", "picked"]),
+                )
+            )
         created_pks = PickList.objects.bulk_create(pk_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created_pks):>6,}  Pick Lists")
 
@@ -1438,11 +1628,14 @@ class Command(BaseCommand):
         for pk in created_pks:
             for _ in range(random.randint(1, 5)):
                 rq = Decimal(str(random.randint(1, 20)))
-                pk_line_objs.append(PickListLine(
-                    pick_list=pk, product_id=random.choice(prod_ids),
-                    quantity_requested=rq,
-                    quantity_picked=rq if pk.status == "picked" else _rdecimal(0, max(1, int(rq))),
-                ))
+                pk_line_objs.append(
+                    PickListLine(
+                        pick_list=pk,
+                        product_id=random.choice(prod_ids),
+                        quantity_requested=rq,
+                        quantity_picked=rq if pk.status == "picked" else _rdecimal(0, max(1, int(rq))),
+                    )
+                )
         c = _bulk(PickListLine, pk_line_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Pick List Lines")
 
@@ -1451,26 +1644,31 @@ class Command(BaseCommand):
         offset_sh = ShipmentNote.objects.count()
         sh_objs = []
         for n in range(n_ships):
-            sh_objs.append(ShipmentNote(
-                company=company,
-                shipment_number=f"SHP{offset_sh + n + 1:09d}",
-                shipment_date=_rdate(365),
-                warehouse_id=random.choice(wh_ids),
-                customer_id=random.choice(cust_ids) if cust_ids else None,
-                carrier_name=random.choice(_CARRIER_NAMES),
-                tracking_number=f"TRK-{_uid('', 12)}",
-                status=random.choice(["draft", "shipped", "delivered", "delivered"]),
-            ))
+            sh_objs.append(
+                ShipmentNote(
+                    company=company,
+                    shipment_number=f"SHP{offset_sh + n + 1:09d}",
+                    shipment_date=_rdate(365),
+                    warehouse_id=random.choice(wh_ids),
+                    customer_id=random.choice(cust_ids) if cust_ids else None,
+                    carrier_name=random.choice(_CARRIER_NAMES),
+                    tracking_number=f"TRK-{_uid('', 12)}",
+                    status=random.choice(["draft", "shipped", "delivered", "delivered"]),
+                )
+            )
         created_shs = ShipmentNote.objects.bulk_create(sh_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created_shs):>6,}  Shipment Notes")
 
         sh_line_objs = []
         for sh in created_shs:
             for _ in range(random.randint(1, 4)):
-                sh_line_objs.append(ShipmentLine(
-                    shipment=sh, product_id=random.choice(prod_ids),
-                    quantity=Decimal(str(random.randint(1, 30))),
-                ))
+                sh_line_objs.append(
+                    ShipmentLine(
+                        shipment=sh,
+                        product_id=random.choice(prod_ids),
+                        quantity=Decimal(str(random.randint(1, 30))),
+                    )
+                )
         c = _bulk(ShipmentLine, sh_line_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Shipment Lines")
 
@@ -1479,23 +1677,33 @@ class Command(BaseCommand):
     def _seed_stock_movements(self, company, wh_ids, prod_ids, count):
         """Append-only stock movement ledger entries."""
         mvmt_types = [
-            "opening", "purchase_receipt", "return_in", "transfer_in", "adjustment_gain",
-            "sales_issue", "transfer_out", "adjustment_loss", "write_off",
+            "opening",
+            "purchase_receipt",
+            "return_in",
+            "transfer_in",
+            "adjustment_gain",
+            "sales_issue",
+            "transfer_out",
+            "adjustment_loss",
+            "write_off",
         ]
         objs = []
         for _ in range(count):
             qty = _rdecimal(1, 100)
             uc = _rdecimal(5, 200)
-            objs.append(StockMovement(
-                company=company,
-                movement_date=timezone.now() - timedelta(days=random.randint(1, 365)),
-                movement_type=random.choice(mvmt_types),
-                product_id=random.choice(prod_ids),
-                warehouse_id=random.choice(wh_ids),
-                quantity=qty, unit_cost=uc,
-                total_cost=round(qty * uc, 4),
-                description=f"Auto-seeded movement {_uid()}",
-            ))
+            objs.append(
+                StockMovement(
+                    company=company,
+                    movement_date=timezone.now() - timedelta(days=random.randint(1, 365)),
+                    movement_type=random.choice(mvmt_types),
+                    product_id=random.choice(prod_ids),
+                    warehouse_id=random.choice(wh_ids),
+                    quantity=qty,
+                    unit_cost=uc,
+                    total_cost=round(qty * uc, 4),
+                    description=f"Auto-seeded movement {_uid()}",
+                )
+            )
         c = _bulk(StockMovement, objs)
         self.stdout.write(f"   [OK] {c:>6,}  Stock Movements")
 
@@ -1508,8 +1716,8 @@ class Command(BaseCommand):
         from erp.setup_defaults import ASSET_CATEGORIES
 
         dept_ids = list(Department.objects.filter(company=company).values_list("id", flat=True))
-        emp_ids  = ctx.get("employee_ids", [])
-        sup_ids  = ctx.get("supplier_ids", [])
+        emp_ids = ctx.get("employee_ids", [])
+        sup_ids = ctx.get("supplier_ids", [])
         n_assets = cfg.get("assets", 5)
 
         # -- Ensure AssetCategories (mirrors erp_first_setup) --
@@ -1521,12 +1729,14 @@ class Command(BaseCommand):
         cat_by_code = {}
         for item in ASSET_CATEGORIES:
             cat, _ = AssetCategory.objects.get_or_create(
-                company=company, code=item["code"],
+                company=company,
+                code=item["code"],
                 defaults={
                     "name": item["name"].get("en", ""),
                     "name_ar": item["name"].get("ar", ""),
                     "depreciation_method": method_map.get(
-                        item["method"], AssetCategory.DepreciationMethod.STRAIGHT_LINE,
+                        item["method"],
+                        AssetCategory.DepreciationMethod.STRAIGHT_LINE,
                     ),
                     "useful_life_months": item["useful_life"],
                     "salvage_value_percent": item["salvage_pct"],
@@ -1567,7 +1777,8 @@ class Command(BaseCommand):
 
             if status == "active" and cat.useful_life_months > 0:
                 monthly_depr = round(
-                    (acq_cost - salvage) / cat.useful_life_months, 2,
+                    (acq_cost - salvage) / cat.useful_life_months,
+                    2,
                 )
                 accum_depr = min(
                     round(monthly_depr * months_held, 2),
@@ -1578,28 +1789,31 @@ class Command(BaseCommand):
 
             book_val = acq_cost - accum_depr
 
-            asset_objs.append(FixedAsset(
-                company=company,
-                asset_number=f"FA{offset + n + 1:09d}",
-                name=name, name_ar=name_ar,
-                description=f"Auto-seeded fixed asset: {name}",
-                category=cat,
-                acquisition_date=acq_date,
-                acquisition_cost=acq_cost,
-                currency=currency,
-                supplier_id=random.choice(sup_ids) if sup_ids else None,
-                department_id=random.choice(dept_ids) if dept_ids else None,
-                location=random.choice(locations),
-                custodian_id=random.choice(emp_ids) if emp_ids else None,
-                serial_number=f"SN-{_uid('', 10)}",
-                depreciation_method=cat.depreciation_method,
-                useful_life_months=cat.useful_life_months,
-                salvage_value=salvage,
-                depreciation_start_date=acq_date,
-                accumulated_depreciation=accum_depr,
-                current_book_value=book_val,
-                status=status,
-            ))
+            asset_objs.append(
+                FixedAsset(
+                    company=company,
+                    asset_number=f"FA{offset + n + 1:09d}",
+                    name=name,
+                    name_ar=name_ar,
+                    description=f"Auto-seeded fixed asset: {name}",
+                    category=cat,
+                    acquisition_date=acq_date,
+                    acquisition_cost=acq_cost,
+                    currency=currency,
+                    supplier_id=random.choice(sup_ids) if sup_ids else None,
+                    department_id=random.choice(dept_ids) if dept_ids else None,
+                    location=random.choice(locations),
+                    custodian_id=random.choice(emp_ids) if emp_ids else None,
+                    serial_number=f"SN-{_uid('', 10)}",
+                    depreciation_method=cat.depreciation_method,
+                    useful_life_months=cat.useful_life_months,
+                    salvage_value=salvage,
+                    depreciation_start_date=acq_date,
+                    accumulated_depreciation=accum_depr,
+                    current_book_value=book_val,
+                    status=status,
+                )
+            )
 
         created_assets = FixedAsset.objects.bulk_create(asset_objs, batch_size=2000)
         self.stdout.write(f"   [OK] {len(created_assets):>6,}  Fixed Assets")
@@ -1611,7 +1825,8 @@ class Command(BaseCommand):
                 continue
             months_held = max(1, (date.today() - asset.acquisition_date).days // 30)
             monthly = round(
-                (asset.acquisition_cost - asset.salvage_value) / asset.useful_life_months, 2,
+                (asset.acquisition_cost - asset.salvage_value) / asset.useful_life_months,
+                2,
             )
             if monthly <= 0:
                 continue
@@ -1626,22 +1841,26 @@ class Command(BaseCommand):
                 running_accum += dep_amt
                 # Approximate period end-date
                 pdate = asset.depreciation_start_date + timedelta(days=30 * (m + 1))
-                depr_objs.append(DepreciationSchedule(
-                    asset=asset,
-                    period_date=pdate,
-                    depreciation_amount=dep_amt,
-                    accumulated_total=running_accum,
-                    book_value_after=asset.acquisition_cost - running_accum,
-                    status="posted" if m < months_held - 1 else "scheduled",
-                ))
+                depr_objs.append(
+                    DepreciationSchedule(
+                        asset=asset,
+                        period_date=pdate,
+                        depreciation_amount=dep_amt,
+                        accumulated_total=running_accum,
+                        book_value_after=asset.acquisition_cost - running_accum,
+                        status="posted" if m < months_held - 1 else "scheduled",
+                    )
+                )
         c = _bulk(DepreciationSchedule, depr_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Depreciation Schedules")
 
         # -- Maintenance Logs --
         maint_types = ["preventive", "corrective", "inspection", "upgrade", "calibration"]
         vendors = [
-            "Al-Faris Maintenance", "TechCare Services",
-            "Gulf Facility Management", "ProFix Solutions",
+            "Al-Faris Maintenance",
+            "TechCare Services",
+            "Gulf Facility Management",
+            "ProFix Solutions",
             "National Maintenance Co.",
         ]
         maint_objs = []
@@ -1651,17 +1870,19 @@ class Command(BaseCommand):
             for _ in range(random.randint(0, 3)):
                 sched = _rdate(365, 0)
                 completed = random.random() > 0.3
-                maint_objs.append(AssetMaintenanceLog(
-                    asset=asset,
-                    maintenance_type=random.choice(maint_types),
-                    description=f"Routine maintenance for {asset.name}",
-                    scheduled_date=sched,
-                    completion_date=(sched + timedelta(days=random.randint(0, 7))) if completed else None,
-                    cost=_rdecimal(100, 5000),
-                    vendor=random.choice(vendors),
-                    performed_by_id=random.choice(emp_ids) if emp_ids else None,
-                    status="completed" if completed else random.choice(["scheduled", "in_progress"]),
-                ))
+                maint_objs.append(
+                    AssetMaintenanceLog(
+                        asset=asset,
+                        maintenance_type=random.choice(maint_types),
+                        description=f"Routine maintenance for {asset.name}",
+                        scheduled_date=sched,
+                        completion_date=(sched + timedelta(days=random.randint(0, 7))) if completed else None,
+                        cost=_rdecimal(100, 5000),
+                        vendor=random.choice(vendors),
+                        performed_by_id=random.choice(emp_ids) if emp_ids else None,
+                        status="completed" if completed else random.choice(["scheduled", "in_progress"]),
+                    )
+                )
         c = _bulk(AssetMaintenanceLog, maint_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Maintenance Logs")
 
@@ -1669,24 +1890,31 @@ class Command(BaseCommand):
         active_assets = [a for a in created_assets if a.status == "active"]
         transfer_objs = []
         if len(dept_ids) >= 2:
-            for asset in active_assets[:max(1, len(active_assets) // 5)]:
+            for asset in active_assets[: max(1, len(active_assets) // 5)]:
                 from_dept, to_dept = random.sample(dept_ids, 2)
-                transfer_objs.append(AssetTransfer(
-                    asset=asset,
-                    transfer_date=_rdate(180, 0),
-                    from_department_id=from_dept, to_department_id=to_dept,
-                    from_location=random.choice(locations),
-                    to_location=random.choice(locations),
-                    from_custodian_id=random.choice(emp_ids) if emp_ids else None,
-                    to_custodian_id=random.choice(emp_ids) if emp_ids else None,
-                    reason="Departmental reorganisation",
-                ))
+                transfer_objs.append(
+                    AssetTransfer(
+                        asset=asset,
+                        transfer_date=_rdate(180, 0),
+                        from_department_id=from_dept,
+                        to_department_id=to_dept,
+                        from_location=random.choice(locations),
+                        to_location=random.choice(locations),
+                        from_custodian_id=random.choice(emp_ids) if emp_ids else None,
+                        to_custodian_id=random.choice(emp_ids) if emp_ids else None,
+                        reason="Departmental reorganisation",
+                    )
+                )
         c = _bulk(AssetTransfer, transfer_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Asset Transfers")
 
         # -- Journal Entries for asset acquisitions & depreciation --
         self._seed_asset_journal_entries(
-            company, fiscal_year, created_assets, cat_by_code, acct_map,
+            company,
+            fiscal_year,
+            created_assets,
+            cat_by_code,
+            acct_map,
         )
 
     # -- Asset Journal Entries -------------------------------------------------
@@ -1698,8 +1926,8 @@ class Command(BaseCommand):
         idx = 0
 
         # Track which assets produce which JE types for line creation
-        acq_assets = []   # assets with acquisition JEs
-        dep_assets = []   # assets with depreciation JEs
+        acq_assets = []  # assets with acquisition JEs
+        dep_assets = []  # assets with depreciation JEs
 
         for asset in assets:
             cat = cat_by_code.get(asset.category.code, asset.category)
@@ -1712,39 +1940,39 @@ class Command(BaseCommand):
                 continue
 
             # Acquisition JE
-            je_objs.append(JournalEntry(
-                company=company,
-                entry_number=f"FAACQ{je_offset + idx + 1:09d}",
-                entry_date=asset.acquisition_date,
-                entry_type="manual",
-                description=f"Acquisition of fixed asset: {asset.name}",
-                reference=asset.asset_number,
-                fiscal_year=fiscal_year,
-                total_debit=asset.acquisition_cost,
-                total_credit=asset.acquisition_cost,
-                status="posted",
-            ))
+            je_objs.append(
+                JournalEntry(
+                    company=company,
+                    entry_number=f"FAACQ{je_offset + idx + 1:09d}",
+                    entry_date=asset.acquisition_date,
+                    entry_type="manual",
+                    description=f"Acquisition of fixed asset: {asset.name}",
+                    reference=asset.asset_number,
+                    fiscal_year=fiscal_year,
+                    total_debit=asset.acquisition_cost,
+                    total_credit=asset.acquisition_cost,
+                    status="posted",
+                )
+            )
             acq_assets.append(asset)
             idx += 1
 
             # Aggregated depreciation JE
-            if (
-                asset.status == "active"
-                and asset.accumulated_depreciation > 0
-                and depr_exp_acct and accum_depr_acct
-            ):
-                je_objs.append(JournalEntry(
-                    company=company,
-                    entry_number=f"FADEP{je_offset + idx + 1:09d}",
-                    entry_date=date.today(),
-                    entry_type="adjustment",
-                    description=f"Accumulated depreciation \u2013 {asset.name}",
-                    reference=asset.asset_number,
-                    fiscal_year=fiscal_year,
-                    total_debit=asset.accumulated_depreciation,
-                    total_credit=asset.accumulated_depreciation,
-                    status="posted",
-                ))
+            if asset.status == "active" and asset.accumulated_depreciation > 0 and depr_exp_acct and accum_depr_acct:
+                je_objs.append(
+                    JournalEntry(
+                        company=company,
+                        entry_number=f"FADEP{je_offset + idx + 1:09d}",
+                        entry_date=date.today(),
+                        entry_type="adjustment",
+                        description=f"Accumulated depreciation \u2013 {asset.name}",
+                        reference=asset.asset_number,
+                        fiscal_year=fiscal_year,
+                        total_debit=asset.accumulated_depreciation,
+                        total_credit=asset.accumulated_depreciation,
+                        status="posted",
+                    )
+                )
                 dep_assets.append(asset)
                 idx += 1
 
@@ -1762,44 +1990,54 @@ class Command(BaseCommand):
         for asset in acq_assets:
             cat = cat_by_code.get(asset.category.code, asset.category)
             je_acq = next(je_iter)
-            jel_objs.extend([
-                JournalEntryLine(
-                    journal_entry=je_acq, account=cat.asset_account,
-                    description=f"Fixed asset \u2013 {asset.name}",
-                    debit_amount=asset.acquisition_cost,
-                    credit_amount=Decimal("0"),
-                    reference_type="FixedAsset", reference_id=asset.pk,
-                ),
-                JournalEntryLine(
-                    journal_entry=je_acq, account=cat.acquisition_source_account,
-                    description=f"Acquisition source \u2013 {asset.name}",
-                    debit_amount=Decimal("0"),
-                    credit_amount=asset.acquisition_cost,
-                    reference_type="FixedAsset", reference_id=asset.pk,
-                ),
-            ])
+            jel_objs.extend(
+                [
+                    JournalEntryLine(
+                        journal_entry=je_acq,
+                        account=cat.asset_account,
+                        description=f"Fixed asset \u2013 {asset.name}",
+                        debit_amount=asset.acquisition_cost,
+                        credit_amount=Decimal("0"),
+                        reference_type="FixedAsset",
+                        reference_id=asset.pk,
+                    ),
+                    JournalEntryLine(
+                        journal_entry=je_acq,
+                        account=cat.acquisition_source_account,
+                        description=f"Acquisition source \u2013 {asset.name}",
+                        debit_amount=Decimal("0"),
+                        credit_amount=asset.acquisition_cost,
+                        reference_type="FixedAsset",
+                        reference_id=asset.pk,
+                    ),
+                ]
+            )
 
             # Consume depreciation JE if this asset has one
             if asset in dep_assets:
                 je_dep = next(je_iter)
-                jel_objs.extend([
-                    JournalEntryLine(
-                        journal_entry=je_dep,
-                        account=cat.depreciation_expense_account,
-                        description=f"Depreciation expense \u2013 {asset.name}",
-                        debit_amount=asset.accumulated_depreciation,
-                        credit_amount=Decimal("0"),
-                        reference_type="FixedAsset", reference_id=asset.pk,
-                    ),
-                    JournalEntryLine(
-                        journal_entry=je_dep,
-                        account=cat.accumulated_depreciation_account,
-                        description=f"Accumulated depreciation \u2013 {asset.name}",
-                        debit_amount=Decimal("0"),
-                        credit_amount=asset.accumulated_depreciation,
-                        reference_type="FixedAsset", reference_id=asset.pk,
-                    ),
-                ])
+                jel_objs.extend(
+                    [
+                        JournalEntryLine(
+                            journal_entry=je_dep,
+                            account=cat.depreciation_expense_account,
+                            description=f"Depreciation expense \u2013 {asset.name}",
+                            debit_amount=asset.accumulated_depreciation,
+                            credit_amount=Decimal("0"),
+                            reference_type="FixedAsset",
+                            reference_id=asset.pk,
+                        ),
+                        JournalEntryLine(
+                            journal_entry=je_dep,
+                            account=cat.accumulated_depreciation_account,
+                            description=f"Accumulated depreciation \u2013 {asset.name}",
+                            debit_amount=Decimal("0"),
+                            credit_amount=asset.accumulated_depreciation,
+                            reference_type="FixedAsset",
+                            reference_id=asset.pk,
+                        ),
+                    ]
+                )
 
         c = _bulk(JournalEntryLine, jel_objs)
         self.stdout.write(f"   [OK] {c:>6,}  Asset JE Lines")

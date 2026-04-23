@@ -34,11 +34,11 @@ from erp.setup_defaults import (
 
 # Map string type aliases to Account.AccountType enum values
 _ACCOUNT_TYPE_MAP = {
-    'ASSET': Account.AccountType.ASSET,
-    'LIABILITY': Account.AccountType.LIABILITY,
-    'EQUITY': Account.AccountType.EQUITY,
-    'INCOME': Account.AccountType.INCOME,
-    'EXPENSE': Account.AccountType.EXPENSE,
+    "ASSET": Account.AccountType.ASSET,
+    "LIABILITY": Account.AccountType.LIABILITY,
+    "EQUITY": Account.AccountType.EQUITY,
+    "INCOME": Account.AccountType.INCOME,
+    "EXPENSE": Account.AccountType.EXPENSE,
 }
 
 
@@ -114,7 +114,9 @@ class Command(BaseCommand):
             company_country = input(f"Company country [{company_country}]: ") or company_country
             company_city = input(f"Company city [{company_city}]: ") or company_city
             base_currency_code = (input(f"Base currency code [{base_currency_code}]: ") or base_currency_code).upper()
-            chart_preset = input(f"Chart preset (standard/travel_agency/services/minimal) [{chart_preset}]: ") or chart_preset
+            chart_preset = (
+                input(f"Chart preset (standard/travel_agency/services/minimal) [{chart_preset}]: ") or chart_preset
+            )
 
         with transaction.atomic():
             currency = self._ensure_base_currency(code=base_currency_code)
@@ -163,9 +165,9 @@ class Command(BaseCommand):
             return currency
 
         info = CURRENCY_MAP.get(code, {})
-        name = get_text(info.get('name', code), self.lang) if info else code
-        name_ar = get_text(info.get('name', code), 'ar') if info else code
-        symbol = info.get('symbol', code) if info else code
+        name = get_text(info.get("name", code), self.lang) if info else code
+        name_ar = get_text(info.get("name", code), "ar") if info else code
+        symbol = info.get("symbol", code) if info else code
 
         defaults = {
             "code": code,
@@ -209,7 +211,7 @@ class Command(BaseCommand):
             name=hq_name,
             defaults={
                 "code": "HQ",
-                "name_ar": get_text(HQ_BRANCH_NAME, 'ar'),
+                "name_ar": get_text(HQ_BRANCH_NAME, "ar"),
                 "address": "Set your HQ address",
                 "city": company.city,
                 "country": company.country,
@@ -235,15 +237,15 @@ class Command(BaseCommand):
         )
         return fy
 
-    def _ensure_accounts(self, company: Company, chart_preset: str = 'standard'):
+    def _ensure_accounts(self, company: Company, chart_preset: str = "standard"):
         chart = get_chart_of_accounts(chart_preset)
 
         accounts: dict[str, Account] = {}
         for item in chart:
             parent = accounts.get(item.get("parent"))
-            name = get_text(item['name'], self.lang)
-            name_ar = get_text(item['name'], 'ar')
-            acct_type = _ACCOUNT_TYPE_MAP[item['type']]
+            name = get_text(item["name"], self.lang)
+            name_ar = get_text(item["name"], "ar")
+            acct_type = _ACCOUNT_TYPE_MAP[item["type"]]
             acc, created = Account.objects.get_or_create(
                 company=company,
                 code=item["code"],
@@ -263,9 +265,12 @@ class Command(BaseCommand):
 
     def _ensure_tax_rates(self, company: Company):
         rates = [
-            {"name": get_text({'ar': 'ضريبة القيمة المضافة', 'en': 'Standard VAT', 'id': 'PPN Standar'}, self.lang),
-             "name_ar": 'ضريبة القيمة المضافة',
-             "rate": Decimal("15.00"), "is_default": True},
+            {
+                "name": get_text({"ar": "ضريبة القيمة المضافة", "en": "Standard VAT", "id": "PPN Standar"}, self.lang),
+                "name_ar": "ضريبة القيمة المضافة",
+                "rate": Decimal("15.00"),
+                "is_default": True,
+            },
         ]
         created = []
         for item in rates:
@@ -288,9 +293,9 @@ class Command(BaseCommand):
                 company=company,
                 code=item["code"],
                 defaults={
-                    "name": get_text(item['name'], self.lang),
-                    "name_ar": get_text(item['name'], 'ar'),
-                    "account": accounts.get(item['account_code']),
+                    "name": get_text(item["name"], self.lang),
+                    "name_ar": get_text(item["name"], "ar"),
+                    "account": accounts.get(item["account_code"]),
                     "requires_reference": item.get("requires_ref", False),
                     "is_active": True,
                 },
@@ -306,10 +311,10 @@ class Command(BaseCommand):
                 company=company,
                 code=item["code"],
                 defaults={
-                    "name": get_text(item['name'], self.lang),
-                    "name_ar": get_text(item['name'], 'ar'),
+                    "name": get_text(item["name"], self.lang),
+                    "name_ar": get_text(item["name"], "ar"),
                     "parent": parent_obj,
-                    "account": accounts.get(item['account_code']),
+                    "account": accounts.get(item["account_code"]),
                     "is_active": True,
                 },
             )
@@ -321,16 +326,16 @@ class Command(BaseCommand):
         created = []
         for item in ASSET_CATEGORIES:
             method_map = {
-                'STRAIGHT_LINE': AssetCategory.DepreciationMethod.STRAIGHT_LINE,
-                'DECLINING_BALANCE': AssetCategory.DepreciationMethod.DECLINING_BALANCE,
+                "STRAIGHT_LINE": AssetCategory.DepreciationMethod.STRAIGHT_LINE,
+                "DECLINING_BALANCE": AssetCategory.DepreciationMethod.DECLINING_BALANCE,
             }
             cat, _ = AssetCategory.objects.get_or_create(
                 company=company,
                 code=item["code"],
                 defaults={
-                    "name": get_text(item['name'], self.lang),
-                    "name_ar": get_text(item['name'], 'ar'),
-                    "depreciation_method": method_map[item['method']],
+                    "name": get_text(item["name"], self.lang),
+                    "name_ar": get_text(item["name"], "ar"),
+                    "depreciation_method": method_map[item["method"]],
                     "useful_life_months": item["useful_life"],
                     "salvage_value_percent": item["salvage_pct"],
                     "asset_account": accounts.get(item["asset_acct"]),
@@ -412,11 +417,14 @@ class Command(BaseCommand):
             },
             {
                 "key": "finance.invoice_footer",
-                "value": get_text({
-                    'ar': 'شكراً لتعاملكم معنا.',
-                    'en': 'Thank you for your business.',
-                    'id': 'Terima kasih atas kerja samanya.',
-                }, self.lang),
+                "value": get_text(
+                    {
+                        "ar": "شكراً لتعاملكم معنا.",
+                        "en": "Thank you for your business.",
+                        "id": "Terima kasih atas kerja samanya.",
+                    },
+                    self.lang,
+                ),
                 "setting_type": SystemSetting.SettingType.TEXT,
                 "category": "finance",
                 "description": "Footer note printed on invoices.",

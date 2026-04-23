@@ -9,4 +9,4 @@ from erp.api.permissions import (  # noqa: F401
     IsCompanyAdmin,
 )
 
-__all__ = ['DefaultDbTokenAuthentication', 'IsCompanyAdmin']
+__all__ = ["DefaultDbTokenAuthentication", "IsCompanyAdmin"]

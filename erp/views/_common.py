@@ -30,7 +30,7 @@ def get_user_company(user):
     falls back to an arbitrary company.
     """
     try:
-        if hasattr(user, 'employee_profile') and user.employee_profile:
+        if hasattr(user, "employee_profile") and user.employee_profile:
             return user.employee_profile.company
     except Exception:
         pass
@@ -40,10 +40,7 @@ def get_user_company(user):
     if company:
         return company
 
-    raise PermissionDenied(
-        'No company is associated with your account. '
-        'Please contact your administrator.'
-    )
+    raise PermissionDenied("No company is associated with your account. Please contact your administrator.")
 
 
 def paginate_qs(request, queryset, per_page=DEFAULT_PAGE_SIZE):
@@ -53,20 +50,20 @@ def paginate_qs(request, queryset, per_page=DEFAULT_PAGE_SIZE):
     the reusable pagination template can append ``&page=N`` cleanly.
     """
     paginator = Paginator(queryset, per_page)
-    page_number = request.GET.get('page', 1)
+    page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
     # Build a query-string that keeps existing filters but strips 'page',
     # 'sort', and 'order' (sort headers rebuild these themselves).
     params = request.GET.copy()
-    for key in ('page', 'sort', 'order'):
+    for key in ("page", "sort", "order"):
         params.pop(key, None)
     query_string = params.urlencode()
 
     return page_obj, query_string
 
 
-def apply_sorting(request, queryset, allowed_fields, default='-created_at'):
+def apply_sorting(request, queryset, allowed_fields, default="-created_at"):
     """Apply user-requested sorting to *queryset* safely.
 
     Reads ``sort`` (field name) and ``order`` (``asc`` / ``desc``) from
@@ -76,20 +73,20 @@ def apply_sorting(request, queryset, allowed_fields, default='-created_at'):
     Returns ``(sorted_queryset, current_sort, current_order)`` so that
     templates can render active-sort indicators.
     """
-    sort = request.GET.get('sort', '').strip()
-    order = request.GET.get('order', 'asc').strip().lower()
+    sort = request.GET.get("sort", "").strip()
+    order = request.GET.get("order", "asc").strip().lower()
 
     if sort in allowed_fields:
         current_sort = sort
     else:
         # Parse the default to extract sort/order
-        if default.startswith('-'):
+        if default.startswith("-"):
             current_sort = default[1:]
-            order = 'desc'
+            order = "desc"
         else:
             current_sort = default
-            order = 'asc'
+            order = "asc"
 
-    current_order = 'desc' if order == 'desc' else 'asc'
-    order_field = f'-{current_sort}' if current_order == 'desc' else current_sort
+    current_order = "desc" if order == "desc" else "asc"
+    order_field = f"-{current_sort}" if current_order == "desc" else current_sort
     return queryset.order_by(order_field), current_sort, current_order

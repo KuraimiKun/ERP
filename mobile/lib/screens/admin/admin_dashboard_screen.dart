@@ -24,8 +24,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     });
   }
 
-  Future<void> _refresh() =>
-      context.read<AdminDashboardProvider>().loadAll();
+  Future<void> _refresh() => context.read<AdminDashboardProvider>().loadAll();
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +39,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           onPressed: _refresh,
         ),
       ],
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: _DashboardContent(),
-      ),
+      body: RefreshIndicator(onRefresh: _refresh, child: _DashboardContent()),
     );
   }
 }
@@ -63,8 +59,11 @@ class _DashboardContent extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         children: [
           const SizedBox(height: 80),
-          Icon(Icons.error_outline,
-              size: 56, color: AppTheme.semantics(context).danger),
+          Icon(
+            Icons.error_outline,
+            size: 56,
+            color: AppTheme.semantics(context).danger,
+          ),
           const SizedBox(height: 12),
           Center(
             child: Text(
@@ -77,8 +76,7 @@ class _DashboardContent extends StatelessWidget {
           const SizedBox(height: 16),
           Center(
             child: FilledButton.icon(
-              onPressed: () =>
-                  context.read<AdminDashboardProvider>().loadAll(),
+              onPressed: () => context.read<AdminDashboardProvider>().loadAll(),
               icon: const Icon(Icons.refresh),
               label: Text(AppLocalizations.of(context)!.retry),
             ),
@@ -141,8 +139,7 @@ class _DashboardContent extends StatelessWidget {
             const SizedBox(height: 28),
 
             // ── 30-day KPIs ────────────────────────────────────
-            _SectionTitle(
-                '${kpis?.periodDays ?? 30}-day performance'),
+            _SectionTitle('${kpis?.periodDays ?? 30}-day performance'),
             const SizedBox(height: 12),
             _KpiGrid(
               columns: kpiCols,
@@ -303,9 +300,10 @@ class _DashboardContent extends StatelessWidget {
     final abs = parsed.abs();
     final intPart = abs.truncate();
     final frac = abs - intPart;
-    final intStr = intPart
-        .toString()
-        .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => ',');
+    final intStr = intPart.toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (m) => ',',
+    );
     final fracStr = frac > 0 ? frac.toStringAsFixed(2).substring(1) : '';
     return '$sign$intStr$fracStr';
   }
@@ -356,8 +354,9 @@ class _Greeting extends StatelessWidget {
               if (company.isNotEmpty)
                 Text(
                   company,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: sem.textSub),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: sem.textSub,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -386,9 +385,9 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       text,
       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
-          ),
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.2,
+      ),
     );
   }
 }
@@ -474,9 +473,7 @@ class _KpiTile extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               tile.label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: sem.textMuted,
-              ),
+              style: theme.textTheme.bodySmall?.copyWith(color: sem.textMuted),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -505,8 +502,7 @@ class _ActivityTable extends StatelessWidget {
           child: Center(
             child: Text(
               'No recent activity',
-              style:
-                  theme.textTheme.bodyMedium?.copyWith(color: sem.textMuted),
+              style: theme.textTheme.bodyMedium?.copyWith(color: sem.textMuted),
             ),
           ),
         ),

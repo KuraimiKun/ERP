@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _get_client_ip(request):
     """Return the real client IP, respecting X-Forwarded-For behind a proxy."""
     xff = request.META.get("HTTP_X_FORWARDED_FOR")
@@ -39,6 +40,7 @@ def _cache_key(group, ident):
 # ---------------------------------------------------------------------------
 # View decorator – for login / signup (non-DRF views)
 # ---------------------------------------------------------------------------
+
 
 def ratelimit(*, group, rate, method="POST", block=True):
     """
@@ -77,7 +79,8 @@ def ratelimit(*, group, rate, method="POST", block=True):
         @wraps(view_func)
         def _wrapped(request, *args, **kwargs):
             from django.conf import settings as _s
-            if not getattr(_s, 'RATELIMIT_ENABLED', True):
+
+            if not getattr(_s, "RATELIMIT_ENABLED", True):
                 return view_func(request, *args, **kwargs)
 
             if method != "ALL" and request.method != method:
@@ -95,7 +98,10 @@ def ratelimit(*, group, rate, method="POST", block=True):
             if len(history) >= max_requests:
                 logger.warning(
                     "Rate limit exceeded: group=%s ip=%s (%d/%ds)",
-                    group, ip, max_requests, period_seconds,
+                    group,
+                    ip,
+                    max_requests,
+                    period_seconds,
                 )
                 if block:
                     retry_after = int(history[0] - (now - period_seconds)) + 1
@@ -121,8 +127,10 @@ def ratelimit(*, group, rate, method="POST", block=True):
 # DRF throttle classes – for REST API endpoints
 # ---------------------------------------------------------------------------
 
+
 class BurstRateThrottle(SimpleRateThrottle):
     """Short burst limit per IP (e.g. 60/min)."""
+
     scope = "burst"
 
     def get_cache_key(self, request, view):
@@ -134,6 +142,7 @@ class BurstRateThrottle(SimpleRateThrottle):
 
 class SustainedRateThrottle(SimpleRateThrottle):
     """Sustained daily limit per IP (e.g. 1000/day)."""
+
     scope = "sustained"
 
     def get_cache_key(self, request, view):
@@ -145,6 +154,7 @@ class SustainedRateThrottle(SimpleRateThrottle):
 
 class LoginRateThrottle(SimpleRateThrottle):
     """Strict limit for any DRF token-auth / login API endpoints."""
+
     scope = "login"
 
     def get_cache_key(self, request, view):
@@ -162,6 +172,7 @@ class HeavyOperationThrottle(SimpleRateThrottle):
     queue.  Rate is configurable via DEFAULT_THROTTLE_RATES['heavy'].
     Defaults to 10 per hour if not set.
     """
+
     scope = "heavy"
 
     def get_cache_key(self, request, view):
@@ -178,9 +189,9 @@ class HeavyOperationThrottle(SimpleRateThrottle):
 # Account lockout — failed-login tracking
 # ---------------------------------------------------------------------------
 
-_LOCKOUT_MAX_FAILURES = 10       # lock after this many consecutive failures
-_LOCKOUT_WINDOW_SECONDS = 900    # 15-minute sliding window
-_LOCKOUT_DURATION_SECONDS = 1800 # 30-minute lockout
+_LOCKOUT_MAX_FAILURES = 10  # lock after this many consecutive failures
+_LOCKOUT_WINDOW_SECONDS = 900  # 15-minute sliding window
+_LOCKOUT_DURATION_SECONDS = 1800  # 30-minute lockout
 
 
 def _lockout_key(username):
@@ -191,7 +202,8 @@ def _lockout_key(username):
 def record_failed_login(username):
     """Record one failed login attempt for *username*."""
     from django.conf import settings as _s
-    if not getattr(_s, 'RATELIMIT_ENABLED', True):
+
+    if not getattr(_s, "RATELIMIT_ENABLED", True):
         return
     key = _lockout_key(username)
     now = time.time()
@@ -200,14 +212,14 @@ def record_failed_login(username):
     history.append(now)
     cache.set(key, history, _LOCKOUT_WINDOW_SECONDS + _LOCKOUT_DURATION_SECONDS)
     if len(history) >= _LOCKOUT_MAX_FAILURES:
-        logger.warning("Account lockout triggered for user=%s (%d failures)",
-                       username, len(history))
+        logger.warning("Account lockout triggered for user=%s (%d failures)", username, len(history))
 
 
 def check_account_lockout(username):
     """Return (is_locked, message) for *username*."""
     from django.conf import settings as _s
-    if not getattr(_s, 'RATELIMIT_ENABLED', True):
+
+    if not getattr(_s, "RATELIMIT_ENABLED", True):
         return False, ""
     key = _lockout_key(username)
     now = time.time()

@@ -29,11 +29,11 @@ def health_check(request):
     t0 = time.monotonic()
     try:
         with connection.cursor() as cursor:
-            cursor.execute('SELECT 1')
+            cursor.execute("SELECT 1")
     except OperationalError as exc:
         return JsonResponse(
-            {'status': 'error', 'detail': f'database unreachable: {exc}'},
+            {"status": "error", "detail": f"database unreachable: {exc}"},
             status=503,
         )
     elapsed_ms = round((time.monotonic() - t0) * 1000, 1)
-    return JsonResponse({'status': 'ok', 'db_ms': elapsed_ms})
+    return JsonResponse({"status": "ok", "db_ms": elapsed_ms})

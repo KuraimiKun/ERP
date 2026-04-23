@@ -34,8 +34,8 @@ class AdminDashboardSummary {
         pendingPoApprovals: json['pending_po_approvals'] ?? 0,
         lowStockItems: json['low_stock_items'] ?? 0,
         openPosSessions: json['open_pos_sessions'] ?? 0,
-        overdueInvoicesAmount:
-            (json['overdue_invoices_amount'] ?? '0').toString(),
+        overdueInvoicesAmount: (json['overdue_invoices_amount'] ?? '0')
+            .toString(),
         thisMonthRevenue: (json['this_month_revenue'] ?? '0').toString(),
         thisMonthExpenses: (json['this_month_expenses'] ?? '0').toString(),
       );
@@ -97,11 +97,12 @@ class AdminActivityEntry {
     final user = json['user'];
     String actor = '';
     if (user is Map) {
-      actor = (user['full_name'] ??
-              user['email'] ??
-              '${user['first_name'] ?? ''} ${user['last_name'] ?? ''}')
-          .toString()
-          .trim();
+      actor =
+          (user['full_name'] ??
+                  user['email'] ??
+                  '${user['first_name'] ?? ''} ${user['last_name'] ?? ''}')
+              .toString()
+              .trim();
     } else if (user is String) {
       actor = user;
     }
@@ -112,14 +113,17 @@ class AdminActivityEntry {
       action: (json['action'] ?? json['action_type'] ?? '').toString(),
       actorName: actor,
       description:
-          (json['description'] ?? json['object_repr'] ?? json['change_message'] ?? '')
+          (json['description'] ??
+                  json['object_repr'] ??
+                  json['change_message'] ??
+                  '')
               .toString(),
       createdAt: (json['created_at'] ?? json['timestamp'] ?? '').toString(),
       contentType:
           json['content_type_label']?.toString() ??
-              (json['content_type'] is Map
-                  ? json['content_type']['model']?.toString()
-                  : null),
+          (json['content_type'] is Map
+              ? json['content_type']['model']?.toString()
+              : null),
     );
   }
 }

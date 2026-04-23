@@ -11,46 +11,40 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0021_account_idx_acct_company_type_active_and_more'),
+        ("erp", "0021_account_idx_acct_company_type_active_and_more"),
     ]
 
     operations = [
         # ── Invoice overdue / aging indexes ─────────────────────────────────
         migrations.AddIndex(
-            model_name='invoice',
+            model_name="invoice",
             index=models.Index(
-                fields=['company', 'balance_due', 'status'],
-                name='idx_inv_company_balance_status',
+                fields=["company", "balance_due", "status"],
+                name="idx_inv_company_balance_status",
             ),
         ),
         migrations.AddIndex(
-            model_name='invoice',
+            model_name="invoice",
             index=models.Index(
-                fields=['customer', 'status', 'invoice_date'],
-                name='idx_inv_customer_status_date',
+                fields=["customer", "status", "invoice_date"],
+                name="idx_inv_customer_status_date",
             ),
         ),
-
         # ── Lead rep-workload index ──────────────────────────────────────────
         migrations.AddIndex(
-            model_name='lead',
+            model_name="lead",
             index=models.Index(
-                fields=['assigned_to', 'status', 'next_follow_up'],
-                name='idx_lead_rep_workload',
+                fields=["assigned_to", "status", "next_follow_up"],
+                name="idx_lead_rep_workload",
             ),
         ),
-
         # ── Task polymorphic FK constraint ───────────────────────────────────
         migrations.AddConstraint(
-            model_name='task',
+            model_name="task",
             constraint=models.CheckConstraint(
-                condition=(
-                    models.Q(related_lead__isnull=True) |
-                    models.Q(related_customer__isnull=True)
-                ),
-                name='task_single_related_object',
+                condition=(models.Q(related_lead__isnull=True) | models.Q(related_customer__isnull=True)),
+                name="task_single_related_object",
             ),
         ),
     ]

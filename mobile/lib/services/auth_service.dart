@@ -15,10 +15,10 @@ class AuthService {
   /// Employee login.
   Future<LoginResult> login(String email, String password) async {
     try {
-      final response = await _api.post(ApiConfig.login, data: {
-        'email': email,
-        'password': password,
-      });
+      final response = await _api.post(
+        ApiConfig.login,
+        data: {'email': email, 'password': password},
+      );
 
       final data = response.data;
       await _storage.saveToken(data['token']);
@@ -60,10 +60,7 @@ class AuthService {
 
   /// Try admin login first; on 403 (non-admin) fall back to employee login.
   /// Returns either an [AdminLoginResult] or a [LoginResult].
-  Future<Object> loginWithRoleDetection(
-    String email,
-    String password,
-  ) async {
+  Future<Object> loginWithRoleDetection(String email, String password) async {
     // â”€â”€ Try admin endpoint first â”€â”€
     try {
       final response = await _api.post(
@@ -132,11 +129,14 @@ class AuthService {
     required String confirmPassword,
   }) async {
     try {
-      final response = await _api.post(ApiConfig.changePassword, data: {
-        'current_password': currentPassword,
-        'new_password': newPassword,
-        'confirm_password': confirmPassword,
-      });
+      final response = await _api.post(
+        ApiConfig.changePassword,
+        data: {
+          'current_password': currentPassword,
+          'new_password': newPassword,
+          'confirm_password': confirmPassword,
+        },
+      );
 
       final newToken = response.data['token'];
       await _storage.saveToken(newToken);

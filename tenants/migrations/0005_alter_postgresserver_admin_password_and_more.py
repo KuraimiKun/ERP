@@ -6,20 +6,19 @@ import tenants.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenants', '0004_ticket_ticketcategory_ticketmessage_ticketattachment_and_more'),
+        ("tenants", "0004_ticket_ticketcategory_ticketmessage_ticketattachment_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='postgresserver',
-            name='admin_password',
+            model_name="postgresserver",
+            name="admin_password",
             field=tenants.fields.EncryptedCharField(max_length=512),
         ),
         migrations.AlterField(
-            model_name='tenantdatabase',
-            name='db_password',
+            model_name="tenantdatabase",
+            name="db_password",
             field=tenants.fields.EncryptedCharField(default=tenants.models.generate_db_password, max_length=512),
         ),
     ]

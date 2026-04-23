@@ -4,40 +4,61 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0012_inventory_warehouse'),
+        ("erp", "0012_inventory_warehouse"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='employee',
-            name='portal_can_edit_profile',
-            field=models.BooleanField(default=True, help_text='Allow the employee to edit their personal profile.', verbose_name='Can Edit Profile'),
+            model_name="employee",
+            name="portal_can_edit_profile",
+            field=models.BooleanField(
+                default=True,
+                help_text="Allow the employee to edit their personal profile.",
+                verbose_name="Can Edit Profile",
+            ),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='portal_can_manage_leaves',
-            field=models.BooleanField(default=True, help_text='Allow the employee to view and submit leave requests.', verbose_name='Can Manage Leaves'),
+            model_name="employee",
+            name="portal_can_manage_leaves",
+            field=models.BooleanField(
+                default=True,
+                help_text="Allow the employee to view and submit leave requests.",
+                verbose_name="Can Manage Leaves",
+            ),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='portal_can_scan_qr',
-            field=models.BooleanField(default=True, help_text='Allow the employee to use the QR attendance scanner.', verbose_name='Can Scan QR'),
+            model_name="employee",
+            name="portal_can_scan_qr",
+            field=models.BooleanField(
+                default=True,
+                help_text="Allow the employee to use the QR attendance scanner.",
+                verbose_name="Can Scan QR",
+            ),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='portal_can_view_attendance',
-            field=models.BooleanField(default=True, help_text='Allow the employee to see their attendance history.', verbose_name='Can View Attendance'),
+            model_name="employee",
+            name="portal_can_view_attendance",
+            field=models.BooleanField(
+                default=True,
+                help_text="Allow the employee to see their attendance history.",
+                verbose_name="Can View Attendance",
+            ),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='portal_can_view_payslips',
-            field=models.BooleanField(default=True, help_text='Allow the employee to view their payslips.', verbose_name='Can View Payslips'),
+            model_name="employee",
+            name="portal_can_view_payslips",
+            field=models.BooleanField(
+                default=True, help_text="Allow the employee to view their payslips.", verbose_name="Can View Payslips"
+            ),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='portal_can_view_tasks',
-            field=models.BooleanField(default=True, help_text='Allow the employee to see tasks assigned to them.', verbose_name='Can View Tasks'),
+            model_name="employee",
+            name="portal_can_view_tasks",
+            field=models.BooleanField(
+                default=True,
+                help_text="Allow the employee to see tasks assigned to them.",
+                verbose_name="Can View Tasks",
+            ),
         ),
     ]

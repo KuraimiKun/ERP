@@ -34,11 +34,11 @@ def resolve_admin_employee(user, *, backfill: bool = True):
     through the reverse accessor and ``IsCompanyAdmin`` stops hitting
     the fallback.
     """
-    employee = getattr(user, 'employee_profile', None)
+    employee = getattr(user, "employee_profile", None)
     if employee is not None:
         return employee
 
-    email = (getattr(user, 'email', '') or '').strip()
+    email = (getattr(user, "email", "") or "").strip()
     if not email:
         return None
 
@@ -47,12 +47,7 @@ def resolve_admin_employee(user, *, backfill: bool = True):
     from erp.models import Employee
 
     try:
-        employee = (
-            Employee.objects
-            .filter(email__iexact=email)
-            .order_by('-created_at')
-            .first()
-        )
+        employee = Employee.objects.filter(email__iexact=email).order_by("-created_at").first()
     except Exception:
         employee = None
 
@@ -61,9 +56,9 @@ def resolve_admin_employee(user, *, backfill: bool = True):
 
     if backfill and employee.user_id is None:
         try:
-            with transaction.atomic(using=employee._state.db or 'default'):
+            with transaction.atomic(using=employee._state.db or "default"):
                 employee.user = user
-                employee.save(update_fields=['user'])
+                employee.save(update_fields=["user"])
         except Exception:
             # Non-fatal — we still have the Employee in hand for this
             # request; the next login attempt will try again.
@@ -88,9 +83,9 @@ def resolve_admin_company(user) -> Optional[object]:
     from tenants.routers import get_current_db_alias
 
     db_alias = get_current_db_alias()
-    if db_alias == 'default':
+    if db_alias == "default":
         return None
     try:
-        return Company.objects.using(db_alias).order_by('id').first()
+        return Company.objects.using(db_alias).order_by("id").first()
     except Exception:
         return None

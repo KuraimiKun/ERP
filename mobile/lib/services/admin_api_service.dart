@@ -100,9 +100,7 @@ class AdminApiService {
       data: data ?? const {},
     );
     final raw = response.data;
-    return raw is Map
-        ? Map<String, dynamic>.from(raw)
-        : <String, dynamic>{};
+    return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
   }
 
   /// Call a list-level action like `POST /notifications/read/`.
@@ -116,16 +114,11 @@ class AdminApiService {
       data: data ?? const {},
     );
     final raw = response.data;
-    return raw is Map
-        ? Map<String, dynamic>.from(raw)
-        : <String, dynamic>{};
+    return raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
   }
 
   /// GET an arbitrary non-collection path (reports, search, etc.).
-  Future<dynamic> getRaw(
-    String endpoint, {
-    Map<String, dynamic>? query,
-  }) async {
+  Future<dynamic> getRaw(String endpoint, {Map<String, dynamic>? query}) async {
     final response = await _api.get(endpoint, queryParams: query);
     return response.data;
   }

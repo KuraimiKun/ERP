@@ -12,16 +12,18 @@ class MLModel(TimeStampedModel):
     """Registry of trained ML models (one row per model version)."""
 
     class ModelType(models.TextChoices):
-        DEMAND_FORECAST = 'demand_forecast', 'Demand Forecasting'
-        LATE_PAYMENT = 'late_payment', 'Late Payment Prediction'
-        CASH_FLOW = 'cash_flow', 'Cash Flow Forecasting'
-        EXPENSE_ANOMALY = 'expense_anomaly', 'Expense Anomaly Detection'
-        LEAD_SCORING = 'lead_scoring', 'Lead Scoring'
-        ATTRITION = 'attrition', 'Employee Attrition Prediction'
-        KPI_ANOMALY = 'kpi_anomaly', 'KPI Anomaly Detection'
+        DEMAND_FORECAST = "demand_forecast", "Demand Forecasting"
+        LATE_PAYMENT = "late_payment", "Late Payment Prediction"
+        CASH_FLOW = "cash_flow", "Cash Flow Forecasting"
+        EXPENSE_ANOMALY = "expense_anomaly", "Expense Anomaly Detection"
+        LEAD_SCORING = "lead_scoring", "Lead Scoring"
+        ATTRITION = "attrition", "Employee Attrition Prediction"
+        KPI_ANOMALY = "kpi_anomaly", "KPI Anomaly Detection"
 
     company = models.ForeignKey(
-        'erp.Company', on_delete=models.CASCADE, related_name='ml_models',
+        "erp.Company",
+        on_delete=models.CASCADE,
+        related_name="ml_models",
     )
     name = models.CharField(max_length=255)
     model_type = models.CharField(max_length=30, choices=ModelType.choices)
@@ -29,83 +31,77 @@ class MLModel(TimeStampedModel):
     is_active = models.BooleanField(default=True)
 
     # Performance
-    accuracy_score = models.FloatField(null=True, blank=True,
-                                       help_text='Primary metric (R², F1, AUC, etc.)')
+    accuracy_score = models.FloatField(null=True, blank=True, help_text="Primary metric (R², F1, AUC, etc.)")
     training_samples = models.PositiveIntegerField(default=0)
     last_trained_at = models.DateTimeField(null=True, blank=True)
 
     # Serialised artefact path (relative to ML_MODEL_DIR)
     artefact_path = models.CharField(max_length=512, blank=True)
-    artefact_sha256 = models.CharField(max_length=64, blank=True,
-                                        help_text='SHA-256 checksum of the artefact file')
+    artefact_sha256 = models.CharField(max_length=64, blank=True, help_text="SHA-256 checksum of the artefact file")
 
     # Meta / hyper-parameters stored as JSON
     parameters = models.JSONField(default=dict, blank=True)
 
     class Meta:
-        verbose_name = 'ML Model'
-        verbose_name_plural = 'ML Models'
-        unique_together = ['company', 'model_type', 'version']
-        ordering = ['-version']
+        verbose_name = "ML Model"
+        verbose_name_plural = "ML Models"
+        unique_together = ["company", "model_type", "version"]
+        ordering = ["-version"]
 
     def __str__(self):
-        return f'{self.name} v{self.version} ({self.get_model_type_display()})'
+        return f"{self.name} v{self.version} ({self.get_model_type_display()})"
 
 
 class PredictionLog(models.Model):
     """Immutable log of every prediction made (for auditing and retraining)."""
 
-    model = models.ForeignKey(MLModel, on_delete=models.CASCADE,
-                              related_name='predictions')
-    entity_type = models.CharField(max_length=50,
-                                   help_text='e.g. Invoice, Lead, Product')
+    model = models.ForeignKey(MLModel, on_delete=models.CASCADE, related_name="predictions")
+    entity_type = models.CharField(max_length=50, help_text="e.g. Invoice, Lead, Product")
     entity_id = models.PositiveIntegerField()
 
-    score = models.FloatField(help_text='Model output (probability, qty, etc.)')
-    details = models.JSONField(default=dict, blank=True,
-                               help_text='Feature vector / extra context')
-    actual_outcome = models.FloatField(null=True, blank=True,
-                                       help_text='Ground truth (filled later)')
+    score = models.FloatField(help_text="Model output (probability, qty, etc.)")
+    details = models.JSONField(default=dict, blank=True, help_text="Feature vector / extra context")
+    actual_outcome = models.FloatField(null=True, blank=True, help_text="Ground truth (filled later)")
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Prediction Log'
-        verbose_name_plural = 'Prediction Logs'
-        ordering = ['-created_at']
+        verbose_name = "Prediction Log"
+        verbose_name_plural = "Prediction Logs"
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['entity_type', 'entity_id']),
-            models.Index(fields=['model', '-created_at']),
+            models.Index(fields=["entity_type", "entity_id"]),
+            models.Index(fields=["model", "-created_at"]),
         ]
 
     def __str__(self):
-        return (f'{self.model.get_model_type_display()} → '
-                f'{self.entity_type}#{self.entity_id} = {self.score:.4f}')
+        return f"{self.model.get_model_type_display()} → {self.entity_type}#{self.entity_id} = {self.score:.4f}"
 
 
 class AIInsight(TimeStampedModel):
     """Actionable insights / alerts generated by ML pipelines."""
 
     class Category(models.TextChoices):
-        REVENUE = 'revenue', 'Revenue'
-        EXPENSE = 'expense', 'Expense'
-        INVENTORY = 'inventory', 'Inventory'
-        CRM = 'crm', 'CRM / Sales'
-        HR = 'hr', 'Human Resources'
-        CASH_FLOW = 'cash_flow', 'Cash Flow'
-        GENERAL = 'general', 'General'
+        REVENUE = "revenue", "Revenue"
+        EXPENSE = "expense", "Expense"
+        INVENTORY = "inventory", "Inventory"
+        CRM = "crm", "CRM / Sales"
+        HR = "hr", "Human Resources"
+        CASH_FLOW = "cash_flow", "Cash Flow"
+        GENERAL = "general", "General"
 
     class Severity(models.TextChoices):
-        INFO = 'info', 'Info'
-        WARNING = 'warning', 'Warning'
-        CRITICAL = 'critical', 'Critical'
+        INFO = "info", "Info"
+        WARNING = "warning", "Warning"
+        CRITICAL = "critical", "Critical"
 
     company = models.ForeignKey(
-        'erp.Company', on_delete=models.CASCADE, related_name='ai_insights',
+        "erp.Company",
+        on_delete=models.CASCADE,
+        related_name="ai_insights",
     )
     category = models.CharField(max_length=20, choices=Category.choices)
-    severity = models.CharField(max_length=10, choices=Severity.choices,
-                                default=Severity.INFO)
+    severity = models.CharField(max_length=10, choices=Severity.choices, default=Severity.INFO)
 
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -119,54 +115,58 @@ class AIInsight(TimeStampedModel):
     # Lifecycle
     is_dismissed = models.BooleanField(default=False)
     dismissed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-        null=True, blank=True, related_name='dismissed_insights',
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dismissed_insights",
     )
     dismissed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'AI Insight'
-        verbose_name_plural = 'AI Insights'
-        ordering = ['-created_at']
+        verbose_name = "AI Insight"
+        verbose_name_plural = "AI Insights"
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f'[{self.get_severity_display()}] {self.title}'
+        return f"[{self.get_severity_display()}] {self.title}"
 
 
 class AITrainingRun(TimeStampedModel):
     """Tracks user-triggered AI model retraining runs and outcomes."""
 
     class RunType(models.TextChoices):
-        LEAD_SCORING = 'lead_scoring', 'Lead Scoring'
-        LATE_PAYMENT = 'late_payment', 'Late Payment'
-        ATTRITION = 'attrition', 'Attrition'
-        DEMAND_FORECAST = 'demand_forecast', 'Demand Forecast'
-        ALL_MODELS = 'all_models', 'All Primary Models'
+        LEAD_SCORING = "lead_scoring", "Lead Scoring"
+        LATE_PAYMENT = "late_payment", "Late Payment"
+        ATTRITION = "attrition", "Attrition"
+        DEMAND_FORECAST = "demand_forecast", "Demand Forecast"
+        ALL_MODELS = "all_models", "All Primary Models"
 
     class Status(models.TextChoices):
-        IN_PROGRESS = 'in_progress', 'In Progress'
-        COMPLETED = 'completed', 'Completed'
-        COMPLETED_WITH_WARNINGS = (
-            'completed_with_warnings', 'Completed With Warnings'
-        )
-        SKIPPED = 'skipped', 'Skipped'
-        FAILED = 'failed', 'Failed'
+        IN_PROGRESS = "in_progress", "In Progress"
+        COMPLETED = "completed", "Completed"
+        COMPLETED_WITH_WARNINGS = ("completed_with_warnings", "Completed With Warnings")
+        SKIPPED = "skipped", "Skipped"
+        FAILED = "failed", "Failed"
 
     company = models.ForeignKey(
-        'erp.Company', on_delete=models.CASCADE,
-        related_name='ai_training_runs',
+        "erp.Company",
+        on_delete=models.CASCADE,
+        related_name="ai_training_runs",
     )
     requested_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='ai_training_runs',
+        related_name="ai_training_runs",
     )
     run_type = models.CharField(max_length=30, choices=RunType.choices)
     evaluate = models.BooleanField(default=False)
     status = models.CharField(
-        max_length=30, choices=Status.choices, default=Status.IN_PROGRESS,
+        max_length=30,
+        choices=Status.choices,
+        default=Status.IN_PROGRESS,
     )
 
     started_at = models.DateTimeField(default=timezone.now)
@@ -183,29 +183,26 @@ class AITrainingRun(TimeStampedModel):
     progress_label = models.CharField(max_length=200, blank=True)
 
     class Meta:
-        verbose_name = 'AI Training Run'
-        verbose_name_plural = 'AI Training Runs'
-        ordering = ['-created_at']
+        verbose_name = "AI Training Run"
+        verbose_name_plural = "AI Training Runs"
+        ordering = ["-created_at"]
         indexes = [
             models.Index(
-                fields=['company', 'status', 'created_at'],
-                name='ai_trn_cmp_st_ct_idx',
+                fields=["company", "status", "created_at"],
+                name="ai_trn_cmp_st_ct_idx",
             ),
             models.Index(
-                fields=['company', 'created_at'],
-                name='ai_trn_cmp_ct_idx',
+                fields=["company", "created_at"],
+                name="ai_trn_cmp_ct_idx",
             ),
             models.Index(
-                fields=['status', 'started_at'],
-                name='ai_trn_st_st_idx',
+                fields=["status", "started_at"],
+                name="ai_trn_st_st_idx",
             ),
         ]
 
     def __str__(self):
-        return (
-            f'{self.get_run_type_display()} | {self.get_status_display()} '
-            f'({self.company_id})'
-        )
+        return f"{self.get_run_type_display()} | {self.get_status_display()} ({self.company_id})"
 
 
 class ExplanationResult(models.Model):
@@ -217,51 +214,56 @@ class ExplanationResult(models.Model):
     """
 
     class Method(models.TextChoices):
-        SHAP = 'shap', 'SHAP'
-        LIME = 'lime', 'LIME'
+        SHAP = "shap", "SHAP"
+        LIME = "lime", "LIME"
 
     model = models.ForeignKey(
-        MLModel, on_delete=models.CASCADE, related_name='explanations',
+        MLModel,
+        on_delete=models.CASCADE,
+        related_name="explanations",
     )
     entity_type = models.CharField(
-        max_length=50, help_text='e.g. Invoice, Lead, Employee',
+        max_length=50,
+        help_text="e.g. Invoice, Lead, Employee",
     )
     entity_id = models.PositiveIntegerField()
     method = models.CharField(max_length=10, choices=Method.choices)
 
     prediction_score = models.FloatField(
-        help_text='Model output for this entity',
+        help_text="Model output for this entity",
     )
     base_value = models.FloatField(
-        default=0, help_text='SHAP base value (expected model output)',
+        default=0,
+        help_text="SHAP base value (expected model output)",
     )
     contributions = models.JSONField(
         default=dict,
-        help_text='Per-feature SHAP values or LIME weights',
+        help_text="Per-feature SHAP values or LIME weights",
     )
     top_features = models.JSONField(
         default=list,
-        help_text='Top contributing features with human-readable impacts',
+        help_text="Top contributing features with human-readable impacts",
     )
     waterfall_data = models.JSONField(
-        null=True, blank=True,
-        help_text='Plotly-ready waterfall chart payload',
+        null=True,
+        blank=True,
+        help_text="Plotly-ready waterfall chart payload",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Explanation Result'
-        verbose_name_plural = 'Explanation Results'
-        ordering = ['-created_at']
+        verbose_name = "Explanation Result"
+        verbose_name_plural = "Explanation Results"
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['entity_type', 'entity_id']),
-            models.Index(fields=['model', '-created_at']),
+            models.Index(fields=["entity_type", "entity_id"]),
+            models.Index(fields=["model", "-created_at"]),
         ]
 
     def __str__(self):
         return (
-            f'{self.get_method_display()} explanation for '
-            f'{self.entity_type}#{self.entity_id} '
-            f'(score={self.prediction_score:.4f})'
+            f"{self.get_method_display()} explanation for "
+            f"{self.entity_type}#{self.entity_id} "
+            f"(score={self.prediction_score:.4f})"
         )

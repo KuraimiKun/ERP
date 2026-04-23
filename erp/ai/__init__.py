@@ -12,4 +12,4 @@ Provides intelligent analytics, predictions, and insights for the ERP system:
   - Natural-language ERP assistant (LLM)
 """
 
-default_app_config = 'erp.ai.apps.AIConfig'
+default_app_config = "erp.ai.apps.AIConfig"

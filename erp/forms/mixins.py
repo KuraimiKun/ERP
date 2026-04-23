@@ -3,6 +3,7 @@ ERP Forms - Base Mixins
 
 Shared form mixins used across all ERP form modules.
 """
+
 from django import forms
 
 
@@ -20,9 +21,9 @@ class CompanyFilterMixin:
             return
 
         for field_name, field in self.fields.items():
-            if hasattr(field, 'queryset'):
+            if hasattr(field, "queryset"):
                 model = field.queryset.model
-                if hasattr(model, 'company'):
+                if hasattr(model, "company"):
                     field.queryset = field.queryset.filter(company=self.company)
 
 
@@ -37,16 +38,16 @@ class BootstrapFormMixin:
         """Add Bootstrap form-control class to all fields."""
         for field_name, field in self.fields.items():
             widget = field.widget
-            existing_class = widget.attrs.get('class', '')
+            existing_class = widget.attrs.get("class", "")
 
             if isinstance(widget, forms.CheckboxInput):
-                widget.attrs['class'] = f'{existing_class} form-check-input'.strip()
+                widget.attrs["class"] = f"{existing_class} form-check-input".strip()
             elif isinstance(widget, forms.Select):
-                widget.attrs['class'] = f'{existing_class} form-select'.strip()
+                widget.attrs["class"] = f"{existing_class} form-select".strip()
             elif isinstance(widget, forms.Textarea):
-                widget.attrs['class'] = f'{existing_class} form-control'.strip()
-                widget.attrs.setdefault('rows', 3)
+                widget.attrs["class"] = f"{existing_class} form-control".strip()
+                widget.attrs.setdefault("rows", 3)
             elif isinstance(widget, forms.FileInput):
-                widget.attrs['class'] = f'{existing_class} form-control'.strip()
+                widget.attrs["class"] = f"{existing_class} form-control".strip()
             else:
-                widget.attrs['class'] = f'{existing_class} form-control'.strip()
+                widget.attrs["class"] = f"{existing_class} form-control".strip()

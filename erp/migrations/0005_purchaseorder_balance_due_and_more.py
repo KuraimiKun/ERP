@@ -4,35 +4,48 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0004_add_products_and_link_to_invoices'),
+        ("erp", "0004_add_products_and_link_to_invoices"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='purchaseorder',
-            name='balance_due',
+            model_name="purchaseorder",
+            name="balance_due",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=15),
         ),
         migrations.AddField(
-            model_name='purchaseorder',
-            name='discount_amount',
+            model_name="purchaseorder",
+            name="discount_amount",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=15),
         ),
         migrations.AddField(
-            model_name='purchaseorder',
-            name='paid_amount',
+            model_name="purchaseorder",
+            name="paid_amount",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=15),
         ),
         migrations.AddField(
-            model_name='supplierpayment',
-            name='unallocated_amount',
+            model_name="supplierpayment",
+            name="unallocated_amount",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=15),
         ),
         migrations.AlterField(
-            model_name='sequence',
-            name='sequence_type',
-            field=models.CharField(choices=[('invoice', 'Invoice'), ('payment', 'Payment'), ('expense', 'Expense'), ('quotation', 'Quotation'), ('purchase_order', 'Purchase Order'), ('employee', 'Employee'), ('customer', 'Customer'), ('supplier', 'Supplier'), ('supplier_invoice', 'Supplier Invoice'), ('supplier_payment', 'Supplier Payment')], max_length=30),
+            model_name="sequence",
+            name="sequence_type",
+            field=models.CharField(
+                choices=[
+                    ("invoice", "Invoice"),
+                    ("payment", "Payment"),
+                    ("expense", "Expense"),
+                    ("quotation", "Quotation"),
+                    ("purchase_order", "Purchase Order"),
+                    ("employee", "Employee"),
+                    ("customer", "Customer"),
+                    ("supplier", "Supplier"),
+                    ("supplier_invoice", "Supplier Invoice"),
+                    ("supplier_payment", "Supplier Payment"),
+                ],
+                max_length=30,
+            ),
         ),
     ]

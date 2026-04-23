@@ -35,13 +35,9 @@ class Command(BaseCommand):
                 try:
                     user = User.objects.get(email=identifier)
                 except User.DoesNotExist:
-                    raise CommandError(
-                        f"No user found with {username_field} or email '{identifier}'."
-                    )
+                    raise CommandError(f"No user found with {username_field} or email '{identifier}'.")
             else:
-                raise CommandError(
-                    f"No user found with email '{identifier}'."
-                )
+                raise CommandError(f"No user found with email '{identifier}'.")
 
         new_password = options["password"]
         if not new_password:
@@ -57,7 +53,5 @@ class Command(BaseCommand):
         user.save(update_fields=["password"])
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Password changed successfully for user '{getattr(user, User.USERNAME_FIELD)}'."
-            )
+            self.style.SUCCESS(f"Password changed successfully for user '{getattr(user, User.USERNAME_FIELD)}'.")
         )

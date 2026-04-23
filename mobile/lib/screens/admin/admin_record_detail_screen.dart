@@ -32,8 +32,7 @@ class AdminRecordDetailScreen extends StatefulWidget {
       _AdminRecordDetailScreenState();
 }
 
-class _AdminRecordDetailScreenState
-    extends State<AdminRecordDetailScreen> {
+class _AdminRecordDetailScreenState extends State<AdminRecordDetailScreen> {
   Map<String, dynamic>? _record;
   bool _loading = false;
   String? _error;
@@ -83,17 +82,16 @@ class _AdminRecordDetailScreenState
             elevation: 0,
             flexibleSpace: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface
-                    .withValues(alpha: 0.55),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.55),
               ),
             ),
             title: Text(
               _titleLine(),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             actions: [
               IconButton(
@@ -180,11 +178,13 @@ class _AdminRecordDetailScreenState
 
     final widgets = <Widget>[];
     if (scalars.isNotEmpty) {
-      widgets.add(_FieldGroup(
-        title: AppLocalizations.of(context)?.details ?? 'Details',
-        icon: Icons.description_outlined,
-        entries: scalars,
-      ));
+      widgets.add(
+        _FieldGroup(
+          title: AppLocalizations.of(context)?.details ?? 'Details',
+          icon: Icons.description_outlined,
+          entries: scalars,
+        ),
+      );
     }
     for (final e in nested) {
       widgets.add(const SizedBox(height: 14));
@@ -243,20 +243,21 @@ class _Blob extends StatelessWidget {
   final Color color;
   final double size;
   final double opacity;
-  const _Blob(
-      {required this.color, required this.size, required this.opacity});
+  const _Blob({required this.color, required this.size, required this.opacity});
   @override
   Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: 0),
-          ]),
-        ),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: RadialGradient(
+        colors: [
+          color.withValues(alpha: opacity),
+          color.withValues(alpha: 0),
+        ],
+      ),
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -322,8 +323,7 @@ class _HeroCard extends StatelessWidget {
                           accent.withValues(alpha: 0.10),
                         ],
                       ),
-                      border: Border.all(
-                          color: accent.withValues(alpha: 0.35)),
+                      border: Border.all(color: accent.withValues(alpha: 0.35)),
                     ),
                     child: Icon(section.icon, color: accent, size: 26),
                   ),
@@ -360,8 +360,10 @@ class _HeroCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   subtitle,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: sem.textSub, height: 1.35),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: sem.textSub,
+                    height: 1.35,
+                  ),
                 ),
               ],
               if (trailing != null && trailing != '—') ...[
@@ -435,10 +437,10 @@ class _QuickFactStrip extends StatelessWidget {
   List<MapEntry<String, dynamic>> _pickFacts(Map<String, dynamic> r) {
     final out = <MapEntry<String, dynamic>>[];
     final moneyKeys = RegExp(
-        r'(amount|total|balance|price|cost|paid|due|subtotal|tax|net|gross)',
-        caseSensitive: false);
-    final dateKeys =
-        RegExp(r'(date|_at|_on)$|^date', caseSensitive: false);
+      r'(amount|total|balance|price|cost|paid|due|subtotal|tax|net|gross)',
+      caseSensitive: false,
+    );
+    final dateKeys = RegExp(r'(date|_at|_on)$|^date', caseSensitive: false);
     for (final e in r.entries) {
       if (e.value == null || e.value is Map || e.value is List) continue;
       if (moneyKeys.hasMatch(e.key)) out.add(e);
@@ -488,11 +490,7 @@ class _FieldGroup extends StatelessWidget {
         children: [
           _SectionHeader(icon: icon, title: title),
           for (var i = 0; i < entries.length; i++)
-            _KvRow(
-              keyName: entries[i].key,
-              value: entries[i].value,
-              index: i,
-            ),
+            _KvRow(keyName: entries[i].key, value: entries[i].value, index: i),
         ],
       ),
     );
@@ -588,8 +586,11 @@ class _KvRowState extends State<_KvRow> {
                 child: InkResponse(
                   radius: 18,
                   onTap: () => _copy(context, display),
-                  child: Icon(Icons.copy_rounded,
-                      size: 16, color: sem.textMuted),
+                  child: Icon(
+                    Icons.copy_rounded,
+                    size: 16,
+                    color: sem.textMuted,
+                  ),
                 ),
               ),
             ),
@@ -606,8 +607,9 @@ class _KvRowState extends State<_KvRow> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 1),
-        content: Text(l10n?.copied(widget.keyName) ??
-            'Copied "${widget.keyName}"'),
+        content: Text(
+          l10n?.copied(widget.keyName) ?? 'Copied "${widget.keyName}"',
+        ),
       ),
     );
   }
@@ -649,9 +651,23 @@ class _ValueView extends StatelessWidget {
     if (v.isEmpty || v.length > 24) return false;
     final t = v.toLowerCase();
     const markers = [
-      'paid', 'approved', 'active', 'completed', 'success', 'open',
-      'pending', 'submitted', 'review', 'draft', 'inactive',
-      'overdue', 'rejected', 'failed', 'cancelled', 'canceled', 'closed',
+      'paid',
+      'approved',
+      'active',
+      'completed',
+      'success',
+      'open',
+      'pending',
+      'submitted',
+      'review',
+      'draft',
+      'inactive',
+      'overdue',
+      'rejected',
+      'failed',
+      'cancelled',
+      'canceled',
+      'closed',
     ];
     return markers.any(t.contains);
   }
@@ -687,9 +703,9 @@ class _BooleanPill extends StatelessWidget {
             Text(
               value ? 'Yes' : 'No',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: fg,
-                    fontWeight: FontWeight.w700,
-                  ),
+                color: fg,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),
@@ -730,11 +746,7 @@ class _NestedCard extends StatelessWidget {
             title: _humanize(keyName),
           ),
           for (var i = 0; i < entries.length; i++)
-            _KvRow(
-              keyName: entries[i].key,
-              value: entries[i].value,
-              index: i,
-            ),
+            _KvRow(keyName: entries[i].key, value: entries[i].value, index: i),
         ],
       ),
     );
@@ -765,8 +777,11 @@ class _CollectionCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
             child: Row(
               children: [
-                Icon(Icons.format_list_bulleted_rounded,
-                    size: 16, color: sem.textMuted),
+                Icon(
+                  Icons.format_list_bulleted_rounded,
+                  size: 16,
+                  color: sem.textMuted,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -780,7 +795,9 @@ class _CollectionCard extends StatelessWidget {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
@@ -835,19 +852,19 @@ class _CollectionItem extends StatelessWidget {
 
     if (item is Map) {
       final m = item as Map;
-      final title = (m['name'] ??
-              m['title'] ??
-              m['label'] ??
-              m['description'] ??
-              m['id'] ??
-              '—')
-          .toString();
-      final subtitle =
-          (m['status'] ?? m['amount'] ?? m['quantity'])?.toString();
+      final title =
+          (m['name'] ??
+                  m['title'] ??
+                  m['label'] ??
+                  m['description'] ??
+                  m['id'] ??
+                  '—')
+              .toString();
+      final subtitle = (m['status'] ?? m['amount'] ?? m['quantity'])
+          ?.toString();
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 3),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: sem.surfaceAlt.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
@@ -888,8 +905,9 @@ class _CollectionItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: sem.textSub),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: sem.textSub,
+                      ),
                     ),
                   ],
                 ],
@@ -967,8 +985,7 @@ class _BadgeTone {
   const _BadgeTone(this.fg, this.bg);
 }
 
-_BadgeTone _badgeTone(
-    String? trailing, AppSemanticColors sem, Color fallback) {
+_BadgeTone _badgeTone(String? trailing, AppSemanticColors sem, Color fallback) {
   if (trailing == null || trailing == '—') {
     return _BadgeTone(fallback, sem.surfaceAlt);
   }
@@ -1018,18 +1035,15 @@ class _Badge extends StatelessWidget {
             width: 6,
             height: 6,
             margin: const EdgeInsets.only(right: 7),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: tone.fg,
-            ),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: tone.fg),
           ),
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: tone.fg,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.3,
-                ),
+              color: tone.fg,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
+            ),
           ),
         ],
       ),
@@ -1069,13 +1083,13 @@ class _SkeletonDetailState extends State<_SkeletonDetail>
     final sem = AppTheme.semantics(context);
     final theme = Theme.of(context);
     Widget block(double w, double h, {double r = 8}) => Container(
-          width: w,
-          height: h,
-          decoration: BoxDecoration(
-            color: sem.surfaceAlt,
-            borderRadius: BorderRadius.circular(r),
-          ),
-        );
+      width: w,
+      height: h,
+      decoration: BoxDecoration(
+        color: sem.surfaceAlt,
+        borderRadius: BorderRadius.circular(r),
+      ),
+    );
 
     return ListView(
       padding: EdgeInsets.only(
@@ -1092,11 +1106,7 @@ class _SkeletonDetailState extends State<_SkeletonDetail>
               shaderCallback: (rect) => LinearGradient(
                 begin: Alignment(-1 + _c.value * 2, 0),
                 end: Alignment(1 + _c.value * 2, 0),
-                colors: [
-                  sem.surfaceAlt,
-                  sem.borderSoft,
-                  sem.surfaceAlt,
-                ],
+                colors: [sem.surfaceAlt, sem.borderSoft, sem.surfaceAlt],
                 stops: const [0.35, 0.5, 0.65],
               ).createShader(rect),
               blendMode: BlendMode.srcATop,
@@ -1118,8 +1128,7 @@ class _SkeletonDetailState extends State<_SkeletonDetail>
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   block(80, 10),
                                   const SizedBox(height: 10),
@@ -1149,8 +1158,7 @@ class _SkeletonDetailState extends State<_SkeletonDetail>
                         children: [
                           for (var k = 0; k < 4; k++)
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 9),
+                              padding: const EdgeInsets.symmetric(vertical: 9),
                               child: Row(
                                 children: [
                                   block(110, 10),
@@ -1194,13 +1202,18 @@ class _ErrorState extends StatelessWidget {
               shape: BoxShape.circle,
               color: sem.dangerContainer,
             ),
-            child:
-                Icon(Icons.error_outline_rounded, size: 40, color: sem.danger),
+            child: Icon(
+              Icons.error_outline_rounded,
+              size: 40,
+              color: sem.danger,
+            ),
           ),
           const SizedBox(height: 16),
-          Text(error,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           const SizedBox(height: 20),
           FilledButton.icon(
             onPressed: onRetry,

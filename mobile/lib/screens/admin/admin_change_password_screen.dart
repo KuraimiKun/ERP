@@ -15,8 +15,7 @@ class AdminChangePasswordScreen extends StatefulWidget {
       _AdminChangePasswordScreenState();
 }
 
-class _AdminChangePasswordScreenState
-    extends State<AdminChangePasswordScreen> {
+class _AdminChangePasswordScreenState extends State<AdminChangePasswordScreen> {
   final _form = GlobalKey<FormState>();
   final _current = TextEditingController();
   final _next = TextEditingController();
@@ -107,9 +106,8 @@ class _AdminChangePasswordScreenState
                 labelText: l10n.newPassword,
                 border: const OutlineInputBorder(),
               ),
-              validator: (v) => (v == null || v.length < 8)
-                  ? l10n.passwordTooShort
-                  : null,
+              validator: (v) =>
+                  (v == null || v.length < 8) ? l10n.passwordTooShort : null,
             ),
             const SizedBox(height: 12),
             TextFormField(

@@ -64,15 +64,20 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
     def add_arguments(self, parser):
         parser.add_argument(
-            "--tenant", type=str, default=None,
+            "--tenant",
+            type=str,
+            default=None,
             help="Tenant DB name. Defaults to first active tenant.",
         )
         parser.add_argument(
-            "--company-id", type=int, default=None,
+            "--company-id",
+            type=int,
+            default=None,
             help="Company ID. Defaults to first company.",
         )
         parser.add_argument(
-            "--clear", action="store_true",
+            "--clear",
+            action="store_true",
             help="Delete previously imported IBM HR data before importing.",
         )
 
@@ -92,15 +97,12 @@ class Command(BaseCommand):
             tenant_db = TenantDatabase.objects.filter(status="active").first()
             if not tenant_db:
                 raise CommandError("No active tenant. Pass --tenant <name>.")
-            self.stdout.write(self.style.WARNING(
-                f"No --tenant given; using first active tenant: {tenant_db.name}"
-            ))
+            self.stdout.write(self.style.WARNING(f"No --tenant given; using first active tenant: {tenant_db.name}"))
         else:
             try:
                 tenant_db = TenantDatabase.objects.get(name=tenant_name)
             except TenantDatabase.DoesNotExist:
-                avail = list(TenantDatabase.objects.filter(status="active")
-                             .values_list("name", flat=True))
+                avail = list(TenantDatabase.objects.filter(status="active").values_list("name", flat=True))
                 raise CommandError(f"Tenant '{tenant_name}' not found. Available: {avail}")
         return add_tenant_database(tenant_db)
 
@@ -161,8 +163,7 @@ class Command(BaseCommand):
     def _ensure_currency(self):
         cur, _ = Currency.objects.using(self.db).get_or_create(
             code="USD",
-            defaults={"name": "US Dollar", "symbol": "$",
-                       "is_base": True, "exchange_rate": 1},
+            defaults={"name": "US Dollar", "symbol": "$", "is_base": True, "exchange_rate": 1},
         )
         return cur
 
@@ -170,7 +171,8 @@ class Command(BaseCommand):
         dept_map = {}
         for name, code in IBM_DEPARTMENTS.items():
             dept, _ = Department.objects.using(self.db).get_or_create(
-                company=self.company, code=code,
+                company=self.company,
+                code=code,
                 defaults={"name": name, "is_active": True},
             )
             dept_map[name] = dept
@@ -197,24 +199,16 @@ class Command(BaseCommand):
     def _clear_hr_data(self):
         self.stdout.write(self.style.WARNING("Clearing previously imported IBM HR data …"))
 
-        cnt = Payroll.all_objects.using(self.db).filter(
-            employee__employee_id__startswith="IBM-"
-        ).delete()[0]
+        cnt = Payroll.all_objects.using(self.db).filter(employee__employee_id__startswith="IBM-").delete()[0]
         self.stdout.write(f"  Payroll deleted: {cnt}")
 
-        cnt = LeaveRequest.all_objects.using(self.db).filter(
-            employee__employee_id__startswith="IBM-"
-        ).delete()[0]
+        cnt = LeaveRequest.all_objects.using(self.db).filter(employee__employee_id__startswith="IBM-").delete()[0]
         self.stdout.write(f"  LeaveRequests deleted: {cnt}")
 
-        cnt = Attendance.objects.using(self.db).filter(
-            employee__employee_id__startswith="IBM-"
-        ).delete()[0]
+        cnt = Attendance.objects.using(self.db).filter(employee__employee_id__startswith="IBM-").delete()[0]
         self.stdout.write(f"  Attendance deleted: {cnt}")
 
-        cnt = Employee.all_objects.using(self.db).filter(
-            employee_id__startswith="IBM-"
-        ).delete()[0]
+        cnt = Employee.all_objects.using(self.db).filter(employee_id__startswith="IBM-").delete()[0]
         self.stdout.write(f"  Employees deleted: {cnt}")
 
     # ==================================================================
@@ -222,9 +216,7 @@ class Command(BaseCommand):
     # ==================================================================
     def _import_employees(self, df):
         existing_ids = set(
-            Employee.objects.using(self.db)
-            .filter(employee_id__startswith="IBM-")
-            .values_list("employee_id", flat=True)
+            Employee.objects.using(self.db).filter(employee_id__startswith="IBM-").values_list("employee_id", flat=True)
         )
 
         new_employees = []
@@ -276,64 +268,120 @@ class Command(BaseCommand):
             sick_leave = Decimal(str(random.randint(0, 10)))
 
             # Names (synthetic, since IBM dataset has no names)
-            first_names_m = ["James", "John", "Robert", "Michael", "David", "William",
-                             "Richard", "Joseph", "Thomas", "Daniel", "Matthew", "Anthony",
-                             "Mark", "Steven", "Paul", "Andrew", "Kevin", "Brian"]
-            first_names_f = ["Mary", "Jennifer", "Linda", "Patricia", "Elizabeth", "Barbara",
-                             "Susan", "Jessica", "Sarah", "Karen", "Lisa", "Nancy",
-                             "Betty", "Margaret", "Sandra", "Ashley", "Dorothy", "Kimberly"]
-            last_names = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia",
-                          "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez",
-                          "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore",
-                          "Jackson", "Martin", "Lee", "White", "Harris", "Clark"]
+            first_names_m = [
+                "James",
+                "John",
+                "Robert",
+                "Michael",
+                "David",
+                "William",
+                "Richard",
+                "Joseph",
+                "Thomas",
+                "Daniel",
+                "Matthew",
+                "Anthony",
+                "Mark",
+                "Steven",
+                "Paul",
+                "Andrew",
+                "Kevin",
+                "Brian",
+            ]
+            first_names_f = [
+                "Mary",
+                "Jennifer",
+                "Linda",
+                "Patricia",
+                "Elizabeth",
+                "Barbara",
+                "Susan",
+                "Jessica",
+                "Sarah",
+                "Karen",
+                "Lisa",
+                "Nancy",
+                "Betty",
+                "Margaret",
+                "Sandra",
+                "Ashley",
+                "Dorothy",
+                "Kimberly",
+            ]
+            last_names = [
+                "Smith",
+                "Johnson",
+                "Williams",
+                "Brown",
+                "Jones",
+                "Garcia",
+                "Miller",
+                "Davis",
+                "Rodriguez",
+                "Martinez",
+                "Hernandez",
+                "Lopez",
+                "Gonzalez",
+                "Wilson",
+                "Anderson",
+                "Thomas",
+                "Taylor",
+                "Moore",
+                "Jackson",
+                "Martin",
+                "Lee",
+                "White",
+                "Harris",
+                "Clark",
+            ]
 
             first_name = random.choice(first_names_m if gender == "male" else first_names_f)
             last_name = random.choice(last_names)
 
-            new_employees.append(Employee(
-                company=self.company,
-                employee_id=emp_id,
-                first_name=first_name,
-                last_name=last_name,
-                gender=gender,
-                date_of_birth=dob,
-                nationality="American",
-                email=f"{first_name.lower()}.{last_name.lower()}.{emp_num}@example.com",
-                phone=f"+1-555-{random.randint(1000, 9999):04d}",
-                department=department,
-                job_title=job_role,
-                employment_type=emp_type,
-                employment_status=employment_status,
-                hire_date=hire_date,
-                termination_date=termination_date,
-                basic_salary=monthly_income,
-                currency=self.currency,
-                annual_leave_balance=annual_leave,
-                sick_leave_balance=sick_leave,
-                city="New York",
-                country="United States",
-            ))
+            new_employees.append(
+                Employee(
+                    company=self.company,
+                    employee_id=emp_id,
+                    first_name=first_name,
+                    last_name=last_name,
+                    gender=gender,
+                    date_of_birth=dob,
+                    nationality="American",
+                    email=f"{first_name.lower()}.{last_name.lower()}.{emp_num}@example.com",
+                    phone=f"+1-555-{random.randint(1000, 9999):04d}",
+                    department=department,
+                    job_title=job_role,
+                    employment_type=emp_type,
+                    employment_status=employment_status,
+                    hire_date=hire_date,
+                    termination_date=termination_date,
+                    basic_salary=monthly_income,
+                    currency=self.currency,
+                    annual_leave_balance=annual_leave,
+                    sick_leave_balance=sick_leave,
+                    city="New York",
+                    country="United States",
+                )
+            )
 
         if new_employees:
             Employee.objects.using(self.db).bulk_create(new_employees, batch_size=500)
 
-        self.employees = list(
-            Employee.objects.using(self.db).filter(employee_id__startswith="IBM-")
-        )
+        self.employees = list(Employee.objects.using(self.db).filter(employee_id__startswith="IBM-"))
         active = [e for e in self.employees if e.employment_status == "active"]
         terminated = [e for e in self.employees if e.employment_status in ("terminated", "resigned")]
-        self.stdout.write(self.style.SUCCESS(
-            f"  Employees imported: {len(new_employees)} "
-            f"(active: {len(active)}, terminated/resigned: {len(terminated)})"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"  Employees imported: {len(new_employees)} "
+                f"(active: {len(active)}, terminated/resigned: {len(terminated)})"
+            )
+        )
 
     # ==================================================================
     # Phase 2: Attendance
     # ==================================================================
     def _generate_attendance(self):
-        existing_count = Attendance.objects.using(self.db).filter(
-            employee__employee_id__startswith="IBM-"
-        ).count()
+        existing_count = Attendance.objects.using(self.db).filter(employee__employee_id__startswith="IBM-").count()
         if existing_count > 0:
             self.stdout.write(f"  Skipping — {existing_count} attendance records already exist.")
             return
@@ -364,6 +412,7 @@ class Command(BaseCommand):
                     late_mins = max(0, int(random.gauss(0, 15)))
                     is_late = late_mins > 10
                     from datetime import time
+
                     ci_hour = 8
                     ci_min = late_mins
                     if ci_min >= 60:
@@ -379,32 +428,30 @@ class Command(BaseCommand):
 
                 overtime = max(Decimal("0"), hours - Decimal("8"))
 
-                all_records.append(Attendance(
-                    employee=emp,
-                    date=current,
-                    check_in=check_in,
-                    check_out=check_out,
-                    hours_worked=hours,
-                    overtime_hours=overtime,
-                    is_present=is_present,
-                    is_late=is_late,
-                    late_minutes=late_mins if is_late else 0,
-                ))
+                all_records.append(
+                    Attendance(
+                        employee=emp,
+                        date=current,
+                        check_in=check_in,
+                        check_out=check_out,
+                        hours_worked=hours,
+                        overtime_hours=overtime,
+                        is_present=is_present,
+                        is_late=is_late,
+                        late_minutes=late_mins if is_late else 0,
+                    )
+                )
                 current += timedelta(days=1)
 
         if all_records:
             Attendance.objects.using(self.db).bulk_create(all_records, batch_size=5000)
-        self.stdout.write(self.style.SUCCESS(
-            f"  Attendance records created: {len(all_records)}"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"  Attendance records created: {len(all_records)}"))
 
     # ==================================================================
     # Phase 3: Leave Requests
     # ==================================================================
     def _generate_leave_requests(self):
-        existing = LeaveRequest.objects.using(self.db).filter(
-            employee__employee_id__startswith="IBM-"
-        ).count()
+        existing = LeaveRequest.objects.using(self.db).filter(employee__employee_id__startswith="IBM-").count()
         if existing > 0:
             self.stdout.write(f"  Skipping — {existing} leave requests already exist.")
             return
@@ -428,29 +475,27 @@ class Command(BaseCommand):
                     ["approved", "pending", "rejected"],
                     weights=[0.7, 0.2, 0.1],
                 )[0]
-                all_requests.append(LeaveRequest(
-                    employee=emp,
-                    leave_type=leave_type,
-                    start_date=start,
-                    end_date=end,
-                    days_requested=Decimal(str(days)),
-                    reason=f"{'Vacation' if leave_type == annual_lt else 'Medical'} leave",
-                    status=status,
-                ))
+                all_requests.append(
+                    LeaveRequest(
+                        employee=emp,
+                        leave_type=leave_type,
+                        start_date=start,
+                        end_date=end,
+                        days_requested=Decimal(str(days)),
+                        reason=f"{'Vacation' if leave_type == annual_lt else 'Medical'} leave",
+                        status=status,
+                    )
+                )
 
         if all_requests:
             LeaveRequest.objects.using(self.db).bulk_create(all_requests, batch_size=2000)
-        self.stdout.write(self.style.SUCCESS(
-            f"  Leave requests created: {len(all_requests)}"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"  Leave requests created: {len(all_requests)}"))
 
     # ==================================================================
     # Phase 4: Payroll
     # ==================================================================
     def _generate_payroll(self):
-        existing = Payroll.objects.using(self.db).filter(
-            employee__employee_id__startswith="IBM-"
-        ).count()
+        existing = Payroll.objects.using(self.db).filter(employee__employee_id__startswith="IBM-").count()
         if existing > 0:
             self.stdout.write(f"  Skipping — {existing} payroll records already exist.")
             return
@@ -480,29 +525,29 @@ class Command(BaseCommand):
                 total_ded = social_ins + tax
                 net = gross - total_ded
 
-                all_payrolls.append(Payroll(
-                    employee=emp,
-                    period_start=period_start,
-                    period_end=period_end,
-                    basic_salary=basic,
-                    housing_allowance=housing,
-                    transport_allowance=transport,
-                    overtime_amount=overtime_amt,
-                    gross_salary=gross,
-                    social_insurance=social_ins,
-                    tax_deduction=tax,
-                    total_deductions=total_ded,
-                    net_salary=net,
-                    status="paid",
-                    payment_date=period_end + timedelta(days=random.randint(1, 5)),
-                    currency=self.currency,
-                ))
+                all_payrolls.append(
+                    Payroll(
+                        employee=emp,
+                        period_start=period_start,
+                        period_end=period_end,
+                        basic_salary=basic,
+                        housing_allowance=housing,
+                        transport_allowance=transport,
+                        overtime_amount=overtime_amt,
+                        gross_salary=gross,
+                        social_insurance=social_ins,
+                        tax_deduction=tax,
+                        total_deductions=total_ded,
+                        net_salary=net,
+                        status="paid",
+                        payment_date=period_end + timedelta(days=random.randint(1, 5)),
+                        currency=self.currency,
+                    )
+                )
 
         if all_payrolls:
             Payroll.objects.using(self.db).bulk_create(all_payrolls, batch_size=2000)
-        self.stdout.write(self.style.SUCCESS(
-            f"  Payroll records created: {len(all_payrolls)}"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"  Payroll records created: {len(all_payrolls)}"))
 
     # ==================================================================
     # Summary
@@ -511,11 +556,19 @@ class Command(BaseCommand):
         self.stdout.write(self.style.HTTP_INFO("\n--- Import Summary ---"))
         counts = {
             "Employees (total)": Employee.objects.using(self.db).filter(employee_id__startswith="IBM-").count(),
-            "  - active": Employee.objects.using(self.db).filter(employee_id__startswith="IBM-", employment_status="active").count(),
-            "  - terminated/resigned": Employee.objects.using(self.db).filter(employee_id__startswith="IBM-", employment_status__in=["terminated", "resigned"]).count(),
-            "Departments": Department.objects.using(self.db).filter(company=self.company, code__in=list(IBM_DEPARTMENTS.values())).count(),
+            "  - active": Employee.objects.using(self.db)
+            .filter(employee_id__startswith="IBM-", employment_status="active")
+            .count(),
+            "  - terminated/resigned": Employee.objects.using(self.db)
+            .filter(employee_id__startswith="IBM-", employment_status__in=["terminated", "resigned"])
+            .count(),
+            "Departments": Department.objects.using(self.db)
+            .filter(company=self.company, code__in=list(IBM_DEPARTMENTS.values()))
+            .count(),
             "Attendance": Attendance.objects.using(self.db).filter(employee__employee_id__startswith="IBM-").count(),
-            "Leave Requests": LeaveRequest.objects.using(self.db).filter(employee__employee_id__startswith="IBM-").count(),
+            "Leave Requests": LeaveRequest.objects.using(self.db)
+            .filter(employee__employee_id__startswith="IBM-")
+            .count(),
             "Payroll": Payroll.objects.using(self.db).filter(employee__employee_id__startswith="IBM-").count(),
         }
         for label, cnt in counts.items():

@@ -27,14 +27,15 @@ _SQL_IMPORT_MAX_BYTES = 50 * 1024 * 1024
 
 # Dangerous DDL patterns that should be rejected from uploaded SQL files.
 _DANGEROUS_SQL_RE = re.compile(
-    r'\b(DROP\s+DATABASE|DROP\s+TABLESPACE|ALTER\s+ROLE|ALTER\s+USER|'
-    r'CREATE\s+ROLE|CREATE\s+USER|COPY\s+.*\bFROM\s+PROGRAM|'
-    r'pg_read_file|pg_write_file|lo_import|lo_export)\b',
+    r"\b(DROP\s+DATABASE|DROP\s+TABLESPACE|ALTER\s+ROLE|ALTER\s+USER|"
+    r"CREATE\s+ROLE|CREATE\s+USER|COPY\s+.*\bFROM\s+PROGRAM|"
+    r"pg_read_file|pg_write_file|lo_import|lo_export)\b",
     re.IGNORECASE,
 )
 
 
 # ── Performance Dashboard ────────────────────────────────────────────────────
+
 
 @platform_admin_required
 def pa_db_performance(request, pk):
@@ -46,16 +47,20 @@ def pa_db_performance(request, pk):
     size = svc.get_database_size(db)
     long_queries = svc.get_long_running_queries(db, min_seconds=5)
 
-    context = pa_context(request, {
-        'database': db,
-        'performance': perf,
-        'size': size,
-        'long_queries': long_queries,
-    })
-    return render(request, 'platform_admin/db_ops/performance.html', context)
+    context = pa_context(
+        request,
+        {
+            "database": db,
+            "performance": perf,
+            "size": size,
+            "long_queries": long_queries,
+        },
+    )
+    return render(request, "platform_admin/db_ops/performance.html", context)
 
 
 # ── Table Browser ────────────────────────────────────────────────────────────
+
 
 @platform_admin_required
 def pa_db_tables(request, pk):
@@ -66,15 +71,19 @@ def pa_db_tables(request, pk):
     tables = svc.get_table_stats(db)
     indexes = svc.get_index_stats(db)
 
-    context = pa_context(request, {
-        'database': db,
-        'tables': tables,
-        'indexes': indexes,
-    })
-    return render(request, 'platform_admin/db_ops/tables.html', context)
+    context = pa_context(
+        request,
+        {
+            "database": db,
+            "tables": tables,
+            "indexes": indexes,
+        },
+    )
+    return render(request, "platform_admin/db_ops/tables.html", context)
 
 
 # ── Active Connections ───────────────────────────────────────────────────────
+
 
 @platform_admin_required
 def pa_db_connections(request, pk):
@@ -84,11 +93,14 @@ def pa_db_connections(request, pk):
 
     connections = svc.get_active_connections(db)
 
-    context = pa_context(request, {
-        'database': db,
-        'connections': connections,
-    })
-    return render(request, 'platform_admin/db_ops/connections.html', context)
+    context = pa_context(
+        request,
+        {
+            "database": db,
+            "connections": connections,
+        },
+    )
+    return render(request, "platform_admin/db_ops/connections.html", context)
 
 
 @platform_admin_required
@@ -97,7 +109,7 @@ def pa_db_connections_api(request, pk):
     db = get_object_or_404(TenantDatabase, pk=pk)
     svc = DatabaseService()
     connections = svc.get_active_connections(db)
-    return JsonResponse({'connections': connections})
+    return JsonResponse({"connections": connections})
 
 
 @platform_admin_required
@@ -107,21 +119,21 @@ def pa_db_kill_connection(request, pk):
     db = get_object_or_404(TenantDatabase, pk=pk)
     svc = DatabaseService()
 
-    pid = request.POST.get('pid')
+    pid = request.POST.get("pid")
     if not pid:
-        messages.error(request, _('No PID specified.'))
-        return redirect('tenants:pa_db_connections', pk=pk)
+        messages.error(request, _("No PID specified."))
+        return redirect("tenants:pa_db_connections", pk=pk)
 
     try:
         result = svc.terminate_connection(db, int(pid))
         if result:
-            messages.success(request, _(f'Connection (PID {pid}) terminated.'))
+            messages.success(request, _(f"Connection (PID {pid}) terminated."))
         else:
-            messages.error(request, _(f'Could not terminate PID {pid}.'))
+            messages.error(request, _(f"Could not terminate PID {pid}."))
     except Exception as e:
-        messages.error(request, _(f'Error: {e}'))
+        messages.error(request, _(f"Error: {e}"))
 
-    return redirect('tenants:pa_db_connections', pk=pk)
+    return redirect("tenants:pa_db_connections", pk=pk)
 
 
 @platform_admin_required
@@ -132,12 +144,13 @@ def pa_db_kill_all_connections(request, pk):
     svc = DatabaseService()
 
     count = svc.terminate_all_connections(db)
-    messages.success(request, _(f'Terminated {count} connection(s).'))
+    messages.success(request, _(f"Terminated {count} connection(s)."))
 
-    return redirect('tenants:pa_db_connections', pk=pk)
+    return redirect("tenants:pa_db_connections", pk=pk)
 
 
 # ── Locks ────────────────────────────────────────────────────────────────────
+
 
 @platform_admin_required
 def pa_db_locks(request, pk):
@@ -147,14 +160,18 @@ def pa_db_locks(request, pk):
 
     locks = svc.get_database_locks(db)
 
-    context = pa_context(request, {
-        'database': db,
-        'locks': locks,
-    })
-    return render(request, 'platform_admin/db_ops/locks.html', context)
+    context = pa_context(
+        request,
+        {
+            "database": db,
+            "locks": locks,
+        },
+    )
+    return render(request, "platform_admin/db_ops/locks.html", context)
 
 
 # ── Maintenance ──────────────────────────────────────────────────────────────
+
 
 @platform_admin_required
 def pa_db_maintenance(request, pk):
@@ -163,14 +180,17 @@ def pa_db_maintenance(request, pk):
 
     logs = ServerLog.objects.filter(
         database=db,
-        action='database_maintenance',
-    ).order_by('-created_at')[:20]
+        action="database_maintenance",
+    ).order_by("-created_at")[:20]
 
-    context = pa_context(request, {
-        'database': db,
-        'maintenance_logs': logs,
-    })
-    return render(request, 'platform_admin/db_ops/maintenance.html', context)
+    context = pa_context(
+        request,
+        {
+            "database": db,
+            "maintenance_logs": logs,
+        },
+    )
+    return render(request, "platform_admin/db_ops/maintenance.html", context)
 
 
 @platform_admin_required
@@ -180,23 +200,24 @@ def pa_db_run_maintenance(request, pk):
     db = get_object_or_404(TenantDatabase, pk=pk)
     svc = DatabaseService()
 
-    operation = request.POST.get('operation', 'vacuum')
-    allowed = ('vacuum', 'vacuum_full', 'analyze', 'vacuum_analyze', 'reindex')
+    operation = request.POST.get("operation", "vacuum")
+    allowed = ("vacuum", "vacuum_full", "analyze", "vacuum_analyze", "reindex")
 
     if operation not in allowed:
-        messages.error(request, _('Invalid maintenance operation.'))
-        return redirect('tenants:pa_db_maintenance', pk=pk)
+        messages.error(request, _("Invalid maintenance operation."))
+        return redirect("tenants:pa_db_maintenance", pk=pk)
 
     success, msg = svc.run_maintenance(db, operation)
     if success:
-        messages.success(request, _(f'Maintenance ({operation}) completed: {msg}'))
+        messages.success(request, _(f"Maintenance ({operation}) completed: {msg}"))
     else:
-        messages.error(request, _(f'Maintenance failed: {msg}'))
+        messages.error(request, _(f"Maintenance failed: {msg}"))
 
-    return redirect('tenants:pa_db_maintenance', pk=pk)
+    return redirect("tenants:pa_db_maintenance", pk=pk)
 
 
 # ── Export / Backup ──────────────────────────────────────────────────────────
+
 
 @platform_admin_required
 @require_POST
@@ -209,15 +230,16 @@ def pa_db_export(request, pk):
     if success:
         # Serve the file
         filename = os.path.basename(result)
-        response = FileResponse(open(result, 'rb'), content_type='application/sql')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response = FileResponse(open(result, "rb"), content_type="application/sql")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
     else:
-        messages.error(request, _(f'Export failed: {result}'))
-        return redirect('tenants:pa_database_detail', pk=pk)
+        messages.error(request, _(f"Export failed: {result}"))
+        return redirect("tenants:pa_database_detail", pk=pk)
 
 
 # ── Import / Restore ────────────────────────────────────────────────────────
+
 
 @platform_admin_required
 @require_POST
@@ -225,44 +247,46 @@ def pa_db_import(request, pk):
     """Import a SQL file into a database."""
     db = get_object_or_404(TenantDatabase, pk=pk)
 
-    sql_file = request.FILES.get('sql_file')
+    sql_file = request.FILES.get("sql_file")
     if not sql_file:
-        messages.error(request, _('Please upload a SQL file.'))
-        return redirect('tenants:pa_database_detail', pk=pk)
+        messages.error(request, _("Please upload a SQL file."))
+        return redirect("tenants:pa_database_detail", pk=pk)
 
     # ── Size guard ────────────────────────────────────────────────────
     if sql_file.size > _SQL_IMPORT_MAX_BYTES:
         messages.error(
             request,
-            _('SQL file too large (%(size).1f MB). Maximum is %(max)d MB.')
-            % {'size': sql_file.size / 1024 / 1024, 'max': _SQL_IMPORT_MAX_BYTES // 1024 // 1024},
+            _("SQL file too large (%(size).1f MB). Maximum is %(max)d MB.")
+            % {"size": sql_file.size / 1024 / 1024, "max": _SQL_IMPORT_MAX_BYTES // 1024 // 1024},
         )
-        return redirect('tenants:pa_database_detail', pk=pk)
+        return redirect("tenants:pa_database_detail", pk=pk)
 
     # ── Save with a random filename (prevents path traversal) ────────
-    upload_dir = os.path.join(settings.BASE_DIR, 'private_uploads')
+    upload_dir = os.path.join(settings.BASE_DIR, "private_uploads")
     os.makedirs(upload_dir, exist_ok=True)
     safe_name = f"{uuid.uuid4().hex}.sql"
     filepath = os.path.join(upload_dir, safe_name)
 
-    with open(filepath, 'wb+') as dest:
+    with open(filepath, "wb+") as dest:
         for chunk in sql_file.chunks():
             dest.write(chunk)
 
     # ── Scan for dangerous DDL ───────────────────────────────────────
     try:
-        with open(filepath, 'r', errors='replace') as f:
+        with open(filepath, "r", errors="replace") as f:
             content = f.read()
         match = _DANGEROUS_SQL_RE.search(content)
         if match:
             os.remove(filepath)
             messages.error(
                 request,
-                _('SQL file contains a prohibited statement: %(stmt)s. '
-                  'Contact an administrator if this is intentional.')
-                % {'stmt': match.group(0)},
+                _(
+                    "SQL file contains a prohibited statement: %(stmt)s. "
+                    "Contact an administrator if this is intentional."
+                )
+                % {"stmt": match.group(0)},
             )
-            return redirect('tenants:pa_database_detail', pk=pk)
+            return redirect("tenants:pa_database_detail", pk=pk)
     except Exception:
         pass  # binary / encoding issues — psql will catch real errors
 
@@ -274,42 +298,47 @@ def pa_db_import(request, pk):
         os.remove(filepath)
 
     if success:
-        messages.success(request, _('Database imported successfully.'))
+        messages.success(request, _("Database imported successfully."))
     else:
-        messages.error(request, _(f'Import failed: {msg}'))
+        messages.error(request, _(f"Import failed: {msg}"))
 
-    return redirect('tenants:pa_database_detail', pk=pk)
+    return redirect("tenants:pa_database_detail", pk=pk)
 
 
 # ── Clone ────────────────────────────────────────────────────────────────────
+
 
 @platform_admin_required
 def pa_db_clone(request, pk):
     """Clone database form and execution."""
     db = get_object_or_404(TenantDatabase, pk=pk)
 
-    if request.method == 'POST':
-        new_name = request.POST.get('new_name', '').strip()
-        new_display = request.POST.get('new_display_name', '').strip()
+    if request.method == "POST":
+        new_name = request.POST.get("new_name", "").strip()
+        new_display = request.POST.get("new_display_name", "").strip()
 
         if not new_name:
-            messages.error(request, _('Please provide a database name.'))
+            messages.error(request, _("Please provide a database name."))
         else:
             svc = DatabaseService()
             success, result = svc.clone_database(db, new_name, new_display or new_name, request.user)
             if success:
-                messages.success(request, _(f'Database cloned successfully as {result.name}.'))
-                return redirect('tenants:pa_database_detail', pk=result.pk)
+                messages.success(request, _(f"Database cloned successfully as {result.name}."))
+                return redirect("tenants:pa_database_detail", pk=result.pk)
             else:
-                messages.error(request, _(f'Clone failed: {result}'))
+                messages.error(request, _(f"Clone failed: {result}"))
 
-    context = pa_context(request, {
-        'database': db,
-    })
-    return render(request, 'platform_admin/db_ops/clone.html', context)
+    context = pa_context(
+        request,
+        {
+            "database": db,
+        },
+    )
+    return render(request, "platform_admin/db_ops/clone.html", context)
 
 
 # ── Password Reset ───────────────────────────────────────────────────────────
+
 
 @platform_admin_required
 @require_POST
@@ -320,14 +349,17 @@ def pa_db_reset_password(request, pk):
 
     success, msg = svc.reset_database_password(db)
     if success:
-        messages.success(request, _('Database password has been reset. Check the database detail for the new credentials.'))
+        messages.success(
+            request, _("Database password has been reset. Check the database detail for the new credentials.")
+        )
     else:
-        messages.error(request, _(f'Password reset failed: {msg}'))
+        messages.error(request, _(f"Password reset failed: {msg}"))
 
-    return redirect('tenants:pa_database_detail', pk=pk)
+    return redirect("tenants:pa_database_detail", pk=pk)
 
 
 # ── Server Databases Overview ────────────────────────────────────────────────
+
 
 @platform_admin_required
 @cache_page(60 * 10)  # 10 minutes
@@ -335,15 +367,19 @@ def pa_db_reset_password(request, pk):
 def pa_server_db_overview(request, pk):
     """All databases on a particular server, with sizes and connections."""
     from tenants.models import PostgresServer
+
     server = get_object_or_404(PostgresServer, pk=pk)
     svc = DatabaseService()
 
     overview = svc.get_server_databases_overview(server)
     pg_settings = svc.get_server_settings(server)
 
-    context = pa_context(request, {
-        'server': server,
-        'databases_overview': overview,
-        'pg_settings': pg_settings,
-    })
-    return render(request, 'platform_admin/db_ops/server_overview.html', context)
+    context = pa_context(
+        request,
+        {
+            "server": server,
+            "databases_overview": overview,
+            "pg_settings": pg_settings,
+        },
+    )
+    return render(request, "platform_admin/db_ops/server_overview.html", context)

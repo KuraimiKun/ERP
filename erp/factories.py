@@ -39,6 +39,7 @@ def _uuid_id(prefix: str, length: int = 8) -> str:
 
 # ─── Master / Reference Data Factories ────────────────────────────────────────
 
+
 class DepartmentFactory(DjangoModelFactory):
     """Company department. Pass company=<Company> when calling."""
 
@@ -73,9 +74,7 @@ class ExpenseCategoryFactory(DjangoModelFactory):
         django_get_or_create = ("company", "name")
 
     name = LazyFunction(
-        lambda: random.choice(
-            ["Travel", "Office Supplies", "Software", "Marketing", "Utilities", "Meals", "Training"]
-        )
+        lambda: random.choice(["Travel", "Office Supplies", "Software", "Marketing", "Utilities", "Meals", "Training"])
     )
     name_ar = LazyAttribute(lambda o: f"مصروف {o.name[:15]}")
     is_active = True
@@ -88,10 +87,10 @@ class ServiceCategoryFactory(DjangoModelFactory):
         model = ServiceCategory
 
     name = LazyFunction(
-        lambda: random.choice(
-            ["Consulting", "Design", "Development", "Support", "Training", "Logistics", "Tourism"]
+        lambda: (
+            random.choice(["Consulting", "Design", "Development", "Support", "Training", "Logistics", "Tourism"])
+            + f" {uuid.uuid4().hex[:4].upper()}"
         )
-        + f" {uuid.uuid4().hex[:4].upper()}"
     )
     name_ar = LazyAttribute(lambda o: f"خدمات {o.name[:20]}")
     code = LazyFunction(lambda: uuid.uuid4().hex[:4].upper())
@@ -105,10 +104,10 @@ class ProductCategoryFactory(DjangoModelFactory):
         model = ProductCategory
 
     name = LazyFunction(
-        lambda: random.choice(
-            ["Electronics", "Furniture", "Stationery", "Raw Materials", "Finished Goods", "Packaging"]
+        lambda: (
+            random.choice(["Electronics", "Furniture", "Stationery", "Raw Materials", "Finished Goods", "Packaging"])
+            + f" {uuid.uuid4().hex[:4].upper()}"
         )
-        + f" {uuid.uuid4().hex[:4].upper()}"
     )
     name_ar = LazyAttribute(lambda o: f"تصنيف {o.name[:20]}")
     code = LazyFunction(lambda: uuid.uuid4().hex[:4].upper())
@@ -122,17 +121,13 @@ class CustomerFactory(DjangoModelFactory):
         model = Customer
 
     customer_id = LazyFunction(lambda: _uuid_id("C"))
-    customer_type = LazyFunction(
-        lambda: random.choice(["individual", "company", "government"])
-    )
+    customer_type = LazyFunction(lambda: random.choice(["individual", "company", "government"]))
     name = Faker("company")
     name_ar = LazyAttribute(lambda o: f"شركة {o.name[:30]}")
     email = LazyFunction(lambda: f"{uuid.uuid4().hex[:8]}@example.com")
     phone = LazyFunction(lambda: f"+966{random.randint(500000000, 599999999)}")
     billing_city = Faker("city")
-    billing_country = LazyFunction(
-        lambda: random.choice(["Saudi Arabia", "UAE", "Kuwait", "Egypt", "Jordan"])
-    )
+    billing_country = LazyFunction(lambda: random.choice(["Saudi Arabia", "UAE", "Kuwait", "Egypt", "Jordan"]))
     credit_limit = LazyFunction(lambda: Decimal(random.choice(["10000", "25000", "50000", "100000"])))
     payment_terms = LazyFunction(lambda: random.choice([0, 15, 30, 45, 60]))
     is_active = True
@@ -145,19 +140,13 @@ class SupplierFactory(DjangoModelFactory):
         model = Supplier
 
     supplier_id = LazyFunction(lambda: _uuid_id("S"))
-    supplier_type = LazyFunction(
-        lambda: random.choice(
-            ["airline", "hotel", "transport", "tour_operator", "other"]
-        )
-    )
+    supplier_type = LazyFunction(lambda: random.choice(["airline", "hotel", "transport", "tour_operator", "other"]))
     name = Faker("company")
     name_ar = LazyAttribute(lambda o: f"مورد {o.name[:30]}")
     email = LazyFunction(lambda: f"{uuid.uuid4().hex[:8]}@supplier.com")
     phone = LazyFunction(lambda: f"+966{random.randint(500000000, 599999999)}")
     city = Faker("city")
-    country = LazyFunction(
-        lambda: random.choice(["Saudi Arabia", "UAE", "Turkey", "Germany", "USA"])
-    )
+    country = LazyFunction(lambda: random.choice(["Saudi Arabia", "UAE", "Turkey", "Germany", "USA"]))
     payment_terms = LazyFunction(lambda: random.choice([30, 45, 60, 90]))
     is_active = True
 
@@ -174,21 +163,15 @@ class EmployeeFactory(DjangoModelFactory):
     gender = LazyFunction(lambda: random.choice(["male", "female"]))
     date_of_birth = Faker("date_of_birth", minimum_age=22, maximum_age=55)
     nationality = LazyFunction(
-        lambda: random.choice(
-            ["Saudi", "Emirati", "Egyptian", "Jordanian", "Lebanese", "Indian", "Filipino"]
-        )
+        lambda: random.choice(["Saudi", "Emirati", "Egyptian", "Jordanian", "Lebanese", "Indian", "Filipino"])
     )
     email = LazyFunction(lambda: f"{uuid.uuid4().hex[:8]}@company.com")
     phone = LazyFunction(lambda: f"+966{random.randint(500000000, 599999999)}")
     job_title = Faker("job")
-    employment_type = LazyFunction(
-        lambda: random.choice(["full_time", "part_time", "contract"])
-    )
+    employment_type = LazyFunction(lambda: random.choice(["full_time", "part_time", "contract"]))
     employment_status = "active"
     hire_date = Faker("date_between", start_date="-5y", end_date="-30d")
-    basic_salary = LazyFunction(
-        lambda: Decimal(str(random.randint(3000, 25000)))
-    )
+    basic_salary = LazyFunction(lambda: Decimal(str(random.randint(3000, 25000))))
     annual_leave_balance = LazyFunction(lambda: Decimal(str(random.randint(0, 30))))
 
 
@@ -201,9 +184,7 @@ class ServicePricingFactory(DjangoModelFactory):
     code = LazyFunction(lambda: _uuid_id("SVC", 6))
     name = Faker("catch_phrase")
     name_ar = LazyAttribute(lambda o: f"خدمة {o.name[:30]}")
-    pricing_type = LazyFunction(
-        lambda: random.choice(["fixed", "tiered", "variable"])
-    )
+    pricing_type = LazyFunction(lambda: random.choice(["fixed", "tiered", "variable"]))
     base_price = LazyFunction(lambda: Decimal(str(random.randint(100, 5000))))
     cost_price = LazyFunction(lambda: Decimal(str(random.randint(50, 2000))))
     is_active = True
@@ -218,9 +199,7 @@ class ProductFactory(DjangoModelFactory):
     sku = LazyFunction(lambda: _uuid_id("SKU", 8))
     name = Faker("catch_phrase")
     name_ar = LazyAttribute(lambda o: f"منتج {o.name[:30]}")
-    product_type = LazyFunction(
-        lambda: random.choice(["physical", "digital", "consumable"])
-    )
+    product_type = LazyFunction(lambda: random.choice(["physical", "digital", "consumable"]))
     selling_price = LazyFunction(lambda: Decimal(str(random.randint(10, 1000))))
     cost_price = LazyFunction(lambda: Decimal(str(random.randint(5, 500))))
     min_selling_price = LazyAttribute(lambda o: o.cost_price * Decimal("1.05"))
@@ -240,26 +219,18 @@ class LeadFactory(DjangoModelFactory):
 
     lead_number = LazyFunction(lambda: _uuid_id("LEAD", 6))
     status = LazyFunction(
-        lambda: random.choice(
-            ["new", "contacted", "qualified", "proposal", "negotiation", "won", "lost"]
-        )
+        lambda: random.choice(["new", "contacted", "qualified", "proposal", "negotiation", "won", "lost"])
     )
     source = LazyFunction(
-        lambda: random.choice(
-            ["website", "referral", "social", "advertisement", "cold_call", "walk_in"]
-        )
+        lambda: random.choice(["website", "referral", "social", "advertisement", "cold_call", "walk_in"])
     )
     first_name = Faker("first_name")
     last_name = Faker("last_name")
     email = LazyFunction(lambda: f"{uuid.uuid4().hex[:8]}@prospect.com")
     phone = LazyFunction(lambda: f"+966{random.randint(500000000, 599999999)}")
     city = Faker("city")
-    country = LazyFunction(
-        lambda: random.choice(["Saudi Arabia", "UAE", "Kuwait", "Egypt", "Jordan"])
-    )
-    estimated_value = LazyFunction(
-        lambda: Decimal(str(random.randint(1000, 100000)))
-    )
+    country = LazyFunction(lambda: random.choice(["Saudi Arabia", "UAE", "Kuwait", "Egypt", "Jordan"]))
+    estimated_value = LazyFunction(lambda: Decimal(str(random.randint(1000, 100000))))
     probability = LazyFunction(lambda: random.randint(10, 90))
     notes = Faker("paragraph", nb_sentences=2)
 
@@ -271,13 +242,9 @@ class CampaignFactory(DjangoModelFactory):
         model = Campaign
 
     name = Faker("catch_phrase")
-    campaign_type = LazyFunction(
-        lambda: random.choice(["email", "sms", "social", "ads", "event", "referral", "other"])
-    )
+    campaign_type = LazyFunction(lambda: random.choice(["email", "sms", "social", "ads", "event", "referral", "other"]))
     description = Faker("paragraph", nb_sentences=3)
-    status = LazyFunction(
-        lambda: random.choice(["draft", "active", "paused", "completed"])
-    )
+    status = LazyFunction(lambda: random.choice(["draft", "active", "paused", "completed"]))
     start_date = Faker("date_between", start_date="-1y", end_date="-30d")
     end_date = Faker("date_between", start_date="-29d", end_date="+6m")
     budget = LazyFunction(lambda: Decimal(str(random.randint(5000, 50000))))
@@ -291,12 +258,6 @@ class TaskFactory(DjangoModelFactory):
 
     title = Faker("sentence", nb_words=5)
     description = Faker("paragraph", nb_sentences=2)
-    status = LazyFunction(
-        lambda: random.choice(["todo", "in_progress", "on_hold", "completed", "cancelled"])
-    )
-    priority = LazyFunction(
-        lambda: random.choice(["low", "medium", "high", "urgent"])
-    )
-    due_date = LazyFunction(
-        lambda: timezone.now() + timedelta(days=random.randint(-30, 60))
-    )
+    status = LazyFunction(lambda: random.choice(["todo", "in_progress", "on_hold", "completed", "cancelled"]))
+    priority = LazyFunction(lambda: random.choice(["low", "medium", "high", "urgent"]))
+    due_date = LazyFunction(lambda: timezone.now() + timedelta(days=random.randint(-30, 60)))

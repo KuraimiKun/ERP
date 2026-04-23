@@ -5,30 +5,57 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0014_fixed_assets'),
+        ("erp", "0014_fixed_assets"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='assetcategory',
-            name='acquisition_source_account',
-            field=models.ForeignKey(blank=True, help_text='Cash / Bank / AP account credited on acquisition', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='asset_category_acq_source', to='erp.account'),
+            model_name="assetcategory",
+            name="acquisition_source_account",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Cash / Bank / AP account credited on acquisition",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="asset_category_acq_source",
+                to="erp.account",
+            ),
         ),
         migrations.AddField(
-            model_name='assetcategory',
-            name='disposal_proceeds_account',
-            field=models.ForeignKey(blank=True, help_text='Cash / Receivable account debited on disposal sale', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='asset_category_disposal_proceeds', to='erp.account'),
+            model_name="assetcategory",
+            name="disposal_proceeds_account",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Cash / Receivable account debited on disposal sale",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="asset_category_disposal_proceeds",
+                to="erp.account",
+            ),
         ),
         migrations.AddField(
-            model_name='assetcategory',
-            name='revaluation_surplus_account',
-            field=models.ForeignKey(blank=True, help_text='Revaluation Surplus account (equity)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='asset_category_reval_surplus', to='erp.account'),
+            model_name="assetcategory",
+            name="revaluation_surplus_account",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Revaluation Surplus account (equity)",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="asset_category_reval_surplus",
+                to="erp.account",
+            ),
         ),
         migrations.AddField(
-            model_name='fixedasset',
-            name='acquisition_source_account',
-            field=models.ForeignKey(blank=True, help_text='Cash / Bank / AP account credited on acquisition', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='fixed_asset_acq_source', to='erp.account'),
+            model_name="fixedasset",
+            name="acquisition_source_account",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Cash / Bank / AP account credited on acquisition",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="fixed_asset_acq_source",
+                to="erp.account",
+            ),
         ),
     ]

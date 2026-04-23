@@ -14,67 +14,57 @@ from django.db import models, transaction
 
 from .base import ERPBaseModel, TimeStampedModel
 
-_logger = logging.getLogger('erp.finance')
+_logger = logging.getLogger("erp.finance")
 
 
 def invoice_attachment_path(instance, filename):
     """Generate upload path for invoice attachments."""
-    ext = filename.split('.')[-1]
+    ext = filename.split(".")[-1]
     new_filename = f"{uuid.uuid4()}.{ext}"
-    return f'erp/invoices/{instance.invoice.id}/{new_filename}'
+    return f"erp/invoices/{instance.invoice.id}/{new_filename}"
 
 
 def payment_attachment_path(instance, filename):
     """Generate upload path for payment attachments."""
-    ext = filename.split('.')[-1]
+    ext = filename.split(".")[-1]
     new_filename = f"{uuid.uuid4()}.{ext}"
-    return f'erp/payments/{uuid.uuid4()}/{new_filename}'
+    return f"erp/payments/{uuid.uuid4()}/{new_filename}"
 
 
 class Account(ERPBaseModel):
     """Chart of Accounts."""
-    class AccountType(models.TextChoices):
-        ASSET = 'asset', 'Asset'
-        LIABILITY = 'liability', 'Liability'
-        EQUITY = 'equity', 'Equity'
-        INCOME = 'income', 'Income'
-        EXPENSE = 'expense', 'Expense'
 
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='accounts'
-    )
+    class AccountType(models.TextChoices):
+        ASSET = "asset", "Asset"
+        LIABILITY = "liability", "Liability"
+        EQUITY = "equity", "Equity"
+        INCOME = "income", "Income"
+        EXPENSE = "expense", "Expense"
+
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="accounts")
     code = models.CharField(max_length=20)
     name = models.CharField(max_length=255)
     name_ar = models.CharField(max_length=255, blank=True)
     account_type = models.CharField(max_length=20, choices=AccountType.choices)
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='children'
-    )
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
-    is_system = models.BooleanField(default=False, help_text=_('System accounts cannot be deleted'))
-    
+    is_system = models.BooleanField(default=False, help_text=_("System accounts cannot be deleted"))
+
     # Balance tracking
     opening_balance = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0,
-        help_text=_('الرصيد الافتتاحي للحساب')
+        max_digits=15, decimal_places=2, default=0, help_text=_("الرصيد الافتتاحي للحساب")
     )
     current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     class Meta:
-        verbose_name=_('Account')
-        verbose_name_plural = 'Accounts'
-        unique_together = ['company', 'code']
-        ordering = ['code']
+        verbose_name = _("Account")
+        verbose_name_plural = "Accounts"
+        unique_together = ["company", "code"]
+        ordering = ["code"]
         indexes = [
-            models.Index(fields=['company', 'account_type', 'is_active'], name='idx_acct_company_type_active'),
-            models.Index(fields=['company', 'is_active'], name='idx_acct_company_active'),
+            models.Index(fields=["company", "account_type", "is_active"], name="idx_acct_company_type_active"),
+            models.Index(fields=["company", "is_active"], name="idx_acct_company_active"),
         ]
 
     def __str__(self):
@@ -89,14 +79,14 @@ class Account(ERPBaseModel):
                 if parent.pk in visited:
                     break  # already detected cycle
                 if parent.pk == self.pk:
-                    raise ValidationError({'parent': _('لا يمكن أن يكون الحساب والداً لنفسه (مرجع دائري)')})
+                    raise ValidationError({"parent": _("لا يمكن أن يكون الحساب والداً لنفسه (مرجع دائري)")})
                 visited.add(parent.pk)
                 parent = parent.parent
 
     @property
     def is_debit_normal(self):
         """Returns True if this account has a debit-normal balance."""
-        return self.account_type in ('asset', 'expense')
+        return self.account_type in ("asset", "expense")
 
     def update_balance(self, debit_amount, credit_amount):
         """Update current_balance by the given debit/credit amounts.
@@ -111,41 +101,35 @@ class Account(ERPBaseModel):
         """Recompute current_balance from opening_balance + all posted journal lines."""
         from django.db.models import Sum
         from django.db.models.functions import Coalesce
-        qs = self.journal_lines.filter(journal_entry__status='posted')
+
+        qs = self.journal_lines.filter(journal_entry__status="posted")
         if db_alias:
             qs = qs.using(db_alias)
         totals = qs.aggregate(
-            total_debit=Coalesce(Sum('debit_amount'), Decimal('0')),
-            total_credit=Coalesce(Sum('credit_amount'), Decimal('0')),
+            total_debit=Coalesce(Sum("debit_amount"), Decimal("0")),
+            total_credit=Coalesce(Sum("credit_amount"), Decimal("0")),
         )
         if self.is_debit_normal:
-            self.current_balance = self.opening_balance + totals['total_debit'] - totals['total_credit']
+            self.current_balance = self.opening_balance + totals["total_debit"] - totals["total_credit"]
         else:
-            self.current_balance = self.opening_balance + totals['total_credit'] - totals['total_debit']
+            self.current_balance = self.opening_balance + totals["total_credit"] - totals["total_debit"]
         return self.current_balance
 
 
 class TaxRate(TimeStampedModel):
     """Tax rate definitions."""
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='tax_rates'
-    )
+
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="tax_rates")
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
-    rate = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0'))]
-    )
+    rate = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
     is_default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name=_('Tax Rate')
-        verbose_name_plural = 'Tax Rates'
-        ordering = ['rate']
+        verbose_name = _("Tax Rate")
+        verbose_name_plural = "Tax Rates"
+        ordering = ["rate"]
 
     def __str__(self):
         return f"{self.name} ({self.rate}%)"
@@ -153,30 +137,23 @@ class TaxRate(TimeStampedModel):
 
 class PaymentMethod(TimeStampedModel):
     """Payment methods."""
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='payment_methods'
-    )
+
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="payment_methods")
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
     code = models.CharField(max_length=20)
     is_active = models.BooleanField(default=True)
     requires_reference = models.BooleanField(default=False)
-    
+
     # Link to bank account
     account = models.ForeignKey(
-        Account,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='payment_methods'
+        Account, on_delete=models.SET_NULL, null=True, blank=True, related_name="payment_methods"
     )
 
     class Meta:
-        verbose_name=_('Payment Method')
-        verbose_name_plural = 'Payment Methods'
-        ordering = ['name']
+        verbose_name = _("Payment Method")
+        verbose_name_plural = "Payment Methods"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -184,91 +161,76 @@ class PaymentMethod(TimeStampedModel):
 
 class Customer(ERPBaseModel):
     """Customer/Client records for accounting."""
-    class CustomerType(models.TextChoices):
-        INDIVIDUAL = 'individual', 'Individual'
-        COMPANY = 'company', 'Company'
-        GOVERNMENT = 'government', 'Government'
 
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='customers'
-    )
-    
+    class CustomerType(models.TextChoices):
+        INDIVIDUAL = "individual", "Individual"
+        COMPANY = "company", "Company"
+        GOVERNMENT = "government", "Government"
+
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="customers")
+
     # Link to system user (optional)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='erp_customer_profile'
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="erp_customer_profile"
     )
-    
+
     customer_id = models.CharField(max_length=20)
     customer_type = models.CharField(max_length=20, choices=CustomerType.choices, default=CustomerType.INDIVIDUAL)
-    
+
     # Name
     name = models.CharField(max_length=255)
     name_ar = models.CharField(max_length=255, blank=True)
-    
+
     # Contact
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     mobile = models.CharField(max_length=20, blank=True)
     website = models.URLField(blank=True)
-    
+
     # Billing Address
     billing_address = models.TextField(blank=True)
     billing_city = models.CharField(max_length=100, blank=True)
     billing_state = models.CharField(max_length=100, blank=True)
     billing_country = models.CharField(max_length=100, blank=True)
     billing_postal_code = models.CharField(max_length=20, blank=True)
-    
+
     # Shipping Address
     shipping_address = models.TextField(blank=True)
     shipping_city = models.CharField(max_length=100, blank=True)
     shipping_state = models.CharField(max_length=100, blank=True)
     shipping_country = models.CharField(max_length=100, blank=True)
     shipping_postal_code = models.CharField(max_length=20, blank=True)
-    
+
     # Tax
     tax_id = models.CharField(max_length=50, blank=True)
     tax_number = models.CharField(max_length=50, blank=True)
-    
+
     # Assignment
     assigned_to = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='assigned_customers'
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_customers"
     )
-    
+
     # Credit
     credit_limit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    
+
     # Settings
     currency = models.ForeignKey(
-        'erp.Currency',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='customers'
+        "erp.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="customers"
     )
-    payment_terms = models.PositiveIntegerField(default=0, help_text=_('Payment terms in days'))
-    
+    payment_terms = models.PositiveIntegerField(default=0, help_text=_("Payment terms in days"))
+
     is_active = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name=_('Customer')
-        verbose_name_plural = 'Customers'
-        ordering = ['name']
-        unique_together = ['company', 'customer_id']
+        verbose_name = _("Customer")
+        verbose_name_plural = "Customers"
+        ordering = ["name"]
+        unique_together = ["company", "customer_id"]
         indexes = [
-            models.Index(fields=['company', 'is_active'], name='idx_cust_company_active'),
-            models.Index(fields=['company', 'customer_type'], name='idx_cust_company_type'),
+            models.Index(fields=["company", "is_active"], name="idx_cust_company_active"),
+            models.Index(fields=["company", "customer_type"], name="idx_cust_company_type"),
         ]
 
     def __str__(self):
@@ -279,68 +241,58 @@ class Customer(ERPBaseModel):
         non-cancelled invoices. Credit notes reduce the balance."""
         from django.db.models import Sum
         from django.db.models.functions import Coalesce
-        ZERO = Decimal('0')
+
+        ZERO = Decimal("0")
 
         # Standard invoices and debit notes: positive balance
-        standard = self.invoices.filter(
-            invoice_type__in=['standard', 'debit', 'proforma']
-        ).exclude(status='cancelled').aggregate(
-            total=Coalesce(Sum('balance_due'), ZERO)
-        )['total']
+        standard = (
+            self.invoices.filter(invoice_type__in=["standard", "debit", "proforma"])
+            .exclude(status="cancelled")
+            .aggregate(total=Coalesce(Sum("balance_due"), ZERO))["total"]
+        )
 
         # Credit notes: negative (reduce what customer owes)
-        credit = self.invoices.filter(
-            invoice_type='credit'
-        ).exclude(status='cancelled').aggregate(
-            total=Coalesce(Sum('total_amount'), ZERO)
-        )['total']
+        credit = (
+            self.invoices.filter(invoice_type="credit")
+            .exclude(status="cancelled")
+            .aggregate(total=Coalesce(Sum("total_amount"), ZERO))["total"]
+        )
 
         self.current_balance = standard - credit
-        self.save(update_fields=['current_balance'])
+        self.save(update_fields=["current_balance"])
 
 
 class Invoice(ERPBaseModel):
     """Sales invoices."""
+
     class Status(models.TextChoices):
-        DRAFT = 'draft', 'Draft'
-        SENT = 'sent', 'Sent'
-        PARTIAL = 'partial', 'Partially Paid'
-        PAID = 'paid', 'Paid'
-        OVERDUE = 'overdue', 'Overdue'
-        CANCELLED = 'cancelled', 'Cancelled'
+        DRAFT = "draft", "Draft"
+        SENT = "sent", "Sent"
+        PARTIAL = "partial", "Partially Paid"
+        PAID = "paid", "Paid"
+        OVERDUE = "overdue", "Overdue"
+        CANCELLED = "cancelled", "Cancelled"
 
     class InvoiceType(models.TextChoices):
-        STANDARD = 'standard', 'Standard Invoice'
-        CREDIT = 'credit', 'Credit Note'
-        DEBIT = 'debit', 'Debit Note'
-        PROFORMA = 'proforma', 'Proforma Invoice'
+        STANDARD = "standard", "Standard Invoice"
+        CREDIT = "credit", "Credit Note"
+        DEBIT = "debit", "Debit Note"
+        PROFORMA = "proforma", "Proforma Invoice"
 
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='invoices'
-    )
-    customer = models.ForeignKey(
-        Customer,
-        on_delete=models.PROTECT,
-        related_name='invoices'
-    )
-    
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="invoices")
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="invoices")
+
     # Invoice Details
     invoice_number = models.CharField(max_length=50, unique=True)
     invoice_type = models.CharField(max_length=20, choices=InvoiceType.choices, default=InvoiceType.STANDARD)
     invoice_date = models.DateField()
     due_date = models.DateField()
-    
+
     # Reference
-    reference = models.CharField(max_length=100, blank=True, help_text=_('PO number or reference'))
-    
+    reference = models.CharField(max_length=100, blank=True, help_text=_("PO number or reference"))
+
     # Amounts
-    currency = models.ForeignKey(
-        'erp.Currency',
-        on_delete=models.PROTECT,
-        related_name='invoices'
-    )
+    currency = models.ForeignKey("erp.Currency", on_delete=models.PROTECT, related_name="invoices")
     subtotal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     discount_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
@@ -351,8 +303,10 @@ class Invoice(ERPBaseModel):
     # Snapshotted on first save so historical amounts remain stable even if
     # Currency.exchange_rate changes later.
     exchange_rate_at_date = models.DecimalField(
-        max_digits=12, decimal_places=6, default=1,
-        help_text=_('Exchange rate to base currency at invoice date'),
+        max_digits=12,
+        decimal_places=6,
+        default=1,
+        help_text=_("Exchange rate to base currency at invoice date"),
     )
 
     # Status
@@ -360,22 +314,22 @@ class Invoice(ERPBaseModel):
 
     # Notes
     notes = models.TextField(blank=True)
-    terms = models.TextField(blank=True, help_text=_('Payment terms and conditions'))
+    terms = models.TextField(blank=True, help_text=_("Payment terms and conditions"))
     internal_notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name=_('Invoice')
-        verbose_name_plural = 'Invoices'
-        ordering = ['-invoice_date', '-id']
+        verbose_name = _("Invoice")
+        verbose_name_plural = "Invoices"
+        ordering = ["-invoice_date", "-id"]
         indexes = [
-            models.Index(fields=['company', 'status'], name='idx_inv_company_status'),
-            models.Index(fields=['company', 'invoice_date'], name='idx_inv_company_date'),
-            models.Index(fields=['customer', 'status'], name='idx_inv_customer_status'),
-            models.Index(fields=['company', 'due_date', 'status'], name='idx_inv_company_due_status'),
+            models.Index(fields=["company", "status"], name="idx_inv_company_status"),
+            models.Index(fields=["company", "invoice_date"], name="idx_inv_company_date"),
+            models.Index(fields=["customer", "status"], name="idx_inv_customer_status"),
+            models.Index(fields=["company", "due_date", "status"], name="idx_inv_company_due_status"),
             # Overdue/unpaid report: filter by company + positive balance_due
-            models.Index(fields=['company', 'balance_due', 'status'], name='idx_inv_company_balance_status'),
+            models.Index(fields=["company", "balance_due", "status"], name="idx_inv_company_balance_status"),
             # Aging report: customer × status × invoice_date
-            models.Index(fields=['customer', 'status', 'invoice_date'], name='idx_inv_customer_status_date'),
+            models.Index(fields=["customer", "status", "invoice_date"], name="idx_inv_customer_status_date"),
         ]
 
     def __str__(self):
@@ -383,19 +337,20 @@ class Invoice(ERPBaseModel):
 
     def clean(self):
         if self.due_date and self.invoice_date and self.due_date < self.invoice_date:
-            raise ValidationError({'due_date': _('تاريخ الاستحقاق لا يمكن أن يكون قبل تاريخ الفاتورة')})
+            raise ValidationError({"due_date": _("تاريخ الاستحقاق لا يمكن أن يكون قبل تاريخ الفاتورة")})
 
     def calculate_totals(self):
         """Calculate invoice totals from line items using a single DB aggregate."""
         from django.db.models import Sum
         from django.db.models.functions import Coalesce
-        ZERO = Decimal('0')
+
+        ZERO = Decimal("0")
         agg = self.lines.aggregate(
-            subtotal=Coalesce(Sum('line_total'), ZERO),
-            tax_amount=Coalesce(Sum('tax_amount'), ZERO),
+            subtotal=Coalesce(Sum("line_total"), ZERO),
+            tax_amount=Coalesce(Sum("tax_amount"), ZERO),
         )
-        self.subtotal = agg['subtotal']
-        self.tax_amount = agg['tax_amount']
+        self.subtotal = agg["subtotal"]
+        self.tax_amount = agg["tax_amount"]
         self.total_amount = self.subtotal + self.tax_amount - self.discount_amount
         self.balance_due = self.total_amount - self.paid_amount
 
@@ -411,6 +366,7 @@ class Invoice(ERPBaseModel):
         if self.exchange_rate_at_date == 1 and self.currency_id:
             try:
                 from erp.models.core import Currency
+
                 cur = Currency.objects.get(pk=self.currency_id)
                 if not cur.is_base:
                     self.exchange_rate_at_date = cur.exchange_rate
@@ -427,92 +383,72 @@ class Invoice(ERPBaseModel):
             try:
                 Customer.objects.get(pk=customer_pk).recalculate_balance()
             except Exception:
-                _logger.exception(
-                    'Failed to recalculate balance for customer %s', customer_pk
-                )
+                _logger.exception("Failed to recalculate balance for customer %s", customer_pk)
 
         transaction.on_commit(_recalc)
 
 
 class InvoiceLine(TimeStampedModel):
     """Invoice line items."""
-    invoice = models.ForeignKey(
-        Invoice,
-        on_delete=models.CASCADE,
-        related_name='lines'
-    )
-    
+
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="lines")
+
     # Optional product / service link
     product = models.ForeignKey(
-        'erp.Product',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='invoice_lines'
+        "erp.Product", on_delete=models.SET_NULL, null=True, blank=True, related_name="invoice_lines"
     )
     service_pricing = models.ForeignKey(
-        'erp.ServicePricing',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='invoice_lines'
-    )
-    
-    description = models.CharField(max_length=500)
-    quantity = models.DecimalField(
-        max_digits=10, decimal_places=2, default=1,
-        validators=[MinValueValidator(Decimal('0.01'))],
-    )
-    unit_price = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0,
-        validators=[MinValueValidator(Decimal('0'))],
-    )
-    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    
-    # Tax
-    tax_rate = models.ForeignKey(
-        TaxRate,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='invoice_lines'
-    )
-    tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
-    # Totals
-    line_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
-    # Accounting
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='invoice_lines'
+        "erp.ServicePricing", on_delete=models.SET_NULL, null=True, blank=True, related_name="invoice_lines"
     )
 
+    description = models.CharField(max_length=500)
+    quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=1,
+        validators=[MinValueValidator(Decimal("0.01"))],
+    )
+    unit_price = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(Decimal("0"))],
+    )
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    # Tax
+    tax_rate = models.ForeignKey(
+        TaxRate, on_delete=models.SET_NULL, null=True, blank=True, related_name="invoice_lines"
+    )
+    tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+
+    # Totals
+    line_total = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+
+    # Accounting
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name="invoice_lines")
+
     class Meta:
-        verbose_name=_('Invoice Line')
-        verbose_name_plural = 'Invoice Lines'
-        ordering = ['id']
+        verbose_name = _("Invoice Line")
+        verbose_name_plural = "Invoice Lines"
+        ordering = ["id"]
 
     def __str__(self):
         return f"{self.invoice.invoice_number} - {self.description[:50]}"
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        max_discount = Decimal('100')
+
+        max_discount = Decimal("100")
         if self.discount_percent < 0 or self.discount_percent > max_discount:
-            raise ValidationError({'discount_percent': 'Discount must be between 0 and 100%.'})
+            raise ValidationError({"discount_percent": "Discount must be between 0 and 100%."})
         # Company-level max discount check (if configured)
         try:
             company = self.invoice.company if self.invoice_id else None
             if company:
-                max_allowed = getattr(company, 'max_discount_percent', None)
+                max_allowed = getattr(company, "max_discount_percent", None)
                 if max_allowed is not None and self.discount_percent > max_allowed:
-                    raise ValidationError({
-                        'discount_percent': f'Discount exceeds company maximum of {max_allowed}%.'
-                    })
+                    raise ValidationError({"discount_percent": f"Discount exceeds company maximum of {max_allowed}%."})
         except Exception:
             pass  # Non-fatal: company may not be loaded yet
 
@@ -524,60 +460,48 @@ class InvoiceLine(TimeStampedModel):
 
         # Calculate line total
         subtotal = self.quantity * self.unit_price
-        discount = subtotal * (self.discount_percent / Decimal('100'))
+        discount = subtotal * (self.discount_percent / Decimal("100"))
         self.line_total = subtotal - discount
-        
+
         # Calculate tax
         if self.tax_rate:
-            self.tax_amount = self.line_total * (Decimal(str(self.tax_rate.rate)) / Decimal('100'))
+            self.tax_amount = self.line_total * (Decimal(str(self.tax_rate.rate)) / Decimal("100"))
         else:
-            self.tax_amount = Decimal('0')
-        
+            self.tax_amount = Decimal("0")
+
         super().save(*args, **kwargs)
 
 
 class Payment(ERPBaseModel):
     """Payment records."""
-    class PaymentType(models.TextChoices):
-        RECEIVED = 'received', 'Payment Received'
-        REFUND = 'refund', 'Refund'
 
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='payments'
-    )
-    customer = models.ForeignKey(
-        Customer,
-        on_delete=models.PROTECT,
-        related_name='payments'
-    )
-    
+    class PaymentType(models.TextChoices):
+        RECEIVED = "received", "Payment Received"
+        REFUND = "refund", "Refund"
+
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="payments")
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="payments")
+
     payment_number = models.CharField(max_length=50, unique=True)
     payment_type = models.CharField(max_length=20, choices=PaymentType.choices, default=PaymentType.RECEIVED)
     payment_date = models.DateField()
-    
+
     # Method & Reference
-    payment_method = models.ForeignKey(
-        PaymentMethod,
-        on_delete=models.PROTECT,
-        related_name='payments'
-    )
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.PROTECT, related_name="payments")
     reference_number = models.CharField(max_length=100, blank=True)
-    
+
     # Amount
-    currency = models.ForeignKey(
-        'erp.Currency',
-        on_delete=models.PROTECT,
-        related_name='payments'
-    )
+    currency = models.ForeignKey("erp.Currency", on_delete=models.PROTECT, related_name="payments")
     amount = models.DecimalField(
-        max_digits=15, decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        max_digits=15,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
     )
     exchange_rate_at_date = models.DecimalField(
-        max_digits=12, decimal_places=6, default=1,
-        help_text=_('Exchange rate to base currency at payment date'),
+        max_digits=12,
+        decimal_places=6,
+        default=1,
+        help_text=_("Exchange rate to base currency at payment date"),
     )
 
     # Allocation
@@ -587,17 +511,17 @@ class Payment(ERPBaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name=_('Payment')
-        verbose_name_plural = 'Payments'
-        ordering = ['-payment_date', '-id']
+        verbose_name = _("Payment")
+        verbose_name_plural = "Payments"
+        ordering = ["-payment_date", "-id"]
         indexes = [
-            models.Index(fields=['company', 'payment_date'], name='idx_pay_company_date'),
-            models.Index(fields=['customer', 'payment_date'], name='idx_pay_customer_date'),
+            models.Index(fields=["company", "payment_date"], name="idx_pay_company_date"),
+            models.Index(fields=["customer", "payment_date"], name="idx_pay_customer_date"),
         ]
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(amount__gt=0),
-                name='payment_amount_positive',
+                name="payment_amount_positive",
             ),
         ]
 
@@ -609,6 +533,7 @@ class Payment(ERPBaseModel):
         if self.exchange_rate_at_date == 1 and self.currency_id:
             try:
                 from erp.models.core import Currency
+
                 cur = Currency.objects.get(pk=self.currency_id)
                 if not cur.is_base:
                     self.exchange_rate_at_date = cur.exchange_rate
@@ -619,25 +544,19 @@ class Payment(ERPBaseModel):
 
 class PaymentAllocation(TimeStampedModel):
     """Allocation of payments to invoices."""
-    payment = models.ForeignKey(
-        Payment,
-        on_delete=models.CASCADE,
-        related_name='allocations'
-    )
-    invoice = models.ForeignKey(
-        Invoice,
-        on_delete=models.CASCADE,
-        related_name='payment_allocations'
-    )
+
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="allocations")
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="payment_allocations")
     amount = models.DecimalField(
-        max_digits=15, decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        max_digits=15,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
     )
 
     class Meta:
-        verbose_name=_('Payment Allocation')
-        verbose_name_plural = 'Payment Allocations'
-        unique_together = ['payment', 'invoice']
+        verbose_name = _("Payment Allocation")
+        verbose_name_plural = "Payment Allocations"
+        unique_together = ["payment", "invoice"]
 
     def clean(self):
         """Ensure allocation amount (in invoice currency) does not exceed invoice total.
@@ -649,20 +568,23 @@ class PaymentAllocation(TimeStampedModel):
         """
         from django.db.models import Sum
         from django.db.models.functions import Coalesce
+
         if self.invoice_id and self.amount:
             # Sum all other allocations for this invoice — all in invoice currency
             already_allocated = (
                 PaymentAllocation.objects.filter(invoice_id=self.invoice_id)
                 .exclude(pk=self.pk)
-                .aggregate(total=Coalesce(Sum('amount'), Decimal('0')))['total']
+                .aggregate(total=Coalesce(Sum("amount"), Decimal("0")))["total"]
             )
             if already_allocated + self.amount > self.invoice.total_amount:
-                raise ValidationError({
-                    'amount': _(
-                        f'إجمالي المبالغ المخصصة ({already_allocated + self.amount}) '
-                        f'يتجاوز إجمالي الفاتورة ({self.invoice.total_amount})'
-                    )
-                })
+                raise ValidationError(
+                    {
+                        "amount": _(
+                            f"إجمالي المبالغ المخصصة ({already_allocated + self.amount}) "
+                            f"يتجاوز إجمالي الفاتورة ({self.invoice.total_amount})"
+                        )
+                    }
+                )
 
     def __str__(self):
         return f"{self.payment.payment_number} → {self.invoice.invoice_number}"
@@ -670,107 +592,77 @@ class PaymentAllocation(TimeStampedModel):
 
 class Expense(ERPBaseModel):
     """Business expense records."""
-    class Status(models.TextChoices):
-        DRAFT = 'draft', 'Draft'
-        SUBMITTED = 'submitted', 'Submitted'
-        APPROVED = 'approved', 'Approved'
-        REJECTED = 'rejected', 'Rejected'
-        PAID = 'paid', 'Paid'
 
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='expenses'
-    )
-    
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        SUBMITTED = "submitted", "Submitted"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+        PAID = "paid", "Paid"
+
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="expenses")
+
     expense_number = models.CharField(max_length=50, unique=True)
     expense_date = models.DateField()
-    
+
     # Category
-    category = models.ForeignKey(
-        'erp.ExpenseCategory',
-        on_delete=models.PROTECT,
-        related_name='expenses'
-    )
-    
+    category = models.ForeignKey("erp.ExpenseCategory", on_delete=models.PROTECT, related_name="expenses")
+
     # Supplier (optional)
     supplier = models.ForeignKey(
-        'erp.Supplier',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='expenses'
+        "erp.Supplier", on_delete=models.SET_NULL, null=True, blank=True, related_name="expenses"
     )
-    
+
     # Employee who submitted (optional)
     employee = models.ForeignKey(
-        'erp.Employee',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='expenses'
+        "erp.Employee", on_delete=models.SET_NULL, null=True, blank=True, related_name="expenses"
     )
-    
+
     description = models.TextField()
-    
+
     # Amount
-    currency = models.ForeignKey(
-        'erp.Currency',
-        on_delete=models.PROTECT,
-        related_name='expenses'
-    )
+    currency = models.ForeignKey("erp.Currency", on_delete=models.PROTECT, related_name="expenses")
     amount = models.DecimalField(
-        max_digits=15, decimal_places=2,
-        validators=[MinValueValidator(Decimal('0'))],
+        max_digits=15,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0"))],
     )
     tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     exchange_rate_at_date = models.DecimalField(
-        max_digits=12, decimal_places=6, default=1,
-        help_text=_('Exchange rate to base currency at expense date'),
+        max_digits=12,
+        decimal_places=6,
+        default=1,
+        help_text=_("Exchange rate to base currency at expense date"),
     )
 
     # Payment
     payment_method = models.ForeignKey(
-        PaymentMethod,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='expenses'
+        PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, related_name="expenses"
     )
     payment_reference = models.CharField(max_length=100, blank=True)
-    
+
     # Accounting
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='expenses'
-    )
-    
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name="expenses")
+
     # Approval
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     approved_by = models.ForeignKey(
-        'erp.Employee',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='approved_expenses'
+        "erp.Employee", on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_expenses"
     )
     approval_date = models.DateTimeField(null=True, blank=True)
-    
+
     # Attachments handled separately
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name=_('Expense')
-        verbose_name_plural = 'Expenses'
-        ordering = ['-expense_date', '-id']
+        verbose_name = _("Expense")
+        verbose_name_plural = "Expenses"
+        ordering = ["-expense_date", "-id"]
         indexes = [
-            models.Index(fields=['company', 'status', 'expense_date'], name='idx_exp_company_status_date'),
-            models.Index(fields=['company', 'category'], name='idx_exp_company_category'),
-            models.Index(fields=['company', 'employee'], name='idx_exp_company_employee'),
+            models.Index(fields=["company", "status", "expense_date"], name="idx_exp_company_status_date"),
+            models.Index(fields=["company", "category"], name="idx_exp_company_category"),
+            models.Index(fields=["company", "employee"], name="idx_exp_company_employee"),
         ]
 
     def __str__(self):
@@ -781,6 +673,7 @@ class Expense(ERPBaseModel):
         if self.exchange_rate_at_date == 1 and self.currency_id:
             try:
                 from erp.models.core import Currency
+
                 cur = Currency.objects.get(pk=self.currency_id)
                 if not cur.is_base:
                     self.exchange_rate_at_date = cur.exchange_rate
@@ -791,34 +684,21 @@ class Expense(ERPBaseModel):
 
 class ExpenseCategory(TimeStampedModel):
     """Expense categories."""
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='expense_categories'
-    )
+
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="expense_categories")
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
     code = models.CharField(max_length=20, blank=True)
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='children'
-    )
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
     account = models.ForeignKey(
-        Account,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='expense_categories'
+        Account, on_delete=models.SET_NULL, null=True, blank=True, related_name="expense_categories"
     )
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name=_('Expense Category')
-        verbose_name_plural = 'Expense Categories'
-        ordering = ['name']
+        verbose_name = _("Expense Category")
+        verbose_name_plural = "Expense Categories"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -826,17 +706,14 @@ class ExpenseCategory(TimeStampedModel):
 
 class ExpenseAttachment(TimeStampedModel):
     """Attachments for expenses (receipts, invoices, etc.)."""
-    expense = models.ForeignKey(
-        Expense,
-        on_delete=models.CASCADE,
-        related_name='attachments'
-    )
-    file = models.FileField(upload_to='erp/expenses/')
+
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE, related_name="attachments")
+    file = models.FileField(upload_to="erp/expenses/")
     description = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        verbose_name=_('Expense Attachment')
-        verbose_name_plural = 'Expense Attachments'
+        verbose_name = _("Expense Attachment")
+        verbose_name_plural = "Expense Attachments"
 
     def __str__(self):
         return f"Attachment for {self.expense.expense_number}"
@@ -844,77 +721,70 @@ class ExpenseAttachment(TimeStampedModel):
 
 class JournalEntry(ERPBaseModel):
     """القيود اليومية - Journal Entries for double-entry bookkeeping."""
+
     class Status(models.TextChoices):
-        DRAFT = 'draft', 'مسودة'
-        POSTED = 'posted', 'مرحّل'
-        CANCELLED = 'cancelled', 'ملغي'
+        DRAFT = "draft", "مسودة"
+        POSTED = "posted", "مرحّل"
+        CANCELLED = "cancelled", "ملغي"
 
     class EntryType(models.TextChoices):
-        MANUAL = 'manual', 'يدوي'
-        INVOICE = 'invoice', 'فاتورة'
-        PAYMENT = 'payment', 'دفعة'
-        EXPENSE = 'expense', 'مصروف'
-        PAYROLL = 'payroll', 'رواتب'
-        ADJUSTMENT = 'adjustment', 'تسوية'
-        OPENING = 'opening', 'رصيد افتتاحي'
-        CLOSING = 'closing', 'إقفال'
-        INVENTORY = 'inventory', 'مخزون'
+        MANUAL = "manual", "يدوي"
+        INVOICE = "invoice", "فاتورة"
+        PAYMENT = "payment", "دفعة"
+        EXPENSE = "expense", "مصروف"
+        PAYROLL = "payroll", "رواتب"
+        ADJUSTMENT = "adjustment", "تسوية"
+        OPENING = "opening", "رصيد افتتاحي"
+        CLOSING = "closing", "إقفال"
+        INVENTORY = "inventory", "مخزون"
 
-    company = models.ForeignKey(
-        'erp.Company',
-        on_delete=models.CASCADE,
-        related_name='journal_entries'
-    )
-    
+    company = models.ForeignKey("erp.Company", on_delete=models.CASCADE, related_name="journal_entries")
+
     entry_number = models.CharField(max_length=50)
     entry_date = models.DateField()
     entry_type = models.CharField(max_length=20, choices=EntryType.choices, default=EntryType.MANUAL)
-    
+
     description = models.TextField(blank=True)
-    reference = models.CharField(max_length=100, blank=True, help_text=_('رقم مرجعي خارجي'))
-    
+    reference = models.CharField(max_length=100, blank=True, help_text=_("رقم مرجعي خارجي"))
+
     fiscal_year = models.ForeignKey(
-        'erp.FiscalYear',
-        on_delete=models.PROTECT,
-        related_name='journal_entries',
-        null=True,
-        blank=True
+        "erp.FiscalYear", on_delete=models.PROTECT, related_name="journal_entries", null=True, blank=True
     )
-    
+
     # Totals (auto-calculated)
     total_debit = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_credit = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    
+
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
-    
+
     # Posting info
     posted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='posted_journal_entries'
+        related_name="posted_journal_entries",
     )
     posted_at = models.DateTimeField(null=True, blank=True)
-    
+
     # Audit
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='created_journal_entries'
+        related_name="created_journal_entries",
     )
 
     class Meta:
-        verbose_name=_('قيد يومية')
-        verbose_name_plural = 'القيود اليومية'
-        unique_together = ['company', 'entry_number']
-        ordering = ['-entry_date', '-entry_number']
+        verbose_name = _("قيد يومية")
+        verbose_name_plural = "القيود اليومية"
+        unique_together = ["company", "entry_number"]
+        ordering = ["-entry_date", "-entry_number"]
         indexes = [
-            models.Index(fields=['company', 'status', 'entry_date'], name='idx_je_company_status_date'),
-            models.Index(fields=['company', 'entry_type'], name='idx_je_company_type'),
-            models.Index(fields=['company', 'fiscal_year'], name='idx_je_company_fy'),
+            models.Index(fields=["company", "status", "entry_date"], name="idx_je_company_status_date"),
+            models.Index(fields=["company", "entry_type"], name="idx_je_company_type"),
+            models.Index(fields=["company", "fiscal_year"], name="idx_je_company_fy"),
         ]
 
     def __str__(self):
@@ -928,48 +798,46 @@ class JournalEntry(ERPBaseModel):
     def calculate_totals(self):
         """Calculate total debit and credit from lines."""
         from django.db.models import Sum
-        totals = self.lines.aggregate(
-            total_debit=Sum('debit_amount'),
-            total_credit=Sum('credit_amount')
-        )
-        self.total_debit = totals['total_debit'] or Decimal('0')
-        self.total_credit = totals['total_credit'] or Decimal('0')
+
+        totals = self.lines.aggregate(total_debit=Sum("debit_amount"), total_credit=Sum("credit_amount"))
+        self.total_debit = totals["total_debit"] or Decimal("0")
+        self.total_credit = totals["total_credit"] or Decimal("0")
 
     def post(self, user):
         """Post the journal entry and update account balances."""
         from django.utils import timezone
         from django.db import transaction
+
         if self.status != self.Status.DRAFT:
-            raise ValueError('يمكن ترحيل المسودات فقط')
+            raise ValueError("يمكن ترحيل المسودات فقط")
         if self.lines.count() < 2:
-            raise ValueError('يجب أن يحتوي القيد على سطرين على الأقل (مدين ودائن)')
+            raise ValueError("يجب أن يحتوي القيد على سطرين على الأقل (مدين ودائن)")
         if not self.is_balanced:
-            raise ValueError('القيد غير متوازن - المدين لا يساوي الدائن')
+            raise ValueError("القيد غير متوازن - المدين لا يساوي الدائن")
         if self.total_debit <= 0:
-            raise ValueError('يجب أن يكون إجمالي المدين أكبر من الصفر')
+            raise ValueError("يجب أن يكون إجمالي المدين أكبر من الصفر")
 
         # Validate fiscal year is open and entry date is within range
         if self.fiscal_year:
             if self.fiscal_year.is_closed:
-                raise ValueError('لا يمكن الترحيل في سنة مالية مغلقة')
+                raise ValueError("لا يمكن الترحيل في سنة مالية مغلقة")
             if not (self.fiscal_year.start_date <= self.entry_date <= self.fiscal_year.end_date):
                 raise ValueError(
-                    f'تاريخ القيد ({self.entry_date}) خارج نطاق السنة المالية '
-                    f'({self.fiscal_year.start_date} – {self.fiscal_year.end_date})'
+                    f"تاريخ القيد ({self.entry_date}) خارج نطاق السنة المالية "
+                    f"({self.fiscal_year.start_date} – {self.fiscal_year.end_date})"
                 )
 
-        db = self._state.db or 'default'
+        db = self._state.db or "default"
         with transaction.atomic(using=db):
             # Lock affected accounts in deterministic order to prevent concurrent balance corruption
-            account_ids = sorted(self.lines.values_list('account_id', flat=True))
+            account_ids = sorted(self.lines.values_list("account_id", flat=True))
             locked_accounts = {
-                acc.pk: acc
-                for acc in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
+                acc.pk: acc for acc in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
             }
-            for line in self.lines.select_related('account').all():
+            for line in self.lines.select_related("account").all():
                 acc = locked_accounts[line.account_id]
                 acc.update_balance(line.debit_amount, line.credit_amount)
-                acc.save(update_fields=['current_balance'])
+                acc.save(update_fields=["current_balance"])
 
             self.status = self.Status.POSTED
             self.posted_by = user
@@ -979,43 +847,30 @@ class JournalEntry(ERPBaseModel):
 
 class JournalEntryLine(TimeStampedModel):
     """سطور القيد اليومي - Individual debit/credit entries."""
-    journal_entry = models.ForeignKey(
-        JournalEntry,
-        on_delete=models.CASCADE,
-        related_name='lines'
-    )
-    
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.PROTECT,
-        related_name='journal_lines'
-    )
-    
+
+    journal_entry = models.ForeignKey(JournalEntry, on_delete=models.CASCADE, related_name="lines")
+
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="journal_lines")
+
     description = models.CharField(max_length=255, blank=True)
-    
+
     debit_amount = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=0,
-        validators=[MinValueValidator(Decimal('0'))]
+        max_digits=15, decimal_places=2, default=0, validators=[MinValueValidator(Decimal("0"))]
     )
     credit_amount = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=0,
-        validators=[MinValueValidator(Decimal('0'))]
+        max_digits=15, decimal_places=2, default=0, validators=[MinValueValidator(Decimal("0"))]
     )
-    
+
     # Optional reference to related objects
     reference_type = models.CharField(max_length=50, blank=True)
     reference_id = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
-        verbose_name=_('سطر قيد')
-        verbose_name_plural = 'سطور القيد'
-        ordering = ['id']
+        verbose_name = _("سطر قيد")
+        verbose_name_plural = "سطور القيد"
+        ordering = ["id"]
         indexes = [
-            models.Index(fields=['account', 'journal_entry'], name='idx_jel_account_je'),
+            models.Index(fields=["account", "journal_entry"], name="idx_jel_account_je"),
         ]
 
     def __str__(self):
@@ -1029,11 +884,9 @@ class JournalEntryLine(TimeStampedModel):
         # never produce an inconsistent debit/credit total.
         # Use the same DB alias as the queryset (passed via using= by create())
         # so the transaction and the select_for_update() land on the same DB.
-        db = kwargs.get('using') or self._state.db or 'default'
+        db = kwargs.get("using") or self._state.db or "default"
         with transaction.atomic(using=db):
-            locked_entry = JournalEntry.objects.using(db).select_for_update().get(
-                pk=self.journal_entry_id
-            )
+            locked_entry = JournalEntry.objects.using(db).select_for_update().get(pk=self.journal_entry_id)
             super().save(*args, **kwargs)
             locked_entry.calculate_totals()
-            locked_entry.save(update_fields=['total_debit', 'total_credit'])
+            locked_entry.save(update_fields=["total_debit", "total_credit"])

@@ -5,15 +5,20 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0005_purchaseorder_balance_due_and_more'),
+        ("erp", "0005_purchaseorder_balance_due_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='quoteline',
-            name='product',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='quote_lines', to='erp.product'),
+            model_name="quoteline",
+            name="product",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="quote_lines",
+                to="erp.product",
+            ),
         ),
     ]

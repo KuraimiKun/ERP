@@ -4,15 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0007_add_opening_balance'),
+        ("erp", "0007_add_opening_balance"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sequence',
-            name='sequence_type',
-            field=models.CharField(choices=[('invoice', 'Invoice'), ('payment', 'Payment'), ('expense', 'Expense'), ('quotation', 'Quotation'), ('purchase_order', 'Purchase Order'), ('employee', 'Employee'), ('customer', 'Customer'), ('supplier', 'Supplier'), ('supplier_invoice', 'Supplier Invoice'), ('supplier_payment', 'Supplier Payment'), ('lead', 'Lead')], max_length=30),
+            model_name="sequence",
+            name="sequence_type",
+            field=models.CharField(
+                choices=[
+                    ("invoice", "Invoice"),
+                    ("payment", "Payment"),
+                    ("expense", "Expense"),
+                    ("quotation", "Quotation"),
+                    ("purchase_order", "Purchase Order"),
+                    ("employee", "Employee"),
+                    ("customer", "Customer"),
+                    ("supplier", "Supplier"),
+                    ("supplier_invoice", "Supplier Invoice"),
+                    ("supplier_payment", "Supplier Payment"),
+                    ("lead", "Lead"),
+                ],
+                max_length=30,
+            ),
         ),
     ]

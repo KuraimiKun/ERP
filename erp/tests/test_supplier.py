@@ -11,15 +11,16 @@ from erp.tests.helpers import ERPTestCase
 
 
 class SupplierModelTest(ERPTestCase):
-
     def test_str_representation(self):
         self.assertIn(self.supplier.name, str(self.supplier))
 
     def test_unique_supplier_id(self):
         with self.assertRaises(IntegrityError):
             Supplier.objects.create(
-                company=self.company, supplier_id='SUP-0001',
-                supplier_type='other', name='Dup',
+                company=self.company,
+                supplier_id="SUP-0001",
+                supplier_type="other",
+                name="Dup",
                 created_by=self.user,
             )
 
@@ -37,4 +38,4 @@ class SupplierModelTest(ERPTestCase):
         self.assertTrue(Supplier.objects.filter(pk=self.supplier.pk).exists())
 
     def test_default_balance(self):
-        self.assertEqual(self.supplier.current_balance, Decimal('0'))
+        self.assertEqual(self.supplier.current_balance, Decimal("0"))

@@ -22,125 +22,131 @@ class EmployeeRegistrationForm(forms.Form):
 
     # ── Login credentials ───────────────────────────────────────
     email = forms.EmailField(
-        label=_('Email'),
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': _('your.email@example.com'),
-            'autofocus': True,
-        }),
+        label=_("Email"),
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": _("your.email@example.com"),
+                "autofocus": True,
+            }
+        ),
     )
     password1 = forms.CharField(
-        label=_('Password'),
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'autocomplete': 'new-password',
-        }),
+        label=_("Password"),
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "new-password",
+            }
+        ),
         min_length=8,
     )
     password2 = forms.CharField(
-        label=_('Confirm Password'),
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'autocomplete': 'new-password',
-        }),
+        label=_("Confirm Password"),
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "new-password",
+            }
+        ),
     )
 
     # ── Personal information ────────────────────────────────────
     first_name = forms.CharField(
-        label=_('First Name'),
+        label=_("First Name"),
         max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     last_name = forms.CharField(
-        label=_('Last Name'),
+        label=_("Last Name"),
         max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     first_name_ar = forms.CharField(
-        label=_('First Name (Arabic)'),
+        label=_("First Name (Arabic)"),
         max_length=100,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'dir': 'rtl'}),
+        widget=forms.TextInput(attrs={"class": "form-control", "dir": "rtl"}),
     )
     last_name_ar = forms.CharField(
-        label=_('Last Name (Arabic)'),
+        label=_("Last Name (Arabic)"),
         max_length=100,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'dir': 'rtl'}),
+        widget=forms.TextInput(attrs={"class": "form-control", "dir": "rtl"}),
     )
     gender = forms.ChoiceField(
-        label=_('Gender'),
+        label=_("Gender"),
         choices=Employee.Gender.choices,
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
     date_of_birth = forms.DateField(
-        label=_('Date of Birth'),
-        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        label=_("Date of Birth"),
+        widget=forms.DateInput(attrs={"class": "form-control", "type": "date"}),
     )
     nationality = forms.CharField(
-        label=_('Nationality'),
+        label=_("Nationality"),
         max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
     # ── Contact ─────────────────────────────────────────────────
     phone = forms.CharField(
-        label=_('Phone'),
+        label=_("Phone"),
         max_length=20,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     emergency_contact_name = forms.CharField(
-        label=_('Emergency Contact Name'),
+        label=_("Emergency Contact Name"),
         max_length=100,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     emergency_contact_phone = forms.CharField(
-        label=_('Emergency Contact Phone'),
+        label=_("Emergency Contact Phone"),
         max_length=20,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
     # ── Address ─────────────────────────────────────────────────
     address = forms.CharField(
-        label=_('Address'),
+        label=_("Address"),
         required=False,
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 2}),
     )
     city = forms.CharField(
-        label=_('City'),
+        label=_("City"),
         max_length=100,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     country = forms.CharField(
-        label=_('Country'),
+        label=_("Country"),
         max_length=100,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
     # ── Documents ───────────────────────────────────────────────
     national_id = forms.CharField(
-        label=_('National ID'),
+        label=_("National ID"),
         max_length=50,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
     # ── Job ─────────────────────────────────────────────────────
     job_title = forms.CharField(
-        label=_('Job Title'),
+        label=_("Job Title"),
         max_length=100,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
     def clean(self):
         cleaned_data = super().clean()
-        p1 = cleaned_data.get('password1')
-        p2 = cleaned_data.get('password2')
+        p1 = cleaned_data.get("password1")
+        p2 = cleaned_data.get("password2")
         if p1 and p2 and p1 != p2:
-            self.add_error('password2', _('Passwords do not match.'))
+            self.add_error("password2", _("Passwords do not match."))
         return cleaned_data

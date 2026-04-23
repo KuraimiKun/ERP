@@ -15,11 +15,11 @@ DATABASE_ROUTERS = []
 # and don't fail when Redis is absent.  This overrides the fail-fast Redis
 # cache configured in settings.py for production (DEBUG=False).
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
 
-# Disable HTTPS redirects during pure unit tests since the test client 
+# Disable HTTPS redirects during pure unit tests since the test client
 # makes unencrypted HTTP requests by default.
 SECURE_SSL_REDIRECT = False

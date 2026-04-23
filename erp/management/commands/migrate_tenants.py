@@ -16,40 +16,40 @@ from tenants.routers import add_tenant_database
 
 
 class Command(BaseCommand):
-    help = 'Run ERP migrations on tenant databases.'
+    help = "Run ERP migrations on tenant databases."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--tenant',
+            "--tenant",
             type=str,
             default=None,
-            help='Tenant database name (e.g. erp_pg_alkuraimi). If omitted, all active tenants are migrated.',
+            help="Tenant database name (e.g. erp_pg_alkuraimi). If omitted, all active tenants are migrated.",
         )
         parser.add_argument(
-            '--app',
+            "--app",
             type=str,
-            default='erp',
-            help='App label to migrate (default: erp).',
+            default="erp",
+            help="App label to migrate (default: erp).",
         )
 
     def handle(self, *args, **options):
-        tenant_name = options['tenant']
-        app_label = options['app']
+        tenant_name = options["tenant"]
+        app_label = options["app"]
 
         if tenant_name:
-            tenants = TenantDatabase.objects.filter(name=tenant_name, status='active')
+            tenants = TenantDatabase.objects.filter(name=tenant_name, status="active")
             if not tenants.exists():
                 self.stderr.write(self.style.ERROR(f"No active tenant database found with name '{tenant_name}'."))
                 # Show available tenants
-                all_tenants = TenantDatabase.objects.filter(status='active').values_list('name', flat=True)
+                all_tenants = TenantDatabase.objects.filter(status="active").values_list("name", flat=True)
                 if all_tenants:
                     self.stderr.write(f"Available active tenants: {', '.join(all_tenants)}")
                 return
         else:
-            tenants = TenantDatabase.objects.filter(status='active')
+            tenants = TenantDatabase.objects.filter(status="active")
 
         if not tenants.exists():
-            self.stdout.write(self.style.WARNING('No active tenant databases found.'))
+            self.stdout.write(self.style.WARNING("No active tenant databases found."))
             return
 
         for tenant_db in tenants:
@@ -58,7 +58,7 @@ class Command(BaseCommand):
             try:
                 out = StringIO()
                 call_command(
-                    'migrate',
+                    "migrate",
                     app_label,
                     database=db_alias,
                     verbosity=1,

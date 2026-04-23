@@ -5,45 +5,55 @@ from erp.admin.mixins import CompanyIsolatedAdmin
 
 @admin.register(MLModel)
 class MLModelAdmin(CompanyIsolatedAdmin):
-    list_display = ('name', 'model_type', 'company', 'version', 'is_active',
-                    'accuracy_score', 'last_trained_at')
-    list_filter = ('model_type', 'is_active', 'company')
-    search_fields = ('name',)
-    readonly_fields = ('created_at', 'updated_at', 'last_trained_at',
-                       'training_samples', 'accuracy_score')
+    list_display = ("name", "model_type", "company", "version", "is_active", "accuracy_score", "last_trained_at")
+    list_filter = ("model_type", "is_active", "company")
+    search_fields = ("name",)
+    readonly_fields = ("created_at", "updated_at", "last_trained_at", "training_samples", "accuracy_score")
 
 
 @admin.register(PredictionLog)
 class PredictionLogAdmin(CompanyIsolatedAdmin):
-    company_lookup = 'model__company'
-    list_display = ('model', 'entity_type', 'entity_id', 'score',
-                    'created_at')
-    list_filter = ('model__model_type', 'entity_type')
-    readonly_fields = ('created_at',)
-    date_hierarchy = 'created_at'
+    company_lookup = "model__company"
+    list_display = ("model", "entity_type", "entity_id", "score", "created_at")
+    list_filter = ("model__model_type", "entity_type")
+    readonly_fields = ("created_at",)
+    date_hierarchy = "created_at"
 
 
 @admin.register(AIInsight)
 class AIInsightAdmin(CompanyIsolatedAdmin):
-    list_display = ('company', 'category', 'severity', 'title',
-                    'is_dismissed', 'created_at')
-    list_filter = ('category', 'severity', 'is_dismissed')
-    search_fields = ('title', 'description')
-    date_hierarchy = 'created_at'
+    list_display = ("company", "category", "severity", "title", "is_dismissed", "created_at")
+    list_filter = ("category", "severity", "is_dismissed")
+    search_fields = ("title", "description")
+    date_hierarchy = "created_at"
 
 
 @admin.register(AITrainingRun)
 class AITrainingRunAdmin(CompanyIsolatedAdmin):
     list_display = (
-        'company', 'run_type', 'status', 'requested_by',
-        'evaluate', 'started_at', 'finished_at',
+        "company",
+        "run_type",
+        "status",
+        "requested_by",
+        "evaluate",
+        "started_at",
+        "finished_at",
     )
-    list_filter = ('run_type', 'status', 'evaluate', 'company')
-    search_fields = ('summary_message', 'error_message')
+    list_filter = ("run_type", "status", "evaluate", "company")
+    search_fields = ("summary_message", "error_message")
     readonly_fields = (
-        'company', 'requested_by', 'run_type', 'evaluate', 'status',
-        'started_at', 'finished_at', 'duration_seconds',
-        'summary_message', 'results', 'error_message',
-        'created_at', 'updated_at',
+        "company",
+        "requested_by",
+        "run_type",
+        "evaluate",
+        "status",
+        "started_at",
+        "finished_at",
+        "duration_seconds",
+        "summary_message",
+        "results",
+        "error_message",
+        "created_at",
+        "updated_at",
     )
-    date_hierarchy = 'started_at'
+    date_hierarchy = "started_at"

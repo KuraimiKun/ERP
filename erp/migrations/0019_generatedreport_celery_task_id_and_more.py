@@ -6,49 +6,63 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0018_employee_portal_can_use_pos_and_more'),
+        ("erp", "0018_employee_portal_can_use_pos_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='generatedreport',
-            name='celery_task_id',
+            model_name="generatedreport",
+            name="celery_task_id",
             field=models.CharField(blank=True, max_length=255),
         ),
         migrations.AddField(
-            model_name='generatedreport',
-            name='completed_at',
+            model_name="generatedreport",
+            name="completed_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='generatedreport',
-            name='row_count',
+            model_name="generatedreport",
+            name="row_count",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='generatedreport',
-            name='started_at',
+            model_name="generatedreport",
+            name="started_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='generatedreport',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('processing', 'Processing'), ('completed', 'Completed'), ('failed', 'Failed')], default='pending', max_length=20),
+            model_name="generatedreport",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Pending"),
+                    ("processing", "Processing"),
+                    ("completed", "Completed"),
+                    ("failed", "Failed"),
+                ],
+                default="pending",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='reporttemplate',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='created_report_templates', to=settings.AUTH_USER_MODEL),
+            model_name="reporttemplate",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="created_report_templates",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddIndex(
-            model_name='generatedreport',
-            index=models.Index(fields=['generated_by', 'status'], name='erp_generat_generat_6c48d2_idx'),
+            model_name="generatedreport",
+            index=models.Index(fields=["generated_by", "status"], name="erp_generat_generat_6c48d2_idx"),
         ),
         migrations.AddIndex(
-            model_name='generatedreport',
-            index=models.Index(fields=['status', 'created_at'], name='erp_generat_status_ec7ebb_idx'),
+            model_name="generatedreport",
+            index=models.Index(fields=["status", "created_at"], name="erp_generat_status_ec7ebb_idx"),
         ),
     ]

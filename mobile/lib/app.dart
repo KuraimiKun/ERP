@@ -78,8 +78,8 @@ class _ERPAppState extends State<ERPApp> {
       ],
       home: authProvider.isLoggedIn
           ? (authProvider.isAdmin
-              ? const AdminDashboardScreen()
-              : const DashboardScreen())
+                ? const AdminDashboardScreen()
+                : const DashboardScreen())
           : const LoginScreen(),
       routes: {
         AppRoutes.login: (_) => const LoginScreen(),
@@ -90,8 +90,7 @@ class _ERPAppState extends State<ERPApp> {
         AppRoutes.adminSearch: (_) => const AdminSearchScreen(),
         AppRoutes.adminReports: (_) => const AdminReportsScreen(),
         AppRoutes.adminProfile: (_) => const AdminProfileScreen(),
-        AppRoutes.adminChangePassword: (_) =>
-            const AdminChangePasswordScreen(),
+        AppRoutes.adminChangePassword: (_) => const AdminChangePasswordScreen(),
         AppRoutes.attendance: (_) => const AttendanceListScreen(),
         AppRoutes.qrScanner: (_) => const QRScannerScreen(),
         AppRoutes.leaves: (_) => const LeaveListScreen(),

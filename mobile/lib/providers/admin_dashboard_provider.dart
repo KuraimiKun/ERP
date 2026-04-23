@@ -45,8 +45,7 @@ class AdminDashboardProvider extends ChangeNotifier {
       final list = rawActivity is List ? rawActivity : <dynamic>[];
       _activity = list
           .whereType<Map>()
-          .map((m) => AdminActivityEntry.fromJson(
-              Map<String, dynamic>.from(m)))
+          .map((m) => AdminActivityEntry.fromJson(Map<String, dynamic>.from(m)))
           .toList();
     } on DioException catch (e) {
       _error = ApiService.getErrorMessage(e);

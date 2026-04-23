@@ -34,9 +34,8 @@ def _get_model_entity_map():
     global _model_to_entity
     if _model_to_entity is None:
         from erp.services.export import EXPORT_REGISTRY
-        _model_to_entity = {
-            cfg['model']: name for name, cfg in EXPORT_REGISTRY.items()
-        }
+
+        _model_to_entity = {cfg["model"]: name for name, cfg in EXPORT_REGISTRY.items()}
     return _model_to_entity
 
 
@@ -47,18 +46,20 @@ def _invalidate_export_cache(instance):
     if entity is None:
         return
     from erp.services.export import EXPORT_REGISTRY, invalidate_export_cache
+
     config = EXPORT_REGISTRY[entity]
-    if config.get('company_filter', True) is False:
+    if config.get("company_filter", True) is False:
         invalidate_export_cache(entity, 0)
     else:
-        company_field = config.get('company_field', 'company')
+        company_field = config.get("company_field", "company")
         # follow FK chain: 'employee__company' → instance.employee.company
         obj = instance
-        for attr in company_field.split('__'):
+        for attr in company_field.split("__"):
             obj = getattr(obj, attr, None)
             if obj is None:
                 return
-        invalidate_export_cache(entity, obj.pk if hasattr(obj, 'pk') else obj)
+        invalidate_export_cache(entity, obj.pk if hasattr(obj, "pk") else obj)
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -79,6 +80,7 @@ def _should_audit(instance):
     AuditLog itself (to avoid infinite recursion).
     """
     from erp.models import AuditLog
+
     if isinstance(instance, AuditLog):
         return False
     return isinstance(instance, ERPBaseModel)
@@ -87,6 +89,7 @@ def _should_audit(instance):
 # ---------------------------------------------------------------------------
 # Model signals
 # ---------------------------------------------------------------------------
+
 
 @receiver(pre_save)
 def audit_pre_save(sender, instance, **kwargs):
@@ -116,8 +119,8 @@ def audit_post_save(sender, instance, created, **kwargs):
     _invalidate_export_cache(instance)
 
     ctx = get_audit_context()
-    user = ctx.get('user')
-    if user is None or (hasattr(user, 'is_authenticated') and not user.is_authenticated):
+    user = ctx.get("user")
+    if user is None or (hasattr(user, "is_authenticated") and not user.is_authenticated):
         return  # skip anonymous / system saves
 
     try:
@@ -125,8 +128,8 @@ def audit_post_save(sender, instance, created, **kwargs):
             AuditService.log_create(
                 user=user,
                 obj=instance,
-                ip_address=ctx.get('ip_address'),
-                user_agent=ctx.get('user_agent', ''),
+                ip_address=ctx.get("ip_address"),
+                user_agent=ctx.get("user_agent", ""),
             )
         else:
             key = (_model_label(instance), instance.pk)
@@ -137,11 +140,11 @@ def audit_post_save(sender, instance, created, **kwargs):
                     user=user,
                     obj=instance,
                     changes=changes,
-                    ip_address=ctx.get('ip_address'),
-                    user_agent=ctx.get('user_agent', ''),
+                    ip_address=ctx.get("ip_address"),
+                    user_agent=ctx.get("user_agent", ""),
                 )
     except Exception:
-        logger.exception('Failed to write audit log for %s pk=%s', sender.__name__, instance.pk)
+        logger.exception("Failed to write audit log for %s pk=%s", sender.__name__, instance.pk)
 
 
 @receiver(post_delete)
@@ -153,30 +156,29 @@ def audit_post_delete(sender, instance, **kwargs):
     _invalidate_export_cache(instance)
 
     ctx = get_audit_context()
-    user = ctx.get('user')
-    if user is None or (hasattr(user, 'is_authenticated') and not user.is_authenticated):
+    user = ctx.get("user")
+    if user is None or (hasattr(user, "is_authenticated") and not user.is_authenticated):
         return
 
     try:
         AuditService.log_delete(
             user=user,
             obj=instance,
-            ip_address=ctx.get('ip_address'),
-            user_agent=ctx.get('user_agent', ''),
+            ip_address=ctx.get("ip_address"),
+            user_agent=ctx.get("user_agent", ""),
         )
     except Exception:
-        logger.exception('Failed to write audit delete log for %s pk=%s', sender.__name__, instance.pk)
+        logger.exception("Failed to write audit delete log for %s pk=%s", sender.__name__, instance.pk)
 
 
 # ---------------------------------------------------------------------------
 # Finance: keep Invoice totals in sync when lines are edited
 # ---------------------------------------------------------------------------
 
-_invoice_line_fields = ['line_total', 'tax_amount', 'quantity', 'unit_price',
-                        'discount_percent', 'tax_rate_id']
+_invoice_line_fields = ["line_total", "tax_amount", "quantity", "unit_price", "discount_percent", "tax_rate_id"]
 
 
-@receiver(post_save, sender='erp.InvoiceLine')
+@receiver(post_save, sender="erp.InvoiceLine")
 def sync_invoice_totals_on_line_save(sender, instance, **kwargs):
     """Recalculate parent Invoice totals whenever a line is created or updated.
 
@@ -186,114 +188,98 @@ def sync_invoice_totals_on_line_save(sender, instance, **kwargs):
     signal, editing a line via the API leaves the invoice totals stale.
     """
     from django.db import transaction
+
     invoice = instance.invoice
     try:
         with transaction.atomic():
             # Re-fetch with a row-lock so concurrent line edits serialise here.
-            invoice = invoice.__class__.objects.select_for_update().get(
-                pk=invoice.pk
-            )
+            invoice = invoice.__class__.objects.select_for_update().get(pk=invoice.pk)
             invoice.calculate_totals()
-            invoice.save(update_fields=[
-                'subtotal', 'tax_amount', 'total_amount', 'balance_due', 'status'
-            ])
+            invoice.save(update_fields=["subtotal", "tax_amount", "total_amount", "balance_due", "status"])
     except Exception:
-        logger.exception(
-            'Failed to sync Invoice pk=%s totals after line save', invoice.pk
-        )
+        logger.exception("Failed to sync Invoice pk=%s totals after line save", invoice.pk)
 
 
-@receiver(post_delete, sender='erp.InvoiceLine')
+@receiver(post_delete, sender="erp.InvoiceLine")
 def sync_invoice_totals_on_line_delete(sender, instance, **kwargs):
     """Recalculate parent Invoice totals when a line is deleted."""
     from django.db import transaction
+
     invoice = instance.invoice
     try:
         with transaction.atomic():
-            invoice = invoice.__class__.objects.select_for_update().get(
-                pk=invoice.pk
-            )
+            invoice = invoice.__class__.objects.select_for_update().get(pk=invoice.pk)
             invoice.calculate_totals()
-            invoice.save(update_fields=[
-                'subtotal', 'tax_amount', 'total_amount', 'balance_due', 'status'
-            ])
+            invoice.save(update_fields=["subtotal", "tax_amount", "total_amount", "balance_due", "status"])
     except Exception:
-        logger.exception(
-            'Failed to sync Invoice pk=%s totals after line delete', invoice.pk
-        )
+        logger.exception("Failed to sync Invoice pk=%s totals after line delete", invoice.pk)
 
 
 # ---------------------------------------------------------------------------
 # CRM: auto-update Campaign actual_leads when CampaignLead changes
 # ---------------------------------------------------------------------------
 
-@receiver(post_save, sender='erp.CampaignLead')
+
+@receiver(post_save, sender="erp.CampaignLead")
 def update_campaign_actual_leads_on_save(sender, instance, created, **kwargs):
     """Increment campaign.actual_leads when a new CampaignLead is added."""
     if not created:
         return
     try:
         from django.db.models import F
-        instance.campaign.__class__.objects.filter(pk=instance.campaign_id).update(
-            actual_leads=F('actual_leads') + 1
-        )
+
+        instance.campaign.__class__.objects.filter(pk=instance.campaign_id).update(actual_leads=F("actual_leads") + 1)
     except Exception:
-        logger.exception(
-            'Failed to update campaign actual_leads for CampaignLead pk=%s', instance.pk
-        )
+        logger.exception("Failed to update campaign actual_leads for CampaignLead pk=%s", instance.pk)
 
 
-@receiver(post_delete, sender='erp.CampaignLead')
+@receiver(post_delete, sender="erp.CampaignLead")
 def update_campaign_actual_leads_on_delete(sender, instance, **kwargs):
     """Decrement campaign.actual_leads when a CampaignLead is removed."""
     try:
         from django.db.models import F
-        instance.campaign.__class__.objects.filter(pk=instance.campaign_id).update(
-            actual_leads=F('actual_leads') - 1
-        )
+
+        instance.campaign.__class__.objects.filter(pk=instance.campaign_id).update(actual_leads=F("actual_leads") - 1)
     except Exception:
-        logger.exception(
-            'Failed to decrement campaign actual_leads for CampaignLead pk=%s', instance.pk
-        )
+        logger.exception("Failed to decrement campaign actual_leads for CampaignLead pk=%s", instance.pk)
 
 
 # ---------------------------------------------------------------------------
 # CRM: auto-update Campaign.actual_revenue when a lead's invoice is paid
 # ---------------------------------------------------------------------------
 
-@receiver(post_save, sender='erp.Invoice')
+
+@receiver(post_save, sender="erp.Invoice")
 def update_campaign_revenue_on_invoice_paid(sender, instance, **kwargs):
     """
     When an Invoice transitions to 'paid', find if the customer originated from
     a campaign lead and credit that campaign's actual_revenue.
     """
-    if instance.status != 'paid':
+    if instance.status != "paid":
         return
     try:
         from django.db.models import F
+
         # Find campaigns linked to this customer via converted leads
         campaign_ids = (
-            instance.customer.__class__.objects
-            .filter(pk=instance.customer_id)
-            .values_list('lead_origin__campaign_sources__campaign_id', flat=True)
+            instance.customer.__class__.objects.filter(pk=instance.customer_id)
+            .values_list("lead_origin__campaign_sources__campaign_id", flat=True)
             .distinct()
         )
         campaign_ids = [cid for cid in campaign_ids if cid]
         if not campaign_ids:
             return
         from erp.models import Campaign
-        Campaign.objects.filter(pk__in=campaign_ids).update(
-            actual_revenue=F('actual_revenue') + instance.total_amount
-        )
+
+        Campaign.objects.filter(pk__in=campaign_ids).update(actual_revenue=F("actual_revenue") + instance.total_amount)
     except Exception:
-        logger.exception(
-            'Failed to update campaign actual_revenue for invoice pk=%s', instance.pk
-        )
+        logger.exception("Failed to update campaign actual_revenue for invoice pk=%s", instance.pk)
 
 
 # ---------------------------------------------------------------------------
 # Suppliers: recalculate SupplierInvoice balance when allocations change
 # ---------------------------------------------------------------------------
+
 
 def _recalc_supplier_invoice_balance(invoice_id):
     """Recompute SupplierInvoice.balance_due and status from its allocations."""
@@ -302,37 +288,40 @@ def _recalc_supplier_invoice_balance(invoice_id):
         from django.db.models import Sum
         from django.db.models.functions import Coalesce
         from decimal import Decimal
+
         si = SupplierInvoice.objects.get(pk=invoice_id)
-        paid = si.payment_allocations.aggregate(
-            total=Coalesce(Sum('amount'), Decimal('0'))
-        )['total']
+        paid = si.payment_allocations.aggregate(total=Coalesce(Sum("amount"), Decimal("0")))["total"]
         si.paid_amount = paid
-        si.balance_due = max(si.total_amount - paid, Decimal('0'))
+        si.balance_due = max(si.total_amount - paid, Decimal("0"))
         if paid >= si.total_amount and si.total_amount > 0:
-            si.status = 'paid'
+            si.status = "paid"
         elif paid > 0:
-            si.status = 'partial'
-        si.save(update_fields=['paid_amount', 'balance_due', 'status'])
+            si.status = "partial"
+        si.save(update_fields=["paid_amount", "balance_due", "status"])
         # Propagate to supplier balance
         from django.db import transaction
+
         supplier_pk = si.supplier_id
+
         def _recalc():
             try:
                 from erp.models import Supplier
+
                 Supplier.objects.get(pk=supplier_pk).recalculate_balance()
             except Exception:
                 pass
+
         transaction.on_commit(_recalc)
     except Exception:
-        logger.exception('Failed to recalc SupplierInvoice balance for pk=%s', invoice_id)
+        logger.exception("Failed to recalc SupplierInvoice balance for pk=%s", invoice_id)
 
 
-@receiver(post_save, sender='erp.SupplierPaymentAllocation')
+@receiver(post_save, sender="erp.SupplierPaymentAllocation")
 def recalc_si_on_allocation_save(sender, instance, **kwargs):
     _recalc_supplier_invoice_balance(instance.invoice_id)
 
 
-@receiver(post_delete, sender='erp.SupplierPaymentAllocation')
+@receiver(post_delete, sender="erp.SupplierPaymentAllocation")
 def recalc_si_on_allocation_delete(sender, instance, **kwargs):
     _recalc_supplier_invoice_balance(instance.invoice_id)
 
@@ -340,6 +329,7 @@ def recalc_si_on_allocation_delete(sender, instance, **kwargs):
 # ---------------------------------------------------------------------------
 # Auth signals (login / logout)
 # ---------------------------------------------------------------------------
+
 
 def _auditlog_table_exists():
     """Return True if the erp_auditlog table is present in the current database.
@@ -349,8 +339,9 @@ def _auditlog_table_exists():
     Cached per process — the table set doesn't change after migrations run.
     """
     from django.db import connection
+
     with connection.cursor() as cursor:
-        return 'erp_auditlog' in connection.introspection.table_names(cursor)
+        return "erp_auditlog" in connection.introspection.table_names(cursor)
 
 
 @receiver(user_logged_in)
@@ -361,10 +352,10 @@ def audit_user_login(sender, request, user, **kwargs):
         if not _auditlog_table_exists():
             return
         ip = _get_client_ip(request) if request else None
-        ua = request.META.get('HTTP_USER_AGENT', '')[:500] if request else ''
+        ua = request.META.get("HTTP_USER_AGENT", "")[:500] if request else ""
         AuditService.log_login(user=user, ip_address=ip, user_agent=ua)
     except Exception:
-        logger.exception('Failed to write login audit log for user %s', user)
+        logger.exception("Failed to write login audit log for user %s", user)
 
 
 @receiver(user_logged_out)
@@ -376,14 +367,14 @@ def audit_user_logout(sender, request, user, **kwargs):
         if not _auditlog_table_exists():
             return
         ip = _get_client_ip(request) if request else None
-        ua = request.META.get('HTTP_USER_AGENT', '')[:500] if request else ''
+        ua = request.META.get("HTTP_USER_AGENT", "")[:500] if request else ""
         AuditService.log_logout(user=user, ip_address=ip, user_agent=ua)
     except Exception:
-        logger.exception('Failed to write logout audit log for user %s', user)
+        logger.exception("Failed to write logout audit log for user %s", user)
 
 
 def _get_client_ip(request):
-    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    xff = request.META.get("HTTP_X_FORWARDED_FOR")
     if xff:
-        return xff.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR')
+        return xff.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR")

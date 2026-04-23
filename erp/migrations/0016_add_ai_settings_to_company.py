@@ -4,20 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0015_fixed_assets_gl_accounts'),
+        ("erp", "0015_fixed_assets_gl_accounts"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='company',
-            name='ai_enabled',
-            field=models.BooleanField(default=True, help_text='Enable or disable AI features for this company.'),
+            model_name="company",
+            name="ai_enabled",
+            field=models.BooleanField(default=True, help_text="Enable or disable AI features for this company."),
         ),
         migrations.AddField(
-            model_name='company',
-            name='openai_api_key',
-            field=models.CharField(blank=True, help_text='Your OpenAI API key (sk-…). Stored per tenant.', max_length=255),
+            model_name="company",
+            name="openai_api_key",
+            field=models.CharField(
+                blank=True, help_text="Your OpenAI API key (sk-…). Stored per tenant.", max_length=255
+            ),
         ),
     ]

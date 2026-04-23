@@ -28,8 +28,9 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
       AdminApiService(context.read<ApiService>()),
       endpoint: ApiConfig.adminNotifications,
     );
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _provider.load(reset: true));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _provider.load(reset: true),
+    );
   }
 
   @override
@@ -49,14 +50,14 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
       await api.collectionAction(ApiConfig.adminNotifications, 'read-all');
       await _provider.refresh();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✔')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('✔')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AdminApiService.extractError(e))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AdminApiService.extractError(e))));
     }
   }
 
@@ -88,9 +89,9 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
           actions: [
             IconButton(
               tooltip: _unreadOnly ? l10n.all : l10n.pending,
-              icon: Icon(_unreadOnly
-                  ? Icons.filter_alt
-                  : Icons.filter_alt_outlined),
+              icon: Icon(
+                _unreadOnly ? Icons.filter_alt : Icons.filter_alt_outlined,
+              ),
               onPressed: _toggleUnread,
             ),
             IconButton(
@@ -134,16 +135,20 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.notifications_off_outlined,
-                size: 48, color: sem.textFaint),
+            Icon(
+              Icons.notifications_off_outlined,
+              size: 48,
+              color: sem.textFaint,
+            ),
             const SizedBox(height: 12),
             Text(
               AppLocalizations.of(context)?.noNotifications ??
-                  (_unreadOnly ? 'No unread notifications' : 'No notifications'),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: sem.textMuted),
+                  (_unreadOnly
+                      ? 'No unread notifications'
+                      : 'No notifications'),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: sem.textMuted),
             ),
           ],
         ),
@@ -155,22 +160,18 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: p.items.length,
-        separatorBuilder: (_, __) =>
-            Divider(height: 1, color: sem.borderSoft),
+        separatorBuilder: (_, __) => Divider(height: 1, color: sem.borderSoft),
         itemBuilder: (ctx, i) {
           final n = p.items[i];
           final isRead = n['is_read'] == true;
           return ListTile(
-            onTap: () => isRead
-                ? null
-                : _markOneRead((n['id'] as num).toInt()),
+            onTap: () => isRead ? null : _markOneRead((n['id'] as num).toInt()),
             leading: CircleAvatar(
               backgroundColor: isRead
                   ? sem.borderSoft
-                  : Theme.of(context)
-                      .colorScheme
-                      .primary
-                      .withValues(alpha: 0.15),
+                  : Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.15),
               child: Icon(
                 _iconFor((n['notification_type'] ?? '').toString()),
                 color: isRead
@@ -182,18 +183,16 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
             title: Text(
               (n['title'] ?? '—').toString(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight:
-                        isRead ? FontWeight.w500 : FontWeight.w700,
-                  ),
+                fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(
               (n['message'] ?? '').toString(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: sem.textSub),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: sem.textSub),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

@@ -25,7 +25,7 @@ import lime.lime_tabular
 from erp.ai.models import MLModel, ExplanationResult
 from .base import load_model_artefact
 
-logger = logging.getLogger('erp.ai.xai')
+logger = logging.getLogger("erp.ai.xai")
 
 # Models that use tree-based classifiers (SHAP TreeExplainer compatible)
 TREE_MODELS = {
@@ -50,7 +50,7 @@ class ExplainabilityService:
         model_type: str,
         entity_type: str,
         entity_id: int,
-        method: str = 'shap',
+        method: str = "shap",
     ) -> dict:
         """Generate an explanation for a single prediction.
 
@@ -66,21 +66,22 @@ class ExplainabilityService:
         """
         registry = self._get_registry(model_type)
         if not registry or not registry.artefact_path:
-            return {'error': 'Model not trained yet'}
+            return {"error": "Model not trained yet"}
 
         artefact = load_model_artefact(registry)
         features, feature_names = self._build_feature_vector(
-            model_type, entity_type, entity_id, artefact,
+            model_type,
+            entity_type,
+            entity_id,
+            artefact,
         )
         if features is None:
-            return {'error': f'{entity_type} #{entity_id} not found'}
+            return {"error": f"{entity_type} #{entity_id} not found"}
 
-        if method == 'shap' and model_type in TREE_MODELS:
-            result = self._shap_explain(artefact, features, feature_names,
-                                        model_type)
+        if method == "shap" and model_type in TREE_MODELS:
+            result = self._shap_explain(artefact, features, feature_names, model_type)
         else:
-            result = self._lime_explain(artefact, features, feature_names,
-                                        model_type)
+            result = self._lime_explain(artefact, features, feature_names, model_type)
 
         # Persist the explanation
         self._save_explanation(
@@ -101,13 +102,13 @@ class ExplainabilityService:
         """
         registry = self._get_registry(model_type)
         if not registry or not registry.artefact_path:
-            return {'error': 'Model not trained yet'}
+            return {"error": "Model not trained yet"}
 
         artefact = load_model_artefact(registry)
         background_df = self._get_background_data(model_type, artefact)
 
         if background_df is None or background_df.empty:
-            return {'error': 'Insufficient data for global explanations'}
+            return {"error": "Insufficient data for global explanations"}
 
         feature_names = self._get_feature_names(model_type, artefact)
         X_bg = background_df[feature_names].fillna(0).values
@@ -115,15 +116,17 @@ class ExplainabilityService:
         # Limit to 200 samples for performance
         if len(X_bg) > 200:
             indices = np.random.RandomState(42).choice(
-                len(X_bg), 200, replace=False,
+                len(X_bg),
+                200,
+                replace=False,
             )
             X_bg = X_bg[indices]
 
-        classifier = artefact['classifier']
+        classifier = artefact["classifier"]
 
         # Apply scaler if present
-        if 'scaler' in artefact:
-            X_bg = artefact['scaler'].transform(X_bg)
+        if "scaler" in artefact:
+            X_bg = artefact["scaler"].transform(X_bg)
 
         if model_type in TREE_MODELS:
             explainer = shap.TreeExplainer(classifier)
@@ -139,48 +142,63 @@ class ExplainabilityService:
                     sv = sv[:, :, 1]  # positive class
 
             mean_abs_shap = np.abs(sv).mean(axis=0)
-            importance = dict(zip(
-                feature_names,
-                mean_abs_shap.round(4).tolist(),
-            ))
+            importance = dict(
+                zip(
+                    feature_names,
+                    mean_abs_shap.round(4).tolist(),
+                )
+            )
             # Sort by importance descending
-            importance = dict(sorted(
-                importance.items(), key=lambda x: x[1], reverse=True,
-            ))
+            importance = dict(
+                sorted(
+                    importance.items(),
+                    key=lambda x: x[1],
+                    reverse=True,
+                )
+            )
 
             # Generate summary plot as base64
             summary_plot_b64 = self._generate_summary_plot(
-                sv, feature_names,
+                sv,
+                feature_names,
             )
 
             # Generate beeswarm data for Plotly
             beeswarm_data = self._generate_beeswarm_data(
-                sv, X_bg, feature_names,
+                sv,
+                X_bg,
+                feature_names,
             )
 
             result = {
-                'model_type': model_type,
-                'method': 'shap',
-                'feature_importance': importance,
-                'total_samples': len(X_bg),
-                'summary_plot': summary_plot_b64,
-                'beeswarm_data': beeswarm_data,
-                'base_value': self._extract_base_value(explainer.expected_value),
+                "model_type": model_type,
+                "method": "shap",
+                "feature_importance": importance,
+                "total_samples": len(X_bg),
+                "summary_plot": summary_plot_b64,
+                "beeswarm_data": beeswarm_data,
+                "base_value": self._extract_base_value(explainer.expected_value),
             }
         else:
             # Fallback: use sklearn feature_importances_
-            importance = dict(zip(
-                feature_names,
-                classifier.feature_importances_.round(4).tolist(),
-            ))
-            importance = dict(sorted(
-                importance.items(), key=lambda x: x[1], reverse=True,
-            ))
+            importance = dict(
+                zip(
+                    feature_names,
+                    classifier.feature_importances_.round(4).tolist(),
+                )
+            )
+            importance = dict(
+                sorted(
+                    importance.items(),
+                    key=lambda x: x[1],
+                    reverse=True,
+                )
+            )
             result = {
-                'model_type': model_type,
-                'method': 'builtin',
-                'feature_importance': importance,
-                'total_samples': 0,
+                "model_type": model_type,
+                "method": "builtin",
+                "feature_importance": importance,
+                "total_samples": 0,
             }
 
         return result
@@ -195,7 +213,7 @@ class ExplainabilityService:
         """Retrieve stored explanations with optional filters."""
         qs = ExplanationResult.objects.filter(
             model__company=self.company,
-        ).select_related('model')
+        ).select_related("model")
 
         if model_type:
             qs = qs.filter(model__model_type=model_type)
@@ -206,17 +224,19 @@ class ExplainabilityService:
 
         results = []
         for exp in qs[:limit]:
-            results.append({
-                'id': exp.pk,
-                'model_type': exp.model.model_type,
-                'model_name': exp.model.name,
-                'entity_type': exp.entity_type,
-                'entity_id': exp.entity_id,
-                'method': exp.method,
-                'prediction_score': exp.prediction_score,
-                'top_features': exp.top_features,
-                'created_at': exp.created_at.isoformat(),
-            })
+            results.append(
+                {
+                    "id": exp.pk,
+                    "model_type": exp.model.model_type,
+                    "model_name": exp.model.name,
+                    "entity_type": exp.entity_type,
+                    "entity_id": exp.entity_id,
+                    "method": exp.method,
+                    "prediction_score": exp.prediction_score,
+                    "top_features": exp.top_features,
+                    "created_at": exp.created_at.isoformat(),
+                }
+            )
         return results
 
     # ════════════════════════════════════════════════════════════════════════
@@ -225,12 +245,12 @@ class ExplainabilityService:
 
     def _shap_explain(self, artefact, features, feature_names, model_type):
         """Generate SHAP explanation for a single instance."""
-        classifier = artefact['classifier']
+        classifier = artefact["classifier"]
 
         # Apply scaler if present
         X = features.copy()
-        if 'scaler' in artefact:
-            X = artefact['scaler'].transform(X)
+        if "scaler" in artefact:
+            X = artefact["scaler"].transform(X)
 
         explainer = shap.TreeExplainer(classifier)
         shap_values = explainer.shap_values(X)
@@ -253,47 +273,54 @@ class ExplainabilityService:
 
         # Build feature contributions
         contributions = {}
-        for name, shap_val, feat_val in zip(feature_names, sv,
-                                             features[0]):
+        for name, shap_val, feat_val in zip(feature_names, sv, features[0]):
             contributions[name] = {
-                'shap_value': round(float(shap_val), 6),
-                'feature_value': round(float(feat_val), 4),
-                'direction': 'increases' if shap_val > 0 else 'decreases',
+                "shap_value": round(float(shap_val), 6),
+                "feature_value": round(float(feat_val), 4),
+                "direction": "increases" if shap_val > 0 else "decreases",
             }
 
         # Sort by absolute SHAP value
-        sorted_contrib = dict(sorted(
-            contributions.items(),
-            key=lambda x: abs(x[1]['shap_value']),
-            reverse=True,
-        ))
+        sorted_contrib = dict(
+            sorted(
+                contributions.items(),
+                key=lambda x: abs(x[1]["shap_value"]),
+                reverse=True,
+            )
+        )
 
         # Top features for quick display
         top_features = []
         for name, data in list(sorted_contrib.items())[:5]:
-            top_features.append({
-                'feature': name,
-                'shap_value': data['shap_value'],
-                'feature_value': data['feature_value'],
-                'direction': data['direction'],
-                'impact': self._human_readable_impact(
-                    name, data['shap_value'], data['feature_value'],
-                ),
-            })
+            top_features.append(
+                {
+                    "feature": name,
+                    "shap_value": data["shap_value"],
+                    "feature_value": data["feature_value"],
+                    "direction": data["direction"],
+                    "impact": self._human_readable_impact(
+                        name,
+                        data["shap_value"],
+                        data["feature_value"],
+                    ),
+                }
+            )
 
         # Waterfall plot data (for Plotly rendering on frontend)
         waterfall_data = self._build_waterfall_data(
-            sorted_contrib, base_value, prediction,
+            sorted_contrib,
+            base_value,
+            prediction,
         )
 
         return {
-            'method': 'shap',
-            'prediction': round(prediction, 4),
-            'base_value': round(base_value, 4),
-            'contributions': sorted_contrib,
-            'top_features': top_features,
-            'waterfall_data': waterfall_data,
-            'feature_count': len(feature_names),
+            "method": "shap",
+            "prediction": round(prediction, 4),
+            "base_value": round(base_value, 4),
+            "contributions": sorted_contrib,
+            "top_features": top_features,
+            "waterfall_data": waterfall_data,
+            "feature_count": len(feature_names),
         }
 
     # ════════════════════════════════════════════════════════════════════════
@@ -302,28 +329,28 @@ class ExplainabilityService:
 
     def _lime_explain(self, artefact, features, feature_names, model_type):
         """Generate LIME explanation for a single instance."""
-        classifier = artefact['classifier']
+        classifier = artefact["classifier"]
 
         # Build background data for LIME
         background_df = self._get_background_data(model_type, artefact)
         if background_df is None or background_df.empty:
-            return {'error': 'Insufficient background data for LIME'}
+            return {"error": "Insufficient background data for LIME"}
 
         X_bg = background_df[feature_names].fillna(0).values
 
         # Apply scaler if present
         X = features.copy()
-        if 'scaler' in artefact:
-            X_bg = artefact['scaler'].transform(X_bg)
-            X = artefact['scaler'].transform(X)
+        if "scaler" in artefact:
+            X_bg = artefact["scaler"].transform(X_bg)
+            X = artefact["scaler"].transform(X)
 
         # Determine prediction function
-        if hasattr(classifier, 'predict_proba'):
+        if hasattr(classifier, "predict_proba"):
             predict_fn = classifier.predict_proba
-            mode = 'classification'
+            mode = "classification"
         else:
             predict_fn = classifier.decision_function
-            mode = 'regression'
+            mode = "regression"
 
         explainer = lime.lime_tabular.LimeTabularExplainer(
             training_data=X_bg,
@@ -339,7 +366,7 @@ class ExplainabilityService:
         )
 
         # Get prediction
-        if hasattr(classifier, 'predict_proba'):
+        if hasattr(classifier, "predict_proba"):
             prediction = float(classifier.predict_proba(X)[0][1])
         else:
             prediction = float(classifier.decision_function(X)[0])
@@ -354,41 +381,46 @@ class ExplainabilityService:
             feat_idx = feature_names.index(matched_name) if matched_name in feature_names else -1
             feat_val = float(features[0][feat_idx]) if feat_idx >= 0 else 0.0
             contributions[matched_name or feat_desc] = {
-                'lime_weight': round(float(weight), 6),
-                'feature_value': round(feat_val, 4),
-                'direction': 'increases' if weight > 0 else 'decreases',
-                'description': feat_desc,
+                "lime_weight": round(float(weight), 6),
+                "feature_value": round(feat_val, 4),
+                "direction": "increases" if weight > 0 else "decreases",
+                "description": feat_desc,
             }
 
-        sorted_contrib = dict(sorted(
-            contributions.items(),
-            key=lambda x: abs(x[1]['lime_weight']),
-            reverse=True,
-        ))
+        sorted_contrib = dict(
+            sorted(
+                contributions.items(),
+                key=lambda x: abs(x[1]["lime_weight"]),
+                reverse=True,
+            )
+        )
 
         top_features = []
         for name, data in list(sorted_contrib.items())[:5]:
-            top_features.append({
-                'feature': name,
-                'lime_weight': data['lime_weight'],
-                'feature_value': data['feature_value'],
-                'direction': data['direction'],
-                'impact': self._human_readable_impact(
-                    name, data['lime_weight'], data['feature_value'],
-                ),
-            })
+            top_features.append(
+                {
+                    "feature": name,
+                    "lime_weight": data["lime_weight"],
+                    "feature_value": data["feature_value"],
+                    "direction": data["direction"],
+                    "impact": self._human_readable_impact(
+                        name,
+                        data["lime_weight"],
+                        data["feature_value"],
+                    ),
+                }
+            )
 
         return {
-            'method': 'lime',
-            'prediction': round(prediction, 4),
-            'intercept': round(float(explanation.intercept[1]), 4)
-            if hasattr(explanation, 'intercept') and len(explanation.intercept) > 1
+            "method": "lime",
+            "prediction": round(prediction, 4),
+            "intercept": round(float(explanation.intercept[1]), 4)
+            if hasattr(explanation, "intercept") and len(explanation.intercept) > 1
             else 0.0,
-            'contributions': sorted_contrib,
-            'top_features': top_features,
-            'feature_count': len(feature_names),
-            'score': round(float(explanation.score), 4)
-            if hasattr(explanation, 'score') else None,
+            "contributions": sorted_contrib,
+            "top_features": top_features,
+            "feature_count": len(feature_names),
+            "score": round(float(explanation.score), 4) if hasattr(explanation, "score") else None,
         }
 
     # ════════════════════════════════════════════════════════════════════════
@@ -406,37 +438,46 @@ class ExplainabilityService:
         return float(ev[0])
 
     def _get_registry(self, model_type: str) -> MLModel | None:
-        return MLModel.objects.filter(
-            company=self.company,
-            model_type=model_type,
-            is_active=True,
-        ).order_by('-version').first()
+        return (
+            MLModel.objects.filter(
+                company=self.company,
+                model_type=model_type,
+                is_active=True,
+            )
+            .order_by("-version")
+            .first()
+        )
 
     def _get_feature_names(self, model_type: str, artefact: dict) -> list:
         """Extract feature column names from the artefact."""
-        if 'feature_cols' in artefact:
-            return artefact['feature_cols']
+        if "feature_cols" in artefact:
+            return artefact["feature_cols"]
         # Fallback: check registry parameters
         registry = self._get_registry(model_type)
-        if registry and registry.parameters.get('feature_cols'):
-            return registry.parameters['feature_cols']
+        if registry and registry.parameters.get("feature_cols"):
+            return registry.parameters["feature_cols"]
         # Fallback: read FEATURE_COLS from the service class directly
         service_map = {
-            MLModel.ModelType.LATE_PAYMENT: 'erp.ai.services.finance.LatePaymentPredictor',
-            MLModel.ModelType.LEAD_SCORING: 'erp.ai.services.crm.LeadScorer',
-            MLModel.ModelType.ATTRITION: 'erp.ai.services.hr.AttritionPredictor',
+            MLModel.ModelType.LATE_PAYMENT: "erp.ai.services.finance.LatePaymentPredictor",
+            MLModel.ModelType.LEAD_SCORING: "erp.ai.services.crm.LeadScorer",
+            MLModel.ModelType.ATTRITION: "erp.ai.services.hr.AttritionPredictor",
         }
         if model_type in service_map:
-            module_path, cls_name = service_map[model_type].rsplit('.', 1)
+            module_path, cls_name = service_map[model_type].rsplit(".", 1)
             import importlib
+
             mod = importlib.import_module(module_path)
             cls = getattr(mod, cls_name)
-            if hasattr(cls, 'FEATURE_COLS'):
+            if hasattr(cls, "FEATURE_COLS"):
                 return cls.FEATURE_COLS
         return []
 
     def _build_feature_vector(
-        self, model_type, entity_type, entity_id, artefact,
+        self,
+        model_type,
+        entity_type,
+        entity_id,
+        artefact,
     ) -> tuple[np.ndarray | None, list]:
         """Build features for a specific entity using the existing service."""
         feature_names = self._get_feature_names(model_type, artefact)
@@ -457,9 +498,11 @@ class ExplainabilityService:
         from erp.ai.services.finance import LatePaymentPredictor
 
         from erp.models import Invoice
+
         try:
-            invoice = Invoice.objects.select_related('customer').get(
-                pk=invoice_id, company=self.company,
+            invoice = Invoice.objects.select_related("customer").get(
+                pk=invoice_id,
+                company=self.company,
             )
         except Invoice.DoesNotExist:
             return None, []
@@ -483,6 +526,7 @@ class ExplainabilityService:
         from erp.ai.services.crm import LeadScorer
 
         from erp.models import Lead
+
         try:
             lead = Lead.objects.get(pk=lead_id, company=self.company)
         except Lead.DoesNotExist:
@@ -504,9 +548,11 @@ class ExplainabilityService:
         from erp.ai.services.hr import AttritionPredictor
 
         from erp.models import Employee
+
         try:
-            employee = Employee.objects.select_related('department').get(
-                pk=employee_id, company=self.company,
+            employee = Employee.objects.select_related("department").get(
+                pk=employee_id,
+                company=self.company,
             )
         except Employee.DoesNotExist:
             return None, []
@@ -527,16 +573,25 @@ class ExplainabilityService:
         from erp.models import Expense
 
         try:
-            expense = Expense.objects.select_related('category').get(
-                pk=expense_id, company=self.company,
+            expense = Expense.objects.select_related("category").get(
+                pk=expense_id,
+                company=self.company,
             )
         except Expense.DoesNotExist:
             return None, []
 
         feature_cols = [
-            'amount', 'amount_log', 'month', 'day_of_week', 'is_weekend',
-            'category_code', 'amount_vs_cat_z', 'amount_vs_cat_ratio',
-            'amount_vs_emp_z', 'emp_count', 'amount_percentile',
+            "amount",
+            "amount_log",
+            "month",
+            "day_of_week",
+            "is_weekend",
+            "category_code",
+            "amount_vs_cat_z",
+            "amount_vs_cat_ratio",
+            "amount_vs_emp_z",
+            "emp_count",
+            "amount_percentile",
         ]
 
         amount = float(expense.total_amount)
@@ -544,19 +599,23 @@ class ExplainabilityService:
         dow = expense.expense_date.weekday() if expense.expense_date else 0
 
         # Simplified feature vector (category/employee z-scores approximated)
-        features = np.array([[
-            amount,
-            np.log1p(amount),
-            month,
-            dow,
-            1 if dow >= 5 else 0,
-            0,   # category_code (simplified)
-            0.0, # amount_vs_cat_z
-            1.0, # amount_vs_cat_ratio
-            0.0, # amount_vs_emp_z
-            1,   # emp_count
-            0.5, # amount_percentile
-        ]])
+        features = np.array(
+            [
+                [
+                    amount,
+                    np.log1p(amount),
+                    month,
+                    dow,
+                    1 if dow >= 5 else 0,
+                    0,  # category_code (simplified)
+                    0.0,  # amount_vs_cat_z
+                    1.0,  # amount_vs_cat_ratio
+                    0.0,  # amount_vs_emp_z
+                    1,  # emp_count
+                    0.5,  # amount_percentile
+                ]
+            ]
+        )
 
         return features, feature_cols
 
@@ -564,14 +623,17 @@ class ExplainabilityService:
         """Build a background dataset for SHAP/LIME from DB records."""
         if model_type == MLModel.ModelType.LATE_PAYMENT:
             from erp.ai.services.finance import LatePaymentPredictor
+
             predictor = LatePaymentPredictor(self.company)
             return predictor._build_dataset()
         elif model_type == MLModel.ModelType.LEAD_SCORING:
             from erp.ai.services.crm import LeadScorer
+
             scorer = LeadScorer(self.company)
             return scorer._build_dataset()
         elif model_type == MLModel.ModelType.ATTRITION:
             from erp.ai.services.hr import AttritionPredictor
+
             predictor = AttritionPredictor(self.company)
             return predictor._build_dataset()
 
@@ -583,35 +645,36 @@ class ExplainabilityService:
             if name in desc:
                 return name
         # If no match, return the description itself
-        return desc.split(' ')[0] if ' ' in desc else desc
+        return desc.split(" ")[0] if " " in desc else desc
 
     def _build_waterfall_data(self, contributions, base_value, prediction):
         """Build data structure for a Plotly waterfall chart."""
         items = list(contributions.items())[:10]  # top 10 features
-        labels = ['Base Value']
+        labels = ["Base Value"]
         values = [base_value]
-        measures = ['absolute']
+        measures = ["absolute"]
 
         for name, data in items:
-            shap_val = data.get('shap_value', data.get('lime_weight', 0))
+            shap_val = data.get("shap_value", data.get("lime_weight", 0))
             labels.append(name)
             values.append(shap_val)
-            measures.append('relative')
+            measures.append("relative")
 
-        labels.append('Prediction')
+        labels.append("Prediction")
         values.append(prediction)
-        measures.append('total')
+        measures.append("total")
 
         return {
-            'labels': labels,
-            'values': [round(v, 4) for v in values],
-            'measures': measures,
+            "labels": labels,
+            "values": [round(v, 4) for v in values],
+            "measures": measures,
         }
 
     def _generate_summary_plot(self, shap_values, feature_names):
         """Generate a SHAP summary bar plot as base64 PNG."""
         import matplotlib
-        matplotlib.use('Agg')
+
+        matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
         mean_abs = np.abs(shap_values).mean(axis=0)
@@ -625,15 +688,15 @@ class ExplainabilityService:
         ax.barh(range(len(names)), vals, color=colors)
         ax.set_yticks(range(len(names)))
         ax.set_yticklabels(names, fontsize=9)
-        ax.set_xlabel('Mean |SHAP Value|', fontsize=11)
-        ax.set_title('Global Feature Importance (SHAP)', fontsize=13)
+        ax.set_xlabel("Mean |SHAP Value|", fontsize=11)
+        ax.set_title("Global Feature Importance (SHAP)", fontsize=13)
         plt.tight_layout()
 
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+        fig.savefig(buf, format="png", dpi=100, bbox_inches="tight")
         plt.close(fig)
         buf.seek(0)
-        return base64.b64encode(buf.read()).decode('utf-8')
+        return base64.b64encode(buf.read()).decode("utf-8")
 
     def _generate_beeswarm_data(self, shap_values, X, feature_names):
         """Build data for an interactive beeswarm plot (Plotly on frontend)."""
@@ -642,38 +705,36 @@ class ExplainabilityService:
 
         data = []
         for idx in sorted_idx:
-            data.append({
-                'feature': feature_names[idx],
-                'shap_values': shap_values[:, idx].round(4).tolist(),
-                'feature_values': X[:, idx].round(4).tolist(),
-                'mean_abs_shap': round(float(mean_abs[idx]), 4),
-            })
+            data.append(
+                {
+                    "feature": feature_names[idx],
+                    "shap_values": shap_values[:, idx].round(4).tolist(),
+                    "feature_values": X[:, idx].round(4).tolist(),
+                    "mean_abs_shap": round(float(mean_abs[idx]), 4),
+                }
+            )
         return data
 
     def _human_readable_impact(self, feature_name, weight, value):
         """Generate a human-readable sentence explaining a feature's impact."""
-        direction = 'increases' if weight > 0 else 'decreases'
+        direction = "increases" if weight > 0 else "decreases"
         strength = abs(weight)
 
         if strength > 0.3:
-            intensity = 'strongly'
+            intensity = "strongly"
         elif strength > 0.1:
-            intensity = 'moderately'
+            intensity = "moderately"
         else:
-            intensity = 'slightly'
+            intensity = "slightly"
 
         # Clean up feature name for display
-        display_name = feature_name.replace('_', ' ').title()
+        display_name = feature_name.replace("_", " ").title()
 
-        return (
-            f'{display_name} = {value:.2f} {intensity} {direction} '
-            f'the prediction (impact: {weight:+.4f})'
-        )
+        return f"{display_name} = {value:.2f} {intensity} {direction} the prediction (impact: {weight:+.4f})"
 
-    def _save_explanation(self, registry, entity_type, entity_id,
-                          method, result):
+    def _save_explanation(self, registry, entity_type, entity_id, method, result):
         """Persist an explanation result to the database."""
-        if 'error' in result:
+        if "error" in result:
             return
 
         ExplanationResult.objects.create(
@@ -681,9 +742,9 @@ class ExplainabilityService:
             entity_type=entity_type,
             entity_id=entity_id,
             method=method,
-            prediction_score=result.get('prediction', 0),
-            base_value=result.get('base_value', 0),
-            contributions=result.get('contributions', {}),
-            top_features=result.get('top_features', []),
-            waterfall_data=result.get('waterfall_data'),
+            prediction_score=result.get("prediction", 0),
+            base_value=result.get("base_value", 0),
+            contributions=result.get("contributions", {}),
+            top_features=result.get("top_features", []),
+            waterfall_data=result.get("waterfall_data"),
         )

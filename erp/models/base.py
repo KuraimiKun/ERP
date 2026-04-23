@@ -9,6 +9,7 @@ from django.utils import timezone
 
 class TimeStampedModel(models.Model):
     """Abstract base model with created and updated timestamps."""
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -18,19 +19,12 @@ class TimeStampedModel(models.Model):
 
 class AuditMixin(models.Model):
     """Mixin for tracking who created/modified records."""
+
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='%(class)s_created'
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_created"
     )
     updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='%(class)s_updated'
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_updated"
     )
 
     class Meta:
@@ -39,14 +33,14 @@ class AuditMixin(models.Model):
 
 class SoftDeleteManager(models.Manager):
     """Manager that excludes soft-deleted records by default."""
-    
+
     def get_queryset(self):
         return super().get_queryset().filter(is_deleted=False)
-    
+
     def all_with_deleted(self):
         """Return all records including soft-deleted ones."""
         return super().get_queryset()
-    
+
     def deleted_only(self):
         """Return only soft-deleted records."""
         return super().get_queryset().filter(is_deleted=True)
@@ -54,14 +48,11 @@ class SoftDeleteManager(models.Manager):
 
 class SoftDeleteMixin(models.Model):
     """Mixin for soft delete functionality."""
+
     is_deleted = models.BooleanField(default=False, db_index=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='%(class)s_deleted'
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_deleted"
     )
 
     class Meta:
@@ -84,10 +75,10 @@ class SoftDeleteMixin(models.Model):
 
 class ERPBaseModel(TimeStampedModel, AuditMixin, SoftDeleteMixin):
     """Base model for all ERP entities combining all mixins."""
-    
+
     # Use the soft delete manager
     objects = SoftDeleteManager()
     all_objects = models.Manager()  # Includes deleted records
-    
+
     class Meta:
         abstract = True

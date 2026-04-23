@@ -8,7 +8,10 @@ URL: /erp/export/<entity>/?format=csv|excel&<existing filters>
 from django.http import Http404
 
 from erp.services.export import (
-    EXPORT_REGISTRY, get_export_queryset, export_csv, export_excel,
+    EXPORT_REGISTRY,
+    get_export_queryset,
+    export_csv,
+    export_excel,
     _versioned_cache_key,
 )
 from ._common import get_user_company, staff_member_required
@@ -26,10 +29,10 @@ def export_data(request, entity):
     if queryset is None:
         raise Http404
 
-    fmt = request.GET.get('format', 'csv')
-    filename = config['filename']
+    fmt = request.GET.get("format", "csv")
+    filename = config["filename"]
     ck = _versioned_cache_key(entity, company.pk, fmt, request.GET)
 
-    if fmt == 'excel':
+    if fmt == "excel":
         return export_excel(queryset, config, filename, cache_key=ck)
     return export_csv(queryset, config, filename, cache_key=ck)

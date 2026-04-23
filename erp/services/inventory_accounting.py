@@ -26,16 +26,16 @@ from erp.services.accounting import (
     _next_journal_number,
 )
 
-logger = logging.getLogger('erp.inventory')
+logger = logging.getLogger("erp.inventory")
 
 
 # Default GL codes
 _DEFAULTS = {
-    'inventory': ('1500', 'Inventory', 'المخزون', 'asset'),
-    'cogs': ('5100', 'Cost of Goods Sold', 'تكلفة البضاعة المباعة', 'expense'),
-    'grni': ('1400', 'Goods Received Not Invoiced', 'بضاعة مستلمة بدون فاتورة', 'asset'),
-    'adjustment': ('6200', 'Inventory Adjustment', 'تسوية مخزون', 'expense'),
-    'write_off': ('6300', 'Inventory Write-Off', 'شطب مخزون', 'expense'),
+    "inventory": ("1500", "Inventory", "المخزون", "asset"),
+    "cogs": ("5100", "Cost of Goods Sold", "تكلفة البضاعة المباعة", "expense"),
+    "grni": ("1400", "Goods Received Not Invoiced", "بضاعة مستلمة بدون فاتورة", "asset"),
+    "adjustment": ("6200", "Inventory Adjustment", "تسوية مخزون", "expense"),
+    "write_off": ("6300", "Inventory Write-Off", "شطب مخزون", "expense"),
 }
 
 
@@ -51,11 +51,11 @@ def _get_valuation_account(company, account_field, default_key, db_alias):
             return account
     except InventoryValuationConfig.DoesNotExist:
         logger.warning(
-            'No InventoryValuationConfig found for company %s (pk=%s). '
+            "No InventoryValuationConfig found for company %s (pk=%s). "
             'Falling back to default GL account for "%s". '
-            'Configure inventory valuation accounts in Settings → Inventory Valuation.',
-            getattr(company, 'name', company),
-            getattr(company, 'pk', '?'),
+            "Configure inventory valuation accounts in Settings → Inventory Valuation.",
+            getattr(company, "name", company),
+            getattr(company, "pk", "?"),
             default_key,
         )
 
@@ -66,6 +66,7 @@ def _get_valuation_account(company, account_field, default_key, db_alias):
 # =========================================================================
 # GRN Journal Entry
 # =========================================================================
+
 
 def create_grn_journal_entry(grn, user):
     """
@@ -78,7 +79,7 @@ def create_grn_journal_entry(grn, user):
     company = grn.company
 
     # Calculate total received cost
-    total_cost = Decimal('0')
+    total_cost = Decimal("0")
     for line in grn.lines.using(db):
         qty = line.quantity_accepted or line.quantity_received
         total_cost += qty * line.unit_cost
@@ -87,17 +88,17 @@ def create_grn_journal_entry(grn, user):
         return None
 
     with transaction.atomic(using=db):
-        inv_account = _get_valuation_account(company, 'inventory_account', 'inventory', db)
-        grni_account = _get_valuation_account(company, 'grni_account', 'grni', db)
+        inv_account = _get_valuation_account(company, "inventory_account", "inventory", db)
+        grni_account = _get_valuation_account(company, "grni_account", "grni", db)
         fiscal_year = _get_current_fiscal_year(company, db)
-        entry_number = _next_journal_number(company, 'GRN', db)
+        entry_number = _next_journal_number(company, "GRN", db)
 
         journal_entry = JournalEntry.objects.using(db).create(
             company=company,
             entry_number=entry_number,
             entry_date=grn.receipt_date,
             entry_type=JournalEntry.EntryType.INVENTORY,
-            description=f'استلام بضاعة {grn.grn_number} – PO {grn.purchase_order.po_number}',
+            description=f"استلام بضاعة {grn.grn_number} – PO {grn.purchase_order.po_number}",
             reference=grn.grn_number,
             fiscal_year=fiscal_year,
             status=JournalEntry.Status.POSTED,
@@ -110,10 +111,10 @@ def create_grn_journal_entry(grn, user):
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=inv_account,
-            description=f'مخزون – {grn.grn_number}',
+            description=f"مخزون – {grn.grn_number}",
             debit_amount=total_cost,
-            credit_amount=Decimal('0'),
-            reference_type='goods_receipt',
+            credit_amount=Decimal("0"),
+            reference_type="goods_receipt",
             reference_id=grn.pk,
         )
 
@@ -121,15 +122,15 @@ def create_grn_journal_entry(grn, user):
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=grni_account,
-            description=f'بضاعة مستلمة بدون فاتورة – {grn.grn_number}',
-            debit_amount=Decimal('0'),
+            description=f"بضاعة مستلمة بدون فاتورة – {grn.grn_number}",
+            debit_amount=Decimal("0"),
             credit_amount=total_cost,
-            reference_type='goods_receipt',
+            reference_type="goods_receipt",
             reference_id=grn.pk,
         )
 
         journal_entry.calculate_totals()
-        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        journal_entry.save(update_fields=["total_debit", "total_credit"])
         _update_account_balances(journal_entry, db)
 
     return journal_entry
@@ -138,6 +139,7 @@ def create_grn_journal_entry(grn, user):
 # =========================================================================
 # Sales Issue Journal Entry (COGS)
 # =========================================================================
+
 
 def create_sales_issue_journal_entry(pick_list, user):
     """
@@ -149,14 +151,15 @@ def create_sales_issue_journal_entry(pick_list, user):
     db = get_current_db_alias()
     company = pick_list.company
 
-    total_cost = Decimal('0')
-    for line in pick_list.lines.select_related('product').using(db):
+    total_cost = Decimal("0")
+    for line in pick_list.lines.select_related("product").using(db):
         qty = line.quantity_picked or line.quantity_requested
         # Use the cost from the stock movement or the product cost
         from erp.models import StockMovement
+
         mv = (
             StockMovement.objects.using(db)
-            .filter(reference_type='pick_list', reference_id=pick_list.pk, product=line.product)
+            .filter(reference_type="pick_list", reference_id=pick_list.pk, product=line.product)
             .first()
         )
         cost = mv.unit_cost if mv else line.product.cost_price
@@ -166,17 +169,17 @@ def create_sales_issue_journal_entry(pick_list, user):
         return None
 
     with transaction.atomic(using=db):
-        cogs_account = _get_valuation_account(company, 'cogs_account', 'cogs', db)
-        inv_account = _get_valuation_account(company, 'inventory_account', 'inventory', db)
+        cogs_account = _get_valuation_account(company, "cogs_account", "cogs", db)
+        inv_account = _get_valuation_account(company, "inventory_account", "inventory", db)
         fiscal_year = _get_current_fiscal_year(company, db)
-        entry_number = _next_journal_number(company, 'COGS', db)
+        entry_number = _next_journal_number(company, "COGS", db)
 
         journal_entry = JournalEntry.objects.using(db).create(
             company=company,
             entry_number=entry_number,
             entry_date=pick_list.pick_date,
             entry_type=JournalEntry.EntryType.INVENTORY,
-            description=f'تكلفة بضاعة مباعة – Pick {pick_list.pick_number}',
+            description=f"تكلفة بضاعة مباعة – Pick {pick_list.pick_number}",
             reference=pick_list.pick_number,
             fiscal_year=fiscal_year,
             status=JournalEntry.Status.POSTED,
@@ -189,10 +192,10 @@ def create_sales_issue_journal_entry(pick_list, user):
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=cogs_account,
-            description=f'تكلفة مبيعات – {pick_list.pick_number}',
+            description=f"تكلفة مبيعات – {pick_list.pick_number}",
             debit_amount=total_cost,
-            credit_amount=Decimal('0'),
-            reference_type='pick_list',
+            credit_amount=Decimal("0"),
+            reference_type="pick_list",
             reference_id=pick_list.pk,
         )
 
@@ -200,15 +203,15 @@ def create_sales_issue_journal_entry(pick_list, user):
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=inv_account,
-            description=f'إصدار مخزون – {pick_list.pick_number}',
-            debit_amount=Decimal('0'),
+            description=f"إصدار مخزون – {pick_list.pick_number}",
+            debit_amount=Decimal("0"),
             credit_amount=total_cost,
-            reference_type='pick_list',
+            reference_type="pick_list",
             reference_id=pick_list.pk,
         )
 
         journal_entry.calculate_totals()
-        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        journal_entry.save(update_fields=["total_debit", "total_credit"])
         _update_account_balances(journal_entry, db)
 
     return journal_entry
@@ -217,6 +220,7 @@ def create_sales_issue_journal_entry(pick_list, user):
 # =========================================================================
 # Stock Transfer Journal Entry
 # =========================================================================
+
 
 def create_transfer_journal_entry(transfer, user):
     """
@@ -230,22 +234,23 @@ def create_transfer_journal_entry(transfer, user):
     without changing net inventory value.
     """
     from erp.models import StockMovement
+
     db = get_current_db_alias()
     company = transfer.company
 
     movements = StockMovement.objects.using(db).filter(
-        reference_type='stock_transfer',
+        reference_type="stock_transfer",
         reference_id=transfer.pk,
         movement_type=StockMovement.MovementType.TRANSFER_OUT,
     )
     total_cost = sum(m.unit_cost * m.quantity for m in movements)
-    if total_cost <= Decimal('0'):
+    if total_cost <= Decimal("0"):
         return None
 
     with transaction.atomic(using=db):
-        inv_account = _get_valuation_account(company, 'inventory_account', 'inventory', db)
+        inv_account = _get_valuation_account(company, "inventory_account", "inventory", db)
         fiscal_year = _get_current_fiscal_year(company, db)
-        entry_number = _next_journal_number(company, 'TRF', db)
+        entry_number = _next_journal_number(company, "TRF", db)
 
         journal_entry = JournalEntry.objects.using(db).create(
             company=company,
@@ -253,8 +258,8 @@ def create_transfer_journal_entry(transfer, user):
             entry_date=transfer.received_date or timezone.now().date(),
             entry_type=JournalEntry.EntryType.INVENTORY,
             description=(
-                f'تحويل مخزون {transfer.transfer_number} – '
-                f'{transfer.from_warehouse.name} → {transfer.to_warehouse.name}'
+                f"تحويل مخزون {transfer.transfer_number} – "
+                f"{transfer.from_warehouse.name} → {transfer.to_warehouse.name}"
             ),
             reference=transfer.transfer_number,
             fiscal_year=fiscal_year,
@@ -266,23 +271,23 @@ def create_transfer_journal_entry(transfer, user):
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=inv_account,
-            description=f'مخزون وارد – {transfer.to_warehouse.name}',
+            description=f"مخزون وارد – {transfer.to_warehouse.name}",
             debit_amount=total_cost,
-            credit_amount=Decimal('0'),
-            reference_type='stock_transfer',
+            credit_amount=Decimal("0"),
+            reference_type="stock_transfer",
             reference_id=transfer.pk,
         )
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=inv_account,
-            description=f'مخزون صادر – {transfer.from_warehouse.name}',
-            debit_amount=Decimal('0'),
+            description=f"مخزون صادر – {transfer.from_warehouse.name}",
+            debit_amount=Decimal("0"),
             credit_amount=total_cost,
-            reference_type='stock_transfer',
+            reference_type="stock_transfer",
             reference_id=transfer.pk,
         )
         journal_entry.calculate_totals()
-        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        journal_entry.save(update_fields=["total_debit", "total_credit"])
         _update_account_balances(journal_entry, db)
 
     return journal_entry
@@ -291,6 +296,7 @@ def create_transfer_journal_entry(transfer, user):
 # =========================================================================
 # Adjustment Journal Entry
 # =========================================================================
+
 
 def create_adjustment_journal_entry(adjustment, user):
     """
@@ -305,7 +311,7 @@ def create_adjustment_journal_entry(adjustment, user):
     db = get_current_db_alias()
     company = adjustment.company
 
-    total_cost = Decimal('0')
+    total_cost = Decimal("0")
     for line in adjustment.lines.using(db):
         total_cost += abs(line.quantity) * line.unit_cost
 
@@ -313,25 +319,26 @@ def create_adjustment_journal_entry(adjustment, user):
         return None
 
     from erp.models import StockAdjustment
+
     is_gain = adjustment.adjustment_type == StockAdjustment.AdjustmentType.GAIN
     is_write_off = adjustment.adjustment_type == StockAdjustment.AdjustmentType.WRITE_OFF
 
     with transaction.atomic(using=db):
-        inv_account = _get_valuation_account(company, 'inventory_account', 'inventory', db)
+        inv_account = _get_valuation_account(company, "inventory_account", "inventory", db)
         if is_write_off:
-            exp_account = _get_valuation_account(company, 'write_off_account', 'write_off', db)
+            exp_account = _get_valuation_account(company, "write_off_account", "write_off", db)
         else:
-            exp_account = _get_valuation_account(company, 'adjustment_account', 'adjustment', db)
+            exp_account = _get_valuation_account(company, "adjustment_account", "adjustment", db)
 
         fiscal_year = _get_current_fiscal_year(company, db)
-        entry_number = _next_journal_number(company, 'ADJ', db)
+        entry_number = _next_journal_number(company, "ADJ", db)
 
         journal_entry = JournalEntry.objects.using(db).create(
             company=company,
             entry_number=entry_number,
             entry_date=adjustment.adjustment_date,
             entry_type=JournalEntry.EntryType.INVENTORY,
-            description=f'تسوية مخزون {adjustment.adjustment_number}',
+            description=f"تسوية مخزون {adjustment.adjustment_number}",
             reference=adjustment.adjustment_number,
             fiscal_year=fiscal_year,
             status=JournalEntry.Status.POSTED,
@@ -345,20 +352,20 @@ def create_adjustment_journal_entry(adjustment, user):
             JournalEntryLine.objects.using(db).create(
                 journal_entry=journal_entry,
                 account=inv_account,
-                description=f'تسوية مخزون – ربح {adjustment.adjustment_number}',
+                description=f"تسوية مخزون – ربح {adjustment.adjustment_number}",
                 debit_amount=total_cost,
-                credit_amount=Decimal('0'),
-                reference_type='stock_adjustment',
+                credit_amount=Decimal("0"),
+                reference_type="stock_adjustment",
                 reference_id=adjustment.pk,
             )
             # CR Adjustment Expense
             JournalEntryLine.objects.using(db).create(
                 journal_entry=journal_entry,
                 account=exp_account,
-                description=f'تسوية مخزون – ربح {adjustment.adjustment_number}',
-                debit_amount=Decimal('0'),
+                description=f"تسوية مخزون – ربح {adjustment.adjustment_number}",
+                debit_amount=Decimal("0"),
                 credit_amount=total_cost,
-                reference_type='stock_adjustment',
+                reference_type="stock_adjustment",
                 reference_id=adjustment.pk,
             )
         else:
@@ -366,25 +373,25 @@ def create_adjustment_journal_entry(adjustment, user):
             JournalEntryLine.objects.using(db).create(
                 journal_entry=journal_entry,
                 account=exp_account,
-                description=f'تسوية مخزون – خسارة {adjustment.adjustment_number}',
+                description=f"تسوية مخزون – خسارة {adjustment.adjustment_number}",
                 debit_amount=total_cost,
-                credit_amount=Decimal('0'),
-                reference_type='stock_adjustment',
+                credit_amount=Decimal("0"),
+                reference_type="stock_adjustment",
                 reference_id=adjustment.pk,
             )
             # CR Inventory
             JournalEntryLine.objects.using(db).create(
                 journal_entry=journal_entry,
                 account=inv_account,
-                description=f'إصدار مخزون – {adjustment.adjustment_number}',
-                debit_amount=Decimal('0'),
+                description=f"إصدار مخزون – {adjustment.adjustment_number}",
+                debit_amount=Decimal("0"),
                 credit_amount=total_cost,
-                reference_type='stock_adjustment',
+                reference_type="stock_adjustment",
                 reference_id=adjustment.pk,
             )
 
         journal_entry.calculate_totals()
-        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        journal_entry.save(update_fields=["total_debit", "total_credit"])
         _update_account_balances(journal_entry, db)
 
     return journal_entry
@@ -393,6 +400,7 @@ def create_adjustment_journal_entry(adjustment, user):
 # =========================================================================
 # Supplier Invoice Journal Entry (3-way match: clear GRNI, create AP)
 # =========================================================================
+
 
 def create_supplier_invoice_journal_entry(supplier_invoice, user):
     """
@@ -412,20 +420,18 @@ def create_supplier_invoice_journal_entry(supplier_invoice, user):
         return None
 
     with transaction.atomic(using=db):
-        grni_account = _get_valuation_account(company, 'grni_account', 'grni', db)
+        grni_account = _get_valuation_account(company, "grni_account", "grni", db)
         # AP account: code 2000
-        ap_account = _get_or_create_account(
-            company, '2000', 'Accounts Payable', 'الدائنون', 'liability', db
-        )
+        ap_account = _get_or_create_account(company, "2000", "Accounts Payable", "الدائنون", "liability", db)
         fiscal_year = _get_current_fiscal_year(company, db)
-        entry_number = _next_journal_number(company, 'SI', db)
+        entry_number = _next_journal_number(company, "SI", db)
 
         journal_entry = JournalEntry.objects.using(db).create(
             company=company,
             entry_number=entry_number,
             entry_date=supplier_invoice.invoice_date,
             entry_type=JournalEntry.EntryType.PURCHASE,
-            description=f'فاتورة مورد {supplier_invoice.invoice_number} – {supplier_invoice.supplier.name}',
+            description=f"فاتورة مورد {supplier_invoice.invoice_number} – {supplier_invoice.supplier.name}",
             reference=supplier_invoice.invoice_number,
             fiscal_year=fiscal_year,
             status=JournalEntry.Status.POSTED,
@@ -437,24 +443,24 @@ def create_supplier_invoice_journal_entry(supplier_invoice, user):
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=grni_account,
-            description=f'تصفية بضاعة مستلمة – {supplier_invoice.invoice_number}',
+            description=f"تصفية بضاعة مستلمة – {supplier_invoice.invoice_number}",
             debit_amount=total,
-            credit_amount=Decimal('0'),
-            reference_type='supplier_invoice',
+            credit_amount=Decimal("0"),
+            reference_type="supplier_invoice",
             reference_id=supplier_invoice.pk,
         )
         # CR Accounts Payable
         JournalEntryLine.objects.using(db).create(
             journal_entry=journal_entry,
             account=ap_account,
-            description=f'دائنون – {supplier_invoice.supplier.name}',
-            debit_amount=Decimal('0'),
+            description=f"دائنون – {supplier_invoice.supplier.name}",
+            debit_amount=Decimal("0"),
             credit_amount=total,
-            reference_type='supplier_invoice',
+            reference_type="supplier_invoice",
             reference_id=supplier_invoice.pk,
         )
         journal_entry.calculate_totals()
-        journal_entry.save(update_fields=['total_debit', 'total_credit'])
+        journal_entry.save(update_fields=["total_debit", "total_credit"])
         _update_account_balances(journal_entry, db)
 
     return journal_entry

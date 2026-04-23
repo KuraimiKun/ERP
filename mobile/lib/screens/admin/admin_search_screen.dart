@@ -148,10 +148,9 @@ class _AdminSearchScreenState extends State<AdminSearchScreen> {
         child: Text(
           AppLocalizations.of(context)?.search ??
               'Type at least 2 characters to search.',
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: sem.textFaint),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: sem.textFaint),
         ),
       );
     }
@@ -161,10 +160,9 @@ class _AdminSearchScreenState extends State<AdminSearchScreen> {
       return Center(
         child: Text(
           AppLocalizations.of(context)?.noResults ?? 'No results.',
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: sem.textFaint),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: sem.textFaint),
         ),
       );
     }
@@ -188,11 +186,7 @@ class _Group extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final void Function(Map<String, dynamic>) onTap;
 
-  const _Group({
-    required this.type,
-    required this.items,
-    required this.onTap,
-  });
+  const _Group({required this.type, required this.items, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -214,15 +208,17 @@ class _Group extends StatelessWidget {
           child: Text(
             _label(type),
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: sem.textFaint,
-                  letterSpacing: 0.4,
-                ),
+              color: sem.textFaint,
+              letterSpacing: 0.4,
+            ),
           ),
         ),
         for (final row in items)
           ListTile(
             title: Text(
-              section == null ? (row['name'] ?? '—').toString() : section.title_.render(row),
+              section == null
+                  ? (row['name'] ?? '—').toString()
+                  : section.title_.render(row),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

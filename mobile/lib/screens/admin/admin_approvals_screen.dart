@@ -113,9 +113,7 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen>
           Expanded(
             child: TabBarView(
               controller: _tab,
-              children: [
-                for (final t in _tabs) _ApprovalQueue(tab: t),
-              ],
+              children: [for (final t in _tabs) _ApprovalQueue(tab: t)],
             ),
           ),
         ],
@@ -164,8 +162,9 @@ class _ApprovalQueueState extends State<_ApprovalQueue>
       AdminApiService(context.read<ApiService>()),
       endpoint: widget.tab.endpoint,
     );
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _provider.load(reset: true));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _provider.load(reset: true),
+    );
   }
 
   @override
@@ -175,9 +174,7 @@ class _ApprovalQueueState extends State<_ApprovalQueue>
   }
 
   Future<void> _action(int id, String actionName) async {
-    final notes = actionName == 'reject'
-        ? await _askReason(context)
-        : null;
+    final notes = actionName == 'reject' ? await _askReason(context) : null;
     if (actionName == 'reject' && notes == null) return;
     if (!mounted) return;
 
@@ -193,9 +190,11 @@ class _ApprovalQueueState extends State<_ApprovalQueue>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(actionName == 'approve'
-              ? (AppLocalizations.of(context)?.approved ?? 'Approved')
-              : (AppLocalizations.of(context)?.rejected ?? 'Rejected')),
+          content: Text(
+            actionName == 'approve'
+                ? (AppLocalizations.of(context)?.approved ?? 'Approved')
+                : (AppLocalizations.of(context)?.rejected ?? 'Rejected'),
+          ),
           backgroundColor: actionName == 'approve'
               ? AppTheme.semantics(context).success
               : AppTheme.semantics(context).warning,
@@ -222,9 +221,7 @@ class _ApprovalQueueState extends State<_ApprovalQueue>
         content: TextField(
           controller: ctrl,
           maxLines: 3,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-          ),
+          decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
           TextButton(
@@ -245,8 +242,9 @@ class _ApprovalQueueState extends State<_ApprovalQueue>
     if (v == null) return '';
     final d = double.tryParse(v.toString());
     if (d == null) return v.toString();
-    return d.toStringAsFixed(2).replaceAllMapped(
-        RegExp(r'\B(?=(\d{3})+(?=\.))'), (m) => ',');
+    return d
+        .toStringAsFixed(2)
+        .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?=\.))'), (m) => ',');
   }
 
   @override
@@ -284,11 +282,16 @@ class _ApprovalQueueState extends State<_ApprovalQueue>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outline,
-                      size: 48, color: sem.success),
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 48,
+                    color: sem.success,
+                  ),
                   const SizedBox(height: 12),
-                  Text(AppLocalizations.of(context)?.nothingToApprove ??
-                      'Nothing to approve'),
+                  Text(
+                    AppLocalizations.of(context)?.nothingToApprove ??
+                        'Nothing to approve',
+                  ),
                 ],
               ),
             );
@@ -311,8 +314,7 @@ class _ApprovalQueueState extends State<_ApprovalQueue>
                       : null,
                   onApprove: () =>
                       _action((row['id'] as num).toInt(), 'approve'),
-                  onReject: () =>
-                      _action((row['id'] as num).toInt(), 'reject'),
+                  onReject: () => _action((row['id'] as num).toInt(), 'reject'),
                 );
               },
             ),
@@ -353,16 +355,20 @@ class _ApprovalCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      title,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     if (subtitle.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
                           subtitle,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: sem.textSub),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: sem.textSub,
+                          ),
                         ),
                       ),
                   ],
@@ -400,10 +406,9 @@ class _ApprovalCard extends StatelessWidget {
                   onPressed: onApprove,
                   icon: const Icon(Icons.check),
                   label: Text(
-                      AppLocalizations.of(context)?.approve ?? 'Approve'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: sem.success,
+                    AppLocalizations.of(context)?.approve ?? 'Approve',
                   ),
+                  style: FilledButton.styleFrom(backgroundColor: sem.success),
                 ),
               ),
             ],

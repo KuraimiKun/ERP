@@ -4,15 +4,13 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from django.utils import timezone
 from rest_framework import status
 
-from erp.models import Invoice
 from erp.tests.test_admin_mobile.helpers import AdminMobileAPITestCase
 
-DASHBOARD_URL = '/api/mobile/admin/v1/dashboard/'
-ACTIVITY_URL = '/api/mobile/admin/v1/dashboard/activity/'
-KPIS_URL = '/api/mobile/admin/v1/dashboard/kpis/'
+DASHBOARD_URL = "/api/mobile/admin/v1/dashboard/"
+ACTIVITY_URL = "/api/mobile/admin/v1/dashboard/activity/"
+KPIS_URL = "/api/mobile/admin/v1/dashboard/kpis/"
 
 
 class DashboardSummaryTests(AdminMobileAPITestCase):
@@ -21,27 +19,34 @@ class DashboardSummaryTests(AdminMobileAPITestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         body = resp.json()
         for key in (
-            'today_revenue', 'cash_in_hand', 'pending_leave_approvals',
-            'pending_expense_approvals', 'pending_po_approvals',
-            'low_stock_items', 'open_pos_sessions', 'overdue_invoices_amount',
-            'this_month_revenue', 'this_month_expenses',
+            "today_revenue",
+            "cash_in_hand",
+            "pending_leave_approvals",
+            "pending_expense_approvals",
+            "pending_po_approvals",
+            "low_stock_items",
+            "open_pos_sessions",
+            "overdue_invoices_amount",
+            "this_month_revenue",
+            "this_month_expenses",
         ):
-            self.assertIn(key, body, f'missing key {key}')
+            self.assertIn(key, body, f"missing key {key}")
 
     def test_dashboard_counts_low_stock(self):
         # Fixture product has quantity 50, reorder 10 → not low.
         resp = self.admin_client.get(DASHBOARD_URL)
-        self.assertEqual(resp.json()['low_stock_items'], 0)
+        self.assertEqual(resp.json()["low_stock_items"], 0)
 
         # Drop quantity under reorder level to trigger the low-stock count.
-        self.product.quantity_on_hand = Decimal('5')
-        self.product.save(update_fields=['quantity_on_hand'])
+        self.product.quantity_on_hand = Decimal("5")
+        self.product.save(update_fields=["quantity_on_hand"])
         # Cache bust — the dashboard is cached 5 min per company.
         from django.core.cache import cache
-        cache.delete(f'adminmobile:dashboard:{self.company.pk}')
+
+        cache.delete(f"adminmobile:dashboard:{self.company.pk}")
 
         resp = self.admin_client.get(DASHBOARD_URL)
-        self.assertEqual(resp.json()['low_stock_items'], 1)
+        self.assertEqual(resp.json()["low_stock_items"], 1)
 
 
 class DashboardKPIsTests(AdminMobileAPITestCase):
@@ -49,9 +54,8 @@ class DashboardKPIsTests(AdminMobileAPITestCase):
         resp = self.admin_client.get(KPIS_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         body = resp.json()
-        self.assertEqual(body['period_days'], 30)
-        for key in ('revenue', 'expenses', 'net', 'new_customers',
-                    'new_leads', 'invoices_issued', 'payments_received'):
+        self.assertEqual(body["period_days"], 30)
+        for key in ("revenue", "expenses", "net", "new_customers", "new_leads", "invoices_issued", "payments_received"):
             self.assertIn(key, body)
 
 

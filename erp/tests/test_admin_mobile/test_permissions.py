@@ -31,10 +31,10 @@ class IsCompanyAdminTests(ERPAPITestCase):
         self.permission = IsCompanyAdmin()
         # Link user ↔ employee so company_id is populated.
         self.employee.user = self.user
-        self.employee.save(update_fields=['user'])
+        self.employee.save(update_fields=["user"])
 
     def _request(self, user):
-        req = self.factory.get('/api/mobile/admin/v1/auth/me/')
+        req = self.factory.get("/api/mobile/admin/v1/auth/me/")
         req.user = user
         return req
 
@@ -46,9 +46,13 @@ class IsCompanyAdminTests(ERPAPITestCase):
         self.user.refresh_from_db()
         # A fresh user with no Employee linked.
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
         lone = User.objects.create_user(
-            email='lone@example.com', password='p', first_name='Lone', last_name='Wolf',
+            email="lone@example.com",
+            password="p",
+            first_name="Lone",
+            last_name="Wolf",
         )
         self.assertFalse(self.permission.has_permission(self._request(lone), None))
 
@@ -57,29 +61,27 @@ class IsCompanyAdminTests(ERPAPITestCase):
         self.assertFalse(self.permission.has_permission(self._request(self.user), None))
 
     def test_denied_for_user_role(self):
-        grant_admin_assignment(self.user, role='user')
+        grant_admin_assignment(self.user, role="user")
         self.assertFalse(self.permission.has_permission(self._request(self.user), None))
 
     def test_denied_for_readonly_role(self):
-        grant_admin_assignment(self.user, role='readonly')
+        grant_admin_assignment(self.user, role="readonly")
         self.assertFalse(self.permission.has_permission(self._request(self.user), None))
 
     def test_allowed_for_admin_role(self):
-        grant_admin_assignment(self.user, role='admin')
+        grant_admin_assignment(self.user, role="admin")
         self.assertTrue(self.permission.has_permission(self._request(self.user), None))
 
     def test_allowed_for_owner_role(self):
-        grant_admin_assignment(self.user, role='owner')
+        grant_admin_assignment(self.user, role="owner")
         self.assertTrue(self.permission.has_permission(self._request(self.user), None))
 
     def test_denied_when_assignment_inactive(self):
-        assignment = grant_admin_assignment(self.user, role='admin')
+        assignment = grant_admin_assignment(self.user, role="admin")
         assignment.is_active = False
-        assignment.save(update_fields=['is_active'])
+        assignment.save(update_fields=["is_active"])
         self.assertFalse(self.permission.has_permission(self._request(self.user), None))
 
     def test_allowed_for_superuser_without_assignment(self):
         # Platform-support superuser escape hatch — no DatabaseAssignment needed.
-        self.assertTrue(
-            self.permission.has_permission(self._request(self.admin_user), None)
-        )
+        self.assertTrue(self.permission.has_permission(self._request(self.admin_user), None))

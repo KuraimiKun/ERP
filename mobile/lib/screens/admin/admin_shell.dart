@@ -148,10 +148,7 @@ class _NarrowLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: actions,
-      ),
+      appBar: AppBar(title: Text(title), actions: actions),
       drawer: _AdminDrawer(
         navItems: navItems,
         currentIndex: currentIndex,
@@ -236,22 +233,21 @@ class _TopBar extends StatelessWidget {
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-      ),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
       child: Row(
         children: [
           Text(
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: sem.textMuted.withValues(alpha: 1),
-                ),
+              fontWeight: FontWeight.w600,
+              color: sem.textMuted.withValues(alpha: 1),
+            ),
           ),
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.menu_open),
-            tooltip: AppLocalizations.of(context)?.allSections ?? 'All sections',
+            tooltip:
+                AppLocalizations.of(context)?.allSections ?? 'All sections',
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
           if (actions != null) ...actions!,
@@ -301,8 +297,11 @@ class _AdminRail extends StatelessWidget {
                     color: theme.colorScheme.primary,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.admin_panel_settings,
-                      color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.admin_panel_settings,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -367,8 +366,7 @@ class _RailItem extends StatelessWidget {
     final bg = selected
         ? theme.colorScheme.primary.withValues(alpha: 0.1)
         : Colors.transparent;
-    final fg =
-        selected ? theme.colorScheme.primary : sem.textSub;
+    final fg = selected ? theme.colorScheme.primary : sem.textSub;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -379,19 +377,20 @@ class _RailItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(10),
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Icon(selected ? item.selectedIcon : item.icon,
-                    size: 20, color: fg),
+                Icon(
+                  selected ? item.selectedIcon : item.icon,
+                  size: 20,
+                  color: fg,
+                ),
                 const SizedBox(width: 12),
                 Text(
                   item.label,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: fg,
-                    fontWeight:
-                        selected ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ],
@@ -411,8 +410,7 @@ class _RailFooter extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     await context.read<AuthProvider>().logout();
     if (context.mounted) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, AppRoutes.login, (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (_) => false);
     }
   }
 
@@ -447,14 +445,16 @@ class _RailFooter extends StatelessWidget {
                       ? admin!.fullName
                       : (admin?.email ?? ''),
                   style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600),
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   admin?.email ?? '',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: sem.textFaint),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: sem.textFaint,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -491,8 +491,7 @@ class _AdminDrawer extends StatelessWidget {
     Navigator.pop(context);
     await context.read<AuthProvider>().logout();
     if (context.mounted) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, AppRoutes.login, (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (_) => false);
     }
   }
 
@@ -597,8 +596,7 @@ class _AdminDrawer extends StatelessWidget {
                 // ── All admin sections grouped ─────────────────
                 for (final entry in groupSections().entries) ...[
                   Padding(
-                    padding:
-                        const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
                     child: Text(
                       localizedGroupLabel(context, entry.key).toUpperCase(),
                       style: theme.textTheme.labelSmall?.copyWith(
@@ -612,8 +610,11 @@ class _AdminDrawer extends StatelessWidget {
                     if (section.endpoint.isNotEmpty)
                       ListTile(
                         dense: true,
-                        leading:
-                            Icon(section.icon, size: 20, color: sem.textSub),
+                        leading: Icon(
+                          section.icon,
+                          size: 20,
+                          color: sem.textSub,
+                        ),
                         title: Text(section.title),
                         onTap: () {
                           Navigator.pop(context);
@@ -640,14 +641,23 @@ class _AdminDrawer extends StatelessWidget {
                     underline: const SizedBox.shrink(),
                     items: [
                       DropdownMenuItem(
-                          value: ThemeMode.system,
-                          child: Text(AppLocalizations.of(context)?.systemTheme ?? 'System')),
+                        value: ThemeMode.system,
+                        child: Text(
+                          AppLocalizations.of(context)?.systemTheme ?? 'System',
+                        ),
+                      ),
                       DropdownMenuItem(
-                          value: ThemeMode.light,
-                          child: Text(AppLocalizations.of(context)?.lightMode ?? 'Light')),
+                        value: ThemeMode.light,
+                        child: Text(
+                          AppLocalizations.of(context)?.lightMode ?? 'Light',
+                        ),
+                      ),
                       DropdownMenuItem(
-                          value: ThemeMode.dark,
-                          child: Text(AppLocalizations.of(context)?.darkMode ?? 'Dark')),
+                        value: ThemeMode.dark,
+                        child: Text(
+                          AppLocalizations.of(context)?.darkMode ?? 'Dark',
+                        ),
+                      ),
                     ],
                     onChanged: (m) {
                       if (m != null) themeProvider.setThemeMode(m);
@@ -657,7 +667,9 @@ class _AdminDrawer extends StatelessWidget {
                 // ── Language toggle ─────────────────────────────
                 ListTile(
                   leading: Icon(Icons.language_outlined, color: sem.textSub),
-                  title: Text(AppLocalizations.of(context)?.language ?? 'Language'),
+                  title: Text(
+                    AppLocalizations.of(context)?.language ?? 'Language',
+                  ),
                   trailing: DropdownButton<String>(
                     value: localeProvider.locale.languageCode,
                     underline: const SizedBox.shrink(),
@@ -665,7 +677,9 @@ class _AdminDrawer extends StatelessWidget {
                       DropdownMenuItem(value: 'en', child: Text('English')),
                       DropdownMenuItem(value: 'ar', child: Text('العربية')),
                       DropdownMenuItem(
-                          value: 'id', child: Text('Bahasa Indonesia')),
+                        value: 'id',
+                        child: Text('Bahasa Indonesia'),
+                      ),
                     ],
                     onChanged: (code) {
                       if (code != null) localeProvider.setLocale(Locale(code));

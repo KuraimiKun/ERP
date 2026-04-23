@@ -4,15 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0016_add_ai_settings_to_company'),
+        ("erp", "0016_add_ai_settings_to_company"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='company',
-            name='openai_model',
-            field=models.CharField(blank=True, default='gpt-4o-mini', help_text='OpenAI model to use (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).', max_length=100),
+            model_name="company",
+            name="openai_model",
+            field=models.CharField(
+                blank=True,
+                default="gpt-4o-mini",
+                help_text="OpenAI model to use (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).",
+                max_length=100,
+            ),
         ),
     ]

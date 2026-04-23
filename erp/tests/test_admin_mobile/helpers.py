@@ -17,7 +17,7 @@ from tenants.models import (
 )
 
 
-def grant_admin_assignment(user, role: str = 'admin') -> DatabaseAssignment:
+def grant_admin_assignment(user, role: str = "admin") -> DatabaseAssignment:
     """Create (or update) an active ``DatabaseAssignment`` for ``user``.
 
     Creates a minimal ``PostgresServer`` + ``TenantDatabase`` chain the
@@ -27,23 +27,23 @@ def grant_admin_assignment(user, role: str = 'admin') -> DatabaseAssignment:
     ``DatabaseAssignment`` — ``owner``, ``admin``, ``user``, ``readonly``.
     """
     server, _ = PostgresServer.objects.get_or_create(
-        name='test-server',
+        name="test-server",
         defaults={
-            'server_type': 'docker',
-            'host': 'localhost',
-            'port': 5432,
-            'admin_username': 'postgres',
-            'admin_password': 'test-password',
-            'status': 'active',
+            "server_type": "docker",
+            "host": "localhost",
+            "port": 5432,
+            "admin_username": "postgres",
+            "admin_password": "test-password",
+            "status": "active",
         },
     )
     tenant_db, _ = TenantDatabase.objects.get_or_create(
         server=server,
-        name='tenant_test',
+        name="tenant_test",
         defaults={
-            'display_name': 'Tenant Test DB',
-            'db_username': 'tenant_test_user',
-            'status': 'active',
+            "display_name": "Tenant Test DB",
+            "db_username": "tenant_test_user",
+            "status": "active",
         },
     )
     # Deactivate any existing assignment so ``is_active=True`` remains
@@ -72,11 +72,9 @@ class AdminMobileAPITestCase(ERPAPITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.admin_assignment = grant_admin_assignment(cls.user, role='admin')
+        cls.admin_assignment = grant_admin_assignment(cls.user, role="admin")
 
     def setUp(self):
         super().setUp()
         self.admin_client = APIClient()
-        self.admin_client.credentials(
-            HTTP_AUTHORIZATION=f'Token {self.token.key}'
-        )
+        self.admin_client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")

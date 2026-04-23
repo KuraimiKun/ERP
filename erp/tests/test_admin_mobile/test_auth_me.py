@@ -15,7 +15,7 @@ from erp.tests.test_admin_mobile.helpers import (
     grant_admin_assignment,
 )
 
-AUTH_ME_URL = '/api/mobile/admin/v1/auth/me/'
+AUTH_ME_URL = "/api/mobile/admin/v1/auth/me/"
 
 
 class AdminAuthMeTests(AdminMobileAPITestCase):
@@ -25,22 +25,22 @@ class AdminAuthMeTests(AdminMobileAPITestCase):
         resp = self.admin_client.get(AUTH_ME_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         body = resp.json()
-        self.assertEqual(body['user']['email'], self.user.email)
-        self.assertEqual(body['role'], 'admin')
+        self.assertEqual(body["user"]["email"], self.user.email)
+        self.assertEqual(body["role"], "admin")
         # Employee and company should both be populated by the test fixture.
-        self.assertIsNotNone(body['employee'])
-        self.assertEqual(body['employee']['id'], self.employee.pk)
-        self.assertIsNotNone(body['company'])
-        self.assertEqual(body['company']['id'], self.company.pk)
+        self.assertIsNotNone(body["employee"])
+        self.assertEqual(body["employee"]["id"], self.employee.pk)
+        self.assertIsNotNone(body["company"])
+        self.assertEqual(body["company"]["id"], self.company.pk)
 
     def test_role_reflects_owner_assignment(self):
         # Deactivate the default 'admin' assignment and grant 'owner'.
         self.admin_assignment.is_active = False
-        self.admin_assignment.save(update_fields=['is_active'])
-        grant_admin_assignment(self.user, role='owner')
+        self.admin_assignment.save(update_fields=["is_active"])
+        grant_admin_assignment(self.user, role="owner")
         resp = self.admin_client.get(AUTH_ME_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp.json()['role'], 'owner')
+        self.assertEqual(resp.json()["role"], "owner")
 
 
 class AdminAuthMeRejectionTests(ERPAPITestCase):
@@ -49,7 +49,7 @@ class AdminAuthMeRejectionTests(ERPAPITestCase):
     def setUp(self):
         super().setUp()
         self.client = APIClient()
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
 
     def test_unauthenticated_rejected(self):
         client = APIClient()  # no credentials
@@ -65,6 +65,6 @@ class AdminAuthMeRejectionTests(ERPAPITestCase):
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_role_rejected(self):
-        grant_admin_assignment(self.user, role='user')
+        grant_admin_assignment(self.user, role="user")
         resp = self.client.get(AUTH_ME_URL)
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)

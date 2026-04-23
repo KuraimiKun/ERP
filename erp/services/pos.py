@@ -20,9 +20,16 @@ from django.utils import timezone
 
 from tenants.routers import get_current_db_alias
 from erp.models import (
-    POSSession, POSOrder, POSOrderLine, POSPayment,
-    Product, PaymentMethod, TaxRate,
-    StockMovement, Invoice, InvoiceLine,
+    POSSession,
+    POSOrder,
+    POSOrderLine,
+    POSPayment,
+    Product,
+    PaymentMethod,
+    TaxRate,
+    StockMovement,
+    Invoice,
+    InvoiceLine,
 )
 from erp.services.sequence import SequenceService
 from erp.services.inventory import record_stock_movement
@@ -31,7 +38,7 @@ from erp.services.accounting import create_invoice_journal_entry
 logger = logging.getLogger(__name__)
 
 # Cash variance threshold (fraction of expected_cash); e.g. 0.05 = 5 %
-_CASH_VARIANCE_THRESHOLD = Decimal('0.05')
+_CASH_VARIANCE_THRESHOLD = Decimal("0.05")
 
 
 def open_session(*, company, terminal, employee, opening_balance):
@@ -43,12 +50,17 @@ def open_session(*, company, terminal, employee, opening_balance):
     """
     db = get_current_db_alias()
 
-    if POSSession.objects.using(db).filter(
-        terminal=terminal, status='open',
-    ).exists():
-        raise ValueError('This terminal already has an open session.')
+    if (
+        POSSession.objects.using(db)
+        .filter(
+            terminal=terminal,
+            status="open",
+        )
+        .exists()
+    ):
+        raise ValueError("This terminal already has an open session.")
 
-    session_number = SequenceService.get_next_number(company, 'pos_session')
+    session_number = SequenceService.get_next_number(company, "pos_session")
 
     session = POSSession.objects.using(db).create(
         company=company,
@@ -56,13 +68,13 @@ def open_session(*, company, terminal, employee, opening_balance):
         session_number=session_number,
         opened_by=employee,
         opening_balance=Decimal(str(opening_balance)),
-        status='open',
+        status="open",
         created_by=employee.user,
     )
     return session
 
 
-def close_session(*, session, employee, closing_balance, notes=''):
+def close_session(*, session, employee, closing_balance, notes=""):
     """
     Close a POS session, computing expected cash and difference.
 
@@ -77,18 +89,18 @@ def close_session(*, session, employee, closing_balance, notes=''):
         session.closed_by = employee
         session.closed_at = timezone.now()
         session.closing_notes = notes
-        session.status = 'closed'
+        session.status = "closed"
 
-        stats = session.orders.filter(status='completed').aggregate(
-            total_sales=Coalesce(Sum('total_amount'), Decimal('0')),
-            order_count=Count('id'),
+        stats = session.orders.filter(status="completed").aggregate(
+            total_sales=Coalesce(Sum("total_amount"), Decimal("0")),
+            order_count=Count("id"),
         )
-        refund_stats = session.orders.filter(status='refunded').aggregate(
-            total_refunds=Coalesce(Sum('total_amount'), Decimal('0')),
+        refund_stats = session.orders.filter(status="refunded").aggregate(
+            total_refunds=Coalesce(Sum("total_amount"), Decimal("0")),
         )
-        session.total_sales = stats['total_sales']
-        session.total_orders = stats['order_count']
-        session.total_refunds = refund_stats['total_refunds']
+        session.total_sales = stats["total_sales"]
+        session.total_orders = stats["order_count"]
+        session.total_refunds = refund_stats["total_refunds"]
 
         session.save(using=db)
 
@@ -97,8 +109,7 @@ def close_session(*, session, employee, closing_balance, notes=''):
         variance_ratio = abs(session.cash_difference) / session.expected_cash
         if variance_ratio > _CASH_VARIANCE_THRESHOLD:
             logger.warning(
-                "POS cash variance alert: session=%s employee=%s "
-                "expected=%s closing=%s diff=%s (%.1f%%)",
+                "POS cash variance alert: session=%s employee=%s expected=%s closing=%s diff=%s (%.1f%%)",
                 session.session_number,
                 employee.pk,
                 session.expected_cash,
@@ -107,17 +118,23 @@ def close_session(*, session, employee, closing_balance, notes=''):
                 float(variance_ratio * 100),
             )
             session.closing_notes = (
-                f"⚠ CASH VARIANCE {variance_ratio * 100:.1f}% "
-                f"(diff {session.cash_difference})\n{session.closing_notes}"
+                f"⚠ CASH VARIANCE {variance_ratio * 100:.1f}% (diff {session.cash_difference})\n{session.closing_notes}"
             )
-            session.save(using=db, update_fields=['closing_notes'])
+            session.save(using=db, update_fields=["closing_notes"])
 
     return session
 
 
-def create_pos_order(*, session, employee, cart_items, customer=None,
-                     discount_percent=Decimal('0'), discount_amount=Decimal('0'),
-                     notes=''):
+def create_pos_order(
+    *,
+    session,
+    employee,
+    cart_items,
+    customer=None,
+    discount_percent=Decimal("0"),
+    discount_amount=Decimal("0"),
+    notes="",
+):
     """
     Create a POSOrder with lines from cart data.
 
@@ -141,7 +158,7 @@ def create_pos_order(*, session, employee, cart_items, customer=None,
     db = get_current_db_alias()
     company = session.company
 
-    order_number = SequenceService.get_next_number(company, 'pos_order')
+    order_number = SequenceService.get_next_number(company, "pos_order")
 
     with transaction.atomic(using=db):
         order = POSOrder.objects.using(db).create(
@@ -153,15 +170,15 @@ def create_pos_order(*, session, employee, cart_items, customer=None,
             discount_percent=discount_percent,
             discount_amount=discount_amount,
             notes=notes,
-            status='draft',
+            status="draft",
             created_by=employee.user,
         )
 
         for item in cart_items:
-            product = Product.objects.using(db).get(pk=item['product_id'])
+            product = Product.objects.using(db).get(pk=item["product_id"])
             tax_rate = None
-            if item.get('tax_rate_id'):
-                tax_rate = TaxRate.objects.using(db).get(pk=item['tax_rate_id'])
+            if item.get("tax_rate_id"):
+                tax_rate = TaxRate.objects.using(db).get(pk=item["tax_rate_id"])
             elif product.tax_rate_id:
                 tax_rate = product.tax_rate
 
@@ -170,10 +187,10 @@ def create_pos_order(*, session, employee, cart_items, customer=None,
                 product=product,
                 product_name=product.name,
                 product_sku=product.sku,
-                quantity=Decimal(str(item['quantity'])),
-                unit_price=Decimal(str(item['unit_price'])),
-                cost_price=product.cost_price or Decimal('0'),
-                discount_percent=Decimal(str(item.get('discount_percent', 0))),
+                quantity=Decimal(str(item["quantity"])),
+                unit_price=Decimal(str(item["unit_price"])),
+                cost_price=product.cost_price or Decimal("0"),
+                discount_percent=Decimal(str(item.get("discount_percent", 0))),
                 tax_rate=tax_rate,
             )
 
@@ -206,12 +223,12 @@ def complete_pos_order(*, order, payments_data):
     db = get_current_db_alias()
 
     with transaction.atomic(using=db):
-        total_paid = Decimal('0')
+        total_paid = Decimal("0")
         for pdata in payments_data:
-            method = PaymentMethod.objects.using(db).get(pk=pdata['payment_method_id'])
-            amount = Decimal(str(pdata['amount']))
-            tendered = Decimal(str(pdata.get('tendered', amount)))
-            change = max(tendered - amount, Decimal('0')) if method.code.upper() == 'CASH' else Decimal('0')
+            method = PaymentMethod.objects.using(db).get(pk=pdata["payment_method_id"])
+            amount = Decimal(str(pdata["amount"]))
+            tendered = Decimal(str(pdata.get("tendered", amount)))
+            change = max(tendered - amount, Decimal("0")) if method.code.upper() == "CASH" else Decimal("0")
 
             POSPayment.objects.using(db).create(
                 order=order,
@@ -219,18 +236,16 @@ def complete_pos_order(*, order, payments_data):
                 amount=amount,
                 tendered=tendered,
                 change_amount=change,
-                reference=pdata.get('reference', ''),
+                reference=pdata.get("reference", ""),
             )
             total_paid += amount
 
         if total_paid < order.total_amount:
-            raise ValueError(
-                f'Payment total ({total_paid}) is less than order total ({order.total_amount})'
-            )
+            raise ValueError(f"Payment total ({total_paid}) is less than order total ({order.total_amount})")
 
         # Deduct inventory
         warehouse = order.session.terminal.warehouse
-        for line in order.lines.select_related('product').all():
+        for line in order.lines.select_related("product").all():
             if line.product.track_inventory:
                 record_stock_movement(
                     company=order.company,
@@ -239,16 +254,16 @@ def complete_pos_order(*, order, payments_data):
                     movement_type=StockMovement.MovementType.SALES_ISSUE,
                     quantity=line.quantity,
                     unit_cost=line.cost_price,
-                    reference_type='pos_order',
+                    reference_type="pos_order",
                     reference_id=order.pk,
                     reference_number=order.order_number,
-                    description=f'POS Sale {order.order_number} - {line.product_sku}',
+                    description=f"POS Sale {order.order_number} - {line.product_sku}",
                     user=order.employee.user if order.employee else None,
                     db_alias=db,
                 )
 
-        order.status = 'completed'
-        order.save(using=db, update_fields=['status', 'updated_at'])
+        order.status = "completed"
+        order.save(using=db, update_fields=["status", "updated_at"])
 
     # Create COGS journal entry for tracked inventory items
     _create_pos_cogs_journal_entry(order)
@@ -266,7 +281,9 @@ def _create_pos_cogs_journal_entry(order):
     from decimal import Decimal
     from erp.services.inventory_accounting import _get_valuation_account
     from erp.services.accounting import (
-        _get_current_fiscal_year, _next_journal_number, _update_account_balances,
+        _get_current_fiscal_year,
+        _next_journal_number,
+        _update_account_balances,
     )
     from erp.models import JournalEntry, JournalEntryLine, StockMovement
     from django.db import transaction
@@ -277,27 +294,27 @@ def _create_pos_cogs_journal_entry(order):
 
     # Sum cost from the stock movements just created for this order
     movements = StockMovement.objects.using(db).filter(
-        reference_type='pos_order',
+        reference_type="pos_order",
         reference_id=order.pk,
         movement_type=StockMovement.MovementType.SALES_ISSUE,
     )
     total_cost = sum(m.unit_cost * m.quantity for m in movements)
-    if total_cost <= Decimal('0'):
+    if total_cost <= Decimal("0"):
         return None
 
     try:
         with transaction.atomic(using=db):
-            cogs_account = _get_valuation_account(company, 'cogs_account', 'cogs', db)
-            inv_account = _get_valuation_account(company, 'inventory_account', 'inventory', db)
+            cogs_account = _get_valuation_account(company, "cogs_account", "cogs", db)
+            inv_account = _get_valuation_account(company, "inventory_account", "inventory", db)
             fiscal_year = _get_current_fiscal_year(company, db)
-            entry_number = _next_journal_number(company, 'PCOGS', db)
+            entry_number = _next_journal_number(company, "PCOGS", db)
 
             je = JournalEntry.objects.using(db).create(
                 company=company,
                 entry_number=entry_number,
-                entry_date=order.order_date.date() if hasattr(order.order_date, 'date') else order.order_date,
+                entry_date=order.order_date.date() if hasattr(order.order_date, "date") else order.order_date,
                 entry_type=JournalEntry.EntryType.INVENTORY,
-                description=f'تكلفة بضاعة مباعة POS – {order.order_number}',
+                description=f"تكلفة بضاعة مباعة POS – {order.order_number}",
                 reference=order.order_number,
                 fiscal_year=fiscal_year,
                 status=JournalEntry.Status.POSTED,
@@ -307,26 +324,26 @@ def _create_pos_cogs_journal_entry(order):
             JournalEntryLine.objects.using(db).create(
                 journal_entry=je,
                 account=cogs_account,
-                description=f'COGS POS {order.order_number}',
+                description=f"COGS POS {order.order_number}",
                 debit_amount=total_cost,
-                credit_amount=Decimal('0'),
-                reference_type='pos_order',
+                credit_amount=Decimal("0"),
+                reference_type="pos_order",
                 reference_id=order.pk,
             )
             JournalEntryLine.objects.using(db).create(
                 journal_entry=je,
                 account=inv_account,
-                description=f'مخزون POS {order.order_number}',
-                debit_amount=Decimal('0'),
+                description=f"مخزون POS {order.order_number}",
+                debit_amount=Decimal("0"),
                 credit_amount=total_cost,
-                reference_type='pos_order',
+                reference_type="pos_order",
                 reference_id=order.pk,
             )
             je.calculate_totals()
-            je.save(update_fields=['total_debit', 'total_credit'])
+            je.save(update_fields=["total_debit", "total_credit"])
             _update_account_balances(je, db)
     except Exception:
-        logger.exception('POS COGS journal entry failed for order %s', order.order_number)
+        logger.exception("POS COGS journal entry failed for order %s", order.order_number)
 
 
 def void_pos_order(*, order, user):
@@ -340,10 +357,10 @@ def void_pos_order(*, order, user):
     db = get_current_db_alias()
 
     with transaction.atomic(using=db):
-        if order.status == 'completed':
+        if order.status == "completed":
             # Reverse inventory
             warehouse = order.session.terminal.warehouse
-            for line in order.lines.select_related('product').all():
+            for line in order.lines.select_related("product").all():
                 if line.product.track_inventory:
                     record_stock_movement(
                         company=order.company,
@@ -352,10 +369,10 @@ def void_pos_order(*, order, user):
                         movement_type=StockMovement.MovementType.RETURN_IN,
                         quantity=line.quantity,
                         unit_cost=line.cost_price,
-                        reference_type='pos_order',
+                        reference_type="pos_order",
                         reference_id=order.pk,
                         reference_number=order.order_number,
-                        description=f'POS Void {order.order_number} - {line.product_sku}',
+                        description=f"POS Void {order.order_number} - {line.product_sku}",
                         user=user,
                         db_alias=db,
                     )
@@ -363,8 +380,8 @@ def void_pos_order(*, order, user):
             # Reverse the COGS journal entry created by _create_pos_cogs_journal_entry
             _reverse_pos_cogs_je(order, db)
 
-        order.status = 'voided'
-        order.save(using=db, update_fields=['status', 'updated_at'])
+        order.status = "voided"
+        order.save(using=db, update_fields=["status", "updated_at"])
 
     # If an invoice was generated, cancel it and reverse its journal entries
     if order.invoice_id:
@@ -380,6 +397,7 @@ def _reverse_pos_cogs_je(order, db):
     reference=order.order_number.  Must be called inside an atomic block.
     """
     from erp.models import Account, JournalEntry
+
     try:
         posted_cogs = JournalEntry.objects.using(db).filter(
             company=order.company,
@@ -388,29 +406,25 @@ def _reverse_pos_cogs_je(order, db):
         )
         if not posted_cogs.exists():
             return
-        account_ids = sorted(
-            posted_cogs.values_list('lines__account_id', flat=True).distinct()
-        )
-        locked_accounts = {
-            a.pk: a
-            for a in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
-        }
+        account_ids = sorted(posted_cogs.values_list("lines__account_id", flat=True).distinct())
+        locked_accounts = {a.pk: a for a in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)}
         for je in posted_cogs:
-            for line in je.lines.select_related('account').using(db).all():
+            for line in je.lines.select_related("account").using(db).all():
                 acc = locked_accounts.get(line.account_id)
                 if acc:
                     # Reverse: swap debit/credit
                     acc.update_balance(line.credit_amount, line.debit_amount)
-                    acc.save(using=db, update_fields=['current_balance'])
+                    acc.save(using=db, update_fields=["current_balance"])
             je.status = JournalEntry.Status.CANCELLED
-            je.save(using=db, update_fields=['status'])
+            je.save(using=db, update_fields=["status"])
     except Exception:
-        logger.exception('Failed to reverse COGS JE for voided POS order %s', order.order_number)
+        logger.exception("Failed to reverse COGS JE for voided POS order %s", order.order_number)
 
 
 def _reverse_pos_invoice(order, db):
     """Cancel the linked POS invoice and reverse all its posted journal entries."""
     from erp.models import Invoice, Account, JournalEntry
+
     try:
         invoice = Invoice.objects.using(db).get(pk=order.invoice_id)
         if invoice.status == Invoice.Status.CANCELLED:
@@ -423,26 +437,23 @@ def _reverse_pos_invoice(order, db):
                 reference=invoice.invoice_number,
                 status=JournalEntry.Status.POSTED,
             )
-            account_ids = sorted(
-                posted_entries.values_list('lines__account_id', flat=True).distinct()
-            )
+            account_ids = sorted(posted_entries.values_list("lines__account_id", flat=True).distinct())
             locked_accounts = {
-                a.pk: a
-                for a in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
+                a.pk: a for a in Account.objects.using(db).select_for_update().filter(pk__in=account_ids)
             }
             for je in posted_entries:
-                for line in je.lines.select_related('account').using(db).all():
+                for line in je.lines.select_related("account").using(db).all():
                     acc = locked_accounts.get(line.account_id)
                     if acc:
                         acc.update_balance(line.credit_amount, line.debit_amount)
-                        acc.save(using=db, update_fields=['current_balance'])
+                        acc.save(using=db, update_fields=["current_balance"])
                 je.status = JournalEntry.Status.CANCELLED
-                je.save(using=db, update_fields=['status'])
+                je.save(using=db, update_fields=["status"])
 
             invoice.status = Invoice.Status.CANCELLED
-            invoice.save(using=db, update_fields=['status'])
+            invoice.save(using=db, update_fields=["status"])
     except Exception:
-        logger.exception('Failed to reverse POS invoice for voided order %s', order.order_number)
+        logger.exception("Failed to reverse POS invoice for voided order %s", order.order_number)
 
 
 def generate_invoice_from_pos(order, user):
@@ -454,17 +465,17 @@ def generate_invoice_from_pos(order, user):
     Raises:
         ValueError: If order is not completed or already has an invoice.
     """
-    if order.status != 'completed':
-        raise ValueError('Can only generate invoice from completed orders.')
+    if order.status != "completed":
+        raise ValueError("Can only generate invoice from completed orders.")
     if order.invoice:
-        raise ValueError('Invoice already generated for this order.')
+        raise ValueError("Invoice already generated for this order.")
 
     db = get_current_db_alias()
     company = order.company
     customer = order.customer
 
     if not customer:
-        raise ValueError('Customer is required to generate an invoice.')
+        raise ValueError("Customer is required to generate an invoice.")
 
     from erp.services.sequence import get_invoice_number
 
@@ -473,17 +484,17 @@ def generate_invoice_from_pos(order, user):
             company=company,
             customer=customer,
             invoice_number=get_invoice_number(company),
-            invoice_type='standard',
-            invoice_date=order.order_date.date() if hasattr(order.order_date, 'date') else order.order_date,
-            due_date=order.order_date.date() if hasattr(order.order_date, 'date') else order.order_date,
+            invoice_type="standard",
+            invoice_date=order.order_date.date() if hasattr(order.order_date, "date") else order.order_date,
+            due_date=order.order_date.date() if hasattr(order.order_date, "date") else order.order_date,
             currency=company.base_currency,
-            reference=f'POS: {order.order_number}',
-            status='paid',
-            notes=f'Generated from POS order {order.order_number}',
+            reference=f"POS: {order.order_number}",
+            status="paid",
+            notes=f"Generated from POS order {order.order_number}",
             created_by=user,
         )
 
-        for line in order.lines.select_related('product', 'tax_rate').all():
+        for line in order.lines.select_related("product", "tax_rate").all():
             InvoiceLine.objects.using(db).create(
                 invoice=invoice,
                 product=line.product,
@@ -497,12 +508,12 @@ def generate_invoice_from_pos(order, user):
         invoice.discount_amount = order.discount_amount
         invoice.calculate_totals()
         invoice.paid_amount = invoice.total_amount
-        invoice.balance_due = Decimal('0')
+        invoice.balance_due = Decimal("0")
         invoice.save(using=db)
 
         # Link invoice to POS order
         order.invoice = invoice
-        order.save(using=db, update_fields=['invoice', 'updated_at'])
+        order.save(using=db, update_fields=["invoice", "updated_at"])
 
         # Create journal entry for accounting
         create_invoice_journal_entry(invoice, user)

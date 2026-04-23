@@ -5,15 +5,16 @@ import tenants.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0019_generatedreport_celery_task_id_and_more'),
+        ("erp", "0019_generatedreport_celery_task_id_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='company',
-            name='openai_api_key',
-            field=tenants.fields.EncryptedCharField(blank=True, help_text='Your OpenAI API key (sk-…). Encrypted at rest.', max_length=512),
+            model_name="company",
+            name="openai_api_key",
+            field=tenants.fields.EncryptedCharField(
+                blank=True, help_text="Your OpenAI API key (sk-…). Encrypted at rest.", max_length=512
+            ),
         ),
     ]

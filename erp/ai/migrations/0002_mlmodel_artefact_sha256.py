@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp_ai', '0001_ai_models_initial'),
+        ("erp_ai", "0001_ai_models_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mlmodel',
-            name='artefact_sha256',
-            field=models.CharField(blank=True, help_text='SHA-256 checksum of the artefact file', max_length=64),
+            model_name="mlmodel",
+            name="artefact_sha256",
+            field=models.CharField(blank=True, help_text="SHA-256 checksum of the artefact file", max_length=64),
         ),
     ]

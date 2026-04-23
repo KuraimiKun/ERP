@@ -60,23 +60,31 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
     def add_arguments(self, parser):
         parser.add_argument(
-            "--tenant", type=str, default=None,
+            "--tenant",
+            type=str,
+            default=None,
             help="Tenant DB name. Defaults to first active tenant.",
         )
         parser.add_argument(
-            "--company-id", type=int, default=None,
+            "--company-id",
+            type=int,
+            default=None,
             help="Company ID to assign records to. Defaults to first company.",
         )
         parser.add_argument(
-            "--limit", type=int, default=None,
+            "--limit",
+            type=int,
+            default=None,
             help="Max number of orders to import (default: all ~99k).",
         )
         parser.add_argument(
-            "--clear", action="store_true",
+            "--clear",
+            action="store_true",
             help="Delete previously imported Olist data before importing.",
         )
         parser.add_argument(
-            "--no-convert", action="store_true",
+            "--no-convert",
+            action="store_true",
             help="Keep amounts in BRL (default: convert to USD).",
         )
 
@@ -96,15 +104,12 @@ class Command(BaseCommand):
             tenant_db = TenantDatabase.objects.filter(status="active").first()
             if not tenant_db:
                 raise CommandError("No active tenant found. Pass --tenant <name>.")
-            self.stdout.write(self.style.WARNING(
-                f"No --tenant given; using first active tenant: {tenant_db.name}"
-            ))
+            self.stdout.write(self.style.WARNING(f"No --tenant given; using first active tenant: {tenant_db.name}"))
         else:
             try:
                 tenant_db = TenantDatabase.objects.get(name=tenant_name)
             except TenantDatabase.DoesNotExist:
-                avail = list(TenantDatabase.objects.filter(status="active")
-                             .values_list("name", flat=True))
+                avail = list(TenantDatabase.objects.filter(status="active").values_list("name", flat=True))
                 raise CommandError(f"Tenant '{tenant_name}' not found. Available: {avail}")
         return add_tenant_database(tenant_db)
 
@@ -146,11 +151,13 @@ class Command(BaseCommand):
         payments_df = pd.read_csv(DATASET_DIR / "olist_order_payments_dataset.csv")
         products_df = pd.read_csv(DATASET_DIR / "olist_products_dataset.csv")
         cat_trans_df = pd.read_csv(DATASET_DIR / "product_category_name_translation.csv")
-        self.stdout.write(self.style.SUCCESS(
-            f"  Orders: {len(orders_df)}, Items: {len(items_df)}, "
-            f"Payments: {len(payments_df)}, Products: {len(products_df)}, "
-            f"Customers: {len(customers_df)}"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"  Orders: {len(orders_df)}, Items: {len(items_df)}, "
+                f"Payments: {len(payments_df)}, Products: {len(products_df)}, "
+                f"Customers: {len(customers_df)}"
+            )
+        )
 
         # -- Filter to delivered orders only (skip cancelled, etc.) --------
         orders_df = orders_df[orders_df["order_status"] == "delivered"].copy()
@@ -159,8 +166,10 @@ class Command(BaseCommand):
         order_ids = set(orders_df["order_id"])
         items_df = items_df[items_df["order_id"].isin(order_ids)]
         payments_df = payments_df[payments_df["order_id"].isin(order_ids)]
-        self.stdout.write(f"  After filtering (delivered, limit={limit}): "
-                          f"{len(orders_df)} orders, {len(items_df)} items, {len(payments_df)} payments")
+        self.stdout.write(
+            f"  After filtering (delivered, limit={limit}): "
+            f"{len(orders_df)} orders, {len(items_df)} items, {len(payments_df)} payments"
+        )
 
         # -- Merge customer info into orders -------------------------------
         orders_df = orders_df.merge(customers_df, on="customer_id", how="left")
@@ -197,8 +206,7 @@ class Command(BaseCommand):
         code = "USD" if self.convert else "BRL"
         cur, created = Currency.objects.using(self.db).get_or_create(
             code=code,
-            defaults={"name": code, "symbol": "$" if code == "USD" else "R$",
-                       "is_base": True, "exchange_rate": 1},
+            defaults={"name": code, "symbol": "$" if code == "USD" else "R$", "is_base": True, "exchange_rate": 1},
         )
         if created:
             self.stdout.write(f"  Created currency: {code}")
@@ -206,7 +214,8 @@ class Command(BaseCommand):
 
     def _ensure_tax_rate(self):
         tr, created = TaxRate.objects.using(self.db).get_or_create(
-            company=self.company, rate=Decimal("0"),
+            company=self.company,
+            rate=Decimal("0"),
             defaults={"name": "No Tax", "is_default": True},
         )
         return tr
@@ -222,7 +231,8 @@ class Command(BaseCommand):
         methods = {}
         for key, (name, code) in mapping.items():
             pm, _ = PaymentMethod.objects.using(self.db).get_or_create(
-                company=self.company, code=code,
+                company=self.company,
+                code=code,
                 defaults={"name": name},
             )
             methods[key] = pm
@@ -232,6 +242,7 @@ class Command(BaseCommand):
         fy = FiscalYear.objects.using(self.db).filter(company=self.company).first()
         if not fy:
             from datetime import date
+
             fy = FiscalYear.objects.using(self.db).create(
                 company=self.company,
                 name="FY 2017-2018",
@@ -247,39 +258,29 @@ class Command(BaseCommand):
     def _clear_olist_data(self):
         self.stdout.write(self.style.WARNING("Clearing previously imported Olist data …"))
         # Delete in dependency order
-        cnt = PaymentAllocation.objects.using(self.db).filter(
-            payment__payment_number__startswith="OLIST-PAY-"
-        ).delete()[0]
+        cnt = (
+            PaymentAllocation.objects.using(self.db)
+            .filter(payment__payment_number__startswith="OLIST-PAY-")
+            .delete()[0]
+        )
         self.stdout.write(f"  PaymentAllocations deleted: {cnt}")
 
-        cnt = Payment.all_objects.using(self.db).filter(
-            payment_number__startswith="OLIST-PAY-"
-        ).delete()[0]
+        cnt = Payment.all_objects.using(self.db).filter(payment_number__startswith="OLIST-PAY-").delete()[0]
         self.stdout.write(f"  Payments deleted: {cnt}")
 
-        cnt = InvoiceLine.objects.using(self.db).filter(
-            invoice__invoice_number__startswith="OLIST-INV-"
-        ).delete()[0]
+        cnt = InvoiceLine.objects.using(self.db).filter(invoice__invoice_number__startswith="OLIST-INV-").delete()[0]
         self.stdout.write(f"  InvoiceLines deleted: {cnt}")
 
-        cnt = Invoice.all_objects.using(self.db).filter(
-            invoice_number__startswith="OLIST-INV-"
-        ).delete()[0]
+        cnt = Invoice.all_objects.using(self.db).filter(invoice_number__startswith="OLIST-INV-").delete()[0]
         self.stdout.write(f"  Invoices deleted: {cnt}")
 
-        cnt = Customer.all_objects.using(self.db).filter(
-            customer_id__startswith="OLIST-C-"
-        ).delete()[0]
+        cnt = Customer.all_objects.using(self.db).filter(customer_id__startswith="OLIST-C-").delete()[0]
         self.stdout.write(f"  Customers deleted: {cnt}")
 
-        cnt = Product.all_objects.using(self.db).filter(
-            sku__startswith="OLIST-P-"
-        ).delete()[0]
+        cnt = Product.all_objects.using(self.db).filter(sku__startswith="OLIST-P-").delete()[0]
         self.stdout.write(f"  Products deleted: {cnt}")
 
-        cnt = ProductCategory.objects.using(self.db).filter(
-            code__startswith="OLIST-"
-        ).delete()[0]
+        cnt = ProductCategory.objects.using(self.db).filter(code__startswith="OLIST-").delete()[0]
         self.stdout.write(f"  ProductCategories deleted: {cnt}")
 
     # ==================================================================
@@ -293,10 +294,10 @@ class Command(BaseCommand):
         # --- Categories ---
         categories_en = products_df["category_en"].unique()
         cat_map = {}  # category_en -> ProductCategory
-        existing_cats = {c.code: c for c in
-                         ProductCategory.objects.using(self.db).filter(
-                             company=self.company, code__startswith="OLIST-"
-                         )}
+        existing_cats = {
+            c.code: c
+            for c in ProductCategory.objects.using(self.db).filter(company=self.company, code__startswith="OLIST-")
+        }
         new_cats = []
         for cat_name in categories_en:
             code = f"OLIST-{cat_name[:14].upper().replace(' ', '_')}"
@@ -314,8 +315,7 @@ class Command(BaseCommand):
             ProductCategory.objects.using(self.db).bulk_create(new_cats, batch_size=500)
             # Re-fetch to get PKs
             cat_map = {}
-            for c in ProductCategory.objects.using(self.db).filter(
-                    company=self.company, code__startswith="OLIST-"):
+            for c in ProductCategory.objects.using(self.db).filter(company=self.company, code__startswith="OLIST-"):
                 # reverse-map code → cat_name
                 for cn in categories_en:
                     code = f"OLIST-{cn[:14].upper().replace(' ', '_')}"
@@ -328,9 +328,7 @@ class Command(BaseCommand):
 
         # --- Products ---
         existing_skus = set(
-            Product.objects.using(self.db)
-            .filter(sku__startswith="OLIST-P-")
-            .values_list("sku", flat=True)
+            Product.objects.using(self.db).filter(sku__startswith="OLIST-P-").values_list("sku", flat=True)
         )
         new_products = []
         for _, row in products_df.iterrows():
@@ -345,27 +343,27 @@ class Command(BaseCommand):
             cost = (avg_price * Decimal("0.6")).quantize(Decimal("0.01"))
             weight = row.get("product_weight_g", 0) or 0
 
-            new_products.append(Product(
-                company=self.company,
-                sku=sku,
-                name=f"{cat_name.replace('_', ' ').title()} - {pid[:8]}",
-                product_type="physical",
-                category=cat_map.get(cat_name),
-                currency=self.currency,
-                selling_price=avg_price,
-                cost_price=cost,
-                track_inventory=False,  # no stock management for this dataset
-                unit_of_measure="unit",
-                notes=f"Weight: {weight}g | Olist product_id: {pid}",
-            ))
+            new_products.append(
+                Product(
+                    company=self.company,
+                    sku=sku,
+                    name=f"{cat_name.replace('_', ' ').title()} - {pid[:8]}",
+                    product_type="physical",
+                    category=cat_map.get(cat_name),
+                    currency=self.currency,
+                    selling_price=avg_price,
+                    cost_price=cost,
+                    track_inventory=False,  # no stock management for this dataset
+                    unit_of_measure="unit",
+                    notes=f"Weight: {weight}g | Olist product_id: {pid}",
+                )
+            )
         if new_products:
             Product.objects.using(self.db).bulk_create(new_products, batch_size=1000)
-        self.product_map = {
-            p.sku: p for p in Product.objects.using(self.db).filter(sku__startswith="OLIST-P-")
-        }
-        self.stdout.write(self.style.SUCCESS(
-            f"  Products imported: {len(new_products)} (total: {len(self.product_map)})"
-        ))
+        self.product_map = {p.sku: p for p in Product.objects.using(self.db).filter(sku__startswith="OLIST-P-")}
+        self.stdout.write(
+            self.style.SUCCESS(f"  Products imported: {len(new_products)} (total: {len(self.product_map)})")
+        )
 
     # ==================================================================
     # Phase 2: Customers
@@ -387,17 +385,19 @@ class Command(BaseCommand):
                 continue
             city = str(row.get("customer_city", "")).title()
             state = str(row.get("customer_state", ""))
-            new_customers.append(Customer(
-                company=self.company,
-                customer_id=cid,
-                customer_type="individual",
-                name=f"Customer {uid[:8].upper()}",
-                billing_city=city,
-                billing_state=state,
-                billing_country="Brazil",
-                currency=self.currency,
-                payment_terms=random.choice([0, 15, 30, 45, 60]),
-            ))
+            new_customers.append(
+                Customer(
+                    company=self.company,
+                    customer_id=cid,
+                    customer_type="individual",
+                    name=f"Customer {uid[:8].upper()}",
+                    billing_city=city,
+                    billing_state=state,
+                    billing_country="Brazil",
+                    currency=self.currency,
+                    payment_terms=random.choice([0, 15, 30, 45, 60]),
+                )
+            )
         if new_customers:
             Customer.objects.using(self.db).bulk_create(new_customers, batch_size=2000)
         # Build lookup: customer_unique_id -> Customer
@@ -411,9 +411,9 @@ class Command(BaseCommand):
             uid = row["customer_unique_id"]
             self.uid_to_cid[uid] = f"OLIST-C-{uid[:12].upper()}"
 
-        self.stdout.write(self.style.SUCCESS(
-            f"  Customers imported: {len(new_customers)} (total: {len(self.customer_map)})"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(f"  Customers imported: {len(new_customers)} (total: {len(self.customer_map)})")
+        )
 
     # ==================================================================
     # Phase 3: Invoices & Lines
@@ -477,13 +477,15 @@ class Command(BaseCommand):
                     freight = (freight * BRL_TO_USD).quantize(Decimal("0.01"))
                 unit_price = price + freight
                 subtotal += unit_price
-                lines_data.append({
-                    "product": product,
-                    "description": product.name if product else f"Product {pid[:8]}",
-                    "quantity": Decimal("1"),
-                    "unit_price": unit_price,
-                    "line_total": unit_price,
-                })
+                lines_data.append(
+                    {
+                        "product": product,
+                        "description": product.name if product else f"Product {pid[:8]}",
+                        "quantity": Decimal("1"),
+                        "unit_price": unit_price,
+                        "line_total": unit_price,
+                    }
+                )
 
             # Status — all delivered orders are considered paid
             status = "paid"
@@ -503,12 +505,12 @@ class Command(BaseCommand):
                 discount_amount=Decimal("0"),
                 tax_amount=Decimal("0"),
                 total_amount=subtotal,
-                paid_amount=subtotal if status == "paid" else (
-                    subtotal * Decimal("0.5") if status == "partial" else Decimal("0")
-                ),
-                balance_due=Decimal("0") if status == "paid" else (
-                    subtotal * Decimal("0.5") if status == "partial" else subtotal
-                ),
+                paid_amount=subtotal
+                if status == "paid"
+                else (subtotal * Decimal("0.5") if status == "partial" else Decimal("0")),
+                balance_due=Decimal("0")
+                if status == "paid"
+                else (subtotal * Decimal("0.5") if status == "partial" else subtotal),
                 status=status,
                 notes=f"Olist order: {oid}",
             )
@@ -521,9 +523,7 @@ class Command(BaseCommand):
             # Refresh PKs
             inv_map = {
                 inv.invoice_number: inv
-                for inv in Invoice.objects.using(self.db).filter(
-                    invoice_number__startswith="OLIST-INV-"
-                )
+                for inv in Invoice.objects.using(self.db).filter(invoice_number__startswith="OLIST-INV-")
             }
             # Now create lines
             all_lines = []
@@ -532,27 +532,29 @@ class Command(BaseCommand):
                 if not db_inv:
                     continue
                 for ld in lines_data:
-                    all_lines.append(InvoiceLine(
-                        invoice=db_inv,
-                        product=ld["product"],
-                        description=ld["description"],
-                        quantity=ld["quantity"],
-                        unit_price=ld["unit_price"],
-                        line_total=ld["line_total"],
-                        tax_amount=Decimal("0"),
-                    ))
+                    all_lines.append(
+                        InvoiceLine(
+                            invoice=db_inv,
+                            product=ld["product"],
+                            description=ld["description"],
+                            quantity=ld["quantity"],
+                            unit_price=ld["unit_price"],
+                            line_total=ld["line_total"],
+                            tax_amount=Decimal("0"),
+                        )
+                    )
             if all_lines:
                 InvoiceLine.objects.using(self.db).bulk_create(all_lines, batch_size=5000)
 
         self.inv_map = {
             inv.invoice_number: inv
-            for inv in Invoice.objects.using(self.db).filter(
-                invoice_number__startswith="OLIST-INV-"
-            )
+            for inv in Invoice.objects.using(self.db).filter(invoice_number__startswith="OLIST-INV-")
         }
-        self.stdout.write(self.style.SUCCESS(
-            f"  Invoices imported: {len(new_invoices)} (lines: {sum(len(ld) for _, ld in invoice_lines_pending)})"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"  Invoices imported: {len(new_invoices)} (lines: {sum(len(ld) for _, ld in invoice_lines_pending)})"
+            )
+        )
 
     # ==================================================================
     # Phase 4: Payments & Allocations
@@ -566,10 +568,14 @@ class Command(BaseCommand):
 
         # Group payments by order (one order can have multiple payment installments)
         # We create one Payment per order (sum of installments)
-        pay_by_order = payments_df.groupby("order_id").agg(
-            total=("payment_value", "sum"),
-            method=("payment_type", "first"),
-        ).reset_index()
+        pay_by_order = (
+            payments_df.groupby("order_id")
+            .agg(
+                total=("payment_value", "sum"),
+                method=("payment_type", "first"),
+            )
+            .reset_index()
+        )
 
         new_payments = []
         allocation_pending = []  # (payment_obj, invoice)
@@ -618,9 +624,7 @@ class Command(BaseCommand):
             # Refresh PKs
             pay_map = {
                 p.payment_number: p
-                for p in Payment.objects.using(self.db).filter(
-                    payment_number__startswith="OLIST-PAY-"
-                )
+                for p in Payment.objects.using(self.db).filter(payment_number__startswith="OLIST-PAY-")
             }
             # Allocations
             allocs = []
@@ -628,17 +632,17 @@ class Command(BaseCommand):
                 db_pay = pay_map.get(pay_obj.payment_number)
                 if not db_pay:
                     continue
-                allocs.append(PaymentAllocation(
-                    payment=db_pay,
-                    invoice=inv,
-                    amount=db_pay.amount,
-                ))
+                allocs.append(
+                    PaymentAllocation(
+                        payment=db_pay,
+                        invoice=inv,
+                        amount=db_pay.amount,
+                    )
+                )
             if allocs:
                 PaymentAllocation.objects.using(self.db).bulk_create(allocs, batch_size=2000)
 
-        self.stdout.write(self.style.SUCCESS(
-            f"  Payments imported: {len(new_payments)}"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"  Payments imported: {len(new_payments)}"))
 
     # ==================================================================
     # Summary
@@ -649,9 +653,15 @@ class Command(BaseCommand):
             "Customers": Customer.objects.using(self.db).filter(customer_id__startswith="OLIST-C-").count(),
             "Products": Product.objects.using(self.db).filter(sku__startswith="OLIST-P-").count(),
             "Invoices": Invoice.objects.using(self.db).filter(invoice_number__startswith="OLIST-INV-").count(),
-            "  - paid": Invoice.objects.using(self.db).filter(invoice_number__startswith="OLIST-INV-", status="paid").count(),
-            "  - partial": Invoice.objects.using(self.db).filter(invoice_number__startswith="OLIST-INV-", status="partial").count(),
-            "  - overdue": Invoice.objects.using(self.db).filter(invoice_number__startswith="OLIST-INV-", status="overdue").count(),
+            "  - paid": Invoice.objects.using(self.db)
+            .filter(invoice_number__startswith="OLIST-INV-", status="paid")
+            .count(),
+            "  - partial": Invoice.objects.using(self.db)
+            .filter(invoice_number__startswith="OLIST-INV-", status="partial")
+            .count(),
+            "  - overdue": Invoice.objects.using(self.db)
+            .filter(invoice_number__startswith="OLIST-INV-", status="overdue")
+            .count(),
             "Payments": Payment.objects.using(self.db).filter(payment_number__startswith="OLIST-PAY-").count(),
         }
         for label, cnt in counts.items():

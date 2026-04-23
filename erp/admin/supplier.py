@@ -4,9 +4,13 @@ ERP Admin – Supplier / Procurement models
 
 from django.contrib import admin
 from erp.models import (
-    Supplier, SupplierContact, SupplierDocument,
-    PurchaseOrder, PurchaseOrderLine,
-    SupplierInvoice, SupplierInvoiceLine,
+    Supplier,
+    SupplierContact,
+    SupplierDocument,
+    PurchaseOrder,
+    PurchaseOrderLine,
+    SupplierInvoice,
+    SupplierInvoiceLine,
     SupplierPayment,
 )
 from .mixins import CompanyIsolatedAdmin, CompanyIsolatedInline
@@ -24,9 +28,9 @@ class SupplierDocumentInline(CompanyIsolatedInline):
 
 @admin.register(Supplier)
 class SupplierAdmin(CompanyIsolatedAdmin):
-    list_display = ['supplier_id', 'name', 'supplier_type', 'email', 'phone', 'current_balance', 'is_active']
-    list_filter = ['company', 'supplier_type', 'is_active']
-    search_fields = ['supplier_id', 'name', 'email']
+    list_display = ["supplier_id", "name", "supplier_type", "email", "phone", "current_balance", "is_active"]
+    list_filter = ["company", "supplier_type", "is_active"]
+    search_fields = ["supplier_id", "name", "email"]
     inlines = [SupplierContactInline, SupplierDocumentInline]
 
 
@@ -37,10 +41,10 @@ class PurchaseOrderLineInline(CompanyIsolatedInline):
 
 @admin.register(PurchaseOrder)
 class PurchaseOrderAdmin(CompanyIsolatedAdmin):
-    list_display = ['po_number', 'supplier', 'po_date', 'total_amount', 'status']
-    list_filter = ['status', 'po_date']
-    search_fields = ['po_number', 'supplier__name']
-    date_hierarchy = 'po_date'
+    list_display = ["po_number", "supplier", "po_date", "total_amount", "status"]
+    list_filter = ["status", "po_date"]
+    search_fields = ["po_number", "supplier__name"]
+    date_hierarchy = "po_date"
     inlines = [PurchaseOrderLineInline]
 
 
@@ -51,16 +55,16 @@ class SupplierInvoiceLineInline(CompanyIsolatedInline):
 
 @admin.register(SupplierInvoice)
 class SupplierInvoiceAdmin(CompanyIsolatedAdmin):
-    list_display = ['invoice_number', 'supplier', 'invoice_date', 'due_date', 'total_amount', 'balance_due', 'status']
-    list_filter = ['status', 'invoice_date']
-    search_fields = ['invoice_number', 'supplier__name']
-    date_hierarchy = 'invoice_date'
+    list_display = ["invoice_number", "supplier", "invoice_date", "due_date", "total_amount", "balance_due", "status"]
+    list_filter = ["status", "invoice_date"]
+    search_fields = ["invoice_number", "supplier__name"]
+    date_hierarchy = "invoice_date"
     inlines = [SupplierInvoiceLineInline]
 
 
 @admin.register(SupplierPayment)
 class SupplierPaymentAdmin(CompanyIsolatedAdmin):
-    list_display = ['payment_number', 'supplier', 'payment_date', 'amount', 'allocated_amount']
-    list_filter = ['payment_method', 'payment_date']
-    search_fields = ['payment_number', 'supplier__name']
-    date_hierarchy = 'payment_date'
+    list_display = ["payment_number", "supplier", "payment_date", "amount", "allocated_amount"]
+    list_filter = ["payment_method", "payment_date"]
+    search_fields = ["payment_number", "supplier__name"]
+    date_hierarchy = "payment_date"

@@ -3,6 +3,7 @@ ERP Forms - Core
 
 Forms for Company, Department, Branch, Currency, FiscalYear.
 """
+
 from django import forms
 
 from erp.models import Company, Currency, Department, Branch, FiscalYear
@@ -15,18 +16,40 @@ class CompanyForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Company
         fields = [
-            'name', 'name_ar', 'legal_name', 'tax_number', 'commercial_register',
-            'license_number', 'email', 'phone', 'fax', 'website', 'address',
-            'city', 'state', 'country', 'postal_code', 'logo', 'base_currency',
-            'fiscal_year_start', 'bank_name', 'bank_account', 'iban', 'swift_code',
-            'ai_enabled', 'openai_api_key', 'openai_model',
+            "name",
+            "name_ar",
+            "legal_name",
+            "tax_number",
+            "commercial_register",
+            "license_number",
+            "email",
+            "phone",
+            "fax",
+            "website",
+            "address",
+            "city",
+            "state",
+            "country",
+            "postal_code",
+            "logo",
+            "base_currency",
+            "fiscal_year_start",
+            "bank_name",
+            "bank_account",
+            "iban",
+            "swift_code",
+            "ai_enabled",
+            "openai_api_key",
+            "openai_model",
         ]
         widgets = {
-            'address': forms.Textarea(attrs={'rows': 2}),
-            'openai_api_key': forms.PasswordInput(attrs={
-                'placeholder': 'sk-…',
-                'autocomplete': 'off',
-            }),
+            "address": forms.Textarea(attrs={"rows": 2}),
+            "openai_api_key": forms.PasswordInput(
+                attrs={
+                    "placeholder": "sk-…",
+                    "autocomplete": "off",
+                }
+            ),
         }
 
 
@@ -35,9 +58,9 @@ class DepartmentForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
 
     class Meta:
         model = Department
-        fields = ['name', 'name_ar', 'code', 'description', 'parent', 'manager', 'is_active']
+        fields = ["name", "name_ar", "code", "description", "parent", "manager", "is_active"]
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 2}),
+            "description": forms.Textarea(attrs={"rows": 2}),
         }
 
 
@@ -47,11 +70,20 @@ class BranchForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
     class Meta:
         model = Branch
         fields = [
-            'name', 'name_ar', 'code', 'address', 'city', 'country',
-            'phone', 'email', 'manager', 'is_headquarters', 'is_active'
+            "name",
+            "name_ar",
+            "code",
+            "address",
+            "city",
+            "country",
+            "phone",
+            "email",
+            "manager",
+            "is_headquarters",
+            "is_active",
         ]
         widgets = {
-            'address': forms.Textarea(attrs={'rows': 2}),
+            "address": forms.Textarea(attrs={"rows": 2}),
         }
 
 
@@ -60,7 +92,7 @@ class CurrencyForm(BootstrapFormMixin, forms.ModelForm):
 
     class Meta:
         model = Currency
-        fields = ['code', 'name', 'name_ar', 'symbol', 'exchange_rate', 'is_active']
+        fields = ["code", "name", "name_ar", "symbol", "exchange_rate", "is_active"]
 
 
 class FiscalYearForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
@@ -68,8 +100,8 @@ class FiscalYearForm(BootstrapFormMixin, CompanyFilterMixin, forms.ModelForm):
 
     class Meta:
         model = FiscalYear
-        fields = ['name', 'start_date', 'end_date', 'is_current', 'is_closed']
+        fields = ["name", "start_date", "end_date", "is_current", "is_closed"]
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
         }

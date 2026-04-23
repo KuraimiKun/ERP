@@ -37,25 +37,35 @@ from erp.models import (
 DATASET_DIR = Path(__file__).resolve().parents[3] / "datasets"
 
 ACTIVITY_SUBJECTS = {
-    'call': [
-        'Initial discovery call', 'Follow-up call', 'Pricing discussion call',
-        'Demo scheduling call', 'Decision maker call',
+    "call": [
+        "Initial discovery call",
+        "Follow-up call",
+        "Pricing discussion call",
+        "Demo scheduling call",
+        "Decision maker call",
     ],
-    'email': [
-        'Introduction email sent', 'Proposal sent via email', 'Follow-up email',
-        'Pricing details emailed', 'Contract draft emailed',
+    "email": [
+        "Introduction email sent",
+        "Proposal sent via email",
+        "Follow-up email",
+        "Pricing details emailed",
+        "Contract draft emailed",
     ],
-    'meeting': [
-        'On-site product demo', 'Requirements gathering meeting',
-        'Stakeholder presentation', 'Contract negotiation meeting',
+    "meeting": [
+        "On-site product demo",
+        "Requirements gathering meeting",
+        "Stakeholder presentation",
+        "Contract negotiation meeting",
     ],
-    'whatsapp': [
-        'Quick check-in via WhatsApp', 'Shared project timeline',
-        'Sent brochure via WhatsApp',
+    "whatsapp": [
+        "Quick check-in via WhatsApp",
+        "Shared project timeline",
+        "Sent brochure via WhatsApp",
     ],
-    'note': [
-        'Internal notes on lead status', 'Updated requirements',
-        'Budget confirmed by lead',
+    "note": [
+        "Internal notes on lead status",
+        "Updated requirements",
+        "Budget confirmed by lead",
     ],
 }
 
@@ -65,19 +75,26 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--tenant", type=str, default=None,
+            "--tenant",
+            type=str,
+            default=None,
             help="Tenant DB name. Defaults to first active tenant.",
         )
         parser.add_argument(
-            "--company-id", type=int, default=None,
+            "--company-id",
+            type=int,
+            default=None,
             help="Company ID. Defaults to first company.",
         )
         parser.add_argument(
-            "--limit", type=int, default=None,
+            "--limit",
+            type=int,
+            default=None,
             help="Max number of leads to import.",
         )
         parser.add_argument(
-            "--clear", action="store_true",
+            "--clear",
+            action="store_true",
             help="Delete previously imported lead data before importing.",
         )
 
@@ -92,15 +109,12 @@ class Command(BaseCommand):
             tenant_db = TenantDatabase.objects.filter(status="active").first()
             if not tenant_db:
                 raise CommandError("No active tenant. Pass --tenant <name>.")
-            self.stdout.write(self.style.WARNING(
-                f"No --tenant given; using first active tenant: {tenant_db.name}"
-            ))
+            self.stdout.write(self.style.WARNING(f"No --tenant given; using first active tenant: {tenant_db.name}"))
         else:
             try:
                 tenant_db = TenantDatabase.objects.get(name=tenant_name)
             except TenantDatabase.DoesNotExist:
-                avail = list(TenantDatabase.objects.filter(status="active")
-                             .values_list("name", flat=True))
+                avail = list(TenantDatabase.objects.filter(status="active").values_list("name", flat=True))
                 raise CommandError(f"Tenant '{tenant_name}' not found. Available: {avail}")
         return add_tenant_database(tenant_db)
 
@@ -130,10 +144,7 @@ class Command(BaseCommand):
         # Load CSV
         csv_path = DATASET_DIR / "crm_leads_dataset.csv"
         if not csv_path.exists():
-            raise CommandError(
-                f"Dataset not found: {csv_path}\n"
-                "Run: python datasets/generate_synthetic.py"
-            )
+            raise CommandError(f"Dataset not found: {csv_path}\nRun: python datasets/generate_synthetic.py")
         df = pd.read_csv(csv_path)
         if options["limit"]:
             df = df.head(options["limit"])
@@ -154,49 +165,46 @@ class Command(BaseCommand):
     def _ensure_sales_employees(self):
         """Get or create sales employees for lead assignment."""
         dept, _ = Department.objects.using(self.db).get_or_create(
-            company=self.company, code="SALES",
+            company=self.company,
+            code="SALES",
             defaults={"name": "Sales", "is_active": True},
         )
         employees = list(
             Employee.objects.using(self.db).filter(
-                company=self.company, department=dept, employment_status='active',
+                company=self.company,
+                department=dept,
+                employment_status="active",
             )[:10]
         )
         if not employees:
             # Create a few placeholder sales employees
-            for i, name in enumerate(['Salesperson A', 'Salesperson B', 'Salesperson C']):
+            for i, name in enumerate(["Salesperson A", "Salesperson B", "Salesperson C"]):
                 emp = Employee.objects.using(self.db).create(
                     company=self.company,
-                    employee_id=f'SALE-{i+1:03d}',
+                    employee_id=f"SALE-{i + 1:03d}",
                     first_name=name.split()[0],
                     last_name=name.split()[1],
                     department=dept,
-                    employment_status='active',
-                    employment_type='full_time',
-                    basic_salary=Decimal('5000'),
-                    hire_date='2022-01-01',
+                    employment_status="active",
+                    employment_type="full_time",
+                    basic_salary=Decimal("5000"),
+                    hire_date="2022-01-01",
                 )
                 employees.append(emp)
         return employees
 
     def _clear_lead_data(self):
         self.stdout.write(self.style.WARNING("Clearing previously imported lead data …"))
-        cnt = LeadActivity.objects.using(self.db).filter(
-            lead__lead_number__startswith="LD-"
-        ).delete()[0]
+        cnt = LeadActivity.objects.using(self.db).filter(lead__lead_number__startswith="LD-").delete()[0]
         self.stdout.write(f"  LeadActivities deleted: {cnt}")
 
-        cnt = Lead.all_objects.using(self.db).filter(
-            lead_number__startswith="LD-"
-        ).delete()[0]
+        cnt = Lead.all_objects.using(self.db).filter(lead_number__startswith="LD-").delete()[0]
         self.stdout.write(f"  Leads deleted: {cnt}")
 
     # ==================================================================
     def _import_leads(self, df):
         existing = set(
-            Lead.objects.using(self.db)
-            .filter(lead_number__startswith="LD-")
-            .values_list("lead_number", flat=True)
+            Lead.objects.using(self.db).filter(lead_number__startswith="LD-").values_list("lead_number", flat=True)
         )
 
         lead_map = {}
@@ -204,43 +212,41 @@ class Command(BaseCommand):
         skipped = 0
 
         for _, row in df.iterrows():
-            ln = row['lead_number']
+            ln = row["lead_number"]
             if ln in existing:
                 skipped += 1
                 continue
 
             assigned = random.choice(self.sales_employees) if self.sales_employees else None
 
-            created_at = timezone.make_aware(
-                pd.to_datetime(row['created_at']).to_pydatetime()
+            created_at = timezone.make_aware(pd.to_datetime(row["created_at"]).to_pydatetime())
+            last_contact = (
+                timezone.make_aware(pd.to_datetime(row["last_contact_date"]).to_pydatetime())
+                if pd.notna(row.get("last_contact_date"))
+                else None
             )
-            last_contact = timezone.make_aware(
-                pd.to_datetime(row['last_contact_date']).to_pydatetime()
-            ) if pd.notna(row.get('last_contact_date')) else None
 
             conversion_date = None
-            if pd.notna(row.get('conversion_date')) and row['conversion_date']:
-                conversion_date = timezone.make_aware(
-                    pd.to_datetime(row['conversion_date']).to_pydatetime()
-                )
+            if pd.notna(row.get("conversion_date")) and row["conversion_date"]:
+                conversion_date = timezone.make_aware(pd.to_datetime(row["conversion_date"]).to_pydatetime())
 
             lead = Lead(
                 company=self.company,
                 lead_number=ln,
-                status=row['status'],
-                source=row['source'],
-                first_name=row['first_name'],
-                last_name=row['last_name'],
-                email=row['email'],
-                phone=str(row['phone']) if pd.notna(row.get('phone')) and row['phone'] else '',
-                mobile=str(row['mobile']) if pd.notna(row.get('mobile')) and row['mobile'] else '',
-                company_name=row.get('company_name', '') or '',
-                job_title=row.get('job_title', '') or '',
-                city=row.get('city', ''),
-                country=row.get('country', ''),
-                service_interest=row.get('service_interest', ''),
-                estimated_value=Decimal(str(row['estimated_value'])) if pd.notna(row.get('estimated_value')) else None,
-                probability=int(row.get('probability', 10)),
+                status=row["status"],
+                source=row["source"],
+                first_name=row["first_name"],
+                last_name=row["last_name"],
+                email=row["email"],
+                phone=str(row["phone"]) if pd.notna(row.get("phone")) and row["phone"] else "",
+                mobile=str(row["mobile"]) if pd.notna(row.get("mobile")) and row["mobile"] else "",
+                company_name=row.get("company_name", "") or "",
+                job_title=row.get("job_title", "") or "",
+                city=row.get("city", ""),
+                country=row.get("country", ""),
+                service_interest=row.get("service_interest", ""),
+                estimated_value=Decimal(str(row["estimated_value"])) if pd.notna(row.get("estimated_value")) else None,
+                probability=int(row.get("probability", 10)),
                 assigned_to=assigned,
                 last_contact_date=last_contact,
                 conversion_date=conversion_date,
@@ -262,17 +268,17 @@ class Command(BaseCommand):
         activities_created = 0
 
         for _, row in df.iterrows():
-            ln = row['lead_number']
+            ln = row["lead_number"]
             lead = lead_map.get(ln)
             if not lead:
                 continue
 
-            activity_count = int(row.get('activity_count', 0))
+            activity_count = int(row.get("activity_count", 0))
             if activity_count == 0:
                 continue
 
-            created_at = pd.to_datetime(row['created_at']).to_pydatetime()
-            days_pipeline = int(row.get('days_in_pipeline', 30))
+            created_at = pd.to_datetime(row["created_at"]).to_pydatetime()
+            days_pipeline = int(row.get("days_in_pipeline", 30))
 
             activity_types = list(ACTIVITY_SUBJECTS.keys())
 
@@ -303,18 +309,18 @@ class Command(BaseCommand):
 
     # ==================================================================
     def _print_summary(self):
-        leads = Lead.objects.using(self.db).filter(
-            company=self.company, lead_number__startswith="LD-"
-        )
-        won = leads.filter(status='won').count()
-        lost = leads.filter(status='lost').count()
+        leads = Lead.objects.using(self.db).filter(company=self.company, lead_number__startswith="LD-")
+        won = leads.filter(status="won").count()
+        lost = leads.filter(status="lost").count()
         total = leads.count()
-        activities = LeadActivity.objects.using(self.db).filter(
-            lead__company=self.company, lead__lead_number__startswith="LD-"
-        ).count()
+        activities = (
+            LeadActivity.objects.using(self.db)
+            .filter(lead__company=self.company, lead__lead_number__startswith="LD-")
+            .count()
+        )
 
         self.stdout.write("\n  Summary:")
         self.stdout.write(f"    Leads:      {total}")
-        self.stdout.write(f"    Won:        {won} ({won/max(total,1):.1%})")
-        self.stdout.write(f"    Lost:       {lost} ({lost/max(total,1):.1%})")
+        self.stdout.write(f"    Won:        {won} ({won / max(total, 1):.1%})")
+        self.stdout.write(f"    Lost:       {lost} ({lost / max(total, 1):.1%})")
         self.stdout.write(f"    Activities: {activities}")

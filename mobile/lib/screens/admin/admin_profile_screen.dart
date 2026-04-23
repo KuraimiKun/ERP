@@ -13,8 +13,7 @@ class AdminProfileScreen extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     await context.read<AuthProvider>().logout();
     if (context.mounted) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, AppRoutes.login, (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (_) => false);
     }
   }
 
@@ -49,22 +48,25 @@ class AdminProfileScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   admin?.fullName ?? '',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   admin?.email ?? '',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: sem.textSub),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: sem.textSub,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 if (admin?.role.isNotEmpty == true)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary
-                          .withValues(alpha: 0.1),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -86,8 +88,10 @@ class AdminProfileScreen extends StatelessWidget {
                 _InfoRow(l10n.nameField, admin!.company!.name),
                 if (admin.company!.nameAr.isNotEmpty)
                   _InfoRow(l10n.arabicName, admin.company!.nameAr),
-                _InfoRow(l10n.aiEnabled,
-                    admin.company!.aiEnabled ? l10n.yes : l10n.no),
+                _InfoRow(
+                  l10n.aiEnabled,
+                  admin.company!.aiEnabled ? l10n.yes : l10n.no,
+                ),
               ],
             ),
           if (admin?.employee != null)
@@ -95,8 +99,11 @@ class AdminProfileScreen extends StatelessWidget {
               title: l10n.employeeProfile,
               rows: [
                 _InfoRow(l10n.employeeId, admin!.employee!.employeeId),
-                _InfoRow(l10n.nameField,
-                    '${admin.employee!.firstName} ${admin.employee!.lastName}'.trim()),
+                _InfoRow(
+                  l10n.nameField,
+                  '${admin.employee!.firstName} ${admin.employee!.lastName}'
+                      .trim(),
+                ),
                 _InfoRow(l10n.email, admin.employee!.email),
                 if (admin.employee!.jobTitle.isNotEmpty)
                   _InfoRow(l10n.jobTitle, admin.employee!.jobTitle),
@@ -143,9 +150,9 @@ class _SectionCard extends StatelessWidget {
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: sem.textFaint,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  color: sem.textFaint,
+                ),
               ),
               const SizedBox(height: 8),
               ...rows,
@@ -174,10 +181,9 @@ class _InfoRow extends StatelessWidget {
             width: 120,
             child: Text(
               label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: sem.textFaint),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: sem.textFaint),
             ),
           ),
           Expanded(

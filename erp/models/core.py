@@ -11,24 +11,22 @@ from tenants.fields import EncryptedCharField
 
 class Currency(TimeStampedModel):
     """Currency definitions for multi-currency support."""
-    code = models.CharField(max_length=3, unique=True, help_text=_('ISO 4217 code (e.g., SAR, USD)'))
+
+    code = models.CharField(max_length=3, unique=True, help_text=_("ISO 4217 code (e.g., SAR, USD)"))
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
     symbol = models.CharField(max_length=10)
     exchange_rate = models.DecimalField(
-        max_digits=12,
-        decimal_places=6,
-        default=1,
-        help_text=_('Exchange rate relative to base currency')
+        max_digits=12, decimal_places=6, default=1, help_text=_("Exchange rate relative to base currency")
     )
-    is_base = models.BooleanField(default=False, help_text=_('Is this the base currency?'))
+    is_base = models.BooleanField(default=False, help_text=_("Is this the base currency?"))
     is_active = models.BooleanField(default=True)
     decimal_places = models.PositiveSmallIntegerField(default=2)
 
     class Meta:
-        verbose_name=_('Currency')
-        verbose_name_plural = 'Currencies'
-        ordering = ['-is_base', 'code']
+        verbose_name = _("Currency")
+        verbose_name_plural = "Currencies"
+        ordering = ["-is_base", "code"]
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -37,52 +35,48 @@ class Currency(TimeStampedModel):
         # select_for_update() inside atomic() serialises concurrent writes so
         # two requests cannot both set is_base=True on different currencies.
         from django.db import transaction
+
         with transaction.atomic():
             if self.is_base:
                 # Lock existing base-currency rows before clearing them so a
                 # second concurrent request blocks here rather than racing.
-                Currency.objects.select_for_update().filter(
-                    is_base=True
-                ).exclude(pk=self.pk).update(is_base=False)
+                Currency.objects.select_for_update().filter(is_base=True).exclude(pk=self.pk).update(is_base=False)
             super().save(*args, **kwargs)
 
 
 class Company(ERPBaseModel):
     """Company/Organization settings."""
+
     name = models.CharField(max_length=255)
     name_ar = models.CharField(max_length=255, blank=True)
     legal_name = models.CharField(max_length=255, blank=True)
-    
+
     # Registration
-    tax_number = models.CharField(max_length=50, blank=True, help_text=_('VAT/Tax registration number'))
+    tax_number = models.CharField(max_length=50, blank=True, help_text=_("VAT/Tax registration number"))
     commercial_register = models.CharField(max_length=50, blank=True)
     license_number = models.CharField(max_length=50, blank=True)
-    
+
     # Contact
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     fax = models.CharField(max_length=20, blank=True)
     website = models.URLField(blank=True)
-    
+
     # Address
     address = models.TextField()
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20, blank=True)
-    
+
     # Branding
-    logo = models.ImageField(upload_to='company/logos/', null=True, blank=True)
-    favicon = models.ImageField(upload_to='company/favicons/', null=True, blank=True)
-    
+    logo = models.ImageField(upload_to="company/logos/", null=True, blank=True)
+    favicon = models.ImageField(upload_to="company/favicons/", null=True, blank=True)
+
     # Settings
-    base_currency = models.ForeignKey(
-        Currency,
-        on_delete=models.PROTECT,
-        related_name='companies'
-    )
-    fiscal_year_start = models.PositiveSmallIntegerField(default=1, help_text=_('Month (1-12)'))
-    
+    base_currency = models.ForeignKey(Currency, on_delete=models.PROTECT, related_name="companies")
+    fiscal_year_start = models.PositiveSmallIntegerField(default=1, help_text=_("Month (1-12)"))
+
     # Bank Details
     bank_name = models.CharField(max_length=255, blank=True)
     bank_account = models.CharField(max_length=50, blank=True)
@@ -91,21 +85,24 @@ class Company(ERPBaseModel):
 
     # AI / ML Configuration (per-tenant)
     openai_api_key = EncryptedCharField(
-        max_length=512, blank=True,
-        help_text=_('Your OpenAI API key (sk-…). Encrypted at rest.'),
+        max_length=512,
+        blank=True,
+        help_text=_("Your OpenAI API key (sk-…). Encrypted at rest."),
     )
     openai_model = models.CharField(
-        max_length=100, blank=True, default='gpt-4o-mini',
-        help_text=_('OpenAI model to use (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).'),
+        max_length=100,
+        blank=True,
+        default="gpt-4o-mini",
+        help_text=_("OpenAI model to use (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo)."),
     )
     ai_enabled = models.BooleanField(
         default=True,
-        help_text=_('Enable or disable AI features for this company.'),
+        help_text=_("Enable or disable AI features for this company."),
     )
 
     class Meta:
-        verbose_name=_('Company')
-        verbose_name_plural = 'Companies'
+        verbose_name = _("Company")
+        verbose_name_plural = "Companies"
 
     def __str__(self):
         return self.name
@@ -116,17 +113,31 @@ class Company(ERPBaseModel):
         Call this instead of company.delete() to preserve audit trail.
         """
         import logging
-        _logger = logging.getLogger('erp.company')
+
+        _logger = logging.getLogger("erp.company")
 
         # Soft-delete the company itself
         self.soft_delete(user=user)
 
         # Cascade soft-delete to all related managers that have soft_delete
         related_managers = [
-            'invoices', 'payments', 'purchase_orders', 'supplier_invoices',
-            'supplier_payments', 'leads', 'campaigns', 'quotes', 'customers',
-            'employees', 'fixed_assets', 'expenses', 'stock_adjustments',
-            'cycle_counts', 'stock_transfers', 'pos_sessions', 'pos_orders',
+            "invoices",
+            "payments",
+            "purchase_orders",
+            "supplier_invoices",
+            "supplier_payments",
+            "leads",
+            "campaigns",
+            "quotes",
+            "customers",
+            "employees",
+            "fixed_assets",
+            "expenses",
+            "stock_adjustments",
+            "cycle_counts",
+            "stock_transfers",
+            "pos_sessions",
+            "pos_orders",
         ]
         for attr in related_managers:
             mgr = getattr(self, attr, None)
@@ -134,46 +145,33 @@ class Company(ERPBaseModel):
                 continue
             try:
                 for obj in mgr.all():
-                    if hasattr(obj, 'soft_delete') and not getattr(obj, 'is_deleted', False):
+                    if hasattr(obj, "soft_delete") and not getattr(obj, "is_deleted", False):
                         obj.soft_delete(user=user)
             except Exception:
-                _logger.exception('cascade_soft_delete: failed for %s on company %s', attr, self.pk)
+                _logger.exception("cascade_soft_delete: failed for %s on company %s", attr, self.pk)
 
 
 class Department(ERPBaseModel):
     """Company departments."""
-    company = models.ForeignKey(
-        Company,
-        on_delete=models.CASCADE,
-        related_name='departments'
-    )
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="departments")
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
     code = models.CharField(max_length=20, blank=True)
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='children'
-    )
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
     manager = models.ForeignKey(
-        'erp.Employee',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='managed_departments'
+        "erp.Employee", on_delete=models.SET_NULL, null=True, blank=True, related_name="managed_departments"
     )
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name=_('Department')
-        verbose_name_plural = 'Departments'
-        ordering = ['name']
+        verbose_name = _("Department")
+        verbose_name_plural = "Departments"
+        ordering = ["name"]
         indexes = [
-            models.Index(fields=['company', 'is_active'], name='idx_dept_company_active'),
-            models.Index(fields=['company', 'parent'], name='idx_dept_company_parent'),
+            models.Index(fields=["company", "is_active"], name="idx_dept_company_active"),
+            models.Index(fields=["company", "parent"], name="idx_dept_company_parent"),
         ]
 
     def __str__(self):
@@ -182,42 +180,35 @@ class Department(ERPBaseModel):
 
 class Branch(ERPBaseModel):
     """Company branches/locations."""
-    company = models.ForeignKey(
-        Company,
-        on_delete=models.CASCADE,
-        related_name='branches'
-    )
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="branches")
     name = models.CharField(max_length=100)
     name_ar = models.CharField(max_length=100, blank=True)
     code = models.CharField(max_length=20, blank=True)
-    
+
     # Contact
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
-    
+
     # Address
     address = models.TextField()
     city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
-    
+
     # Settings
     is_headquarters = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    
+
     manager = models.ForeignKey(
-        'erp.Employee',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='managed_branches'
+        "erp.Employee", on_delete=models.SET_NULL, null=True, blank=True, related_name="managed_branches"
     )
 
     class Meta:
-        verbose_name=_('Branch')
-        verbose_name_plural = 'Branches'
-        ordering = ['-is_headquarters', 'name']
+        verbose_name = _("Branch")
+        verbose_name_plural = "Branches"
+        ordering = ["-is_headquarters", "name"]
         indexes = [
-            models.Index(fields=['company', 'is_active'], name='idx_branch_company_active'),
+            models.Index(fields=["company", "is_active"], name="idx_branch_company_active"),
         ]
 
     def __str__(self):
@@ -226,11 +217,8 @@ class Branch(ERPBaseModel):
 
 class FiscalYear(ERPBaseModel):
     """Fiscal year definitions."""
-    company = models.ForeignKey(
-        Company,
-        on_delete=models.CASCADE,
-        related_name='fiscal_years'
-    )
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="fiscal_years")
     name = models.CharField(max_length=50)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -238,11 +226,11 @@ class FiscalYear(ERPBaseModel):
     is_current = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name=_('Fiscal Year')
-        verbose_name_plural = 'Fiscal Years'
-        ordering = ['-start_date']
+        verbose_name = _("Fiscal Year")
+        verbose_name_plural = "Fiscal Years"
+        ordering = ["-start_date"]
         indexes = [
-            models.Index(fields=['company', 'is_current'], name='idx_fy_company_current'),
+            models.Index(fields=["company", "is_current"], name="idx_fy_company_current"),
         ]
 
     def __str__(self):
@@ -251,63 +239,59 @@ class FiscalYear(ERPBaseModel):
     def save(self, *args, **kwargs):
         # Ensure only one current fiscal year per company
         if self.is_current:
-            FiscalYear.objects.filter(
-                company=self.company,
-                is_current=True
-            ).exclude(pk=self.pk).update(is_current=False)
+            FiscalYear.objects.filter(company=self.company, is_current=True).exclude(pk=self.pk).update(
+                is_current=False
+            )
         super().save(*args, **kwargs)
 
 
 class Sequence(TimeStampedModel):
     """Sequence generator for document numbering."""
-    class SequenceType(models.TextChoices):
-        INVOICE = 'invoice', 'Invoice'
-        PAYMENT = 'payment', 'Payment'
-        EXPENSE = 'expense', 'Expense'
-        QUOTATION = 'quotation', 'Quotation'
-        PURCHASE_ORDER = 'purchase_order', 'Purchase Order'
-        EMPLOYEE = 'employee', 'Employee'
-        CUSTOMER = 'customer', 'Customer'
-        SUPPLIER = 'supplier', 'Supplier'
-        SUPPLIER_INVOICE = 'supplier_invoice', 'Supplier Invoice'
-        SUPPLIER_PAYMENT = 'supplier_payment', 'Supplier Payment'
-        LEAD = 'lead', 'Lead'
-        # Inventory & Warehouse
-        GOODS_RECEIPT = 'goods_receipt', 'Goods Receipt Note'
-        STOCK_TRANSFER = 'stock_transfer', 'Stock Transfer'
-        STOCK_ADJUSTMENT = 'stock_adjustment', 'Stock Adjustment'
-        CYCLE_COUNT = 'cycle_count', 'Cycle Count'
-        PICK_LIST = 'pick_list', 'Pick List'
-        SHIPMENT = 'shipment', 'Shipment Note'
-        # POS
-        POS_ORDER = 'pos_order', 'POS Order'
-        POS_SESSION = 'pos_session', 'POS Session'
 
-    company = models.ForeignKey(
-        Company,
-        on_delete=models.CASCADE,
-        related_name='sequences'
-    )
+    class SequenceType(models.TextChoices):
+        INVOICE = "invoice", "Invoice"
+        PAYMENT = "payment", "Payment"
+        EXPENSE = "expense", "Expense"
+        QUOTATION = "quotation", "Quotation"
+        PURCHASE_ORDER = "purchase_order", "Purchase Order"
+        EMPLOYEE = "employee", "Employee"
+        CUSTOMER = "customer", "Customer"
+        SUPPLIER = "supplier", "Supplier"
+        SUPPLIER_INVOICE = "supplier_invoice", "Supplier Invoice"
+        SUPPLIER_PAYMENT = "supplier_payment", "Supplier Payment"
+        LEAD = "lead", "Lead"
+        # Inventory & Warehouse
+        GOODS_RECEIPT = "goods_receipt", "Goods Receipt Note"
+        STOCK_TRANSFER = "stock_transfer", "Stock Transfer"
+        STOCK_ADJUSTMENT = "stock_adjustment", "Stock Adjustment"
+        CYCLE_COUNT = "cycle_count", "Cycle Count"
+        PICK_LIST = "pick_list", "Pick List"
+        SHIPMENT = "shipment", "Shipment Note"
+        # POS
+        POS_ORDER = "pos_order", "POS Order"
+        POS_SESSION = "pos_session", "POS Session"
+
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="sequences")
     sequence_type = models.CharField(max_length=30, choices=SequenceType.choices)
     prefix = models.CharField(max_length=20, blank=True)
     suffix = models.CharField(max_length=20, blank=True)
     next_number = models.PositiveIntegerField(default=1)
-    padding = models.PositiveSmallIntegerField(default=5, help_text=_('Number of digits to pad'))
+    padding = models.PositiveSmallIntegerField(default=5, help_text=_("Number of digits to pad"))
     reset_period = models.CharField(
         max_length=20,
         choices=[
-            ('never', 'Never'),
-            ('yearly', 'Yearly'),
-            ('monthly', 'Monthly'),
+            ("never", "Never"),
+            ("yearly", "Yearly"),
+            ("monthly", "Monthly"),
         ],
-        default='never'
+        default="never",
     )
     last_reset = models.DateField(null=True, blank=True)
 
     class Meta:
-        verbose_name=_('Sequence')
-        verbose_name_plural = 'Sequences'
-        unique_together = ['company', 'sequence_type']
+        verbose_name = _("Sequence")
+        verbose_name_plural = "Sequences"
+        unique_together = ["company", "sequence_type"]
 
     def __str__(self):
         return f"{self.company.name} - {self.get_sequence_type_display()}"
@@ -325,10 +309,10 @@ class Sequence(TimeStampedModel):
             today = timezone.now().date()
             should_reset = False
 
-            if obj.reset_period == 'yearly' and obj.last_reset:
+            if obj.reset_period == "yearly" and obj.last_reset:
                 if obj.last_reset.year != today.year:
                     should_reset = True
-            elif obj.reset_period == 'monthly' and obj.last_reset:
+            elif obj.reset_period == "monthly" and obj.last_reset:
                 if obj.last_reset.month != today.month or obj.last_reset.year != today.year:
                     should_reset = True
 
@@ -342,7 +326,7 @@ class Sequence(TimeStampedModel):
 
             # Increment and persist atomically
             obj.next_number += 1
-            obj.save(update_fields=['next_number', 'last_reset'])
+            obj.save(update_fields=["next_number", "last_reset"])
 
         # Reflect the updated state onto self so callers don't see stale data
         self.next_number = obj.next_number

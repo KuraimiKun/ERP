@@ -4,35 +4,44 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('erp', '0024_fix_multitenant_unique_constraints'),
+        ("erp", "0024_fix_multitenant_unique_constraints"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='expense',
-            name='exchange_rate_at_date',
-            field=models.DecimalField(decimal_places=6, default=1, help_text='Exchange rate to base currency at expense date', max_digits=12),
+            model_name="expense",
+            name="exchange_rate_at_date",
+            field=models.DecimalField(
+                decimal_places=6, default=1, help_text="Exchange rate to base currency at expense date", max_digits=12
+            ),
         ),
         migrations.AddField(
-            model_name='invoice',
-            name='exchange_rate_at_date',
-            field=models.DecimalField(decimal_places=6, default=1, help_text='Exchange rate to base currency at invoice date', max_digits=12),
+            model_name="invoice",
+            name="exchange_rate_at_date",
+            field=models.DecimalField(
+                decimal_places=6, default=1, help_text="Exchange rate to base currency at invoice date", max_digits=12
+            ),
         ),
         migrations.AddField(
-            model_name='payment',
-            name='exchange_rate_at_date',
-            field=models.DecimalField(decimal_places=6, default=1, help_text='Exchange rate to base currency at payment date', max_digits=12),
+            model_name="payment",
+            name="exchange_rate_at_date",
+            field=models.DecimalField(
+                decimal_places=6, default=1, help_text="Exchange rate to base currency at payment date", max_digits=12
+            ),
         ),
         migrations.AddField(
-            model_name='supplierinvoice',
-            name='exchange_rate_at_date',
-            field=models.DecimalField(decimal_places=6, default=1, help_text='Exchange rate to base currency at invoice date', max_digits=12),
+            model_name="supplierinvoice",
+            name="exchange_rate_at_date",
+            field=models.DecimalField(
+                decimal_places=6, default=1, help_text="Exchange rate to base currency at invoice date", max_digits=12
+            ),
         ),
         migrations.AddField(
-            model_name='supplierpayment',
-            name='exchange_rate_at_date',
-            field=models.DecimalField(decimal_places=6, default=1, help_text='Exchange rate to base currency at payment date', max_digits=12),
+            model_name="supplierpayment",
+            name="exchange_rate_at_date",
+            field=models.DecimalField(
+                decimal_places=6, default=1, help_text="Exchange rate to base currency at payment date", max_digits=12
+            ),
         ),
     ]

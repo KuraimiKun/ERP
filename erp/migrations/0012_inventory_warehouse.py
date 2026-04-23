@@ -9,583 +9,1636 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('erp', '0011_attendancedevice_approval_requested_at_and_more'),
+        ("erp", "0011_attendancedevice_approval_requested_at_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CycleCount',
+            name="CycleCount",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('count_number', models.CharField(max_length=50, unique=True)),
-                ('count_date', models.DateField()),
-                ('status', models.CharField(choices=[('planned', 'Planned'), ('in_progress', 'In Progress'), ('completed', 'Completed'), ('cancelled', 'Cancelled')], default='planned', max_length=20)),
-                ('variance_posted', models.BooleanField(default=False, help_text='True once the variance has been posted as a stock adjustment')),
-                ('notes', models.TextField(blank=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cycle_counts', to='erp.company')),
-                ('counted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='cycle_counts', to=settings.AUTH_USER_MODEL)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("count_number", models.CharField(max_length=50, unique=True)),
+                ("count_date", models.DateField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("planned", "Planned"),
+                            ("in_progress", "In Progress"),
+                            ("completed", "Completed"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="planned",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "variance_posted",
+                    models.BooleanField(
+                        default=False, help_text="True once the variance has been posted as a stock adjustment"
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="cycle_counts", to="erp.company"
+                    ),
+                ),
+                (
+                    "counted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="cycle_counts",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Cycle Count',
-                'verbose_name_plural': 'Cycle Counts',
-                'ordering': ['-count_date', '-id'],
+                "verbose_name": "Cycle Count",
+                "verbose_name_plural": "Cycle Counts",
+                "ordering": ["-count_date", "-id"],
             },
         ),
         migrations.CreateModel(
-            name='LotBatch',
+            name="LotBatch",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('lot_number', models.CharField(max_length=50)),
-                ('manufacture_date', models.DateField(blank=True, null=True)),
-                ('expiry_date', models.DateField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lot_batches', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lots', to='erp.product')),
-                ('supplier', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='supplied_lots', to='erp.supplier')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("lot_number", models.CharField(max_length=50)),
+                ("manufacture_date", models.DateField(blank=True, null=True)),
+                ("expiry_date", models.DateField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lot_batches", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lots", to="erp.product"
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="supplied_lots",
+                        to="erp.supplier",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Lot / Batch',
-                'verbose_name_plural': 'Lots / Batches',
-                'ordering': ['expiry_date', 'lot_number'],
-                'unique_together': {('company', 'product', 'lot_number')},
+                "verbose_name": "Lot / Batch",
+                "verbose_name_plural": "Lots / Batches",
+                "ordering": ["expiry_date", "lot_number"],
+                "unique_together": {("company", "product", "lot_number")},
             },
         ),
         migrations.CreateModel(
-            name='PickList',
+            name="PickList",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('pick_number', models.CharField(max_length=50, unique=True)),
-                ('pick_date', models.DateField()),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('in_progress', 'Picking In Progress'), ('picked', 'Fully Picked'), ('cancelled', 'Cancelled')], default='draft', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('assigned_to', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_picks', to=settings.AUTH_USER_MODEL)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pick_lists', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('invoice', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pick_lists', to='erp.invoice')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("pick_number", models.CharField(max_length=50, unique=True)),
+                ("pick_date", models.DateField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("draft", "Draft"),
+                            ("in_progress", "Picking In Progress"),
+                            ("picked", "Fully Picked"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="draft",
+                        max_length=20,
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "assigned_to",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="assigned_picks",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="pick_lists", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "invoice",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="pick_lists",
+                        to="erp.invoice",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Pick List',
-                'verbose_name_plural': 'Pick Lists',
-                'ordering': ['-pick_date', '-id'],
+                "verbose_name": "Pick List",
+                "verbose_name_plural": "Pick Lists",
+                "ordering": ["-pick_date", "-id"],
             },
         ),
         migrations.CreateModel(
-            name='StockAdjustment',
+            name="StockAdjustment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('adjustment_number', models.CharField(max_length=50, unique=True)),
-                ('adjustment_date', models.DateField()),
-                ('adjustment_type', models.CharField(choices=[('gain', 'Gain (found)'), ('loss', 'Loss (missing)'), ('write_off', 'Write-Off / Scrap'), ('revaluation', 'Cost Revaluation')], max_length=20)),
-                ('reason', models.TextField(blank=True)),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('pending', 'Pending Approval'), ('approved', 'Approved'), ('cancelled', 'Cancelled')], default='draft', max_length=20)),
-                ('approved_at', models.DateTimeField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('approved_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='approved_adjustments', to=settings.AUTH_USER_MODEL)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_adjustments', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("adjustment_number", models.CharField(max_length=50, unique=True)),
+                ("adjustment_date", models.DateField()),
+                (
+                    "adjustment_type",
+                    models.CharField(
+                        choices=[
+                            ("gain", "Gain (found)"),
+                            ("loss", "Loss (missing)"),
+                            ("write_off", "Write-Off / Scrap"),
+                            ("revaluation", "Cost Revaluation"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("reason", models.TextField(blank=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("draft", "Draft"),
+                            ("pending", "Pending Approval"),
+                            ("approved", "Approved"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="draft",
+                        max_length=20,
+                    ),
+                ),
+                ("approved_at", models.DateTimeField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "approved_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="approved_adjustments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="stock_adjustments", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Stock Adjustment',
-                'verbose_name_plural': 'Stock Adjustments',
-                'ordering': ['-adjustment_date', '-id'],
+                "verbose_name": "Stock Adjustment",
+                "verbose_name_plural": "Stock Adjustments",
+                "ordering": ["-adjustment_date", "-id"],
             },
         ),
         migrations.CreateModel(
-            name='StockTransfer',
+            name="StockTransfer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('transfer_number', models.CharField(max_length=50, unique=True)),
-                ('transfer_date', models.DateField()),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('in_transit', 'In Transit'), ('received', 'Received'), ('cancelled', 'Cancelled')], default='draft', max_length=20)),
-                ('shipped_date', models.DateField(blank=True, null=True)),
-                ('received_date', models.DateField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_transfers', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("transfer_number", models.CharField(max_length=50, unique=True)),
+                ("transfer_date", models.DateField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("draft", "Draft"),
+                            ("in_transit", "In Transit"),
+                            ("received", "Received"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="draft",
+                        max_length=20,
+                    ),
+                ),
+                ("shipped_date", models.DateField(blank=True, null=True)),
+                ("received_date", models.DateField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="stock_transfers", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Stock Transfer',
-                'verbose_name_plural': 'Stock Transfers',
-                'ordering': ['-transfer_date', '-id'],
+                "verbose_name": "Stock Transfer",
+                "verbose_name_plural": "Stock Transfers",
+                "ordering": ["-transfer_date", "-id"],
             },
         ),
         migrations.CreateModel(
-            name='UnitOfMeasure',
+            name="UnitOfMeasure",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=50)),
-                ('name_ar', models.CharField(blank=True, max_length=50)),
-                ('abbreviation', models.CharField(max_length=10)),
-                ('category', models.CharField(choices=[('unit', 'Unit / Piece'), ('weight', 'Weight'), ('length', 'Length'), ('volume', 'Volume'), ('area', 'Area'), ('time', 'Time'), ('other', 'Other')], default='unit', max_length=30)),
-                ('is_base', models.BooleanField(default=False, help_text='Base UoM for its category (conversion factor = 1)')),
-                ('is_active', models.BooleanField(default=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='units_of_measure', to='erp.company')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=50)),
+                ("name_ar", models.CharField(blank=True, max_length=50)),
+                ("abbreviation", models.CharField(max_length=10)),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("unit", "Unit / Piece"),
+                            ("weight", "Weight"),
+                            ("length", "Length"),
+                            ("volume", "Volume"),
+                            ("area", "Area"),
+                            ("time", "Time"),
+                            ("other", "Other"),
+                        ],
+                        default="unit",
+                        max_length=30,
+                    ),
+                ),
+                (
+                    "is_base",
+                    models.BooleanField(default=False, help_text="Base UoM for its category (conversion factor = 1)"),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="units_of_measure", to="erp.company"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Unit of Measure',
-                'verbose_name_plural': 'Units of Measure',
-                'ordering': ['category', 'name'],
-                'unique_together': {('company', 'abbreviation')},
+                "verbose_name": "Unit of Measure",
+                "verbose_name_plural": "Units of Measure",
+                "ordering": ["category", "name"],
+                "unique_together": {("company", "abbreviation")},
             },
         ),
         migrations.CreateModel(
-            name='Warehouse',
+            name="Warehouse",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('code', models.CharField(max_length=20)),
-                ('name', models.CharField(max_length=255)),
-                ('name_ar', models.CharField(blank=True, max_length=255)),
-                ('address', models.TextField(blank=True)),
-                ('city', models.CharField(blank=True, max_length=100)),
-                ('country', models.CharField(blank=True, max_length=100)),
-                ('is_active', models.BooleanField(default=True)),
-                ('notes', models.TextField(blank=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='warehouses', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('manager', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='managed_warehouses', to='erp.employee')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("code", models.CharField(max_length=20)),
+                ("name", models.CharField(max_length=255)),
+                ("name_ar", models.CharField(blank=True, max_length=255)),
+                ("address", models.TextField(blank=True)),
+                ("city", models.CharField(blank=True, max_length=100)),
+                ("country", models.CharField(blank=True, max_length=100)),
+                ("is_active", models.BooleanField(default=True)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="warehouses", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "manager",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="managed_warehouses",
+                        to="erp.employee",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Warehouse',
-                'verbose_name_plural': 'Warehouses',
-                'ordering': ['code'],
-                'unique_together': {('company', 'code')},
+                "verbose_name": "Warehouse",
+                "verbose_name_plural": "Warehouses",
+                "ordering": ["code"],
+                "unique_together": {("company", "code")},
             },
         ),
         migrations.AlterField(
-            model_name='journalentry',
-            name='entry_type',
-            field=models.CharField(choices=[('manual', 'يدوي'), ('invoice', 'فاتورة'), ('payment', 'دفعة'), ('expense', 'مصروف'), ('payroll', 'رواتب'), ('adjustment', 'تسوية'), ('opening', 'رصيد افتتاحي'), ('closing', 'إقفال'), ('inventory', 'مخزون')], default='manual', max_length=20),
+            model_name="journalentry",
+            name="entry_type",
+            field=models.CharField(
+                choices=[
+                    ("manual", "يدوي"),
+                    ("invoice", "فاتورة"),
+                    ("payment", "دفعة"),
+                    ("expense", "مصروف"),
+                    ("payroll", "رواتب"),
+                    ("adjustment", "تسوية"),
+                    ("opening", "رصيد افتتاحي"),
+                    ("closing", "إقفال"),
+                    ("inventory", "مخزون"),
+                ],
+                default="manual",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='sequence',
-            name='sequence_type',
-            field=models.CharField(choices=[('invoice', 'Invoice'), ('payment', 'Payment'), ('expense', 'Expense'), ('quotation', 'Quotation'), ('purchase_order', 'Purchase Order'), ('employee', 'Employee'), ('customer', 'Customer'), ('supplier', 'Supplier'), ('supplier_invoice', 'Supplier Invoice'), ('supplier_payment', 'Supplier Payment'), ('lead', 'Lead'), ('goods_receipt', 'Goods Receipt Note'), ('stock_transfer', 'Stock Transfer'), ('stock_adjustment', 'Stock Adjustment'), ('cycle_count', 'Cycle Count'), ('pick_list', 'Pick List'), ('shipment', 'Shipment Note')], max_length=30),
+            model_name="sequence",
+            name="sequence_type",
+            field=models.CharField(
+                choices=[
+                    ("invoice", "Invoice"),
+                    ("payment", "Payment"),
+                    ("expense", "Expense"),
+                    ("quotation", "Quotation"),
+                    ("purchase_order", "Purchase Order"),
+                    ("employee", "Employee"),
+                    ("customer", "Customer"),
+                    ("supplier", "Supplier"),
+                    ("supplier_invoice", "Supplier Invoice"),
+                    ("supplier_payment", "Supplier Payment"),
+                    ("lead", "Lead"),
+                    ("goods_receipt", "Goods Receipt Note"),
+                    ("stock_transfer", "Stock Transfer"),
+                    ("stock_adjustment", "Stock Adjustment"),
+                    ("cycle_count", "Cycle Count"),
+                    ("pick_list", "Pick List"),
+                    ("shipment", "Shipment Note"),
+                ],
+                max_length=30,
+            ),
         ),
         migrations.CreateModel(
-            name='WarehouseZone',
+            name="WarehouseZone",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=20)),
-                ('name', models.CharField(max_length=100)),
-                ('name_ar', models.CharField(blank=True, max_length=100)),
-                ('zone_type', models.CharField(choices=[('receiving', 'Receiving'), ('storage', 'Storage'), ('picking', 'Picking / Pick Face'), ('packing', 'Packing'), ('shipping', 'Shipping / Dispatch'), ('quarantine', 'Quarantine'), ('returns', 'Returns'), ('other', 'Other')], default='storage', max_length=20)),
-                ('is_active', models.BooleanField(default=True)),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='zones', to='erp.warehouse')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("code", models.CharField(max_length=20)),
+                ("name", models.CharField(max_length=100)),
+                ("name_ar", models.CharField(blank=True, max_length=100)),
+                (
+                    "zone_type",
+                    models.CharField(
+                        choices=[
+                            ("receiving", "Receiving"),
+                            ("storage", "Storage"),
+                            ("picking", "Picking / Pick Face"),
+                            ("packing", "Packing"),
+                            ("shipping", "Shipping / Dispatch"),
+                            ("quarantine", "Quarantine"),
+                            ("returns", "Returns"),
+                            ("other", "Other"),
+                        ],
+                        default="storage",
+                        max_length=20,
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="zones", to="erp.warehouse"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Warehouse Zone',
-                'verbose_name_plural': 'Warehouse Zones',
-                'ordering': ['code'],
-                'unique_together': {('warehouse', 'code')},
+                "verbose_name": "Warehouse Zone",
+                "verbose_name_plural": "Warehouse Zones",
+                "ordering": ["code"],
+                "unique_together": {("warehouse", "code")},
             },
         ),
         migrations.CreateModel(
-            name='WarehouseBin',
+            name="WarehouseBin",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=30)),
-                ('name', models.CharField(blank=True, max_length=100)),
-                ('barcode', models.CharField(blank=True, max_length=50)),
-                ('max_capacity', models.DecimalField(decimal_places=2, default=0, help_text='Max storage capacity (0 = unlimited)', max_digits=12)),
-                ('is_active', models.BooleanField(default=True)),
-                ('zone', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bins', to='erp.warehousezone')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("code", models.CharField(max_length=30)),
+                ("name", models.CharField(blank=True, max_length=100)),
+                ("barcode", models.CharField(blank=True, max_length=50)),
+                (
+                    "max_capacity",
+                    models.DecimalField(
+                        decimal_places=2, default=0, help_text="Max storage capacity (0 = unlimited)", max_digits=12
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "zone",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="bins", to="erp.warehousezone"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Warehouse Bin',
-                'verbose_name_plural': 'Warehouse Bins',
-                'ordering': ['code'],
-                'unique_together': {('zone', 'code')},
+                "verbose_name": "Warehouse Bin",
+                "verbose_name_plural": "Warehouse Bins",
+                "ordering": ["code"],
+                "unique_together": {("zone", "code")},
             },
         ),
         migrations.CreateModel(
-            name='StockTransferLine',
+            name="StockTransferLine",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('quantity', models.DecimalField(decimal_places=4, max_digits=12)),
-                ('unit_cost', models.DecimalField(decimal_places=4, default=0, max_digits=14)),
-                ('notes', models.TextField(blank=True)),
-                ('from_bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='transfer_lines_from', to='erp.warehousebin')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='transfer_lines', to='erp.lotbatch')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='transfer_lines', to='erp.product')),
-                ('to_bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='transfer_lines_to', to='erp.warehousebin')),
-                ('transfer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.stocktransfer')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("quantity", models.DecimalField(decimal_places=4, max_digits=12)),
+                ("unit_cost", models.DecimalField(decimal_places=4, default=0, max_digits=14)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "from_bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="transfer_lines_from",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="transfer_lines",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="transfer_lines", to="erp.product"
+                    ),
+                ),
+                (
+                    "to_bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="transfer_lines_to",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "transfer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.stocktransfer"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Stock Transfer Line',
-                'verbose_name_plural': 'Stock Transfer Lines',
-                'ordering': ['id'],
-            },
-        ),
-        migrations.AddField(
-            model_name='stocktransfer',
-            name='from_warehouse',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='transfers_out', to='erp.warehouse'),
-        ),
-        migrations.AddField(
-            model_name='stocktransfer',
-            name='to_warehouse',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='transfers_in', to='erp.warehouse'),
-        ),
-        migrations.AddField(
-            model_name='stocktransfer',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.CreateModel(
-            name='StockAdjustmentLine',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('quantity', models.DecimalField(decimal_places=4, max_digits=12)),
-                ('unit_cost', models.DecimalField(decimal_places=4, default=0, max_digits=14)),
-                ('notes', models.TextField(blank=True)),
-                ('adjustment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.stockadjustment')),
-                ('bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='adjustment_lines', to='erp.warehousebin')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='adjustment_lines', to='erp.lotbatch')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='adjustment_lines', to='erp.product')),
-            ],
-            options={
-                'verbose_name': 'Stock Adjustment Line',
-                'verbose_name_plural': 'Stock Adjustment Lines',
-                'ordering': ['id'],
-            },
-        ),
-        migrations.AddField(
-            model_name='stockadjustment',
-            name='warehouse',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_adjustments', to='erp.warehouse'),
-        ),
-        migrations.CreateModel(
-            name='ShipmentNote',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('shipment_number', models.CharField(max_length=50, unique=True)),
-                ('shipment_date', models.DateField()),
-                ('carrier_name', models.CharField(blank=True, max_length=100)),
-                ('tracking_number', models.CharField(blank=True, max_length=100)),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('shipped', 'Shipped'), ('delivered', 'Delivered'), ('cancelled', 'Cancelled')], default='draft', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='shipments', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('customer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='shipments', to='erp.customer')),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('pick_list', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='shipments', to='erp.picklist')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='shipments', to='erp.warehouse')),
-            ],
-            options={
-                'verbose_name': 'Shipment Note',
-                'verbose_name_plural': 'Shipment Notes',
-                'ordering': ['-shipment_date', '-id'],
-            },
-        ),
-        migrations.CreateModel(
-            name='ShipmentLine',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('quantity', models.DecimalField(decimal_places=4, max_digits=12)),
-                ('notes', models.TextField(blank=True)),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='shipment_lines', to='erp.lotbatch')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='shipment_lines', to='erp.product')),
-                ('shipment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.shipmentnote')),
-            ],
-            options={
-                'verbose_name': 'Shipment Line',
-                'verbose_name_plural': 'Shipment Lines',
-                'ordering': ['id'],
-            },
-        ),
-        migrations.CreateModel(
-            name='PickListLine',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('quantity_requested', models.DecimalField(decimal_places=4, max_digits=12)),
-                ('quantity_picked', models.DecimalField(decimal_places=4, default=0, max_digits=12)),
-                ('notes', models.TextField(blank=True)),
-                ('from_bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pick_lines', to='erp.warehousebin')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pick_lines', to='erp.lotbatch')),
-                ('pick_list', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.picklist')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='pick_lines', to='erp.product')),
-            ],
-            options={
-                'verbose_name': 'Pick List Line',
-                'verbose_name_plural': 'Pick List Lines',
-                'ordering': ['id'],
+                "verbose_name": "Stock Transfer Line",
+                "verbose_name_plural": "Stock Transfer Lines",
+                "ordering": ["id"],
             },
         ),
         migrations.AddField(
-            model_name='picklist',
-            name='warehouse',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='pick_lists', to='erp.warehouse'),
+            model_name="stocktransfer",
+            name="from_warehouse",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="transfers_out", to="erp.warehouse"
+            ),
+        ),
+        migrations.AddField(
+            model_name="stocktransfer",
+            name="to_warehouse",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="transfers_in", to="erp.warehouse"
+            ),
+        ),
+        migrations.AddField(
+            model_name="stocktransfer",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.CreateModel(
-            name='InventoryValuationConfig',
+            name="StockAdjustmentLine",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('valuation_method', models.CharField(choices=[('fifo', 'FIFO (First In, First Out)'), ('weighted_avg', 'Weighted Average Cost')], default='weighted_avg', max_length=20)),
-                ('adjustment_account', models.ForeignKey(blank=True, help_text='Inventory adjustment gains/losses (default 6200)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='erp.account')),
-                ('cogs_account', models.ForeignKey(blank=True, help_text='DR on sales issue (default 5100)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='erp.account')),
-                ('company', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='inventory_valuation_config', to='erp.company')),
-                ('grni_account', models.ForeignKey(blank=True, help_text='Goods Received Not Invoiced (default 1400)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='erp.account')),
-                ('inventory_account', models.ForeignKey(blank=True, help_text='DR on receipt, CR on issue (default 1500)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='erp.account')),
-                ('write_off_account', models.ForeignKey(blank=True, help_text='Write-off / scrap expense (default 6300)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='erp.account')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("quantity", models.DecimalField(decimal_places=4, max_digits=12)),
+                ("unit_cost", models.DecimalField(decimal_places=4, default=0, max_digits=14)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "adjustment",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.stockadjustment"
+                    ),
+                ),
+                (
+                    "bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="adjustment_lines",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="adjustment_lines",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="adjustment_lines", to="erp.product"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Inventory Valuation Config',
-                'verbose_name_plural': 'Inventory Valuation Configs',
-            },
-        ),
-        migrations.CreateModel(
-            name='GoodsReceiptNote',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('grn_number', models.CharField(max_length=50, unique=True)),
-                ('receipt_date', models.DateField()),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled')], default='draft', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goods_receipts', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('purchase_order', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='goods_receipts', to='erp.purchaseorder')),
-                ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='goods_receipts', to='erp.supplier')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='goods_receipts', to='erp.warehouse')),
-            ],
-            options={
-                'verbose_name': 'Goods Receipt Note',
-                'verbose_name_plural': 'Goods Receipt Notes',
-                'ordering': ['-receipt_date', '-id'],
-            },
-        ),
-        migrations.CreateModel(
-            name='GoodsReceiptLine',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('quantity_ordered', models.DecimalField(decimal_places=4, default=0, max_digits=12)),
-                ('quantity_received', models.DecimalField(decimal_places=4, default=0, max_digits=12)),
-                ('quantity_accepted', models.DecimalField(decimal_places=4, default=0, help_text='Accepted after QC inspection', max_digits=12)),
-                ('quantity_rejected', models.DecimalField(decimal_places=4, default=0, max_digits=12)),
-                ('unit_cost', models.DecimalField(decimal_places=4, default=0, max_digits=14)),
-                ('notes', models.TextField(blank=True)),
-                ('bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='grn_lines', to='erp.warehousebin')),
-                ('grn', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.goodsreceiptnote')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='grn_lines', to='erp.lotbatch')),
-                ('po_line', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='grn_lines', to='erp.purchaseorderline')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='grn_lines', to='erp.product')),
-            ],
-            options={
-                'verbose_name': 'Goods Receipt Line',
-                'verbose_name_plural': 'Goods Receipt Lines',
-                'ordering': ['id'],
-            },
-        ),
-        migrations.CreateModel(
-            name='CycleCountLine',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('system_quantity', models.DecimalField(decimal_places=4, default=0, help_text='Quantity in the system at the time of count', max_digits=12)),
-                ('counted_quantity', models.DecimalField(blank=True, decimal_places=4, help_text='Actual physical count', max_digits=12, null=True)),
-                ('bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='cycle_count_lines', to='erp.warehousebin')),
-                ('cycle_count', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.cyclecount')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='cycle_count_lines', to='erp.lotbatch')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='cycle_count_lines', to='erp.product')),
-            ],
-            options={
-                'verbose_name': 'Cycle Count Line',
-                'verbose_name_plural': 'Cycle Count Lines',
-                'ordering': ['id'],
+                "verbose_name": "Stock Adjustment Line",
+                "verbose_name_plural": "Stock Adjustment Lines",
+                "ordering": ["id"],
             },
         ),
         migrations.AddField(
-            model_name='cyclecount',
-            name='warehouse',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='cycle_counts', to='erp.warehouse'),
+            model_name="stockadjustment",
+            name="warehouse",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="stock_adjustments", to="erp.warehouse"
+            ),
+        ),
+        migrations.CreateModel(
+            name="ShipmentNote",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("shipment_number", models.CharField(max_length=50, unique=True)),
+                ("shipment_date", models.DateField()),
+                ("carrier_name", models.CharField(blank=True, max_length=100)),
+                ("tracking_number", models.CharField(blank=True, max_length=100)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("draft", "Draft"),
+                            ("shipped", "Shipped"),
+                            ("delivered", "Delivered"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="draft",
+                        max_length=20,
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="shipments", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "customer",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="shipments",
+                        to="erp.customer",
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "pick_list",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="shipments",
+                        to="erp.picklist",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="shipments", to="erp.warehouse"
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Shipment Note",
+                "verbose_name_plural": "Shipment Notes",
+                "ordering": ["-shipment_date", "-id"],
+            },
+        ),
+        migrations.CreateModel(
+            name="ShipmentLine",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("quantity", models.DecimalField(decimal_places=4, max_digits=12)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="shipment_lines",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="shipment_lines", to="erp.product"
+                    ),
+                ),
+                (
+                    "shipment",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.shipmentnote"
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Shipment Line",
+                "verbose_name_plural": "Shipment Lines",
+                "ordering": ["id"],
+            },
+        ),
+        migrations.CreateModel(
+            name="PickListLine",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("quantity_requested", models.DecimalField(decimal_places=4, max_digits=12)),
+                ("quantity_picked", models.DecimalField(decimal_places=4, default=0, max_digits=12)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "from_bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="pick_lines",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="pick_lines",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "pick_list",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.picklist"
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="pick_lines", to="erp.product"
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Pick List Line",
+                "verbose_name_plural": "Pick List Lines",
+                "ordering": ["id"],
+            },
         ),
         migrations.AddField(
-            model_name='cyclecount',
-            name='zone',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='cycle_counts', to='erp.warehousezone'),
+            model_name="picklist",
+            name="warehouse",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="pick_lists", to="erp.warehouse"
+            ),
         ),
         migrations.CreateModel(
-            name='UnitOfMeasureConversion',
+            name="InventoryValuationConfig",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('factor', models.DecimalField(decimal_places=6, default=1, help_text='Multiply from_uom quantity by this factor to get to_uom quantity', max_digits=15)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='uom_conversions', to='erp.company')),
-                ('from_uom', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='conversions_from', to='erp.unitofmeasure')),
-                ('to_uom', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='conversions_to', to='erp.unitofmeasure')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "valuation_method",
+                    models.CharField(
+                        choices=[("fifo", "FIFO (First In, First Out)"), ("weighted_avg", "Weighted Average Cost")],
+                        default="weighted_avg",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "adjustment_account",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Inventory adjustment gains/losses (default 6200)",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="erp.account",
+                    ),
+                ),
+                (
+                    "cogs_account",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="DR on sales issue (default 5100)",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="erp.account",
+                    ),
+                ),
+                (
+                    "company",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="inventory_valuation_config",
+                        to="erp.company",
+                    ),
+                ),
+                (
+                    "grni_account",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Goods Received Not Invoiced (default 1400)",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="erp.account",
+                    ),
+                ),
+                (
+                    "inventory_account",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="DR on receipt, CR on issue (default 1500)",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="erp.account",
+                    ),
+                ),
+                (
+                    "write_off_account",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Write-off / scrap expense (default 6300)",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="erp.account",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'UoM Conversion',
-                'verbose_name_plural': 'UoM Conversions',
-                'unique_together': {('company', 'from_uom', 'to_uom')},
+                "verbose_name": "Inventory Valuation Config",
+                "verbose_name_plural": "Inventory Valuation Configs",
             },
         ),
         migrations.CreateModel(
-            name='StockMovement',
+            name="GoodsReceiptNote",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('movement_date', models.DateTimeField(default=django.utils.timezone.now)),
-                ('movement_type', models.CharField(choices=[('opening', 'Opening Balance'), ('purchase_receipt', 'Purchase Receipt'), ('return_in', 'Customer Return Inbound'), ('transfer_in', 'Transfer In'), ('adjustment_gain', 'Adjustment – Gain'), ('production_in', 'Production Output'), ('sales_issue', 'Sales Issue'), ('return_out', 'Supplier Return Outbound'), ('transfer_out', 'Transfer Out'), ('adjustment_loss', 'Adjustment – Loss'), ('write_off', 'Write-off / Scrap'), ('cycle_count', 'Cycle Count Adjustment')], max_length=30)),
-                ('quantity', models.DecimalField(decimal_places=4, max_digits=14, validators=[django.core.validators.MinValueValidator(Decimal('0.0001'))])),
-                ('unit_cost', models.DecimalField(decimal_places=4, default=0, max_digits=14)),
-                ('total_cost', models.DecimalField(decimal_places=4, default=0, max_digits=16)),
-                ('reference_type', models.CharField(blank=True, help_text='e.g. goods_receipt, stock_transfer, stock_adjustment, cycle_count, invoice', max_length=40)),
-                ('reference_id', models.PositiveIntegerField(blank=True, null=True)),
-                ('reference_number', models.CharField(blank=True, max_length=50)),
-                ('description', models.CharField(blank=True, max_length=500)),
-                ('bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='stock_movements', to='erp.warehousebin')),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_movements', to='erp.company')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='stock_movements', to='erp.lotbatch')),
-                ('performed_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='stock_movements', to=settings.AUTH_USER_MODEL)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_movements', to='erp.product')),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='stock_movements', to='erp.warehouse')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("grn_number", models.CharField(max_length=50, unique=True)),
+                ("receipt_date", models.DateField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("draft", "Draft"), ("confirmed", "Confirmed"), ("cancelled", "Cancelled")],
+                        default="draft",
+                        max_length=20,
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="goods_receipts", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "purchase_order",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="goods_receipts",
+                        to="erp.purchaseorder",
+                    ),
+                ),
+                (
+                    "supplier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="goods_receipts", to="erp.supplier"
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="goods_receipts", to="erp.warehouse"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Stock Movement',
-                'verbose_name_plural': 'Stock Movements',
-                'ordering': ['-movement_date', '-id'],
-                'indexes': [models.Index(fields=['company', 'product', 'movement_date'], name='erp_stockmo_company_7bfdd9_idx'), models.Index(fields=['company', 'warehouse', 'movement_date'], name='erp_stockmo_company_afc4c6_idx'), models.Index(fields=['reference_type', 'reference_id'], name='erp_stockmo_referen_367475_idx')],
+                "verbose_name": "Goods Receipt Note",
+                "verbose_name_plural": "Goods Receipt Notes",
+                "ordering": ["-receipt_date", "-id"],
             },
         ),
         migrations.CreateModel(
-            name='StockItem',
+            name="GoodsReceiptLine",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('on_hand', models.DecimalField(decimal_places=4, default=0, max_digits=14)),
-                ('allocated', models.DecimalField(decimal_places=4, default=0, help_text='Reserved for outbound orders', max_digits=14)),
-                ('in_transit', models.DecimalField(decimal_places=4, default=0, help_text='In-transit from another warehouse', max_digits=14)),
-                ('unit_cost', models.DecimalField(decimal_places=4, default=0, max_digits=14)),
-                ('bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='stock_items', to='erp.warehousebin')),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_items', to='erp.company')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='stock_items', to='erp.lotbatch')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_items', to='erp.product')),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_items', to='erp.warehouse')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("quantity_ordered", models.DecimalField(decimal_places=4, default=0, max_digits=12)),
+                ("quantity_received", models.DecimalField(decimal_places=4, default=0, max_digits=12)),
+                (
+                    "quantity_accepted",
+                    models.DecimalField(
+                        decimal_places=4, default=0, help_text="Accepted after QC inspection", max_digits=12
+                    ),
+                ),
+                ("quantity_rejected", models.DecimalField(decimal_places=4, default=0, max_digits=12)),
+                ("unit_cost", models.DecimalField(decimal_places=4, default=0, max_digits=14)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="grn_lines",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "grn",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.goodsreceiptnote"
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="grn_lines",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "po_line",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="grn_lines",
+                        to="erp.purchaseorderline",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="grn_lines", to="erp.product"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Stock Item',
-                'verbose_name_plural': 'Stock Items',
-                'ordering': ['product__sku', 'warehouse__code'],
-                'unique_together': {('company', 'product', 'warehouse', 'bin', 'lot')},
+                "verbose_name": "Goods Receipt Line",
+                "verbose_name_plural": "Goods Receipt Lines",
+                "ordering": ["id"],
             },
         ),
         migrations.CreateModel(
-            name='SerialNumber',
+            name="CycleCountLine",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('serial_number', models.CharField(max_length=100)),
-                ('status', models.CharField(choices=[('available', 'Available'), ('allocated', 'Allocated'), ('sold', 'Sold / Shipped'), ('quarantine', 'Quarantine'), ('returned', 'Returned'), ('scrapped', 'Scrapped')], default='available', max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('bin', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='serial_numbers', to='erp.warehousebin')),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='serial_numbers', to='erp.company')),
-                ('lot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='serial_numbers', to='erp.lotbatch')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='serial_numbers', to='erp.product')),
-                ('warehouse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='serial_numbers', to='erp.warehouse')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "system_quantity",
+                    models.DecimalField(
+                        decimal_places=4,
+                        default=0,
+                        help_text="Quantity in the system at the time of count",
+                        max_digits=12,
+                    ),
+                ),
+                (
+                    "counted_quantity",
+                    models.DecimalField(
+                        blank=True, decimal_places=4, help_text="Actual physical count", max_digits=12, null=True
+                    ),
+                ),
+                (
+                    "bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="cycle_count_lines",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "cycle_count",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.cyclecount"
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="cycle_count_lines",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="cycle_count_lines", to="erp.product"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Serial Number',
-                'verbose_name_plural': 'Serial Numbers',
-                'ordering': ['serial_number'],
-                'unique_together': {('company', 'product', 'serial_number')},
+                "verbose_name": "Cycle Count Line",
+                "verbose_name_plural": "Cycle Count Lines",
+                "ordering": ["id"],
+            },
+        ),
+        migrations.AddField(
+            model_name="cyclecount",
+            name="warehouse",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="cycle_counts", to="erp.warehouse"
+            ),
+        ),
+        migrations.AddField(
+            model_name="cyclecount",
+            name="zone",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="cycle_counts",
+                to="erp.warehousezone",
+            ),
+        ),
+        migrations.CreateModel(
+            name="UnitOfMeasureConversion",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "factor",
+                    models.DecimalField(
+                        decimal_places=6,
+                        default=1,
+                        help_text="Multiply from_uom quantity by this factor to get to_uom quantity",
+                        max_digits=15,
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="uom_conversions", to="erp.company"
+                    ),
+                ),
+                (
+                    "from_uom",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="conversions_from",
+                        to="erp.unitofmeasure",
+                    ),
+                ),
+                (
+                    "to_uom",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="conversions_to",
+                        to="erp.unitofmeasure",
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "UoM Conversion",
+                "verbose_name_plural": "UoM Conversions",
+                "unique_together": {("company", "from_uom", "to_uom")},
             },
         ),
         migrations.CreateModel(
-            name='ReorderRule',
+            name="StockMovement",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('reorder_point', models.DecimalField(decimal_places=2, default=0, help_text='Trigger reorder when available qty falls below this', max_digits=12)),
-                ('safety_stock', models.DecimalField(decimal_places=2, default=0, help_text='Minimum buffer stock to always keep on hand', max_digits=12)),
-                ('min_order_qty', models.DecimalField(decimal_places=2, default=1, help_text='Minimum quantity per purchase order line', max_digits=12)),
-                ('max_order_qty', models.DecimalField(decimal_places=2, default=0, help_text='Maximum quantity per order (0 = unlimited)', max_digits=12)),
-                ('lead_time_days', models.PositiveIntegerField(default=0, help_text='Expected supplier lead time')),
-                ('is_active', models.BooleanField(default=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reorder_rules', to='erp.company')),
-                ('preferred_supplier', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reorder_rules', to='erp.supplier')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reorder_rules', to='erp.product')),
-                ('warehouse', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reorder_rules', to='erp.warehouse')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("movement_date", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "movement_type",
+                    models.CharField(
+                        choices=[
+                            ("opening", "Opening Balance"),
+                            ("purchase_receipt", "Purchase Receipt"),
+                            ("return_in", "Customer Return Inbound"),
+                            ("transfer_in", "Transfer In"),
+                            ("adjustment_gain", "Adjustment – Gain"),
+                            ("production_in", "Production Output"),
+                            ("sales_issue", "Sales Issue"),
+                            ("return_out", "Supplier Return Outbound"),
+                            ("transfer_out", "Transfer Out"),
+                            ("adjustment_loss", "Adjustment – Loss"),
+                            ("write_off", "Write-off / Scrap"),
+                            ("cycle_count", "Cycle Count Adjustment"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                (
+                    "quantity",
+                    models.DecimalField(
+                        decimal_places=4,
+                        max_digits=14,
+                        validators=[django.core.validators.MinValueValidator(Decimal("0.0001"))],
+                    ),
+                ),
+                ("unit_cost", models.DecimalField(decimal_places=4, default=0, max_digits=14)),
+                ("total_cost", models.DecimalField(decimal_places=4, default=0, max_digits=16)),
+                (
+                    "reference_type",
+                    models.CharField(
+                        blank=True,
+                        help_text="e.g. goods_receipt, stock_transfer, stock_adjustment, cycle_count, invoice",
+                        max_length=40,
+                    ),
+                ),
+                ("reference_id", models.PositiveIntegerField(blank=True, null=True)),
+                ("reference_number", models.CharField(blank=True, max_length=50)),
+                ("description", models.CharField(blank=True, max_length=500)),
+                (
+                    "bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="stock_movements",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="stock_movements", to="erp.company"
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="stock_movements",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "performed_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="stock_movements",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="stock_movements", to="erp.product"
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="stock_movements", to="erp.warehouse"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Reorder Rule',
-                'verbose_name_plural': 'Reorder Rules',
-                'ordering': ['product__sku'],
-                'unique_together': {('company', 'product', 'warehouse')},
+                "verbose_name": "Stock Movement",
+                "verbose_name_plural": "Stock Movements",
+                "ordering": ["-movement_date", "-id"],
+                "indexes": [
+                    models.Index(fields=["company", "product", "movement_date"], name="erp_stockmo_company_7bfdd9_idx"),
+                    models.Index(
+                        fields=["company", "warehouse", "movement_date"], name="erp_stockmo_company_afc4c6_idx"
+                    ),
+                    models.Index(fields=["reference_type", "reference_id"], name="erp_stockmo_referen_367475_idx"),
+                ],
+            },
+        ),
+        migrations.CreateModel(
+            name="StockItem",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("on_hand", models.DecimalField(decimal_places=4, default=0, max_digits=14)),
+                (
+                    "allocated",
+                    models.DecimalField(
+                        decimal_places=4, default=0, help_text="Reserved for outbound orders", max_digits=14
+                    ),
+                ),
+                (
+                    "in_transit",
+                    models.DecimalField(
+                        decimal_places=4, default=0, help_text="In-transit from another warehouse", max_digits=14
+                    ),
+                ),
+                ("unit_cost", models.DecimalField(decimal_places=4, default=0, max_digits=14)),
+                (
+                    "bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="stock_items",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="stock_items", to="erp.company"
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="stock_items",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="stock_items", to="erp.product"
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="stock_items", to="erp.warehouse"
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Stock Item",
+                "verbose_name_plural": "Stock Items",
+                "ordering": ["product__sku", "warehouse__code"],
+                "unique_together": {("company", "product", "warehouse", "bin", "lot")},
+            },
+        ),
+        migrations.CreateModel(
+            name="SerialNumber",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("serial_number", models.CharField(max_length=100)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("available", "Available"),
+                            ("allocated", "Allocated"),
+                            ("sold", "Sold / Shipped"),
+                            ("quarantine", "Quarantine"),
+                            ("returned", "Returned"),
+                            ("scrapped", "Scrapped"),
+                        ],
+                        default="available",
+                        max_length=20,
+                    ),
+                ),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "bin",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="serial_numbers",
+                        to="erp.warehousebin",
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="serial_numbers", to="erp.company"
+                    ),
+                ),
+                (
+                    "lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="serial_numbers",
+                        to="erp.lotbatch",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="serial_numbers", to="erp.product"
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="serial_numbers",
+                        to="erp.warehouse",
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Serial Number",
+                "verbose_name_plural": "Serial Numbers",
+                "ordering": ["serial_number"],
+                "unique_together": {("company", "product", "serial_number")},
+            },
+        ),
+        migrations.CreateModel(
+            name="ReorderRule",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "reorder_point",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        help_text="Trigger reorder when available qty falls below this",
+                        max_digits=12,
+                    ),
+                ),
+                (
+                    "safety_stock",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        help_text="Minimum buffer stock to always keep on hand",
+                        max_digits=12,
+                    ),
+                ),
+                (
+                    "min_order_qty",
+                    models.DecimalField(
+                        decimal_places=2, default=1, help_text="Minimum quantity per purchase order line", max_digits=12
+                    ),
+                ),
+                (
+                    "max_order_qty",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        help_text="Maximum quantity per order (0 = unlimited)",
+                        max_digits=12,
+                    ),
+                ),
+                ("lead_time_days", models.PositiveIntegerField(default=0, help_text="Expected supplier lead time")),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="reorder_rules", to="erp.company"
+                    ),
+                ),
+                (
+                    "preferred_supplier",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="reorder_rules",
+                        to="erp.supplier",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="reorder_rules", to="erp.product"
+                    ),
+                ),
+                (
+                    "warehouse",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="reorder_rules", to="erp.warehouse"
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Reorder Rule",
+                "verbose_name_plural": "Reorder Rules",
+                "ordering": ["product__sku"],
+                "unique_together": {("company", "product", "warehouse")},
             },
         ),
     ]

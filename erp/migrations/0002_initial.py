@@ -6,1140 +6,2044 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('erp', '0001_initial'),
+        ("erp", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='taskcomment',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='task_comments', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='taskcomment',
-            name='task',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='erp.task'),
-        ),
-        migrations.AddField(
-            model_name='task',
-            name='assigned_to',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_tasks', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='task',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='task',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='task',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='task',
-            name='related_customer',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tasks', to='erp.customer'),
-        ),
-        migrations.AddField(
-            model_name='task',
-            name='related_lead',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tasks', to='erp.lead'),
-        ),
-        migrations.AddField(
-            model_name='task',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='systemsetting',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='system_settings', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='supplierpaymentallocation',
-            name='invoice',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payment_allocations', to='erp.supplierinvoice'),
-        ),
-        migrations.AddField(
-            model_name='supplierpaymentallocation',
-            name='payment',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='allocations', to='erp.supplierpayment'),
-        ),
-        migrations.AddField(
-            model_name='supplierpayment',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='supplier_payments', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='supplierpayment',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplierpayment',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='supplier_payments', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='supplierpayment',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplierpayment',
-            name='payment_method',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='supplier_payments', to='erp.paymentmethod'),
-        ),
-        migrations.AddField(
-            model_name='supplierpayment',
-            name='supplier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='payments', to='erp.supplier'),
-        ),
-        migrations.AddField(
-            model_name='supplierpayment',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoiceline',
-            name='account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='supplier_invoice_lines', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoiceline',
-            name='invoice',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.supplierinvoice'),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoiceline',
-            name='tax_rate',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='supplier_invoice_lines', to='erp.taxrate'),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoice',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='supplier_invoices', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoice',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoice',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='supplier_invoices', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoice',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoice',
-            name='purchase_order',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='supplier_invoices', to='erp.purchaseorder'),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoice',
-            name='supplier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='invoices', to='erp.supplier'),
-        ),
-        migrations.AddField(
-            model_name='supplierinvoice',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplierdocument',
-            name='supplier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='erp.supplier'),
-        ),
-        migrations.AddField(
-            model_name='suppliercontact',
-            name='supplier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='contacts', to='erp.supplier'),
-        ),
-        migrations.AddField(
-            model_name='supplier',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='suppliers', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='supplier',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplier',
-            name='currency',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='suppliers', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='supplier',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='supplier',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='category',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='services', to='erp.servicecategory'),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_pricings', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='service_pricings', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='expense_account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='expense_services', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='income_account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='income_services', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='tax_rate',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='service_pricings', to='erp.taxrate'),
-        ),
-        migrations.AddField(
-            model_name='servicepricing',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='servicepackage',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_packages', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='servicepackage',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='servicepackage',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='service_packages', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='servicepackage',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='servicepackage',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='servicecategory',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_categories', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='servicecategory',
-            name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='erp.servicecategory'),
-        ),
-        migrations.AddField(
-            model_name='sequence',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sequences', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='scheduledtask',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scheduled_tasks', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='reporttemplate',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='report_templates', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='quoteline',
-            name='quote',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.quote'),
-        ),
-        migrations.AddField(
-            model_name='quoteline',
-            name='service_pricing',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='quote_lines', to='erp.servicepricing'),
-        ),
-        migrations.AddField(
-            model_name='quoteline',
-            name='tax_rate',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='quote_lines', to='erp.taxrate'),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quotes', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='converted_to_invoice',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='source_quote', to='erp.invoice'),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='quotes', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='customer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='quotes', to='erp.customer'),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='lead',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='quotes', to='erp.lead'),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='prepared_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='prepared_quotes', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='quote',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='purchaseorderline',
-            name='purchase_order',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.purchaseorder'),
-        ),
-        migrations.AddField(
-            model_name='purchaseorderline',
-            name='tax_rate',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='po_lines', to='erp.taxrate'),
-        ),
-        migrations.AddField(
-            model_name='purchaseorder',
-            name='approved_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='approved_purchase_orders', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='purchaseorder',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='purchase_orders', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='purchaseorder',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='purchaseorder',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_orders', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='purchaseorder',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='purchaseorder',
-            name='supplier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='purchase_orders', to='erp.supplier'),
-        ),
-        migrations.AddField(
-            model_name='purchaseorder',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='pricetier',
-            name='service_pricing',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='price_tiers', to='erp.servicepricing'),
-        ),
-        migrations.AddField(
-            model_name='payroll',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='payroll',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='payrolls', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='payroll',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='payroll',
-            name='employee',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payrolls', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='payroll',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='paymentmethod',
-            name='account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='payment_methods', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='paymentmethod',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payment_methods', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='paymentallocation',
-            name='invoice',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payment_allocations', to='erp.invoice'),
-        ),
-        migrations.AddField(
-            model_name='paymentallocation',
-            name='payment',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='allocations', to='erp.payment'),
-        ),
-        migrations.AddField(
-            model_name='payment',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='payment',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='payment',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='payments', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='payment',
-            name='customer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='payments', to='erp.customer'),
-        ),
-        migrations.AddField(
-            model_name='payment',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='payment',
-            name='payment_method',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='payments', to='erp.paymentmethod'),
-        ),
-        migrations.AddField(
-            model_name='payment',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='packageitem',
-            name='package',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='erp.servicepackage'),
-        ),
-        migrations.AddField(
-            model_name='packageitem',
-            name='service_pricing',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='package_items', to='erp.servicepricing'),
-        ),
-        migrations.AddField(
-            model_name='notification',
-            name='content_type',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='contenttypes.contenttype'),
-        ),
-        migrations.AddField(
-            model_name='notification',
-            name='recipient',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='erp_notifications', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='leaverequest',
-            name='approved_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='approved_leaves', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='leaverequest',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='leaverequest',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='leaverequest',
-            name='employee',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='leave_requests', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='leaverequest',
-            name='leave_type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='requests', to='erp.leavetype'),
-        ),
-        migrations.AddField(
-            model_name='leaverequest',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='leadactivity',
-            name='lead',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='activities', to='erp.lead'),
-        ),
-        migrations.AddField(
-            model_name='leadactivity',
-            name='performed_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lead_activities', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='lead',
-            name='assigned_to',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_leads', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='lead',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='leads', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='lead',
-            name='converted_customer',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lead_origin', to='erp.customer'),
-        ),
-        migrations.AddField(
-            model_name='lead',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='lead',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='lead',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='kpivalue',
-            name='kpi',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='values', to='erp.kpi'),
-        ),
-        migrations.AddField(
-            model_name='kpi',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='kpis', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='journalentryline',
-            name='account',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='journal_lines', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='journalentryline',
-            name='journal_entry',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.journalentry'),
-        ),
-        migrations.AddField(
-            model_name='journalentry',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='journal_entries', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='journalentry',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='created_journal_entries', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='journalentry',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='journalentry',
-            name='fiscal_year',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='journal_entries', to='erp.fiscalyear'),
-        ),
-        migrations.AddField(
-            model_name='journalentry',
-            name='posted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='posted_journal_entries', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='journalentry',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='invoiceline',
-            name='account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='invoice_lines', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='invoiceline',
-            name='invoice',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lines', to='erp.invoice'),
-        ),
-        migrations.AddField(
-            model_name='invoiceline',
-            name='tax_rate',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='invoice_lines', to='erp.taxrate'),
-        ),
-        migrations.AddField(
-            model_name='invoice',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='invoices', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='invoice',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='invoice',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='invoices', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='invoice',
-            name='customer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='invoices', to='erp.customer'),
-        ),
-        migrations.AddField(
-            model_name='invoice',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='invoice',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='integrationlog',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='integration_logs', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='generatedreport',
-            name='generated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='generated_reports', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='generatedreport',
-            name='template',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='generated_reports', to='erp.reporttemplate'),
-        ),
-        migrations.AddField(
-            model_name='fiscalyear',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fiscal_years', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='fiscalyear',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='fiscalyear',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='fiscalyear',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='fileattachment',
-            name='content_type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype'),
-        ),
-        migrations.AddField(
-            model_name='fileattachment',
-            name='uploaded_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='erp_file_uploads', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='expensecategory',
-            name='account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='expense_categories', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='expensecategory',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='expense_categories', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='expensecategory',
-            name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='erp.expensecategory'),
-        ),
-        migrations.AddField(
-            model_name='expenseattachment',
-            name='expense',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='erp.expense'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='expenses', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='approved_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='approved_expenses', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='category',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='expenses', to='erp.expensecategory'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='expenses', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='expenses', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='employee',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='expenses', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='payment_method',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='expenses', to='erp.paymentmethod'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='supplier',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='expenses', to='erp.supplier'),
-        ),
-        migrations.AddField(
-            model_name='expense',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='employeedocument',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='employeedocument',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='employeedocument',
-            name='employee',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='employeedocument',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='branch',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='employees', to='erp.branch'),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='employees', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='employee_salaries', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='department',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='employees', to='erp.department'),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='reports_to',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subordinates', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='employee',
-            name='user',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='employee_profile', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='emailtemplate',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='email_templates', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='department',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='departments', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='department',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='department',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='department',
-            name='manager',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='managed_departments', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='department',
-            name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='erp.department'),
-        ),
-        migrations.AddField(
-            model_name='department',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='dashboardwidget',
-            name='dashboard',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='widgets', to='erp.dashboard'),
-        ),
-        migrations.AddField(
-            model_name='dashboard',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dashboards', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='dashboard',
-            name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owned_dashboards', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='customerinteraction',
-            name='customer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='interactions', to='erp.customer'),
-        ),
-        migrations.AddField(
-            model_name='customerinteraction',
-            name='handled_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='customer_interactions', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='customer',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='customers', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='customer',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='customer',
-            name='currency',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='customers', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='customer',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='customer',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='customer',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='erp_customer_profile', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='company',
-            name='base_currency',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='companies', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='company',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='company',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='company',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='campaignlead',
-            name='campaign',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='campaign_leads', to='erp.campaign'),
-        ),
-        migrations.AddField(
-            model_name='campaignlead',
-            name='lead',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='campaign_sources', to='erp.lead'),
-        ),
-        migrations.AddField(
-            model_name='campaign',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='campaigns', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='campaign',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='campaign',
-            name='currency',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='campaigns', to='erp.currency'),
-        ),
-        migrations.AddField(
-            model_name='campaign',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='campaign',
-            name='owner',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='owned_campaigns', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='campaign',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='branch',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='branches', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='branch',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='branch',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='branch',
-            name='manager',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='managed_branches', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='branch',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='auditlog',
-            name='content_type',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='contenttypes.contenttype'),
-        ),
-        migrations.AddField(
-            model_name='auditlog',
-            name='user',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='erp_audit_logs', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='attendance',
-            name='employee',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendances', to='erp.employee'),
-        ),
-        migrations.AddField(
-            model_name='account',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='accounts', to='erp.company'),
-        ),
-        migrations.AddField(
-            model_name='account',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='account',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='account',
-            name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='erp.account'),
-        ),
-        migrations.AddField(
-            model_name='account',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
+            model_name="taskcomment",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="task_comments", to=settings.AUTH_USER_MODEL
+            ),
+        ),
+        migrations.AddField(
+            model_name="taskcomment",
+            name="task",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="comments", to="erp.task"
+            ),
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="assigned_to",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="assigned_tasks",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="tasks", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="related_customer",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="tasks",
+                to="erp.customer",
+            ),
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="related_lead",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="tasks", to="erp.lead"
+            ),
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="systemsetting",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="system_settings", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpaymentallocation",
+            name="invoice",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="payment_allocations",
+                to="erp.supplierinvoice",
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpaymentallocation",
+            name="payment",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="allocations", to="erp.supplierpayment"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpayment",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="supplier_payments", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpayment",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpayment",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="supplier_payments", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpayment",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpayment",
+            name="payment_method",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="supplier_payments", to="erp.paymentmethod"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpayment",
+            name="supplier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="payments", to="erp.supplier"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierpayment",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoiceline",
+            name="account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="supplier_invoice_lines",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoiceline",
+            name="invoice",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.supplierinvoice"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoiceline",
+            name="tax_rate",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="supplier_invoice_lines",
+                to="erp.taxrate",
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoice",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="supplier_invoices", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoice",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoice",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="supplier_invoices", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoice",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoice",
+            name="purchase_order",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="supplier_invoices",
+                to="erp.purchaseorder",
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoice",
+            name="supplier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="invoices", to="erp.supplier"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierinvoice",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplierdocument",
+            name="supplier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="documents", to="erp.supplier"
+            ),
+        ),
+        migrations.AddField(
+            model_name="suppliercontact",
+            name="supplier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="contacts", to="erp.supplier"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplier",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="suppliers", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplier",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplier",
+            name="currency",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="suppliers",
+                to="erp.currency",
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplier",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="supplier",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="category",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="services",
+                to="erp.servicecategory",
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="service_pricings", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="service_pricings", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="expense_account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="expense_services",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="income_account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="income_services",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="tax_rate",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="service_pricings",
+                to="erp.taxrate",
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepricing",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepackage",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="service_packages", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepackage",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepackage",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="service_packages", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepackage",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicepackage",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicecategory",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="service_categories", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="servicecategory",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="children",
+                to="erp.servicecategory",
+            ),
+        ),
+        migrations.AddField(
+            model_name="sequence",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="sequences", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="scheduledtask",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="scheduled_tasks", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="reporttemplate",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="report_templates", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="quoteline",
+            name="quote",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.quote"),
+        ),
+        migrations.AddField(
+            model_name="quoteline",
+            name="service_pricing",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="quote_lines",
+                to="erp.servicepricing",
+            ),
+        ),
+        migrations.AddField(
+            model_name="quoteline",
+            name="tax_rate",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="quote_lines",
+                to="erp.taxrate",
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="quotes", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="converted_to_invoice",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="source_quote",
+                to="erp.invoice",
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="quotes", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="customer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="quotes", to="erp.customer"
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="lead",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="quotes",
+                to="erp.lead",
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="prepared_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="prepared_quotes",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="quote",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorderline",
+            name="purchase_order",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.purchaseorder"
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorderline",
+            name="tax_rate",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="po_lines",
+                to="erp.taxrate",
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorder",
+            name="approved_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="approved_purchase_orders",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorder",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="purchase_orders", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorder",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorder",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="purchase_orders", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorder",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorder",
+            name="supplier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="purchase_orders", to="erp.supplier"
+            ),
+        ),
+        migrations.AddField(
+            model_name="purchaseorder",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="pricetier",
+            name="service_pricing",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="price_tiers", to="erp.servicepricing"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payroll",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="payroll",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="payrolls", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payroll",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="payroll",
+            name="employee",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="payrolls", to="erp.employee"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payroll",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="paymentmethod",
+            name="account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="payment_methods",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="paymentmethod",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="payment_methods", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="paymentallocation",
+            name="invoice",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="payment_allocations", to="erp.invoice"
+            ),
+        ),
+        migrations.AddField(
+            model_name="paymentallocation",
+            name="payment",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="allocations", to="erp.payment"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payment",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="payments", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payment",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="payment",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="payments", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payment",
+            name="customer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="payments", to="erp.customer"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payment",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="payment",
+            name="payment_method",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="payments", to="erp.paymentmethod"
+            ),
+        ),
+        migrations.AddField(
+            model_name="payment",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="packageitem",
+            name="package",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="items", to="erp.servicepackage"
+            ),
+        ),
+        migrations.AddField(
+            model_name="packageitem",
+            name="service_pricing",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="package_items", to="erp.servicepricing"
+            ),
+        ),
+        migrations.AddField(
+            model_name="notification",
+            name="content_type",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="contenttypes.contenttype"
+            ),
+        ),
+        migrations.AddField(
+            model_name="notification",
+            name="recipient",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="erp_notifications",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="leaverequest",
+            name="approved_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="approved_leaves",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="leaverequest",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="leaverequest",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="leaverequest",
+            name="employee",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="leave_requests", to="erp.employee"
+            ),
+        ),
+        migrations.AddField(
+            model_name="leaverequest",
+            name="leave_type",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="requests", to="erp.leavetype"
+            ),
+        ),
+        migrations.AddField(
+            model_name="leaverequest",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="leadactivity",
+            name="lead",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="activities", to="erp.lead"
+            ),
+        ),
+        migrations.AddField(
+            model_name="leadactivity",
+            name="performed_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="lead_activities",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="lead",
+            name="assigned_to",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="assigned_leads",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="lead",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="leads", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="lead",
+            name="converted_customer",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="lead_origin",
+                to="erp.customer",
+            ),
+        ),
+        migrations.AddField(
+            model_name="lead",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="lead",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="lead",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="kpivalue",
+            name="kpi",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="values", to="erp.kpi"),
+        ),
+        migrations.AddField(
+            model_name="kpi",
+            name="company",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="kpis", to="erp.company"),
+        ),
+        migrations.AddField(
+            model_name="journalentryline",
+            name="account",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="journal_lines", to="erp.account"
+            ),
+        ),
+        migrations.AddField(
+            model_name="journalentryline",
+            name="journal_entry",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.journalentry"
+            ),
+        ),
+        migrations.AddField(
+            model_name="journalentry",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="journal_entries", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="journalentry",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="created_journal_entries",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="journalentry",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="journalentry",
+            name="fiscal_year",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="journal_entries",
+                to="erp.fiscalyear",
+            ),
+        ),
+        migrations.AddField(
+            model_name="journalentry",
+            name="posted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="posted_journal_entries",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="journalentry",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoiceline",
+            name="account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="invoice_lines",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoiceline",
+            name="invoice",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="erp.invoice"
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoiceline",
+            name="tax_rate",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="invoice_lines",
+                to="erp.taxrate",
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoice",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="invoices", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoice",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoice",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="invoices", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoice",
+            name="customer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="invoices", to="erp.customer"
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoice",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="invoice",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="integrationlog",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="integration_logs", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="generatedreport",
+            name="generated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="generated_reports",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="generatedreport",
+            name="template",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="generated_reports", to="erp.reporttemplate"
+            ),
+        ),
+        migrations.AddField(
+            model_name="fiscalyear",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="fiscal_years", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="fiscalyear",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="fiscalyear",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="fiscalyear",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="fileattachment",
+            name="content_type",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="contenttypes.contenttype"),
+        ),
+        migrations.AddField(
+            model_name="fileattachment",
+            name="uploaded_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="erp_file_uploads",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="expensecategory",
+            name="account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="expense_categories",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="expensecategory",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="expense_categories", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="expensecategory",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="children",
+                to="erp.expensecategory",
+            ),
+        ),
+        migrations.AddField(
+            model_name="expenseattachment",
+            name="expense",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="attachments", to="erp.expense"
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="expenses",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="approved_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="approved_expenses",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="category",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="expenses", to="erp.expensecategory"
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="expenses", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="expenses", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="employee",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="expenses",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="payment_method",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="expenses",
+                to="erp.paymentmethod",
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="supplier",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="expenses",
+                to="erp.supplier",
+            ),
+        ),
+        migrations.AddField(
+            model_name="expense",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="employeedocument",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="employeedocument",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="employeedocument",
+            name="employee",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="documents", to="erp.employee"
+            ),
+        ),
+        migrations.AddField(
+            model_name="employeedocument",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="branch",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="employees",
+                to="erp.branch",
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="employees", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="employee_salaries", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="department",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="employees",
+                to="erp.department",
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="reports_to",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subordinates",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="employee",
+            name="user",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="employee_profile",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="emailtemplate",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="email_templates", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="department",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="departments", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="department",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="department",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="department",
+            name="manager",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="managed_departments",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="department",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="children",
+                to="erp.department",
+            ),
+        ),
+        migrations.AddField(
+            model_name="department",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="dashboardwidget",
+            name="dashboard",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="widgets", to="erp.dashboard"
+            ),
+        ),
+        migrations.AddField(
+            model_name="dashboard",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="dashboards", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="dashboard",
+            name="owner",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="owned_dashboards",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="customerinteraction",
+            name="customer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="interactions", to="erp.customer"
+            ),
+        ),
+        migrations.AddField(
+            model_name="customerinteraction",
+            name="handled_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="customer_interactions",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="customer",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="customers", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="customer",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="customer",
+            name="currency",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="customers",
+                to="erp.currency",
+            ),
+        ),
+        migrations.AddField(
+            model_name="customer",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="customer",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="customer",
+            name="user",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="erp_customer_profile",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="company",
+            name="base_currency",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="companies", to="erp.currency"
+            ),
+        ),
+        migrations.AddField(
+            model_name="company",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="company",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="company",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaignlead",
+            name="campaign",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="campaign_leads", to="erp.campaign"
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaignlead",
+            name="lead",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="campaign_sources", to="erp.lead"
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaign",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="campaigns", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaign",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaign",
+            name="currency",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="campaigns",
+                to="erp.currency",
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaign",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaign",
+            name="owner",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="owned_campaigns",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="campaign",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="branch",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="branches", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="branch",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="branch",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="branch",
+            name="manager",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="managed_branches",
+                to="erp.employee",
+            ),
+        ),
+        migrations.AddField(
+            model_name="branch",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="auditlog",
+            name="content_type",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="contenttypes.contenttype"
+            ),
+        ),
+        migrations.AddField(
+            model_name="auditlog",
+            name="user",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="erp_audit_logs",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="attendance",
+            name="employee",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="attendances", to="erp.employee"
+            ),
+        ),
+        migrations.AddField(
+            model_name="account",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="accounts", to="erp.company"
+            ),
+        ),
+        migrations.AddField(
+            model_name="account",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="account",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.AddField(
+            model_name="account",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="children",
+                to="erp.account",
+            ),
+        ),
+        migrations.AddField(
+            model_name="account",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='systemsetting',
-            unique_together={('company', 'key')},
+            name="systemsetting",
+            unique_together={("company", "key")},
         ),
         migrations.AlterUniqueTogether(
-            name='supplierpaymentallocation',
-            unique_together={('payment', 'invoice')},
+            name="supplierpaymentallocation",
+            unique_together={("payment", "invoice")},
         ),
         migrations.AlterUniqueTogether(
-            name='supplierinvoice',
-            unique_together={('company', 'invoice_number')},
+            name="supplierinvoice",
+            unique_together={("company", "invoice_number")},
         ),
         migrations.AlterUniqueTogether(
-            name='sequence',
-            unique_together={('company', 'sequence_type')},
+            name="sequence",
+            unique_together={("company", "sequence_type")},
         ),
         migrations.AlterUniqueTogether(
-            name='payroll',
-            unique_together={('employee', 'period_start', 'period_end')},
+            name="payroll",
+            unique_together={("employee", "period_start", "period_end")},
         ),
         migrations.AlterUniqueTogether(
-            name='paymentallocation',
-            unique_together={('payment', 'invoice')},
+            name="paymentallocation",
+            unique_together={("payment", "invoice")},
         ),
         migrations.AlterUniqueTogether(
-            name='packageitem',
-            unique_together={('package', 'service_pricing')},
+            name="packageitem",
+            unique_together={("package", "service_pricing")},
         ),
         migrations.AddIndex(
-            model_name='notification',
-            index=models.Index(fields=['recipient', 'is_read', '-created_at'], name='erp_notific_recipie_c0fdeb_idx'),
+            model_name="notification",
+            index=models.Index(fields=["recipient", "is_read", "-created_at"], name="erp_notific_recipie_c0fdeb_idx"),
         ),
         migrations.AlterUniqueTogether(
-            name='kpivalue',
-            unique_together={('kpi', 'period_start', 'period_end')},
+            name="kpivalue",
+            unique_together={("kpi", "period_start", "period_end")},
         ),
         migrations.AlterUniqueTogether(
-            name='journalentry',
-            unique_together={('company', 'entry_number')},
+            name="journalentry",
+            unique_together={("company", "entry_number")},
         ),
         migrations.AddIndex(
-            model_name='integrationlog',
-            index=models.Index(fields=['company', 'integration_name', '-created_at'], name='erp_integra_company_9fb61e_idx'),
+            model_name="integrationlog",
+            index=models.Index(
+                fields=["company", "integration_name", "-created_at"], name="erp_integra_company_9fb61e_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='fileattachment',
-            index=models.Index(fields=['content_type', 'object_id'], name='erp_fileatt_content_375b14_idx'),
+            model_name="fileattachment",
+            index=models.Index(fields=["content_type", "object_id"], name="erp_fileatt_content_375b14_idx"),
         ),
         migrations.AlterUniqueTogether(
-            name='emailtemplate',
-            unique_together={('company', 'code')},
+            name="emailtemplate",
+            unique_together={("company", "code")},
         ),
         migrations.AlterUniqueTogether(
-            name='campaignlead',
-            unique_together={('campaign', 'lead')},
+            name="campaignlead",
+            unique_together={("campaign", "lead")},
         ),
         migrations.AddIndex(
-            model_name='auditlog',
-            index=models.Index(fields=['content_type', 'object_id'], name='erp_auditlo_content_a8b7a1_idx'),
+            model_name="auditlog",
+            index=models.Index(fields=["content_type", "object_id"], name="erp_auditlo_content_a8b7a1_idx"),
         ),
         migrations.AddIndex(
-            model_name='auditlog',
-            index=models.Index(fields=['user', 'created_at'], name='erp_auditlo_user_id_666d72_idx'),
+            model_name="auditlog",
+            index=models.Index(fields=["user", "created_at"], name="erp_auditlo_user_id_666d72_idx"),
         ),
         migrations.AddIndex(
-            model_name='auditlog',
-            index=models.Index(fields=['action', 'created_at'], name='erp_auditlo_action_ad0111_idx'),
+            model_name="auditlog",
+            index=models.Index(fields=["action", "created_at"], name="erp_auditlo_action_ad0111_idx"),
         ),
         migrations.AlterUniqueTogether(
-            name='attendance',
-            unique_together={('employee', 'date')},
+            name="attendance",
+            unique_together={("employee", "date")},
         ),
         migrations.AlterUniqueTogether(
-            name='account',
-            unique_together={('company', 'code')},
+            name="account",
+            unique_together={("company", "code")},
         ),
     ]

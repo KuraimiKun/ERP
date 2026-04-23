@@ -68,8 +68,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result =
-          await _authService.loginWithRoleDetection(email, password);
+      final result = await _authService.loginWithRoleDetection(email, password);
       if (result is AdminLoginResult) {
         _admin = result.admin;
         _role = result.admin.role;

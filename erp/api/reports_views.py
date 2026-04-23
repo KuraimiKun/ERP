@@ -38,27 +38,27 @@ from .permissions import IsCompanyUser
 def _get_user_company(request: Request):
     """Return the request user's company or raise 403 — mirrors ``ERPBaseViewSet``."""
     user = request.user
-    if hasattr(user, 'employee_profile') and user.employee_profile:
+    if hasattr(user, "employee_profile") and user.employee_profile:
         return user.employee_profile.company
-    raise PermissionDenied('No employee profile found for this user.')
+    raise PermissionDenied("No employee profile found for this user.")
 
 
 def _parse_iso_date(raw: str, field: str) -> _date:
     try:
         return _date.fromisoformat(raw)
     except (TypeError, ValueError):
-        raise ValidationError({field: f'Invalid date; expected YYYY-MM-DD, got {raw!r}'})
+        raise ValidationError({field: f"Invalid date; expected YYYY-MM-DD, got {raw!r}"})
 
 
 def _resolve_period(request: Request, company) -> tuple[_date, _date]:
     """Resolve (start, end) from ``?start=&end=`` or current fiscal year."""
-    start_raw = request.query_params.get('start')
-    end_raw = request.query_params.get('end')
+    start_raw = request.query_params.get("start")
+    end_raw = request.query_params.get("end")
     if start_raw and end_raw:
-        start = _parse_iso_date(start_raw, 'start')
-        end = _parse_iso_date(end_raw, 'end')
+        start = _parse_iso_date(start_raw, "start")
+        end = _parse_iso_date(end_raw, "end")
         if start > end:
-            raise ValidationError({'start': 'start must be on or before end'})
+            raise ValidationError({"start": "start must be on or before end"})
         return start, end
 
     today = _date.today()
@@ -69,15 +69,16 @@ def _resolve_period(request: Request, company) -> tuple[_date, _date]:
 
 
 def _resolve_as_of(request: Request, company) -> _date:
-    raw = request.query_params.get('as_of')
+    raw = request.query_params.get("as_of")
     if raw:
-        return _parse_iso_date(raw, 'as_of')
+        return _parse_iso_date(raw, "as_of")
     # Fall back to the end of the current period.
     _, end = _resolve_period(request, company)
     return end
 
 
 # ── Serialization helpers ──────────────────────────────────────────────────
+
 
 def _serialize_decimal(value: Any) -> Any:
     """Ensure Decimal round-trips cleanly through the default JSON encoder."""
@@ -98,6 +99,7 @@ def _serialize(node: Any) -> Any:
 
 # ── Query parameter serializers (for schema/docs) ──────────────────────────
 
+
 class _PeriodQuerySerializer(serializers.Serializer):
     """Documents the accepted query parameters for period-based reports."""
 
@@ -110,6 +112,7 @@ class _AsOfQuerySerializer(serializers.Serializer):
 
 
 # ── API endpoints ──────────────────────────────────────────────────────────
+
 
 class _BaseReportView(APIView):
     permission_classes = [IsAuthenticated, IsCompanyUser]

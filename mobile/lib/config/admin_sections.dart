@@ -63,9 +63,10 @@ String _money(dynamic v, Map<String, dynamic> _) {
   final abs = d.abs();
   final intPart = abs.truncate();
   final frac = abs - intPart;
-  final intStr = intPart
-      .toString()
-      .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => ',');
+  final intStr = intPart.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (m) => ',',
+  );
   final fracStr = frac > 0 ? frac.toStringAsFixed(2).substring(1) : '';
   return '$sign$intStr$fracStr';
 }

@@ -39,8 +39,9 @@ class _AdminListScreenState extends State<AdminListScreen> {
       AdminApiService(context.read<ApiService>()),
       endpoint: widget.section.endpoint,
     );
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _provider.load(reset: true));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _provider.load(reset: true),
+    );
     _scrollCtrl.addListener(_onScroll);
   }
 
@@ -103,10 +104,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
       return const _SkeletonList();
     }
     if (p.error != null && p.items.isEmpty) {
-      return _ErrorState(
-        error: p.error!,
-        onRetry: () => p.load(reset: true),
-      );
+      return _ErrorState(error: p.error!, onRetry: () => p.load(reset: true));
     }
     if (p.items.isEmpty) {
       return const _EmptyState();
@@ -199,8 +197,7 @@ class _Blob extends StatelessWidget {
   final Color color;
   final double size;
   final double opacity;
-  const _Blob(
-      {required this.color, required this.size, required this.opacity});
+  const _Blob({required this.color, required this.size, required this.opacity});
 
   @override
   Widget build(BuildContext context) {
@@ -260,9 +257,7 @@ class _GlassHeader extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(16, 14, 16, compact ? 10 : 16),
           decoration: BoxDecoration(
             color: glassBg,
-            border: Border(
-              bottom: BorderSide(color: sem.borderSoft),
-            ),
+            border: Border(bottom: BorderSide(color: sem.borderSoft)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -278,7 +273,8 @@ class _GlassHeader extends StatelessWidget {
               SizedBox(height: compact ? 0 : 12),
               _SearchField(
                 controller: controller,
-                hintText: section.searchHint ??
+                hintText:
+                    section.searchHint ??
                     '${AppLocalizations.of(context)?.search ?? 'Search'} ${section.title.toLowerCase()}…',
                 onSubmit: onSubmit,
                 onClear: onClear,
@@ -292,7 +288,10 @@ class _GlassHeader extends StatelessWidget {
   }
 
   Widget _buildFullTitle(
-      BuildContext context, ThemeData theme, AppSemanticColors sem) {
+    BuildContext context,
+    ThemeData theme,
+    AppSemanticColors sem,
+  ) {
     return Row(
       children: [
         _IconChip(icon: section.icon, accent: theme.colorScheme.primary),
@@ -577,10 +576,7 @@ class _CardState extends State<_Card> {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              accent,
-                              accent.withValues(alpha: 0.4),
-                            ],
+                            colors: [accent, accent.withValues(alpha: 0.4)],
                           ),
                         ),
                       ),
@@ -590,8 +586,7 @@ class _CardState extends State<_Card> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -609,8 +604,7 @@ class _CardState extends State<_Card> {
                                 const SizedBox(height: 3),
                                 Text(
                                   subtitle,
-                                  style:
-                                      theme.textTheme.bodySmall?.copyWith(
+                                  style: theme.textTheme.bodySmall?.copyWith(
                                     color: sem.textSub,
                                     height: 1.3,
                                   ),
@@ -683,8 +677,7 @@ class _CardState extends State<_Card> {
     }
   }
 
-  _BadgeTone _toneFor(
-      String? trailing, AppSemanticColors sem, Color fallback) {
+  _BadgeTone _toneFor(String? trailing, AppSemanticColors sem, Color fallback) {
     if (trailing == null || trailing == '—') {
       return _BadgeTone(fallback, sem.surfaceAlt);
     }
@@ -739,10 +732,10 @@ class _Badge extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: tone.fg,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
-            ),
+          color: tone.fg,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.2,
+        ),
       ),
     );
   }
@@ -774,10 +767,10 @@ class _Avatar extends StatelessWidget {
       child: Text(
         _initials(label),
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: accent,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.4,
-            ),
+          color: accent,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.4,
+        ),
       ),
     );
   }
@@ -785,14 +778,14 @@ class _Avatar extends StatelessWidget {
   String _initials(String s) {
     final clean = s.trim();
     if (clean.isEmpty) return '•';
-    final parts =
-        clean.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts = clean
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return '•';
     if (parts.length == 1) {
       final p = parts.first;
-      return p.length >= 2
-          ? p.substring(0, 2).toUpperCase()
-          : p.toUpperCase();
+      return p.length >= 2 ? p.substring(0, 2).toUpperCase() : p.toUpperCase();
     }
     return (parts.first.characters.first + parts.last.characters.first)
         .toUpperCase();
@@ -897,11 +890,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
               return LinearGradient(
                 begin: Alignment(-1 + t * 2, 0),
                 end: Alignment(1 + t * 2, 0),
-                colors: [
-                  sem.surfaceAlt,
-                  sem.borderSoft,
-                  sem.surfaceAlt,
-                ],
+                colors: [sem.surfaceAlt, sem.borderSoft, sem.surfaceAlt],
                 stops: const [0.35, 0.5, 0.65],
               ).createShader(rect);
             },
@@ -932,8 +921,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
     );
   }
 
-  Widget _block(double w, double h,
-      {double radius = 6, required Color color}) {
+  Widget _block(double w, double h, {double radius = 6, required Color color}) {
     return Container(
       width: w,
       height: h,
@@ -969,8 +957,11 @@ class _ErrorState extends StatelessWidget {
               shape: BoxShape.circle,
               color: sem.dangerContainer,
             ),
-            child: Icon(Icons.error_outline_rounded,
-                size: 40, color: sem.danger),
+            child: Icon(
+              Icons.error_outline_rounded,
+              size: 40,
+              color: sem.danger,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -1013,21 +1004,24 @@ class _EmptyState extends StatelessWidget {
                 ],
               ),
             ),
-            child: Icon(Icons.inbox_rounded,
-                size: 42, color: theme.colorScheme.primary),
+            child: Icon(
+              Icons.inbox_rounded,
+              size: 42,
+              color: theme.colorScheme.primary,
+            ),
           ),
           const SizedBox(height: 14),
           Text(
             AppLocalizations.of(context)?.noResults ?? 'Nothing here yet',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             AppLocalizations.of(context)?.noData ??
                 'New records will appear in this list.',
-            style:
-                theme.textTheme.bodySmall?.copyWith(color: sem.textMuted),
+            style: theme.textTheme.bodySmall?.copyWith(color: sem.textMuted),
           ),
         ],
       ),

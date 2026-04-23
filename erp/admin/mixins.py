@@ -36,7 +36,7 @@ class CompanyIsolatedAdmin(admin.ModelAdmin):
     * Staff without an employee profile → empty queryset (safe default).
     """
 
-    company_lookup: str = 'company'
+    company_lookup: str = "company"
 
     # ── company resolution ────────────────────────────────────────────────────
 
@@ -60,9 +60,9 @@ class CompanyIsolatedAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         company = self._get_company(request)
-        if company is None:       # superuser — see everything
+        if company is None:  # superuser — see everything
             return qs
-        if company is _UNSET:     # staff with no company — see nothing
+        if company is _UNSET:  # staff with no company — see nothing
             return qs.none()
         return qs.filter(**{self.company_lookup: company})
 
@@ -71,12 +71,7 @@ class CompanyIsolatedAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             company = self._get_company(request)
-            if (
-                company is not None
-                and company is not _UNSET
-                and hasattr(obj, 'company_id')
-                and not obj.company_id
-            ):
+            if company is not None and company is not _UNSET and hasattr(obj, "company_id") and not obj.company_id:
                 obj.company = company
         super().save_model(request, obj, form, change)
 
@@ -86,9 +81,9 @@ class CompanyIsolatedAdmin(admin.ModelAdmin):
         company = self._get_company(request)
         if company is not None and company is not _UNSET:
             related_model = db_field.related_model
-            if hasattr(related_model, 'company'):
+            if hasattr(related_model, "company"):
                 kwargs.setdefault(
-                    'queryset',
+                    "queryset",
                     related_model._default_manager.filter(company=company),
                 )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
@@ -115,9 +110,9 @@ class CompanyIsolatedInline(admin.TabularInline):
         company = self._get_company(request)
         if company is not None and company is not _UNSET:
             related_model = db_field.related_model
-            if hasattr(related_model, 'company'):
+            if hasattr(related_model, "company"):
                 kwargs.setdefault(
-                    'queryset',
+                    "queryset",
                     related_model._default_manager.filter(company=company),
                 )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)

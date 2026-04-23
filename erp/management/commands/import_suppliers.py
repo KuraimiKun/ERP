@@ -43,19 +43,26 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--tenant", type=str, default=None,
+            "--tenant",
+            type=str,
+            default=None,
             help="Tenant DB name. Defaults to first active tenant.",
         )
         parser.add_argument(
-            "--company-id", type=int, default=None,
+            "--company-id",
+            type=int,
+            default=None,
             help="Company ID. Defaults to first company.",
         )
         parser.add_argument(
-            "--limit", type=int, default=None,
+            "--limit",
+            type=int,
+            default=None,
             help="Max number of purchase orders to import.",
         )
         parser.add_argument(
-            "--clear", action="store_true",
+            "--clear",
+            action="store_true",
             help="Delete previously imported supplier/PO data before importing.",
         )
 
@@ -70,15 +77,12 @@ class Command(BaseCommand):
             tenant_db = TenantDatabase.objects.filter(status="active").first()
             if not tenant_db:
                 raise CommandError("No active tenant. Pass --tenant <name>.")
-            self.stdout.write(self.style.WARNING(
-                f"No --tenant given; using first active tenant: {tenant_db.name}"
-            ))
+            self.stdout.write(self.style.WARNING(f"No --tenant given; using first active tenant: {tenant_db.name}"))
         else:
             try:
                 tenant_db = TenantDatabase.objects.get(name=tenant_name)
             except TenantDatabase.DoesNotExist:
-                avail = list(TenantDatabase.objects.filter(status="active")
-                             .values_list("name", flat=True))
+                avail = list(TenantDatabase.objects.filter(status="active").values_list("name", flat=True))
                 raise CommandError(f"Tenant '{tenant_name}' not found. Available: {avail}")
         return add_tenant_database(tenant_db)
 
@@ -133,15 +137,15 @@ class Command(BaseCommand):
     def _ensure_currency(self):
         cur, _ = Currency.objects.using(self.db).get_or_create(
             code="USD",
-            defaults={"name": "US Dollar", "symbol": "$",
-                       "is_base": True, "exchange_rate": 1},
+            defaults={"name": "US Dollar", "symbol": "$", "is_base": True, "exchange_rate": 1},
         )
         return cur
 
     def _get_employees(self):
         emps = list(
             Employee.objects.using(self.db).filter(
-                company=self.company, employment_status='active',
+                company=self.company,
+                employment_status="active",
             )[:50]
         )
         return emps if emps else None
@@ -149,12 +153,8 @@ class Command(BaseCommand):
     def _clear_data(self):
         self.stdout.write(self.style.WARNING("Clearing previously imported supplier/PO data …"))
         # Lines & invoices cascade from POs
-        cnt_po = PurchaseOrder.all_objects.using(self.db).filter(
-            po_number__startswith="PO-"
-        ).delete()[0]
-        cnt_sup = Supplier.all_objects.using(self.db).filter(
-            supplier_id__startswith="SUP-"
-        ).delete()[0]
+        cnt_po = PurchaseOrder.all_objects.using(self.db).filter(po_number__startswith="PO-").delete()[0]
+        cnt_sup = Supplier.all_objects.using(self.db).filter(supplier_id__startswith="SUP-").delete()[0]
         self.stdout.write(f"  POs deleted (cascade): {cnt_po}")
         self.stdout.write(f"  Suppliers deleted:     {cnt_sup}")
 
@@ -162,16 +162,14 @@ class Command(BaseCommand):
     def _import_suppliers(self, df):
         """Import suppliers, return {csv_supplier_id: Supplier instance}."""
         existing = set(
-            Supplier.objects.using(self.db)
-            .filter(supplier_id__startswith="SUP-")
-            .values_list("supplier_id", flat=True)
+            Supplier.objects.using(self.db).filter(supplier_id__startswith="SUP-").values_list("supplier_id", flat=True)
         )
         supplier_map = {}
         created = 0
         skipped = 0
 
         for _, row in df.iterrows():
-            sid = row['supplier_id']
+            sid = row["supplier_id"]
             if sid in existing:
                 supplier_map[sid] = Supplier.objects.using(self.db).get(supplier_id=sid)
                 skipped += 1
@@ -180,13 +178,13 @@ class Command(BaseCommand):
             sup = Supplier(
                 company=self.company,
                 supplier_id=sid,
-                supplier_type=row['supplier_type'],
-                name=row['name'],
-                city=row.get('city', ''),
-                country='Oman',
-                payment_terms=int(row.get('payment_terms', 30)),
-                rating=int(row.get('rating', 3)),
-                credit_limit=Decimal(str(row.get('avg_amount', 5000))) * 10,
+                supplier_type=row["supplier_type"],
+                name=row["name"],
+                city=row.get("city", ""),
+                country="Oman",
+                payment_terms=int(row.get("payment_terms", 30)),
+                rating=int(row.get("rating", 3)),
+                credit_limit=Decimal(str(row.get("avg_amount", 5000))) * 10,
                 currency=self.currency,
                 is_active=True,
                 email=f"{sid.lower().replace('-', '')}@example.com",
@@ -202,9 +200,7 @@ class Command(BaseCommand):
     # ==================================================================
     def _import_purchase_orders(self, df, supplier_map):
         existing = set(
-            PurchaseOrder.objects.using(self.db)
-            .filter(po_number__startswith="PO-")
-            .values_list("po_number", flat=True)
+            PurchaseOrder.objects.using(self.db).filter(po_number__startswith="PO-").values_list("po_number", flat=True)
         )
 
         created = 0
@@ -212,42 +208,48 @@ class Command(BaseCommand):
         lines_created = 0
 
         for _, row in df.iterrows():
-            po_num = row['po_number']
+            po_num = row["po_number"]
             if po_num in existing:
                 skipped += 1
                 continue
 
-            supplier = supplier_map.get(row['supplier_id'])
+            supplier = supplier_map.get(row["supplier_id"])
             if not supplier:
                 skipped += 1
                 continue
 
             # Map CSV status to model Status choices
             status_map = {
-                'draft': 'draft', 'pending': 'pending', 'approved': 'approved',
-                'sent': 'sent', 'partial': 'partial', 'received': 'received',
-                'cancelled': 'cancelled',
+                "draft": "draft",
+                "pending": "pending",
+                "approved": "approved",
+                "sent": "sent",
+                "partial": "partial",
+                "received": "received",
+                "cancelled": "cancelled",
             }
-            status = status_map.get(row['status'], 'draft')
+            status = status_map.get(row["status"], "draft")
 
             po = PurchaseOrder(
                 company=self.company,
                 supplier=supplier,
                 po_number=po_num,
-                po_date=pd.to_datetime(row['order_date']).date(),
-                expected_date=pd.to_datetime(row['expected_date']).date() if pd.notna(row.get('expected_date')) else None,
+                po_date=pd.to_datetime(row["order_date"]).date(),
+                expected_date=pd.to_datetime(row["expected_date"]).date()
+                if pd.notna(row.get("expected_date"))
+                else None,
                 currency=self.currency,
-                subtotal=Decimal(str(row.get('subtotal', 0))),
-                tax_amount=Decimal(str(row.get('tax_amount', 0))),
-                total_amount=Decimal(str(row.get('total_amount', 0))),
-                paid_amount=Decimal(str(row.get('paid_amount', 0))),
-                balance_due=Decimal(str(row.get('balance_due', 0))),
+                subtotal=Decimal(str(row.get("subtotal", 0))),
+                tax_amount=Decimal(str(row.get("tax_amount", 0))),
+                total_amount=Decimal(str(row.get("total_amount", 0))),
+                paid_amount=Decimal(str(row.get("paid_amount", 0))),
+                balance_due=Decimal(str(row.get("balance_due", 0))),
                 status=status,
                 notes=f"Imported from synthetic dataset. Lead time: {row.get('lead_time_days', '')} days",
             )
 
             # Set approved_by for approved+ orders
-            if status in ('approved', 'sent', 'partial', 'received') and self.employees:
+            if status in ("approved", "sent", "partial", "received") and self.employees:
                 po.approved_by = random.choice(self.employees)
                 po.approval_date = timezone.now()
 
@@ -255,17 +257,17 @@ class Command(BaseCommand):
             created += 1
 
             # Create PO lines
-            n_lines = int(row.get('n_lines', 1))
-            remaining = Decimal(str(row.get('subtotal', 0)))
+            n_lines = int(row.get("n_lines", 1))
+            remaining = Decimal(str(row.get("subtotal", 0)))
             for i in range(n_lines):
                 if i == n_lines - 1:
                     line_total = remaining
                 else:
-                    line_total = (remaining / (n_lines - i)).quantize(Decimal('0.01'))
+                    line_total = (remaining / (n_lines - i)).quantize(Decimal("0.01"))
                 remaining -= line_total
 
                 qty = Decimal(str(random.randint(1, 20)))
-                unit_price = (line_total / qty).quantize(Decimal('0.01')) if qty else line_total
+                unit_price = (line_total / qty).quantize(Decimal("0.01")) if qty else line_total
 
                 pol = PurchaseOrderLine(
                     purchase_order=po,
@@ -273,9 +275,9 @@ class Command(BaseCommand):
                     quantity=qty,
                     unit_price=unit_price,
                     line_total=line_total,
-                    tax_amount=(line_total * Decimal('0.05')).quantize(Decimal('0.01')),
+                    tax_amount=(line_total * Decimal("0.05")).quantize(Decimal("0.01")),
                 )
-                if status in ('received', 'partial') and i == 0:
+                if status in ("received", "partial") and i == 0:
                     pol.received_quantity = qty
                 pol.save(using=self.db)
                 lines_created += 1
@@ -288,15 +290,9 @@ class Command(BaseCommand):
 
     # ==================================================================
     def _print_summary(self):
-        suppliers = Supplier.objects.using(self.db).filter(
-            company=self.company, supplier_id__startswith="SUP-"
-        ).count()
-        pos = PurchaseOrder.objects.using(self.db).filter(
-            company=self.company, po_number__startswith="PO-"
-        ).count()
-        lines = PurchaseOrderLine.objects.using(self.db).filter(
-            purchase_order__po_number__startswith="PO-"
-        ).count()
+        suppliers = Supplier.objects.using(self.db).filter(company=self.company, supplier_id__startswith="SUP-").count()
+        pos = PurchaseOrder.objects.using(self.db).filter(company=self.company, po_number__startswith="PO-").count()
+        lines = PurchaseOrderLine.objects.using(self.db).filter(purchase_order__po_number__startswith="PO-").count()
 
         self.stdout.write("\n  Summary:")
         self.stdout.write(f"    Suppliers:         {suppliers}")

@@ -23,19 +23,16 @@ class DefaultDbTokenAuthentication(TokenAuthentication):
     def authenticate_credentials(self, key):
         model = self.get_model()
         try:
-            token = (
-                model.objects
-                .using('default')
-                .select_related('user')
-                .get(key=key)
-            )
+            token = model.objects.using("default").select_related("user").get(key=key)
         except model.DoesNotExist:
             from rest_framework import exceptions
-            raise exceptions.AuthenticationFailed('Invalid token.')
+
+            raise exceptions.AuthenticationFailed("Invalid token.")
 
         if not token.user.is_active:
             from rest_framework import exceptions
-            raise exceptions.AuthenticationFailed('User inactive or deleted.')
+
+            raise exceptions.AuthenticationFailed("User inactive or deleted.")
 
         return (token.user, token)
 
@@ -47,7 +44,7 @@ class IsCompanyUser(BasePermission):
     tenant context is always well-defined before accessing company data.
     """
 
-    message = 'Your account is not associated with any company.'
+    message = "Your account is not associated with any company."
 
     def has_permission(self, request, view):
         if not (request.user and request.user.is_authenticated):
@@ -55,7 +52,7 @@ class IsCompanyUser(BasePermission):
         # Primary: user has an employee profile linked to a company
         try:
             if (
-                hasattr(request.user, 'employee_profile')
+                hasattr(request.user, "employee_profile")
                 and request.user.employee_profile is not None
                 and request.user.employee_profile.company_id is not None
             ):
@@ -64,6 +61,7 @@ class IsCompanyUser(BasePermission):
             pass
         # Fallback: user is the company owner (created_by), matching get_user_company()
         from erp.models import Company
+
         return Company.objects.filter(created_by=request.user).exists()
 
 
@@ -74,14 +72,14 @@ class IsAIEnabled(BasePermission):
     companies that have disabled AI or have no API key cannot access them.
     """
 
-    message = 'AI features are not enabled for your company.'
+    message = "AI features are not enabled for your company."
 
     def has_permission(self, request, view):
         if not (request.user and request.user.is_authenticated):
             return False
         try:
             company = request.user.employee_profile.company
-            return bool(getattr(company, 'ai_enabled', False))
+            return bool(getattr(company, "ai_enabled", False))
         except AttributeError:
             return False
 
@@ -96,9 +94,9 @@ class IsFinanceManager(BasePermission):
     role name to match your actual role taxonomy if it differs.
     """
 
-    SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
-    FINANCE_ROLES = frozenset({'finance_manager', 'cfo', 'accountant', 'admin'})
-    message = 'Finance write access requires the Finance Manager role.'
+    SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
+    FINANCE_ROLES = frozenset({"finance_manager", "cfo", "accountant", "admin"})
+    message = "Finance write access requires the Finance Manager role."
 
     def has_permission(self, request, view):
         if not (request.user and request.user.is_authenticated):
@@ -106,7 +104,7 @@ class IsFinanceManager(BasePermission):
         if request.method in self.SAFE_METHODS:
             return True
         try:
-            role = getattr(request.user.employee_profile, 'role', '') or ''
+            role = getattr(request.user.employee_profile, "role", "") or ""
             return role.lower() in self.FINANCE_ROLES or request.user.is_staff
         except AttributeError:
             return request.user.is_staff
@@ -115,7 +113,7 @@ class IsFinanceManager(BasePermission):
 class IsAdminOrReadOnly(BasePermission):
     """Read access for all authenticated users; write access for staff only."""
 
-    SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+    SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
 
     def has_permission(self, request, view):
         if not (request.user and request.user.is_authenticated):
@@ -139,11 +137,8 @@ class IsCompanyAdmin(BasePermission):
     which tenant DB the current request is routed to.
     """
 
-    ADMIN_ROLES = frozenset({'owner', 'admin'})
-    message = (
-        'Admin access required. Your account is not assigned the owner or '
-        'admin role on this tenant.'
-    )
+    ADMIN_ROLES = frozenset({"owner", "admin"})
+    message = "Admin access required. Your account is not assigned the owner or admin role on this tenant."
 
     def has_permission(self, request, view):
         user = request.user
@@ -158,6 +153,7 @@ class IsCompanyAdmin(BasePermission):
         # for it.  An ``Employee`` is NOT required — tenant owners often
         # manage the company without being employed by it.
         from tenants.models import DatabaseAssignment
+
         return DatabaseAssignment.objects.filter(
             user=user,
             role__in=self.ADMIN_ROLES,

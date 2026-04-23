@@ -29,12 +29,12 @@ _local = threading.local()
 
 # Accept only short, ASCII, alnum + dash/underscore IDs.  Rejects anything that
 # could cause log-injection (newlines, control chars, overly long strings).
-_VALID_ID_RE = re.compile(r'^[A-Za-z0-9_-]{1,64}$')
+_VALID_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
 def get_request_id() -> str:
     """Return the request id for the current thread, or ``'-'`` if none set."""
-    return getattr(_local, 'request_id', '-')
+    return getattr(_local, "request_id", "-")
 
 
 def _set_request_id(value: str) -> None:
@@ -42,21 +42,21 @@ def _set_request_id(value: str) -> None:
 
 
 def _clear_request_id() -> None:
-    if hasattr(_local, 'request_id'):
+    if hasattr(_local, "request_id"):
         del _local.request_id
 
 
 class RequestIDMiddleware:
     """Middleware that attaches a request id to each request/response."""
 
-    HEADER = 'HTTP_X_REQUEST_ID'
-    RESPONSE_HEADER = 'X-Request-ID'
+    HEADER = "HTTP_X_REQUEST_ID"
+    RESPONSE_HEADER = "X-Request-ID"
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        incoming = request.META.get(self.HEADER, '')
+        incoming = request.META.get(self.HEADER, "")
         if incoming and _VALID_ID_RE.match(incoming):
             request_id = incoming
         else:

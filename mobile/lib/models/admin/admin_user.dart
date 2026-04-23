@@ -70,32 +70,32 @@ class AdminUser {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'first_name': firstName,
-        'last_name': lastName,
-        'is_superuser': isSuperuser,
-        'role': role,
-        if (company != null) 'company': company!.toJson(),
-        if (employee != null) 'employee': employee!.toJson(),
-        'feature_flags': featureFlags,
-      };
+    'id': id,
+    'email': email,
+    'first_name': firstName,
+    'last_name': lastName,
+    'is_superuser': isSuperuser,
+    'role': role,
+    if (company != null) 'company': company!.toJson(),
+    if (employee != null) 'employee': employee!.toJson(),
+    'feature_flags': featureFlags,
+  };
 
   factory AdminUser.fromStoredJson(Map<String, dynamic> json) => AdminUser(
-        id: json['id'] ?? 0,
-        email: json['email'] ?? '',
-        firstName: json['first_name'] ?? '',
-        lastName: json['last_name'] ?? '',
-        isSuperuser: json['is_superuser'] ?? false,
-        role: json['role'] ?? 'admin',
-        company: json['company'] != null
-            ? AdminCompany.fromJson(json['company'])
-            : null,
-        employee: json['employee'] != null
-            ? AdminEmployeeProfile.fromJson(json['employee'])
-            : null,
-        featureFlags: Map<String, dynamic>.from(json['feature_flags'] ?? {}),
-      );
+    id: json['id'] ?? 0,
+    email: json['email'] ?? '',
+    firstName: json['first_name'] ?? '',
+    lastName: json['last_name'] ?? '',
+    isSuperuser: json['is_superuser'] ?? false,
+    role: json['role'] ?? 'admin',
+    company: json['company'] != null
+        ? AdminCompany.fromJson(json['company'])
+        : null,
+    employee: json['employee'] != null
+        ? AdminEmployeeProfile.fromJson(json['employee'])
+        : null,
+    featureFlags: Map<String, dynamic>.from(json['feature_flags'] ?? {}),
+  );
 }
 
 class AdminCompany {
@@ -112,18 +112,18 @@ class AdminCompany {
   });
 
   factory AdminCompany.fromJson(Map<String, dynamic> json) => AdminCompany(
-        id: json['id'] ?? 0,
-        name: json['name'] ?? '',
-        nameAr: json['name_ar'] ?? '',
-        aiEnabled: json['ai_enabled'] ?? false,
-      );
+    id: json['id'] ?? 0,
+    name: json['name'] ?? '',
+    nameAr: json['name_ar'] ?? '',
+    aiEnabled: json['ai_enabled'] ?? false,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'name_ar': nameAr,
-        'ai_enabled': aiEnabled,
-      };
+    'id': id,
+    'name': name,
+    'name_ar': nameAr,
+    'ai_enabled': aiEnabled,
+  };
 }
 
 class AdminEmployeeProfile {
@@ -154,11 +154,11 @@ class AdminEmployeeProfile {
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'employee_id': employeeId,
-        'first_name': firstName,
-        'last_name': lastName,
-        'email': email,
-        'job_title': jobTitle,
-      };
+    'id': id,
+    'employee_id': employeeId,
+    'first_name': firstName,
+    'last_name': lastName,
+    'email': email,
+    'job_title': jobTitle,
+  };
 }

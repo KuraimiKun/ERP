@@ -46,7 +46,8 @@ from erp.models import (
 # Legacy helpers (kept for backward-compatible call sites)
 # =========================================================================
 
-def adjust_inventory_for_invoice(invoice, direction='out'):
+
+def adjust_inventory_for_invoice(invoice, direction="out"):
     """
     Adjust inventory when an invoice is created or a credit note issued.
 
@@ -56,28 +57,31 @@ def adjust_inventory_for_invoice(invoice, direction='out'):
     Raises ValueError if an outbound adjustment would produce negative stock.
     """
     import logging
-    _log = logging.getLogger('erp.inventory')
+
+    _log = logging.getLogger("erp.inventory")
     db_alias = get_current_db_alias()
 
     with transaction.atomic(using=db_alias):
-        for line in invoice.lines.select_related('product').all():
+        for line in invoice.lines.select_related("product").all():
             if not (line.product and line.product.track_inventory):
                 continue
             product = Product.objects.using(db_alias).select_for_update().get(pk=line.product.pk)
             qty = Decimal(str(line.quantity))
-            if direction == 'out':
+            if direction == "out":
                 if product.quantity_on_hand < qty:
                     raise ValueError(
-                        f'المخزون غير كافٍ للمنتج "{product.name}": '
-                        f'المتاح {product.quantity_on_hand}، المطلوب {qty}.'
+                        f'المخزون غير كافٍ للمنتج "{product.name}": المتاح {product.quantity_on_hand}، المطلوب {qty}.'
                     )
                 product.quantity_on_hand -= qty
             else:
                 product.quantity_on_hand += qty
-            product.save(using=db_alias, update_fields=['quantity_on_hand'])
+            product.save(using=db_alias, update_fields=["quantity_on_hand"])
             _log.debug(
-                'adjust_inventory_for_invoice: %s %s qty=%s new_on_hand=%s',
-                direction, product.sku, qty, product.quantity_on_hand,
+                "adjust_inventory_for_invoice: %s %s qty=%s new_on_hand=%s",
+                direction,
+                product.sku,
+                qty,
+                product.quantity_on_hand,
             )
 
 
@@ -90,21 +94,22 @@ def adjust_inventory_for_purchase_order(purchase_order):
     db_alias = get_current_db_alias()
 
     with transaction.atomic(using=db_alias):
-        for line in purchase_order.lines.select_related('product').all():
+        for line in purchase_order.lines.select_related("product").all():
             if line.received_quantity and line.received_quantity > 0:
                 continue
             if line.product and line.product.track_inventory:
                 product = Product.objects.using(db_alias).select_for_update().get(pk=line.product.pk)
                 qty = Decimal(str(line.quantity))
                 product.quantity_on_hand += qty
-                product.save(using=db_alias, update_fields=['quantity_on_hand'])
+                product.save(using=db_alias, update_fields=["quantity_on_hand"])
                 line.received_quantity = line.quantity
-                line.save(using=db_alias, update_fields=['received_quantity'])
+                line.save(using=db_alias, update_fields=["received_quantity"])
 
 
 # =========================================================================
 # Helper – ensure a StockItem row exists
 # =========================================================================
+
 
 def _get_or_create_stock_item(company, product, warehouse, bin=None, lot=None, db_alias=None):
     """Return existing or fresh StockItem for the given composite key."""
@@ -115,7 +120,7 @@ def _get_or_create_stock_item(company, product, warehouse, bin=None, lot=None, d
         warehouse=warehouse,
         bin=bin,
         lot=lot,
-        defaults={'on_hand': 0, 'allocated': 0, 'in_transit': 0, 'unit_cost': 0},
+        defaults={"on_hand": 0, "allocated": 0, "in_transit": 0, "unit_cost": 0},
     )
     return item
 
@@ -124,6 +129,7 @@ def _get_or_create_stock_item(company, product, warehouse, bin=None, lot=None, d
 # Core: record_stock_movement
 # =========================================================================
 
+
 def record_stock_movement(
     *,
     company,
@@ -131,13 +137,13 @@ def record_stock_movement(
     warehouse,
     movement_type,
     quantity,
-    unit_cost=Decimal('0'),
+    unit_cost=Decimal("0"),
     bin=None,
     lot=None,
-    reference_type='',
+    reference_type="",
     reference_id=None,
-    reference_number='',
-    description='',
+    reference_number="",
+    description="",
     user=None,
     db_alias=None,
 ):
@@ -181,7 +187,7 @@ def record_stock_movement(
     else:
         stock.on_hand -= quantity
 
-    stock.save(using=db, update_fields=['on_hand', 'unit_cost', 'updated_at'])
+    stock.save(using=db, update_fields=["on_hand", "unit_cost", "updated_at"])
 
     # Keep Product.quantity_on_hand in sync (aggregate across all warehouses)
     _sync_product_on_hand(product, company, db)
@@ -194,14 +200,15 @@ def _sync_product_on_hand(product, company, db_alias):
     total = (
         StockItem.objects.using(db_alias)
         .filter(company=company, product=product)
-        .aggregate(total=Coalesce(Sum('on_hand'), Decimal('0')))
-    )['total']
+        .aggregate(total=Coalesce(Sum("on_hand"), Decimal("0")))
+    )["total"]
     Product.objects.using(db_alias).filter(pk=product.pk).update(quantity_on_hand=total)
 
 
 # =========================================================================
 # Goods Receipt Note
 # =========================================================================
+
 
 def confirm_goods_receipt(grn_id, user):
     """
@@ -213,20 +220,26 @@ def confirm_goods_receipt(grn_id, user):
       5. Trigger accounting hook
     """
     db = get_current_db_alias()
-    grn = GoodsReceiptNote.objects.using(db).select_related(
-        'company', 'purchase_order', 'warehouse',
-    ).get(pk=grn_id)
+    grn = (
+        GoodsReceiptNote.objects.using(db)
+        .select_related(
+            "company",
+            "purchase_order",
+            "warehouse",
+        )
+        .get(pk=grn_id)
+    )
 
     if grn.status != GoodsReceiptNote.Status.DRAFT:
-        raise ValueError('GRN is not in Draft status')
+        raise ValueError("GRN is not in Draft status")
 
     if grn.purchase_order and grn.purchase_order.status != PurchaseOrder.Status.APPROVED:
         raise ValueError(
-            f'لا يمكن تأكيد استلام البضاعة لأمر الشراء {grn.purchase_order.po_number} '
-            'لأنه غير معتمد. يجب اعتماد أمر الشراء أولاً.'
+            f"لا يمكن تأكيد استلام البضاعة لأمر الشراء {grn.purchase_order.po_number} "
+            "لأنه غير معتمد. يجب اعتماد أمر الشراء أولاً."
         )
 
-    lines = grn.lines.select_related('product', 'po_line', 'bin', 'lot').using(db)
+    lines = grn.lines.select_related("product", "po_line", "bin", "lot").using(db)
 
     with transaction.atomic(using=db):
         for line in lines:
@@ -243,10 +256,10 @@ def confirm_goods_receipt(grn_id, user):
                 unit_cost=line.unit_cost,
                 bin=line.bin,
                 lot=line.lot,
-                reference_type='goods_receipt',
+                reference_type="goods_receipt",
                 reference_id=grn.pk,
                 reference_number=grn.grn_number,
-                description=f'GRN {grn.grn_number} – {line.product.sku}',
+                description=f"GRN {grn.grn_number} – {line.product.sku}",
                 user=user,
                 db_alias=db,
             )
@@ -254,7 +267,7 @@ def confirm_goods_receipt(grn_id, user):
             # Update PO line received_quantity
             if line.po_line:
                 line.po_line.received_quantity += qty
-                line.po_line.save(using=db, update_fields=['received_quantity'])
+                line.po_line.save(using=db, update_fields=["received_quantity"])
 
         # Update PO status
         po = grn.purchase_order
@@ -265,13 +278,14 @@ def confirm_goods_receipt(grn_id, user):
             po.status = PurchaseOrder.Status.RECEIVED
         elif any_received:
             po.status = PurchaseOrder.Status.PARTIAL
-        po.save(using=db, update_fields=['status', 'updated_at'])
+        po.save(using=db, update_fields=["status", "updated_at"])
 
         grn.status = GoodsReceiptNote.Status.CONFIRMED
-        grn.save(using=db, update_fields=['status', 'updated_at'])
+        grn.save(using=db, update_fields=["status", "updated_at"])
 
     # Trigger accounting hook
     from erp.services.inventory_accounting import create_grn_journal_entry
+
     create_grn_journal_entry(grn, user)
 
     return grn
@@ -281,17 +295,24 @@ def confirm_goods_receipt(grn_id, user):
 # Stock Transfer
 # =========================================================================
 
+
 def ship_stock_transfer(transfer_id, user):
     """Ship a draft transfer: transfer_out from source, set in-transit at dest."""
     db = get_current_db_alias()
-    transfer = StockTransfer.objects.using(db).select_related(
-        'company', 'from_warehouse', 'to_warehouse',
-    ).get(pk=transfer_id)
+    transfer = (
+        StockTransfer.objects.using(db)
+        .select_related(
+            "company",
+            "from_warehouse",
+            "to_warehouse",
+        )
+        .get(pk=transfer_id)
+    )
 
     if transfer.status != StockTransfer.Status.DRAFT:
-        raise ValueError('Transfer is not in Draft status')
+        raise ValueError("Transfer is not in Draft status")
 
-    lines = transfer.lines.select_related('product', 'from_bin', 'to_bin', 'lot').using(db)
+    lines = transfer.lines.select_related("product", "from_bin", "to_bin", "lot").using(db)
 
     with transaction.atomic(using=db):
         for line in lines:
@@ -304,25 +325,29 @@ def ship_stock_transfer(transfer_id, user):
                 unit_cost=line.unit_cost,
                 bin=line.from_bin,
                 lot=line.lot,
-                reference_type='stock_transfer',
+                reference_type="stock_transfer",
                 reference_id=transfer.pk,
                 reference_number=transfer.transfer_number,
-                description=f'Transfer Out {transfer.transfer_number}',
+                description=f"Transfer Out {transfer.transfer_number}",
                 user=user,
                 db_alias=db,
             )
 
             # Mark in-transit at destination
             dest_stock = _get_or_create_stock_item(
-                transfer.company, line.product, transfer.to_warehouse,
-                line.to_bin, line.lot, db,
+                transfer.company,
+                line.product,
+                transfer.to_warehouse,
+                line.to_bin,
+                line.lot,
+                db,
             )
             dest_stock.in_transit += line.quantity
-            dest_stock.save(using=db, update_fields=['in_transit', 'updated_at'])
+            dest_stock.save(using=db, update_fields=["in_transit", "updated_at"])
 
         transfer.status = StockTransfer.Status.IN_TRANSIT
         transfer.shipped_date = timezone.now().date()
-        transfer.save(using=db, update_fields=['status', 'shipped_date', 'updated_at'])
+        transfer.save(using=db, update_fields=["status", "shipped_date", "updated_at"])
 
     return transfer
 
@@ -330,14 +355,20 @@ def ship_stock_transfer(transfer_id, user):
 def receive_stock_transfer(transfer_id, user):
     """Receive an in-transit transfer: transfer_in at destination, clear in_transit."""
     db = get_current_db_alias()
-    transfer = StockTransfer.objects.using(db).select_related(
-        'company', 'from_warehouse', 'to_warehouse',
-    ).get(pk=transfer_id)
+    transfer = (
+        StockTransfer.objects.using(db)
+        .select_related(
+            "company",
+            "from_warehouse",
+            "to_warehouse",
+        )
+        .get(pk=transfer_id)
+    )
 
     if transfer.status != StockTransfer.Status.IN_TRANSIT:
-        raise ValueError('Transfer is not In Transit')
+        raise ValueError("Transfer is not In Transit")
 
-    lines = transfer.lines.select_related('product', 'to_bin', 'lot').using(db)
+    lines = transfer.lines.select_related("product", "to_bin", "lot").using(db)
 
     with transaction.atomic(using=db):
         for line in lines:
@@ -350,28 +381,33 @@ def receive_stock_transfer(transfer_id, user):
                 unit_cost=line.unit_cost,
                 bin=line.to_bin,
                 lot=line.lot,
-                reference_type='stock_transfer',
+                reference_type="stock_transfer",
                 reference_id=transfer.pk,
                 reference_number=transfer.transfer_number,
-                description=f'Transfer In {transfer.transfer_number}',
+                description=f"Transfer In {transfer.transfer_number}",
                 user=user,
                 db_alias=db,
             )
 
             # Clear in-transit
             dest_stock = _get_or_create_stock_item(
-                transfer.company, line.product, transfer.to_warehouse,
-                line.to_bin, line.lot, db,
+                transfer.company,
+                line.product,
+                transfer.to_warehouse,
+                line.to_bin,
+                line.lot,
+                db,
             )
-            dest_stock.in_transit = max(dest_stock.in_transit - line.quantity, Decimal('0'))
-            dest_stock.save(using=db, update_fields=['in_transit', 'updated_at'])
+            dest_stock.in_transit = max(dest_stock.in_transit - line.quantity, Decimal("0"))
+            dest_stock.save(using=db, update_fields=["in_transit", "updated_at"])
 
         transfer.status = StockTransfer.Status.RECEIVED
         transfer.received_date = timezone.now().date()
-        transfer.save(using=db, update_fields=['status', 'received_date', 'updated_at'])
+        transfer.save(using=db, update_fields=["status", "received_date", "updated_at"])
 
     # Accounting hook: memo JE for inter-warehouse inventory value movement
     from erp.services.inventory_accounting import create_transfer_journal_entry
+
     create_transfer_journal_entry(transfer, user)
 
     return transfer
@@ -386,16 +422,22 @@ def cancel_stock_transfer(transfer_id, user):
     For draft transfers: simply marks as cancelled.
     """
     db = get_current_db_alias()
-    transfer = StockTransfer.objects.using(db).select_related(
-        'company', 'from_warehouse', 'to_warehouse',
-    ).get(pk=transfer_id)
+    transfer = (
+        StockTransfer.objects.using(db)
+        .select_related(
+            "company",
+            "from_warehouse",
+            "to_warehouse",
+        )
+        .get(pk=transfer_id)
+    )
 
     if transfer.status == StockTransfer.Status.CANCELLED:
-        raise ValueError('Transfer is already cancelled.')
+        raise ValueError("Transfer is already cancelled.")
     if transfer.status == StockTransfer.Status.RECEIVED:
-        raise ValueError('Cannot cancel a received transfer.')
+        raise ValueError("Cannot cancel a received transfer.")
 
-    lines = transfer.lines.select_related('product', 'from_bin', 'lot').using(db)
+    lines = transfer.lines.select_related("product", "from_bin", "lot").using(db)
 
     with transaction.atomic(using=db):
         if transfer.status == StockTransfer.Status.IN_TRANSIT:
@@ -410,23 +452,27 @@ def cancel_stock_transfer(transfer_id, user):
                     unit_cost=line.unit_cost,
                     bin=line.from_bin,
                     lot=line.lot,
-                    reference_type='stock_transfer',
+                    reference_type="stock_transfer",
                     reference_id=transfer.pk,
                     reference_number=transfer.transfer_number,
-                    description=f'Transfer Cancelled {transfer.transfer_number} – {line.product.sku}',
+                    description=f"Transfer Cancelled {transfer.transfer_number} – {line.product.sku}",
                     user=user,
                     db_alias=db,
                 )
                 # Clear the in-transit allocation at destination
                 dest_stock = _get_or_create_stock_item(
-                    transfer.company, line.product, transfer.to_warehouse,
-                    None, line.lot, db,
+                    transfer.company,
+                    line.product,
+                    transfer.to_warehouse,
+                    None,
+                    line.lot,
+                    db,
                 )
-                dest_stock.in_transit = max(dest_stock.in_transit - line.quantity, Decimal('0'))
-                dest_stock.save(using=db, update_fields=['in_transit', 'updated_at'])
+                dest_stock.in_transit = max(dest_stock.in_transit - line.quantity, Decimal("0"))
+                dest_stock.save(using=db, update_fields=["in_transit", "updated_at"])
 
         transfer.status = StockTransfer.Status.CANCELLED
-        transfer.save(using=db, update_fields=['status', 'updated_at'])
+        transfer.save(using=db, update_fields=["status", "updated_at"])
 
     return transfer
 
@@ -435,17 +481,23 @@ def cancel_stock_transfer(transfer_id, user):
 # Stock Adjustment
 # =========================================================================
 
+
 def approve_stock_adjustment(adjustment_id, user):
     """Approve a draft/pending adjustment and record gain/loss movements."""
     db = get_current_db_alias()
-    adj = StockAdjustment.objects.using(db).select_related(
-        'company', 'warehouse',
-    ).get(pk=adjustment_id)
+    adj = (
+        StockAdjustment.objects.using(db)
+        .select_related(
+            "company",
+            "warehouse",
+        )
+        .get(pk=adjustment_id)
+    )
 
     if adj.status not in (StockAdjustment.Status.DRAFT, StockAdjustment.Status.PENDING_APPROVAL):
-        raise ValueError('Adjustment is not in an approvable status')
+        raise ValueError("Adjustment is not in an approvable status")
 
-    lines = adj.lines.select_related('product', 'bin', 'lot').using(db)
+    lines = adj.lines.select_related("product", "bin", "lot").using(db)
 
     movement_map = {
         StockAdjustment.AdjustmentType.GAIN: StockMovement.MovementType.ADJUSTMENT_GAIN,
@@ -462,7 +514,7 @@ def approve_stock_adjustment(adjustment_id, user):
             if abs(line.quantity) > stock.on_hand:
                 raise ValueError(
                     f'الكمية المطلوبة ({abs(line.quantity)}) للمنتج "{line.product.name}" '
-                    f'تتجاوز المخزون المتاح ({stock.on_hand}). لا يمكن إنشاء مخزون سالب.'
+                    f"تتجاوز المخزون المتاح ({stock.on_hand}). لا يمكن إنشاء مخزون سالب."
                 )
 
     with transaction.atomic(using=db):
@@ -477,10 +529,10 @@ def approve_stock_adjustment(adjustment_id, user):
                 unit_cost=line.unit_cost,
                 bin=line.bin,
                 lot=line.lot,
-                reference_type='stock_adjustment',
+                reference_type="stock_adjustment",
                 reference_id=adj.pk,
                 reference_number=adj.adjustment_number,
-                description=f'Adjustment {adj.adjustment_number} – {adj.get_adjustment_type_display()}',
+                description=f"Adjustment {adj.adjustment_number} – {adj.get_adjustment_type_display()}",
                 user=user,
                 db_alias=db,
             )
@@ -488,10 +540,11 @@ def approve_stock_adjustment(adjustment_id, user):
         adj.status = StockAdjustment.Status.APPROVED
         adj.approved_by = user
         adj.approved_at = timezone.now()
-        adj.save(using=db, update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+        adj.save(using=db, update_fields=["status", "approved_by", "approved_at", "updated_at"])
 
     # Accounting hook
     from erp.services.inventory_accounting import create_adjustment_journal_entry
+
     create_adjustment_journal_entry(adj, user)
 
     return adj
@@ -501,6 +554,7 @@ def approve_stock_adjustment(adjustment_id, user):
 # Cycle Count
 # =========================================================================
 
+
 def complete_cycle_count(cycle_count_id, user):
     """
     Complete a cycle count:
@@ -509,14 +563,19 @@ def complete_cycle_count(cycle_count_id, user):
       - approve adjustments immediately
     """
     db = get_current_db_alias()
-    cc = CycleCount.objects.using(db).select_related(
-        'company', 'warehouse',
-    ).get(pk=cycle_count_id)
+    cc = (
+        CycleCount.objects.using(db)
+        .select_related(
+            "company",
+            "warehouse",
+        )
+        .get(pk=cycle_count_id)
+    )
 
     if cc.status not in (CycleCount.Status.PLANNED, CycleCount.Status.IN_PROGRESS):
-        raise ValueError('Cycle count is not completable')
+        raise ValueError("Cycle count is not completable")
 
-    lines = cc.lines.select_related('product', 'bin', 'lot').using(db)
+    lines = cc.lines.select_related("product", "bin", "lot").using(db)
 
     gain_lines = []
     loss_lines = []
@@ -534,14 +593,14 @@ def complete_cycle_count(cycle_count_id, user):
 
     with transaction.atomic(using=db):
         if gain_lines:
-            adj_num = SequenceService.get_next_number(cc.company, 'stock_adjustment', db_alias=db)
+            adj_num = SequenceService.get_next_number(cc.company, "stock_adjustment", db_alias=db)
             gain_adj = StockAdjustment.objects.using(db).create(
                 company=cc.company,
                 adjustment_number=adj_num,
                 adjustment_date=timezone.now().date(),
                 adjustment_type=StockAdjustment.AdjustmentType.GAIN,
                 warehouse=cc.warehouse,
-                reason=f'Cycle count {cc.count_number} – gain variance',
+                reason=f"Cycle count {cc.count_number} – gain variance",
                 status=StockAdjustment.Status.DRAFT,
                 created_by=user,
             )
@@ -552,21 +611,19 @@ def complete_cycle_count(cycle_count_id, user):
                     bin=line.bin,
                     lot=line.lot,
                     quantity=line.variance,
-                    unit_cost=_get_stock_unit_cost(
-                        cc.company, line.product, cc.warehouse, line.bin, line.lot, db
-                    ),
+                    unit_cost=_get_stock_unit_cost(cc.company, line.product, cc.warehouse, line.bin, line.lot, db),
                 )
             approve_stock_adjustment(gain_adj.pk, user)
 
         if loss_lines:
-            adj_num = SequenceService.get_next_number(cc.company, 'stock_adjustment', db_alias=db)
+            adj_num = SequenceService.get_next_number(cc.company, "stock_adjustment", db_alias=db)
             loss_adj = StockAdjustment.objects.using(db).create(
                 company=cc.company,
                 adjustment_number=adj_num,
                 adjustment_date=timezone.now().date(),
                 adjustment_type=StockAdjustment.AdjustmentType.LOSS,
                 warehouse=cc.warehouse,
-                reason=f'Cycle count {cc.count_number} – loss variance',
+                reason=f"Cycle count {cc.count_number} – loss variance",
                 status=StockAdjustment.Status.DRAFT,
                 created_by=user,
             )
@@ -577,15 +634,13 @@ def complete_cycle_count(cycle_count_id, user):
                     bin=line.bin,
                     lot=line.lot,
                     quantity=abs(line.variance),
-                    unit_cost=_get_stock_unit_cost(
-                        cc.company, line.product, cc.warehouse, line.bin, line.lot, db
-                    ),
+                    unit_cost=_get_stock_unit_cost(cc.company, line.product, cc.warehouse, line.bin, line.lot, db),
                 )
             approve_stock_adjustment(loss_adj.pk, user)
 
         cc.status = CycleCount.Status.COMPLETED
         cc.variance_posted = True
-        cc.save(using=db, update_fields=['status', 'variance_posted', 'updated_at'])
+        cc.save(using=db, update_fields=["status", "variance_posted", "updated_at"])
 
     return cc
 
@@ -594,7 +649,11 @@ def _get_stock_unit_cost(company, product, warehouse, bin, lot, db):
     """Get current unit cost for a stock item row."""
     try:
         si = StockItem.objects.using(db).get(
-            company=company, product=product, warehouse=warehouse, bin=bin, lot=lot,
+            company=company,
+            product=product,
+            warehouse=warehouse,
+            bin=bin,
+            lot=lot,
         )
         return si.unit_cost
     except StockItem.DoesNotExist:
@@ -605,17 +664,23 @@ def _get_stock_unit_cost(company, product, warehouse, bin, lot, db):
 # Pick List
 # =========================================================================
 
+
 def complete_pick_list(pick_list_id, user):
     """Mark a pick list as fully picked: issue stock via sales_issue movements."""
     db = get_current_db_alias()
-    pl = PickList.objects.using(db).select_related(
-        'company', 'warehouse',
-    ).get(pk=pick_list_id)
+    pl = (
+        PickList.objects.using(db)
+        .select_related(
+            "company",
+            "warehouse",
+        )
+        .get(pk=pick_list_id)
+    )
 
     if pl.status not in (PickList.Status.DRAFT, PickList.Status.IN_PROGRESS):
-        raise ValueError('Pick list is not completable')
+        raise ValueError("Pick list is not completable")
 
-    lines = pl.lines.select_related('product', 'from_bin', 'lot').using(db)
+    lines = pl.lines.select_related("product", "from_bin", "lot").using(db)
 
     with transaction.atomic(using=db):
         for line in lines:
@@ -630,24 +695,29 @@ def complete_pick_list(pick_list_id, user):
                 movement_type=StockMovement.MovementType.SALES_ISSUE,
                 quantity=qty,
                 unit_cost=_get_stock_unit_cost(
-                    pl.company, line.product, pl.warehouse,
-                    line.from_bin, line.lot, db,
+                    pl.company,
+                    line.product,
+                    pl.warehouse,
+                    line.from_bin,
+                    line.lot,
+                    db,
                 ),
                 bin=line.from_bin,
                 lot=line.lot,
-                reference_type='pick_list',
+                reference_type="pick_list",
                 reference_id=pl.pk,
                 reference_number=pl.pick_number,
-                description=f'Pick {pl.pick_number} – {line.product.sku}',
+                description=f"Pick {pl.pick_number} – {line.product.sku}",
                 user=user,
                 db_alias=db,
             )
 
         pl.status = PickList.Status.PICKED
-        pl.save(using=db, update_fields=['status', 'updated_at'])
+        pl.save(using=db, update_fields=["status", "updated_at"])
 
     # Accounting hook for COGS
     from erp.services.inventory_accounting import create_sales_issue_journal_entry
+
     create_sales_issue_journal_entry(pl, user)
 
     return pl
@@ -657,22 +727,24 @@ def complete_pick_list(pick_list_id, user):
 # Shipment
 # =========================================================================
 
+
 def ship_shipment(shipment_id, user):
     """Mark shipment as shipped. Stock was already issued via pick list."""
     db = get_current_db_alias()
     ship = ShipmentNote.objects.using(db).get(pk=shipment_id)
 
     if ship.status != ShipmentNote.Status.DRAFT:
-        raise ValueError('Shipment is not in Draft status')
+        raise ValueError("Shipment is not in Draft status")
 
     ship.status = ShipmentNote.Status.SHIPPED
-    ship.save(using=db, update_fields=['status', 'updated_at'])
+    ship.save(using=db, update_fields=["status", "updated_at"])
     return ship
 
 
 # =========================================================================
 # Reorder Suggestions
 # =========================================================================
+
 
 def get_reorder_suggestions(company):
     """
@@ -683,7 +755,7 @@ def get_reorder_suggestions(company):
     rules = (
         ReorderRule.objects.using(db)
         .filter(company=company, is_active=True)
-        .select_related('product', 'warehouse', 'preferred_supplier')
+        .select_related("product", "warehouse", "preferred_supplier")
     )
 
     suggestions = []
@@ -691,30 +763,32 @@ def get_reorder_suggestions(company):
         stock = (
             StockItem.objects.using(db)
             .filter(company=company, product=rule.product, warehouse=rule.warehouse)
-            .values('product')
+            .values("product")
             .annotate(
-                total_on_hand=Sum('on_hand'),
-                total_allocated=Sum('allocated'),
+                total_on_hand=Sum("on_hand"),
+                total_allocated=Sum("allocated"),
             )
             .first()
         )
-        on_hand = (stock['total_on_hand'] or Decimal('0')) if stock else Decimal('0')
-        allocated = (stock['total_allocated'] or Decimal('0')) if stock else Decimal('0')
+        on_hand = (stock["total_on_hand"] or Decimal("0")) if stock else Decimal("0")
+        allocated = (stock["total_allocated"] or Decimal("0")) if stock else Decimal("0")
         available = on_hand - allocated
 
         if available <= rule.reorder_point:
             order_qty = max(rule.min_order_qty, rule.reorder_point + rule.safety_stock - available)
             if rule.max_order_qty and order_qty > rule.max_order_qty:
                 order_qty = rule.max_order_qty
-            suggestions.append({
-                'product': rule.product,
-                'warehouse': rule.warehouse,
-                'available': available,
-                'reorder_point': rule.reorder_point,
-                'suggested_qty': order_qty,
-                'preferred_supplier': rule.preferred_supplier or rule.product.supplier,
-                'lead_time_days': rule.lead_time_days,
-            })
+            suggestions.append(
+                {
+                    "product": rule.product,
+                    "warehouse": rule.warehouse,
+                    "available": available,
+                    "reorder_point": rule.reorder_point,
+                    "suggested_qty": order_qty,
+                    "preferred_supplier": rule.preferred_supplier or rule.product.supplier,
+                    "lead_time_days": rule.lead_time_days,
+                }
+            )
 
     return suggestions
 
@@ -723,6 +797,7 @@ def get_reorder_suggestions(company):
 # Stock Summary Queries
 # =========================================================================
 
+
 def get_stock_summary_by_warehouse(company, warehouse_id=None):
     """Aggregate stock quantities grouped by warehouse."""
     db = get_current_db_alias()
@@ -730,13 +805,13 @@ def get_stock_summary_by_warehouse(company, warehouse_id=None):
     if warehouse_id:
         qs = qs.filter(warehouse_id=warehouse_id)
     return (
-        qs.values('warehouse__code', 'warehouse__name')
+        qs.values("warehouse__code", "warehouse__name")
         .annotate(
-            total_on_hand=Coalesce(Sum('on_hand'), Decimal('0')),
-            total_allocated=Coalesce(Sum('allocated'), Decimal('0')),
-            total_in_transit=Coalesce(Sum('in_transit'), Decimal('0')),
+            total_on_hand=Coalesce(Sum("on_hand"), Decimal("0")),
+            total_allocated=Coalesce(Sum("allocated"), Decimal("0")),
+            total_in_transit=Coalesce(Sum("in_transit"), Decimal("0")),
         )
-        .order_by('warehouse__code')
+        .order_by("warehouse__code")
     )
 
 
@@ -747,11 +822,11 @@ def get_stock_summary_by_product(company, product_id=None):
     if product_id:
         qs = qs.filter(product_id=product_id)
     return (
-        qs.values('product__sku', 'product__name')
+        qs.values("product__sku", "product__name")
         .annotate(
-            total_on_hand=Coalesce(Sum('on_hand'), Decimal('0')),
-            total_allocated=Coalesce(Sum('allocated'), Decimal('0')),
-            total_in_transit=Coalesce(Sum('in_transit'), Decimal('0')),
+            total_on_hand=Coalesce(Sum("on_hand"), Decimal("0")),
+            total_allocated=Coalesce(Sum("allocated"), Decimal("0")),
+            total_in_transit=Coalesce(Sum("in_transit"), Decimal("0")),
         )
-        .order_by('product__sku')
+        .order_by("product__sku")
     )

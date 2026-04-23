@@ -25,20 +25,23 @@ def user_status_changed(sender, instance, created, **kwargs):
     """
     if created:
         logger.info(
-            'New tenant user registered: email=%s pk=%s',
-            instance.email, instance.pk,
+            "New tenant user registered: email=%s pk=%s",
+            instance.email,
+            instance.pk,
         )
         return
 
-    if instance.approval_status == 'approved' and instance.is_approved:
+    if instance.approval_status == "approved" and instance.is_approved:
         logger.info(
-            'Tenant user approved: email=%s pk=%s',
-            instance.email, instance.pk,
+            "Tenant user approved: email=%s pk=%s",
+            instance.email,
+            instance.pk,
         )
-    elif instance.approval_status == 'rejected':
+    elif instance.approval_status == "rejected":
         logger.info(
-            'Tenant user rejected: email=%s pk=%s',
-            instance.email, instance.pk,
+            "Tenant user rejected: email=%s pk=%s",
+            instance.email,
+            instance.pk,
         )
         # Deactivate the account.  Queryset .update() bypasses signal dispatch
         # so this will not recurse.  The .exclude() guard makes it a no-op when
@@ -53,7 +56,7 @@ def database_assigned(sender, instance, created, **kwargs):
     """Log new database assignments for observability."""
     if created:
         logger.info(
-            'DatabaseAssignment created: user_id=%s database_id=%s role=%s active=%s',
+            "DatabaseAssignment created: user_id=%s database_id=%s role=%s active=%s",
             instance.user_id,
             instance.database_id,
             instance.role,

@@ -6,92 +6,97 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('erp', '0002_initial'),
+        ("erp", "0002_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='customer',
-            name='address',
+            model_name="customer",
+            name="address",
         ),
         migrations.RemoveField(
-            model_name='customer',
-            name='city',
+            model_name="customer",
+            name="city",
         ),
         migrations.RemoveField(
-            model_name='customer',
-            name='country',
+            model_name="customer",
+            name="country",
         ),
         migrations.RemoveField(
-            model_name='customer',
-            name='postal_code',
+            model_name="customer",
+            name="postal_code",
         ),
         migrations.AddField(
-            model_name='customer',
-            name='assigned_to',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_customers', to=settings.AUTH_USER_MODEL),
+            model_name="customer",
+            name="assigned_to",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="assigned_customers",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='billing_address',
+            model_name="customer",
+            name="billing_address",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='billing_city',
+            model_name="customer",
+            name="billing_city",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='billing_country',
+            model_name="customer",
+            name="billing_country",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='billing_postal_code',
+            model_name="customer",
+            name="billing_postal_code",
             field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='billing_state',
+            model_name="customer",
+            name="billing_state",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='shipping_address',
+            model_name="customer",
+            name="shipping_address",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='shipping_city',
+            model_name="customer",
+            name="shipping_city",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='shipping_country',
+            model_name="customer",
+            name="shipping_country",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='shipping_postal_code',
+            model_name="customer",
+            name="shipping_postal_code",
             field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='shipping_state',
+            model_name="customer",
+            name="shipping_state",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='tax_id',
+            model_name="customer",
+            name="tax_id",
             field=models.CharField(blank=True, max_length=50),
         ),
         migrations.AddField(
-            model_name='customer',
-            name='website',
+            model_name="customer",
+            name="website",
             field=models.URLField(blank=True),
         ),
     ]

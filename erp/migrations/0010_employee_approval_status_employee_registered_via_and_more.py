@@ -8,55 +8,110 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('erp', '0009_payroll_earnings_deductions'),
+        ("erp", "0009_payroll_earnings_deductions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='employee',
-            name='approval_status',
-            field=models.CharField(choices=[('approved', 'Approved'), ('pending', 'Pending Approval'), ('rejected', 'Rejected')], default='approved', help_text='Employees created by owner are auto-approved; self-registered start as pending.', max_length=20),
+            model_name="employee",
+            name="approval_status",
+            field=models.CharField(
+                choices=[("approved", "Approved"), ("pending", "Pending Approval"), ("rejected", "Rejected")],
+                default="approved",
+                help_text="Employees created by owner are auto-approved; self-registered start as pending.",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='registered_via',
-            field=models.CharField(blank=True, help_text='Invite token used during self-registration.', max_length=64),
+            model_name="employee",
+            name="registered_via",
+            field=models.CharField(blank=True, help_text="Invite token used during self-registration.", max_length=64),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='registration_password_hash',
-            field=models.CharField(blank=True, help_text='Temporary password hash stored until owner approves.', max_length=255),
+            model_name="employee",
+            name="registration_password_hash",
+            field=models.CharField(
+                blank=True, help_text="Temporary password hash stored until owner approves.", max_length=255
+            ),
         ),
         migrations.CreateModel(
-            name='AttendanceDevice',
+            name="AttendanceDevice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('device_id', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
-                ('name', models.CharField(help_text='e.g. "Main Office TV"', max_length=100)),
-                ('location', models.CharField(blank=True, help_text='Physical location', max_length=255)),
-                ('device_secret', models.CharField(default=erp.models.hr._generate_device_secret, help_text='HMAC secret for signing QR codes (auto-generated).', max_length=64)),
-                ('work_start_time', models.TimeField(default='08:00', help_text='Expected work start time')),
-                ('work_end_time', models.TimeField(default='17:00', help_text='Expected work end time')),
-                ('late_threshold_minutes', models.PositiveIntegerField(default=15, help_text='Minutes after start time before marking as late')),
-                ('qr_refresh_seconds', models.PositiveIntegerField(default=30, help_text='How often the QR code refreshes on the kiosk (seconds)')),
-                ('is_active', models.BooleanField(default=True)),
-                ('last_heartbeat', models.DateTimeField(blank=True, null=True)),
-                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendance_devices', to='erp.company')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("device_id", models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
+                ("name", models.CharField(help_text='e.g. "Main Office TV"', max_length=100)),
+                ("location", models.CharField(blank=True, help_text="Physical location", max_length=255)),
+                (
+                    "device_secret",
+                    models.CharField(
+                        default=erp.models.hr._generate_device_secret,
+                        help_text="HMAC secret for signing QR codes (auto-generated).",
+                        max_length=64,
+                    ),
+                ),
+                ("work_start_time", models.TimeField(default="08:00", help_text="Expected work start time")),
+                ("work_end_time", models.TimeField(default="17:00", help_text="Expected work end time")),
+                (
+                    "late_threshold_minutes",
+                    models.PositiveIntegerField(
+                        default=15, help_text="Minutes after start time before marking as late"
+                    ),
+                ),
+                (
+                    "qr_refresh_seconds",
+                    models.PositiveIntegerField(
+                        default=30, help_text="How often the QR code refreshes on the kiosk (seconds)"
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                ("last_heartbeat", models.DateTimeField(blank=True, null=True)),
+                (
+                    "company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="attendance_devices", to="erp.company"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Attendance Device',
-                'verbose_name_plural': 'Attendance Devices',
-                'ordering': ['name'],
+                "verbose_name": "Attendance Device",
+                "verbose_name_plural": "Attendance Devices",
+                "ordering": ["name"],
             },
         ),
     ]
