@@ -87,6 +87,13 @@ ok "System check passed"
 # 7. Restart services
 info "Restarting services..."
 systemctl restart erp-gunicorn
+# Celery workers hold Python modules in memory — they must be restarted after
+# every deploy or they will keep executing the pre-deploy code (and miss any
+# newly added tasks such as erp.ai.tasks.*).  `try-restart` is a no-op for
+# services that aren't enabled (e.g. ML worker disabled on small VPS).
+systemctl try-restart erp-celery-worker.service
+systemctl try-restart erp-celery-ml-worker.service
+systemctl try-restart erp-celery-beat.service
 systemctl reload nginx
 ok "Services restarted"
 
