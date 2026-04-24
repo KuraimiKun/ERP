@@ -1,6 +1,6 @@
 class ApiConfig {
   // Change this to your server's IP/domain
-  static const String baseUrl = 'http://34.31.117.185:8000';
+  static const String baseUrl = 'http://34.31.117.185';
   static const String apiBase = '$baseUrl/api/mobile';
   static const String adminApiBase = '$baseUrl/api/mobile/admin/v1';
 
