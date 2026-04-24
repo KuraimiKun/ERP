@@ -69,6 +69,7 @@ from .views_db_ops import (
 from .views_logs import pa_logs
 from .views_activity import pa_activity
 from .views_settings import pa_settings, pa_clear_cache, pa_collect_static
+from .views_mobile_app import pa_mobile_app, pa_mobile_app_build
 from .views_invites import (
     pa_invite_list,
     pa_invite_detail,
@@ -223,6 +224,9 @@ urlpatterns = [
     path("settings/", pa_settings, name="pa_settings"),
     path("settings/clear-cache/", pa_clear_cache, name="pa_clear_cache"),
     path("settings/collect-static/", pa_collect_static, name="pa_collect_static"),
+    # ── Mobile App (Flutter) ──
+    path("mobile-app/", pa_mobile_app, name="pa_mobile_app"),
+    path("mobile-app/build/", pa_mobile_app_build, name="pa_mobile_app_build"),
     # ── Scheduled Tasks ──
     path("scheduled/", pa_scheduled_list, name="pa_scheduled_list"),
     path("scheduled/create/", pa_scheduled_create, name="pa_scheduled_create"),

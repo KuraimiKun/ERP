@@ -349,6 +349,9 @@
             <a href="{% url 'tenants:pa_settings' %}" class="pa-nav-link {% if 'pa_settings' == request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-gear"></i> {% trans "Platform Settings" %}
             </a>
+            <a href="{% url 'tenants:pa_mobile_app' %}" class="pa-nav-link {% if 'pa_mobile_app' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-phone"></i> {% trans "Mobile App" %}
+            </a>
 
             <div class="pa-nav-section mt-3">{% trans "Quick Links" %}</div>
             <a href="{% url 'admin:index' %}" class="pa-nav-link">
