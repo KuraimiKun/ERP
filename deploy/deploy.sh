@@ -213,6 +213,15 @@ ANDROID_CMDLINE_TOOLS_VERSION="${ANDROID_CMDLINE_TOOLS_VERSION:-11076708}"
 ANDROID_PLATFORM="${ANDROID_PLATFORM:-android-34}"
 ANDROID_BUILD_TOOLS="${ANDROID_BUILD_TOOLS:-34.0.0}"
 
+# This script is typically invoked from /home/<deploy-user> (e.g. /home/ubuntu),
+# whose mode is 0750 and unreadable by other users. When we drop privileges with
+# `sudo -u "${APP_USER}"` further down, the child process inherits the cwd but
+# cannot access it — sdkmanager's wrapper (`cd "$SAVED"`) and Flutter's
+# `precache` (which shells out to `find`) then spam "Permission denied" and the
+# step exits non-zero. Move to a world-readable cwd before anything is
+# delegated to the unprivileged user.
+cd /tmp
+
 info "Installing JDK 17 + unzip (Android toolchain prerequisites)..."
 apt-get install -yqq openjdk-17-jdk-headless unzip
 # Resolve JAVA_HOME by following the `java` binary symlink to its real path
