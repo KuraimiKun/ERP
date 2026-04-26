@@ -11,6 +11,8 @@
 #
 # What it does:
 #   - Installs system packages (Python 3.12, PostgreSQL 15, Nginx, Certbot, Docker, Redis)
+#   - Installs the mobile build toolchain (JDK 17, Flutter SDK, Android SDK) so
+#     the platform-admin "Build mobile app" page can rebuild the employee APK
 #   - Creates a dedicated 'erp' system user
 #   - Sets up the project under /opt/erpdjango
 #   - Creates a Python virtualenv + installs deps
@@ -191,6 +193,82 @@ fi
 ok "User '${APP_USER}' ready"
 
 ###############################################################################
+# 2b. Mobile App Build Toolchain (Flutter + Android SDK + JDK 17)
+#
+# Installed so the platform-admin "Build mobile app" page
+# (tenants/platform_admin/views_mobile_app.py) can run
+# `flutter build apk --release` against ${APP_DIR}/mobile.
+#
+# Notes:
+#   * We deliberately do NOT use the Flutter snap — classic-snap confinement
+#     refuses to access paths outside /home (such as ${APP_DIR} under /opt).
+#   * Flutter + Android SDK are owned by ${APP_USER} so Gradle/Pub caches and
+#     Flutter's own self-updates under FLUTTER_ROOT/bin/cache work without
+#     root privileges at build time.
+###############################################################################
+FLUTTER_ROOT="/opt/flutter"
+ANDROID_SDK_ROOT="/opt/android-sdk"
+FLUTTER_CHANNEL="${FLUTTER_CHANNEL:-stable}"
+ANDROID_CMDLINE_TOOLS_VERSION="${ANDROID_CMDLINE_TOOLS_VERSION:-11076708}"
+ANDROID_PLATFORM="${ANDROID_PLATFORM:-android-34}"
+ANDROID_BUILD_TOOLS="${ANDROID_BUILD_TOOLS:-34.0.0}"
+
+info "Installing JDK 17 + unzip (Android toolchain prerequisites)..."
+apt-get install -yqq openjdk-17-jdk-headless unzip
+# Resolve JAVA_HOME by following the `java` binary symlink to its real path
+# and taking the grandparent dir (…/jdk/bin/java -> …/jdk).
+JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+ok "Java $(java -version 2>&1 | head -n1) (JAVA_HOME=${JAVA_HOME})"
+
+info "Installing Flutter SDK (${FLUTTER_CHANNEL}) at ${FLUTTER_ROOT}..."
+if [[ ! -x "${FLUTTER_ROOT}/bin/flutter" ]]; then
+    git clone --depth=1 -b "${FLUTTER_CHANNEL}" \
+        https://github.com/flutter/flutter.git "${FLUTTER_ROOT}"
+fi
+# Flutter inspects its own git checkout; mark it safe for any user.
+git config --system --add safe.directory "${FLUTTER_ROOT}" 2>/dev/null || true
+chown -R "${APP_USER}:${APP_USER}" "${FLUTTER_ROOT}"
+
+info "Installing Android command-line tools at ${ANDROID_SDK_ROOT}..."
+mkdir -p "${ANDROID_SDK_ROOT}/cmdline-tools"
+if [[ ! -d "${ANDROID_SDK_ROOT}/cmdline-tools/latest" ]]; then
+    CMDLINE_ZIP="/tmp/android-cmdline-tools-${ANDROID_CMDLINE_TOOLS_VERSION}.zip"
+    curl -fsSL \
+        "https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS_VERSION}_latest.zip" \
+        -o "${CMDLINE_ZIP}"
+    unzip -q -o "${CMDLINE_ZIP}" -d "${ANDROID_SDK_ROOT}/cmdline-tools"
+    # The zip extracts to cmdline-tools/cmdline-tools/; sdkmanager expects it at cmdline-tools/latest/.
+    mv "${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools" "${ANDROID_SDK_ROOT}/cmdline-tools/latest"
+    rm -f "${CMDLINE_ZIP}"
+fi
+chown -R "${APP_USER}:${APP_USER}" "${ANDROID_SDK_ROOT}"
+
+SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+info "Accepting Android SDK licenses and installing platform packages..."
+sudo -u "${APP_USER}" -H \
+    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    bash -c "yes | '${SDKMANAGER}' --licenses >/dev/null"
+sudo -u "${APP_USER}" -H \
+    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    "${SDKMANAGER}" \
+        "platform-tools" \
+        "platforms;${ANDROID_PLATFORM}" \
+        "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
+
+info "Warming Flutter caches (flutter precache --android)..."
+# Opt out of analytics on first run so the tool doesn't prompt the
+# service user interactively during later `flutter build` invocations.
+sudo -u "${APP_USER}" -H \
+    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    "${FLUTTER_ROOT}/bin/flutter" --disable-analytics >/dev/null || true
+sudo -u "${APP_USER}" -H \
+    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    "${FLUTTER_ROOT}/bin/flutter" precache --android
+
+FLUTTER_VERSION="$(${FLUTTER_ROOT}/bin/flutter --version 2>/dev/null | head -n1 || echo 'flutter (unknown version)')"
+ok "${FLUTTER_VERSION} + Android SDK (${ANDROID_PLATFORM}, build-tools ${ANDROID_BUILD_TOOLS}) installed"
+
+###############################################################################
 # 3. Deploy Application Files
 ###############################################################################
 info "Deploying application to ${APP_DIR}..."
@@ -256,6 +334,17 @@ CELERY_RESULT_BACKEND=redis://127.0.0.1:6379/0
 # ── Docker Socket Proxy ───────────────────────────────────────────────────────
 # The app connects to the restricted proxy, NOT the raw /var/run/docker.sock.
 DOCKER_HOST=tcp://127.0.0.1:2375
+
+# ── Mobile app build toolchain ───────────────────────────────────────────────
+# Consumed by tenants/platform_admin/views_mobile_app.py when a superuser
+# clicks "Build mobile app". PATH is extended so flutter/gradle can find
+# sdkmanager, adb, and the JDK without hard-coding them in the app code.
+FLUTTER_EXECUTABLE=${FLUTTER_ROOT}/bin/flutter
+FLUTTER_ROOT=${FLUTTER_ROOT}
+ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}
+ANDROID_HOME=${ANDROID_SDK_ROOT}
+JAVA_HOME=${JAVA_HOME}
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${FLUTTER_ROOT}/bin:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools
 ENVEOF
 chmod 600 "${APP_DIR}/.env"
 ok ".env written"

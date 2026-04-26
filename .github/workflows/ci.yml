@@ -13,6 +13,11 @@ on:
         default: false
         required: false
 
+# Least-privilege default for GITHUB_TOKEN. Both `build` and `mobile-build`
+# only need to read repo contents; `deploy` uses its own SSH secret.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -89,6 +94,53 @@ jobs:
       run: |
         python manage.py test --settings=erpproject.test_settings
 
+  # ── Mobile build ────────────────────────────────────────────────────────────
+  # Builds the Flutter APK from ./mobile/ to verify that the same build the
+  # platform-admin page triggers on the VPS (tenants/platform_admin/
+  # views_mobile_app.py -> `flutter build apk --release`) still succeeds.
+  # Runs in parallel with the `build` job; `deploy` waits for both.
+  mobile-build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Java 17 (required by Android Gradle Plugin)
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Set up Flutter (stable channel)
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+        cache: true
+
+    - name: Show Flutter / Dart versions
+      run: flutter --version
+
+    - name: Fetch Dart packages
+      run: flutter pub get
+
+    - name: Analyze
+      run: flutter analyze
+
+    - name: Build release APK
+      run: flutter build apk --release
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: kuraimi-erp-employee-apk
+        path: mobile/build/app/outputs/flutter-apk/app-release.apk
+        if-no-files-found: error
+        retention-days: 14
+
   # ── Deploy ──────────────────────────────────────────────────────────────────
   # Runs on every push to main/master and on manual workflow_dispatch.
   #
@@ -127,7 +179,7 @@ jobs:
   #     PROD_EMAIL_HOST_PASSWORD  — SMTP password
   # ────────────────────────────────────────────────────────────────────────────
   deploy:
-    needs: build
+    needs: [build, mobile-build]
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'workflow_dispatch' ||
