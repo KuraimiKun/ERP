@@ -254,26 +254,33 @@ fi
 chown -R "${APP_USER}:${APP_USER}" "${ANDROID_SDK_ROOT}"
 
 SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+# Use runuser instead of sudo for privilege drop: runuser is root-only and
+# honours -w/cwd directly via its login shell, whereas sudo's --chdir requires
+# an explicit `runcwd` rule in /etc/sudoers (not granted by default on Ubuntu,
+# even to root: "you are not permitted to use the -D option").
+# The leading `cd /tmp` ensures runuser's child inherits a readable cwd.
+RUN_AS_APP=(runuser -u "${APP_USER}" --)
+
 info "Accepting Android SDK licenses and installing platform packages..."
-sudo --chdir=/tmp -u "${APP_USER}" -H \
-    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
-    bash -c "yes | '${SDKMANAGER}' --licenses >/dev/null"
-sudo --chdir=/tmp -u "${APP_USER}" -H \
-    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
-    "${SDKMANAGER}" \
-        "platform-tools" \
-        "platforms;${ANDROID_PLATFORM}" \
-        "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
+"${RUN_AS_APP[@]}" \
+    env HOME="${APP_DIR}" JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    bash -c "cd /tmp && yes | '${SDKMANAGER}' --licenses >/dev/null"
+"${RUN_AS_APP[@]}" \
+    env HOME="${APP_DIR}" JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    bash -c "cd /tmp && '${SDKMANAGER}' \
+        'platform-tools' \
+        'platforms;${ANDROID_PLATFORM}' \
+        'build-tools;${ANDROID_BUILD_TOOLS}' >/dev/null"
 
 info "Warming Flutter caches (flutter precache --android)..."
 # Opt out of analytics on first run so the tool doesn't prompt the
 # service user interactively during later `flutter build` invocations.
-sudo --chdir=/tmp -u "${APP_USER}" -H \
-    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
-    "${FLUTTER_ROOT}/bin/flutter" --disable-analytics >/dev/null || true
-sudo --chdir=/tmp -u "${APP_USER}" -H \
-    env JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
-    "${FLUTTER_ROOT}/bin/flutter" precache --android
+"${RUN_AS_APP[@]}" \
+    env HOME="${APP_DIR}" JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    bash -c "cd /tmp && '${FLUTTER_ROOT}/bin/flutter' --disable-analytics >/dev/null" || true
+"${RUN_AS_APP[@]}" \
+    env HOME="${APP_DIR}" JAVA_HOME="${JAVA_HOME}" ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}" \
+    bash -c "cd /tmp && '${FLUTTER_ROOT}/bin/flutter' precache --android"
 
 FLUTTER_VERSION="$(${FLUTTER_ROOT}/bin/flutter --version 2>/dev/null | head -n1 || echo 'flutter (unknown version)')"
 ok "${FLUTTER_VERSION} + Android SDK (${ANDROID_PLATFORM}, build-tools ${ANDROID_BUILD_TOOLS}) installed"
