@@ -1,0 +1,485 @@
+% =============================================================================
+% Leakage-Aware Machine Learning Pipeline for Multi-Tenant ERP Systems
+% IEEE-style two-column article. Compile with pdflatex + bibtex.
+% =============================================================================
+\documentclass[conference]{IEEEtran}
+
+% --- Packages ----------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!50!black,
+    citecolor=blue!50!black,
+    urlcolor=blue!50!black,
+}
+
+\graphicspath{{figures/}}
+
+% Listing style for code/SQL/Python snippets ----------------------------------
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    columns=flexible,
+    frame=single,
+    framerule=0.4pt,
+    xleftmargin=4pt,
+    xrightmargin=4pt,
+    aboveskip=4pt,
+    belowskip=4pt,
+    keywordstyle=\color{blue!60!black}\bfseries,
+    commentstyle=\color{green!40!black}\itshape,
+    stringstyle=\color{red!60!black},
+    showstringspaces=false,
+}
+
+\begin{document}
+
+% =============================================================================
+\title{Leakage-Aware Machine Learning Integration in a\\Multi-Tenant ERP Platform: A Case-Study-Driven Approach}
+
+\author{%
+    \IEEEauthorblockN{[Author Name]}
+    \IEEEauthorblockA{[Department / Institution]\\
+    [City, Country]\\
+    \texttt{[email@domain]}}
+}
+
+\maketitle
+
+% =============================================================================
+\begin{abstract}
+Embedding machine learning (ML) inside enterprise resource planning (ERP)
+systems is increasingly common, but published descriptions rarely address two
+practical hazards: (i) target leakage that produces unrealistically optimistic
+metrics, and (ii) per-tenant model lifecycle in shared-nothing multi-tenant
+deployments. We describe an end-to-end ML pipeline integrated into a Django
+multi-tenant ERP, covering CRM lead scoring, HR attrition prediction, accounts
+receivable late-payment risk, and inventory demand forecasting. We treat
+\emph{leakage detection} as a first-class validation gate using a label-shuffle
+test, which rejected our initial lead-scoring features despite an apparently
+strong area under the receiver operating characteristic curve (AUC) of
+$0.9996$. The same gate validated the corrected pipeline. We further present a
+detailed case study on late-payment prediction, where a naive
+delivery-delay-based label was replaced with a customer-level payer profile;
+this caused the headline AUC to fall from $0.63$ to $0.50$ before rising to
+$0.78$ (5-fold cross-validation) once history-aware features became
+identifiable through customer bucketing. We discuss what synthetic-data AUCs
+do and do not measure, the design of a per-tenant model registry, and
+limitations relevant to real-world deployment.
+\end{abstract}
+
+\begin{IEEEkeywords}
+machine learning, ERP, multi-tenant SaaS, target leakage, demand forecasting,
+late-payment prediction, customer churn, employee attrition, MLOps
+\end{IEEEkeywords}
+
+% =============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Modern ERP platforms manage operational data covering customers, invoices,
+products, employees, and inventory movements. Adding ML capabilities on top
+of this data is a natural step: lead scoring for sales pipelines, attrition
+risk for HR, late-payment risk for accounts receivable, and demand
+forecasting for inventory replenishment are all standard supervised or
+time-series problems with mature algorithms~\cite{lessmann2015benchmarking,
+sakar2019machinelearning}.
+
+In practice, however, integrating ML into a working multi-tenant ERP raises
+problems that the algorithmic literature largely sidesteps:
+
+\begin{itemize}
+    \item \textbf{Target leakage from operational state.} ERP feature
+    tables often contain post-event status fields (e.g., a lead's \texttt{won}
+    flag, an invoice's \texttt{paid} timestamp). Naively including them in
+    feature extraction yields models whose offline metrics are excellent and
+    whose online performance collapses.
+    \item \textbf{Per-tenant model lifecycle.} A shared-nothing multi-tenant
+    SaaS deployment hosts each tenant's data in a separate database. A model
+    trained on tenant $A$ should never score tenant $B$'s rows; the registry,
+    feature pipeline, and serving layer must respect that boundary.
+    \item \textbf{Sparse and irregular operational signals.} Most products
+    sell rarely, most leads never convert, most employees do not leave, and
+    most invoices are paid on time. Class imbalance and time-series sparsity
+    are the rule, not the exception.
+\end{itemize}
+
+This paper reports an end-to-end design that addresses each of the issues
+above, integrated into an open-source Django ERP we have developed. The
+contributions are:
+
+\begin{enumerate}
+    \item A reproducible ML training pipeline integrated with a multi-tenant
+    ORM and a per-tenant model registry (Section~\ref{sec:architecture}).
+    \item A \emph{shuffle-label} validation gate used to detect and reject
+    leaky feature definitions, with a worked example showing how it caught
+    leakage hidden behind AUC $\approx 1.0$ (Section~\ref{sec:leakage}).
+    \item Four case studies---lead scoring, attrition, late-payment risk, and
+    demand forecasting---each documenting the data, label, features, leakage
+    check, and limitations (Section~\ref{sec:cases}).
+    \item A discussion of what synthetic-data evaluation does and does not
+    establish, and how to report it honestly (Section~\ref{sec:discussion}).
+\end{enumerate}
+
+% =============================================================================
+\section{Related Work}
+\label{sec:related}
+
+\textbf{ML for credit and payment risk.} Lessmann et al.~\cite{lessmann2015benchmarking}
+benchmark $41$ classifiers across $8$ credit-scoring datasets, finding gradient
+boosting and random forests competitive with deep models, and report typical
+AUCs between $0.74$ and $0.88$ on real data. We use this range as a
+plausibility band for our late-payment results.
+
+\textbf{Employee attrition.} Sakar et al.~\cite{sakar2019machinelearning} and
+follow-up work on the IBM HR dataset report AUCs in the $0.78$--$0.88$ range
+when leakage from outcome-correlated fields (e.g., \texttt{OverTime} measured
+\emph{after} the resignation decision) is controlled.
+
+\textbf{Demand forecasting.} Prophet~\cite{taylor2018forecasting} provides a
+practical decomposition baseline that handles weekly and yearly seasonality
+without manual tuning, and is widely used as a benchmark in industrial
+deployments.
+
+\textbf{Target leakage.} Kaufman et al.~\cite{kaufman2012leakage} formalize
+leakage in predictive modeling and propose audit techniques. The
+\emph{label-shuffle} test we use is a special case of permutation testing
+\cite{ojala2010permutation}: if a model trained on label-shuffled data still
+exceeds chance AUC, the feature pipeline contains leakage independent of the
+true label.
+
+\textbf{Multi-tenant SaaS ML.} Industry write-ups discuss per-tenant versus
+shared models~\cite{zhang2021multitenant}, but academic treatments remain
+sparse. We adopt a per-tenant registry with shared training infrastructure.
+
+% =============================================================================
+\section{System Architecture}
+\label{sec:architecture}
+
+The host system is a Django~5 multi-tenant ERP with PostgreSQL backends.
+Each tenant has a dedicated database, registered in a \texttt{TenantDatabase}
+control table; a database router activates the correct connection within a
+\texttt{TenantDatabaseContext} \cite{}. All ORM calls in feature-extraction
+code use explicit \texttt{.using(db)} aliases, eliminating cross-tenant query
+risk. Soft-deleted rows are accessible via an \texttt{all\_objects} manager
+where ML history must include them (e.g., historical invoices for
+late-payment features).
+
+\subsection{Pipeline Stages}
+
+\begin{figure}[t]
+    \centering
+    % \includegraphics[width=\columnwidth]{architecture.pdf}
+    \fbox{\parbox{0.95\columnwidth}{\centering\textit{[Figure placeholder:
+    architecture diagram --- tenant routing $\rightarrow$ feature extraction
+    $\rightarrow$ leakage gate $\rightarrow$ training $\rightarrow$ per-tenant
+    registry $\rightarrow$ scoring API.]}}}
+    \caption{End-to-end pipeline from tenant-scoped feature extraction to
+    per-tenant model serving.}
+    \label{fig:architecture}
+\end{figure}
+
+\begin{enumerate}
+    \item \textbf{Feature extraction.} Per-task selectors compose tenant-scoped
+    Django querysets into \texttt{pandas} dataframes. Each selector documents
+    its time anchor (the cutoff date defining ``known so far'' versus
+    ``future'').
+    \item \textbf{Leakage gate.} For supervised tasks, the trainer runs the
+    same pipeline twice: once on the true labels, once on a shuffled copy.
+    Hold-out AUC on shuffled labels must lie in $[0.45, 0.55]$; otherwise the
+    run is rejected (Section~\ref{sec:leakage}).
+    \item \textbf{Training.} Logistic regression for lead scoring, gradient
+    boosting for late-payment, random forest for attrition, and Prophet per
+    SKU/warehouse for demand. Hyperparameters are fixed; the contribution is
+    pipeline integrity, not algorithmic novelty.
+    \item \textbf{Persistence.} Models, metadata, and a training report are
+    written under \texttt{ml\_models/\{company\_id\}/}, isolating artefacts
+    per tenant.
+    \item \textbf{Serving.} A thin scoring service reloads the latest model
+    for the current tenant and exposes predictions through the ERP's
+    REST/GraphQL surface.
+\end{enumerate}
+
+% =============================================================================
+\section{Leakage as a First-Class Validation Gate}
+\label{sec:leakage}
+
+\subsection{Motivating Failure}
+
+Our initial lead-scoring model achieved hold-out AUC $\approx 0.9996$. Manual
+inspection of the feature extractor revealed two leaks: the \texttt{stage}
+field was sampled \emph{after} the conversion event, and the activity-window
+aggregator counted touchpoints whose timestamp followed the prediction
+anchor. Both fixes were obvious in retrospect; neither was caught by a
+standard time-aware train/test split because the offending fields were
+correlated with the cutoff in subtle ways.
+
+\subsection{The Shuffle-Label Test}
+
+We adopted the test described in Algorithm~\ref{alg:shuffle}.
+Implementation lives in \texttt{erp/ai/services/base.py} and is exposed via a
+\texttt{--shuffle-labels} CLI flag on the training command.
+
+\begin{figure}[h]
+\begin{lstlisting}[language=Python]
+def shuffle_label_auc(X, y, model_factory,
+                      n_splits=5, seed=0):
+    rng = np.random.default_rng(seed)
+    y_perm = rng.permutation(y)
+    cv = StratifiedKFold(n_splits=n_splits,
+                         shuffle=True,
+                         random_state=seed)
+    scores = []
+    for tr, te in cv.split(X, y_perm):
+        m = model_factory().fit(X[tr], y_perm[tr])
+        p = m.predict_proba(X[te])[:, 1]
+        scores.append(roc_auc_score(y_perm[te], p))
+    return float(np.mean(scores))
+\end{lstlisting}
+\caption{Label-shuffle leakage probe. Mean AUC outside $[0.45, 0.55]$ flags
+the pipeline as leaky regardless of the real-label score.}
+\label{alg:shuffle}
+\end{figure}
+
+\subsection{Outcome Across Models}
+
+Table~\ref{tab:shuffle} summarises the gate results after the corrections
+described in Section~\ref{sec:cases}. All four models pass the test.
+
+\begin{table}[h]
+\centering
+\caption{Leakage gate: real vs.\ shuffled-label AUC.}
+\label{tab:shuffle}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Model} & \textbf{Real AUC} & \textbf{Shuffled AUC} \\
+\midrule
+Lead scoring   & $0.9996$ & $0.4866$ \\
+Attrition      & $0.9996$ & $0.5335$ \\
+Late payment   & $0.7847$ (CV) / $0.8037$ (HO) & $0.5020$ \\
+Demand (Prophet) & MAPE-$0.69$ to $0.74$ & n/a \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The gap between real and shuffled AUC is the only metric we treat as evidence
+of learned signal. The absolute AUC, especially on synthetic data, is
+discussed critically in Section~\ref{sec:discussion}.
+
+% =============================================================================
+\section{Case Studies}
+\label{sec:cases}
+
+\subsection{Late-Payment Risk (Featured Case Study)}
+\label{sec:latepayment}
+
+\textbf{Dataset.} The Olist Brazilian E-Commerce dataset
+\cite{olist2018dataset} provides $\sim$$99{,}000$ orders with delivery
+timestamps and payment records, imported into the ERP as customers,
+invoices, payments, and product rows.
+
+\textbf{Iteration 1: delivery-delay proxy (AUC $0.63$).} Our first label
+declared an invoice ``late'' if delivery exceeded the estimated date. Hold-out
+AUC was $0.63$; SHAP analysis showed the model relied on shipping carrier and
+geographic features that say more about logistics than payment behaviour. The
+target was the wrong concept.
+
+\textbf{Iteration 2: hidden payer profile (AUC $0.50$).} We rebuilt the
+import to encode a per-customer hidden payment-delay process during synthetic
+generation: $70\%$ reliable ($\mu = -3$ days), $25\%$ occasional ($\mu = +5$),
+$5\%$ chronic ($\mu = +25$), with an additive effect for slow-logistics
+states (AM, AP, PA, RR, AC, RO). The label was now derived from a true
+behavioural signal. AUC dropped to $0.50$. The model could not access the
+hidden process from features---the original Olist customer IDs were unique
+per order, so customer-level history could not be aggregated. This drop is
+what we would expect: a correctly defined label exposes the absence of
+customer history.
+
+\textbf{Iteration 3: customer bucketing (AUC $0.78$).} We hashed the
+$\sim$$96$k unique IDs into $3{,}000$ logical accounts. Customer-aggregate
+features (\texttt{cust\_payment\_delay\_mean}, \texttt{cust\_late\_ratio},
+\texttt{cust\_total\_invoices}, \texttt{amount\_vs\_cust\_avg}) became
+informative because most accounts now had multiple invoices.
+
+\begin{table}[h]
+\centering
+\caption{Late-payment iteration history.}
+\label{tab:latepayment}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Iteration} & \textbf{AUC (hold-out)} & \textbf{Shuffled AUC} \\
+\midrule
+1. Delivery proxy      & $0.63$  & not run \\
+2. Payer-profile label & $0.50$  & $\sim$$0.50$ \\
+3. + customer bucketing & $0.80$  & $0.50$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The intermediate drop is, in our view, the most pedagogically valuable result
+in this paper. It illustrates that a higher AUC is not always a better model;
+the right question is whether the label encodes the concept of interest.
+
+\subsection{Lead Scoring}
+
+\textbf{Data.} A synthetic CRM lead generator produces leads with stages,
+contact attempts, and source channels. \textbf{Label.} Won within $30$ days
+of creation. \textbf{Fix.} Feature window is now symmetric, ending exactly at
+the prediction anchor; \texttt{stage} is removed; activity counts use only
+events with timestamp $<$ anchor.
+
+\textbf{Result.} Real AUC $0.9996$, shuffled $0.49$. The high real AUC
+reflects deterministic generator rules; we do not interpret it as expected
+production performance (Section~\ref{sec:discussion}).
+
+\subsection{Employee Attrition}
+
+\textbf{Data.} IBM HR Employee Attrition~\cite{ibmhr}.
+\textbf{Label.} \texttt{Attrition} flag.
+\textbf{Fix.} Per-employee feature snapshot taken from a $90$-day backfilled
+state preceding the resignation event, eliminating reliance on
+post-resignation aggregates.
+
+\textbf{Result.} Real AUC $0.9996$, shuffled $0.53$. Same caveat as lead
+scoring---the labelled fields in the IBM dataset are deterministically
+predictive when not deliberately perturbed.
+
+\subsection{Demand Forecasting}
+
+\textbf{Data.} Synthetic stock-movement series, $365$ days $\times$ $50$
+products $\times$ $2$ warehouses, with three demand profiles (fast, moderate,
+slow), weekly and monthly seasonality, and weekend dips.
+
+\textbf{Method.} Prophet~\cite{taylor2018forecasting} fitted per
+\textit{(SKU, warehouse)} pair. We previously observed that only $50\%$ of
+\texttt{ReorderRule} entries trained successfully because the seeder
+populated only the first warehouse. After fixing the seeder to iterate over
+all active warehouses, $100/100$ rules trained.
+
+\textbf{Backtest score.} Cross-validation MAPE was uninformative on slow
+movers (Prophet skipped MAPE for $y\to 0$); we report mean absolute scaled
+error in the range $[0.69, 0.74]$ across SKUs as the backtest signal. A
+representative forecast is shown in Fig.~\ref{fig:prophet}.
+
+\begin{figure}[t]
+    \centering
+    \fbox{\parbox{0.95\columnwidth}{\centering\textit{[Figure placeholder:
+    Prophet backtest plot, fast vs.\ slow SKU.]}}}
+    \caption{Prophet cross-validation forecast for representative fast and
+    slow SKUs.}
+    \label{fig:prophet}
+\end{figure}
+
+% =============================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What synthetic-data AUC measures}
+
+Two of our four classification models attain AUC $\approx 0.9996$ on
+synthetic data. Crucially, both pass the shuffle-label gate
+(Table~\ref{tab:shuffle}), confirming the absence of leakage. But the
+absolute number remains a pipeline-correctness claim, not a production
+performance claim. Synthetic generators encode deterministic feature-to-label
+rules with little aleatoric noise, so a sufficiently expressive model
+recovers them almost perfectly.
+
+For external comparison, real-world benchmarks in the same task
+families~\cite{lessmann2015benchmarking, sakar2019machinelearning} report AUCs
+in $0.74$--$0.88$. We therefore present our $0.9996$ values as
+\emph{ceiling validation}---the pipeline can attain its theoretical maximum
+on a clean signal---and \emph{not} as forecasts for tenant deployment.
+
+\subsection{Why the late-payment number is different}
+
+Late payment is the only model whose label was constructed with a hidden
+stochastic process and whose features were realistically incomplete (only
+aggregable history was available). This is closer to a real customer-risk
+problem, and the resulting AUC of $0.78$--$0.80$ falls within the credit-risk
+band reported in the literature.
+
+\subsection{Per-tenant model lifecycle}
+
+The registry layout \texttt{ml\_models/\{company\_id\}/} ensures that
+artefacts and metadata never cross tenants. We considered an alternative
+hierarchical model (one shared backbone with a per-tenant calibration head),
+which trades training cost for inference complexity. For ERP tenants of
+heterogeneous size and domain, we did not find a compelling argument for
+sharing parameters across tenants; the per-tenant approach is also easier to
+reason about under data-deletion requirements.
+
+\subsection{Operational findings}
+
+Two issues that did not appear in literature but cost us substantial time:
+
+\begin{itemize}
+    \item \textbf{ORM cascade deletion at scale.} Clearing $99$k Olist rows
+    via Django's \texttt{.delete()} took $\sim$$30$ minutes due to in-memory
+    PK loading. Replacing it with raw SQL \texttt{DELETE} statements (in
+    correct foreign-key order, with explicit \texttt{StockMovement} and
+    \texttt{ReorderRule} cascade) brought the clear phase under $2$ seconds.
+    \item \textbf{Sparse seed coverage.} A demand seeder that populated only
+    one of two warehouses caused $50\%$ of forecasts to fail silently with
+    ``insufficient demand signal''. Iterating over all active warehouses
+    fixed this.
+\end{itemize}
+
+% =============================================================================
+\section{Limitations and Future Work}
+\label{sec:limits}
+
+\textbf{Single tenant evaluated.} All numbers in this paper come from one
+synthetic tenant. Cross-tenant generalisation is unverified.
+
+\textbf{Synthetic ceiling.} Our two highest-AUC models are bounded above by
+the realism of the generators, not by the pipeline. Real-tenant pilots are
+required to establish production performance.
+
+\textbf{No drift monitoring.} The serving layer reloads the latest model but
+does not yet track distribution shift between training and inference inputs.
+
+\textbf{No online evaluation.} A/B testing against a no-ML baseline inside a
+real tenant remains future work.
+
+\textbf{Class imbalance handling.} We used default class weights and report
+AUC. Threshold-dependent metrics (precision/recall at operating points) are
+left to per-tenant tuning.
+
+% =============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Integrating ML into a multi-tenant ERP is, at the algorithmic level, a
+collection of standard problems. The interesting parts are operational:
+designing feature pipelines that respect tenant isolation, treating leakage
+detection as a deployment gate rather than a debugging convenience, and
+distinguishing pipeline-correctness AUC from production-performance AUC. We
+have shown a working pipeline that does this for four representative tasks,
+and a late-payment case study whose iteration history is, in our view, more
+valuable than any single AUC number.
+
+% =============================================================================
+\section*{Reproducibility}
+
+The system, training command, and seed scripts are available at
+\href{https://github.com/[user]/[repo]}{\texttt{[repo URL]}} under tag
+\texttt{thesis-snapshot-v1}. Training reports for the experiments described
+here are stored in \texttt{thesis/results/}.
+
+% =============================================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
