@@ -69,10 +69,10 @@ class Command(BaseCommand):
             inject_kpi_spike = options["inject_kpi_spike"]
             reset_seed = options["reset_ml_seed"]
 
-            warehouse = (
-                Warehouse.objects.using(self.db).filter(company=self.company, is_active=True).order_by("id").first()
+            warehouses = list(
+                Warehouse.objects.using(self.db).filter(company=self.company, is_active=True).order_by("id")
             )
-            if not warehouse:
+            if not warehouses:
                 raise CommandError(
                     "No active warehouse found for this company. Demand seed requires at least one warehouse."
                 )
@@ -97,11 +97,15 @@ class Command(BaseCommand):
             if reset_seed:
                 self._cleanup_existing_seed_rows()
 
-            seeded_moves = self._seed_stock_movements(products, warehouse, days, inject_kpi_spike)
-            seeded_rules = self._ensure_reorder_rules(products, warehouse, suppliers)
+            seeded_moves = 0
+            seeded_rules = 0
+            for warehouse in warehouses:
+                seeded_moves += self._seed_stock_movements(products, warehouse, days, inject_kpi_spike)
+                seeded_rules += self._ensure_reorder_rules(products, warehouse, suppliers)
             seeded_supplier_invoices = self._seed_supplier_invoices(suppliers, currency, n_supplier_invoices)
 
             self.stdout.write(self.style.SUCCESS("\nSeeding complete:"))
+            self.stdout.write(f"  Warehouses seeded: {len(warehouses)}")
             self.stdout.write(f"  Stock movements created: {seeded_moves}")
             self.stdout.write(f"  Reorder rules created/updated: {seeded_rules}")
             self.stdout.write(f"  Pending supplier invoices created: {seeded_supplier_invoices}")
@@ -227,7 +231,7 @@ class Command(BaseCommand):
                     unit_cost=round(Decimal(str(unit_cost)), 4),
                     total_cost=round(Decimal(str(qty * unit_cost)), 4),
                     reference_type="ml_seed",
-                    reference_number=f"{SEED_REF_PREFIX}-SM-{product.id}-{d}",  # type: ignore[attr-defined]
+                    reference_number=f"{SEED_REF_PREFIX}-SM-{warehouse.code}-{product.id}-{d}",  # type: ignore[attr-defined]
                     description="Synthetic demand movement for ML training",
                 )
                 created += 1
@@ -245,7 +249,7 @@ class Command(BaseCommand):
                 unit_cost=opening_unit_cost,
                 total_cost=(opening_qty * opening_unit_cost).quantize(Decimal("0.0001")),
                 reference_type="ml_seed",
-                reference_number=f"{SEED_REF_PREFIX}-OPEN-{product.id}",  # type: ignore[attr-defined]
+                reference_number=f"{SEED_REF_PREFIX}-OPEN-{warehouse.code}-{product.id}",  # type: ignore[attr-defined]
                 description="Synthetic opening balance for ML demand baseline",
             )
             created += 1
