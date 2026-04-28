@@ -1,0 +1,108 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{lessmann2015benchmarking,sakar2019machinelearning}
+\citation{lessmann2015benchmarking}
+\citation{sakar2019machinelearning}
+\citation{taylor2018forecasting}
+\citation{kaufman2012leakage}
+\citation{ojala2010permutation}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{I}{1}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{1}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{II}{1}{Related Work}{section.2}{}}
+\citation{zhang2021multitenant}
+\citation{bezemer2010multi,zhang2021multitenant}
+\citation{lessmann2015benchmarking,sakar2019machinelearning}
+\citation{lessmann2015benchmarking,sakar2019machinelearning}
+\citation{olist2018}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces End-to-end pipeline from tenant-scoped feature extraction to per-tenant model serving. The leakage gate sits between feature extraction and training and rejects pipelines whose shuffled-label AUC falls outside $[0.45, 0.55]$.}}{2}{figure.1}\protected@file@percent }
+\newlabel{fig:architecture}{{1}{2}{End-to-end pipeline from tenant-scoped feature extraction to per-tenant model serving. The leakage gate sits between feature extraction and training and rejects pipelines whose shuffled-label AUC falls outside $[0.45, 0.55]$}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {III}System Architecture}{2}{section.3}\protected@file@percent }
+\newlabel{sec:architecture}{{III}{2}{System Architecture}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Pipeline Stages}{2}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Leakage as a First-Class Validation Gate}{2}{section.4}\protected@file@percent }
+\newlabel{sec:leakage}{{IV}{2}{Leakage as a First-Class Validation Gate}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Motivating Failure}{2}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}The Shuffle-Label Test}{2}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Label-shuffle leakage probe. Mean AUC outside $[0.45, 0.55]$ flags the pipeline as leaky regardless of the real-label score.}}{2}{figure.2}\protected@file@percent }
+\newlabel{alg:shuffle}{{2}{2}{Label-shuffle leakage probe. Mean AUC outside $[0.45, 0.55]$ flags the pipeline as leaky regardless of the real-label score}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Outcome Across Models}{2}{subsection.4.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Leakage gate: real vs.\ shuffled-label AUC.}}{2}{table.1}\protected@file@percent }
+\newlabel{tab:shuffle}{{I}{2}{Leakage gate: real vs.\ shuffled-label AUC}{table.1}{}}
+\newlabel{sec:cases}{{\mbox  {IV-C}}{2}{Outcome Across Models}{figure.4}{}}
+\citation{niculescu2005calibration}
+\citation{niculescu2005calibration}
+\citation{ibm2017hr}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Per-model leakage summary. The leftmost bar of each pair is the real-label AUC; the rightmost is the shuffled-label AUC. Models pass the gate when the shuffled bar lies in the green band $[0.45, 0.55]$.}}{3}{figure.3}\protected@file@percent }
+\newlabel{fig:leakage-dashboard}{{3}{3}{Per-model leakage summary. The leftmost bar of each pair is the real-label AUC; the rightmost is the shuffled-label AUC. Models pass the gate when the shuffled bar lies in the green band $[0.45, 0.55]$}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Real-label vs.\ shuffled-label AUC across the four classification models, with the credit-risk reference band of $0.74$--$0.88$~\cite  {lessmann2015benchmarking,sakar2019machinelearning} overlaid for context.}}{3}{figure.4}\protected@file@percent }
+\newlabel{fig:auc-comparison}{{4}{3}{Real-label vs.\ shuffled-label AUC across the four classification models, with the credit-risk reference band of $0.74$--$0.88$~\cite {lessmann2015benchmarking,sakar2019machinelearning} overlaid for context}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Late-Payment Risk (Featured Case Study)}{3}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:latepayment}{{\mbox  {IV-D}}{3}{Late-Payment Risk (Featured Case Study)}{subsection.4.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Late-payment classifier diagnostics on the held-out fold. Left: confusion matrix at the default $0.5$ threshold. Right: reliability curve with isotonic-style binning; the closer the empirical curve follows the diagonal, the better calibrated the predicted probabilities~\cite  {niculescu2005calibration}.}}{3}{figure.5}\protected@file@percent }
+\newlabel{fig:latepay-diag}{{5}{3}{Late-payment classifier diagnostics on the held-out fold. Left: confusion matrix at the default $0.5$ threshold. Right: reliability curve with isotonic-style binning; the closer the empirical curve follows the diagonal, the better calibrated the predicted probabilities~\cite {niculescu2005calibration}}{figure.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Late-payment iteration history.}}{3}{table.2}\protected@file@percent }
+\newlabel{tab:latepayment}{{II}{3}{Late-payment iteration history}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Employee Attrition}{3}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}Demand Forecasting}{3}{subsection.4.6}\protected@file@percent }
+\citation{taylor2018forecasting}
+\citation{molnar2022interpretable,arrieta2020explainable,lipton2018mythos}
+\citation{lundberg2017unified,lundberg2020local}
+\citation{ribeiro2016why}
+\citation{slack2020fooling,guidotti2018survey}
+\citation{shapley1953value,lundberg2017unified}
+\citation{shapley1953value,lundberg2017unified}
+\citation{rudin2019stop,doshi2017towards}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Top permutation-importance features for the late-payment classifier. Customer-aggregate features (\texttt  {cust\_payment\_delay\_mean}, \texttt  {cust\_late\_ratio}) dominate over per-invoice and logistics features, confirming that the model learned the hidden payer profile through customer bucketing.}}{4}{figure.6}\protected@file@percent }
+\newlabel{fig:latepay-importance}{{6}{4}{Top permutation-importance features for the late-payment classifier. Customer-aggregate features (\texttt {cust\_payment\_delay\_mean}, \texttt {cust\_late\_ratio}) dominate over per-invoice and logistics features, confirming that the model learned the hidden payer profile through customer bucketing}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Prophet rolling-origin backtest for a representative fast SKU (left) and slow SKU (right). Shaded bands show the model's $80\%$ interval; black dots are observed daily demand.}}{4}{figure.7}\protected@file@percent }
+\newlabel{fig:prophet}{{7}{4}{Prophet rolling-origin backtest for a representative fast SKU (left) and slow SKU (right). Shaded bands show the model's $80\%$ interval; black dots are observed daily demand}{figure.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Explainability and Operator Trust}{4}{section.5}\protected@file@percent }
+\newlabel{sec:xai}{{V}{4}{Explainability and Operator Trust}{section.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces SHAP beeswarm for the late-payment classifier. High customer delay history (red on \texttt  {cust\_payment\_delay\_mean}) pushes the score upward; low history pushes it downward. Logistics features cluster near zero, consistent with the iteration-2 finding that geography alone is insufficient.}}{4}{figure.8}\protected@file@percent }
+\newlabel{fig:shap-beeswarm}{{8}{4}{SHAP beeswarm for the late-payment classifier. High customer delay history (red on \texttt {cust\_payment\_delay\_mean}) pushes the score upward; low history pushes it downward. Logistics features cluster near zero, consistent with the iteration-2 finding that geography alone is insufficient}{figure.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Global Behaviour}{4}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Per-Decision Explanations}{4}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Why we expose both methods}{4}{subsection.5.3}\protected@file@percent }
+\citation{lessmann2015benchmarking,sakar2019machinelearning}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces SHAP waterfall for a single late-payment prediction ($\hat  p = 0.96$). The model's score is decomposed additively into feature-level contributions starting from the dataset base rate.}}{5}{figure.9}\protected@file@percent }
+\newlabel{fig:waterfall}{{9}{5}{SHAP waterfall for a single late-payment prediction ($\hat p = 0.96$). The model's score is decomposed additively into feature-level contributions starting from the dataset base rate}{figure.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Side-by-side SHAP vs.\ LIME explanation for the same instance. Top features broadly agree; the absolute weight scale differs because LIME uses a local linear surrogate while SHAP uses additive Shapley values~\cite  {shapley1953value,lundberg2017unified}.}}{5}{figure.10}\protected@file@percent }
+\newlabel{fig:shap-vs-lime}{{10}{5}{Side-by-side SHAP vs.\ LIME explanation for the same instance. Top features broadly agree; the absolute weight scale differs because LIME uses a local linear surrogate while SHAP uses additive Shapley values~\cite {shapley1953value,lundberg2017unified}}{figure.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Discussion}{5}{section.6}\protected@file@percent }
+\newlabel{sec:discussion}{{VI}{5}{Discussion}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}What synthetic-data AUC measures}{5}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Why the late-payment number is different}{5}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Per-tenant model lifecycle}{5}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-D}}Operational findings}{5}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Limitations and Future Work}{5}{section.7}\protected@file@percent }
+\newlabel{sec:limits}{{VII}{5}{Limitations and Future Work}{section.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Conclusion}{5}{section.8}\protected@file@percent }
+\newlabel{sec:conclusion}{{VIII}{5}{Conclusion}{section.8}{}}
+\bibstyle{IEEEtran}
+\bibdata{references}
+\bibcite{lessmann2015benchmarking}{1}
+\bibcite{sakar2019machinelearning}{2}
+\bibcite{taylor2018forecasting}{3}
+\bibcite{kaufman2012leakage}{4}
+\bibcite{ojala2010permutation}{5}
+\bibcite{zhang2021multitenant}{6}
+\bibcite{bezemer2010multi}{7}
+\bibcite{olist2018}{8}
+\bibcite{niculescu2005calibration}{9}
+\bibcite{ibm2017hr}{10}
+\bibcite{molnar2022interpretable}{11}
+\bibcite{arrieta2020explainable}{12}
+\bibcite{lipton2018mythos}{13}
+\bibcite{lundberg2017unified}{14}
+\bibcite{lundberg2020local}{15}
+\bibcite{ribeiro2016why}{16}
+\bibcite{slack2020fooling}{17}
+\bibcite{guidotti2018survey}{18}
+\bibcite{shapley1953value}{19}
+\bibcite{rudin2019stop}{20}
+\bibcite{doshi2017towards}{21}
+\@writefile{toc}{\contentsline {section}{References}{6}{section*.2}\protected@file@percent }
+\gdef \@abspage@last{6}

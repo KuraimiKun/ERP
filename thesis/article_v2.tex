@@ -51,8 +51,8 @@
 
 \author{%
     \IEEEauthorblockN{[Author Name]}
-    \IEEEauthorblockA{[Department / Institution]\\
-    [City, Country]\\
+    \IEEEauthorblockA{{[Department / Institution]}\\
+    {[City, Country]}\\
     \texttt{[email@domain]}}
 }
 
@@ -171,7 +171,7 @@ sparse. We adopt a per-tenant registry with shared training infrastructure.
 The host system is a Django~5 multi-tenant ERP with PostgreSQL backends.
 Each tenant has a dedicated database, registered in a \texttt{TenantDatabase}
 control table; a database router activates the correct connection within a
-\texttt{TenantDatabaseContext} \cite{}. All ORM calls in feature-extraction
+\texttt{TenantDatabaseContext} context manager~\cite{bezemer2010multi,zhang2021multitenant}. All ORM calls in feature-extraction
 code use explicit \texttt{.using(db)} aliases, eliminating cross-tenant query
 risk. Soft-deleted rows are accessible via an \texttt{all\_objects} manager
 where ML history must include them (e.g., historical invoices for
@@ -181,13 +181,11 @@ late-payment features).
 
 \begin{figure}[t]
     \centering
-    % \includegraphics[width=\columnwidth]{architecture.pdf}
-    \fbox{\parbox{0.95\columnwidth}{\centering\textit{[Figure placeholder:
-    architecture diagram --- tenant routing $\rightarrow$ feature extraction
-    $\rightarrow$ leakage gate $\rightarrow$ training $\rightarrow$ per-tenant
-    registry $\rightarrow$ scoring API.]}}}
+    \includegraphics[width=\columnwidth]{ml_pipeline_architecture.png}
     \caption{End-to-end pipeline from tenant-scoped feature extraction to
-    per-tenant model serving.}
+    per-tenant model serving. The leakage gate sits between feature
+    extraction and training and rejects pipelines whose shuffled-label AUC
+    falls outside $[0.45, 0.55]$.}
     \label{fig:architecture}
 \end{figure}
 
@@ -266,10 +264,10 @@ described in Section~\ref{sec:cases}. All four models pass the test.
 \toprule
 \textbf{Model} & \textbf{Real AUC} & \textbf{Shuffled AUC} \\
 \midrule
-Lead scoring   & $0.9996$ & $0.4866$ \\
-Attrition      & $0.9996$ & $0.5335$ \\
-Late payment   & $0.7847$ (CV) / $0.8037$ (HO) & $0.5020$ \\
-Demand (Prophet) & MAPE-$0.69$ to $0.74$ & n/a \\
+Lead scoring   & $0.9997$ & $0.4947$ \\
+Attrition      & $0.9996$ & $0.4996$ \\
+Late payment   & $0.7846$ (CV) / $0.8037$ (HO) & $0.4963$ \\
+Demand (Prophet) & MAE $0.38$--$0.75$ & n/a \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -278,15 +276,31 @@ The gap between real and shuffled AUC is the only metric we treat as evidence
 of learned signal. The absolute AUC, especially on synthetic data, is
 discussed critically in Section~\ref{sec:discussion}.
 
-% =============================================================================
-\section{Case Studies}
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{xai_leakage_summary_dashboard.png}
+    \caption{Per-model leakage summary. The leftmost bar of each pair is the
+    real-label AUC; the rightmost is the shuffled-label AUC. Models pass the
+    gate when the shuffled bar lies in the green band $[0.45, 0.55]$.}
+    \label{fig:leakage-dashboard}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{xai_model_auc_comparison.png}
+    \caption{Real-label vs.\ shuffled-label AUC across the four
+    classification models, with the credit-risk reference band of
+    $0.74$--$0.88$~\cite{lessmann2015benchmarking,sakar2019machinelearning}
+    overlaid for context.}
+    \label{fig:auc-comparison}
+\end{figure}
 \label{sec:cases}
 
 \subsection{Late-Payment Risk (Featured Case Study)}
 \label{sec:latepayment}
 
 \textbf{Dataset.} The Olist Brazilian E-Commerce dataset
-\cite{olist2018dataset} provides $\sim$$99{,}000$ orders with delivery
+\cite{olist2018} provides $\sim$$99{,}000$ orders with delivery
 timestamps and payment records, imported into the ERP as customers,
 invoices, payments, and product rows.
 
@@ -323,7 +337,7 @@ informative because most accounts now had multiple invoices.
 \midrule
 1. Delivery proxy      & $0.63$  & not run \\
 2. Payer-profile label & $0.50$  & $\sim$$0.50$ \\
-3. + customer bucketing & $0.80$  & $0.50$ \\
+3. + customer bucketing & $0.78$ (CV) / $0.80$ (HO) & $0.4963$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -332,7 +346,28 @@ The intermediate drop is, in our view, the most pedagogically valuable result
 in this paper. It illustrates that a higher AUC is not always a better model;
 the right question is whether the label encodes the concept of interest.
 
-\subsection{Lead Scoring}
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.49\columnwidth]{cm_late_payment.png}\hfill
+    \includegraphics[width=0.49\columnwidth]{calibration_late_payment.png}
+    \caption{Late-payment classifier diagnostics on the held-out fold.
+    Left: confusion matrix at the default $0.5$ threshold. Right: reliability
+    curve with isotonic-style binning; the closer the empirical curve
+    follows the diagonal, the better calibrated the predicted
+    probabilities~\cite{niculescu2005calibration}.}
+    \label{fig:latepay-diag}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{feature_importance_late_payment.png}
+    \caption{Top permutation-importance features for the late-payment
+    classifier. Customer-aggregate features
+    (\texttt{cust\_payment\_delay\_mean}, \texttt{cust\_late\_ratio}) dominate
+    over per-invoice and logistics features, confirming that the model
+    learned the hidden payer profile through customer bucketing.}
+    \label{fig:latepay-importance}
+\end{figure}
 
 \textbf{Data.} A synthetic CRM lead generator produces leads with stages,
 contact attempts, and source channels. \textbf{Label.} Won within $30$ days
@@ -346,7 +381,7 @@ production performance (Section~\ref{sec:discussion}).
 
 \subsection{Employee Attrition}
 
-\textbf{Data.} IBM HR Employee Attrition~\cite{ibmhr}.
+\textbf{Data.} IBM HR Employee Attrition~\cite{ibm2017hr}.
 \textbf{Label.} \texttt{Attrition} flag.
 \textbf{Fix.} Per-employee feature snapshot taken from a $90$-day backfilled
 state preceding the resignation event, eliminating reliance on
@@ -369,18 +404,92 @@ populated only the first warehouse. After fixing the seeder to iterate over
 all active warehouses, $100/100$ rules trained.
 
 \textbf{Backtest score.} Cross-validation MAPE was uninformative on slow
-movers (Prophet skipped MAPE for $y\to 0$); we report mean absolute scaled
-error in the range $[0.69, 0.74]$ across SKUs as the backtest signal. A
-representative forecast is shown in Fig.~\ref{fig:prophet}.
+movers (Prophet skipped MAPE for $y\to 0$); we report mean absolute error
+(MAE) instead. On a representative pair of SKUs, MAE was $0.75$ for a fast
+mover and $0.38$ for a slow mover, with rolling-origin scores of $0.66$ and
+$0.71$ respectively (Fig.~\ref{fig:prophet}).
 
 \begin{figure}[t]
     \centering
-    \fbox{\parbox{0.95\columnwidth}{\centering\textit{[Figure placeholder:
-    Prophet backtest plot, fast vs.\ slow SKU.]}}}
-    \caption{Prophet cross-validation forecast for representative fast and
-    slow SKUs.}
+    \includegraphics[width=0.49\columnwidth]{prophet_backtest_fast.png}\hfill
+    \includegraphics[width=0.49\columnwidth]{prophet_backtest_slow.png}
+    \caption{Prophet rolling-origin backtest for a representative fast SKU
+    (left) and slow SKU (right). Shaded bands show the model's $80\%$
+    interval; black dots are observed daily demand.}
     \label{fig:prophet}
 \end{figure}
+
+% =============================================================================
+\section{Explainability and Operator Trust}
+\label{sec:xai}
+
+For an ERP-embedded model to be trusted by operators (sales managers, AR
+clerks, HR business partners), it must produce explanations that are
+coherent at the population level and the individual decision
+level~\cite{molnar2022interpretable,arrieta2020explainable,lipton2018mythos}.
+We therefore wired SHAP~\cite{lundberg2017unified,lundberg2020local} and
+LIME~\cite{ribeiro2016why} into the same scoring service that produces a
+prediction, so every score returned by the API can be paired with a
+feature-level explanation.
+
+\subsection{Global Behaviour}
+
+Figure~\ref{fig:shap-beeswarm} shows the SHAP beeswarm summary for the
+late-payment model. Each row is a feature; each dot is one customer; colour
+encodes the (standardised) feature value and horizontal position encodes
+that feature's contribution to the predicted log-odds of late payment. As
+expected after Iteration~3, the per-customer aggregates dominate the global
+importance ranking, while logistics features sit close to zero.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{xai_shap_global_late_payment_beeswarm.png}
+    \caption{SHAP beeswarm for the late-payment classifier. High customer
+    delay history (red on \texttt{cust\_payment\_delay\_mean}) pushes the
+    score upward; low history pushes it downward. Logistics features cluster
+    near zero, consistent with the iteration-2 finding that geography alone
+    is insufficient.}
+    \label{fig:shap-beeswarm}
+\end{figure}
+
+\subsection{Per-Decision Explanations}
+
+Operators ask why a \emph{specific} invoice was flagged. Figure
+\ref{fig:waterfall} shows a SHAP waterfall for one high-risk invoice (model
+probability $0.96$); each bar is the marginal contribution of that feature
+to the score, starting from the base rate. The same row is then explained
+with LIME (Fig.~\ref{fig:shap-vs-lime}); the two methods agree on the top
+drivers but disagree on weaker features, consistent with prior comparative
+studies~\cite{slack2020fooling,guidotti2018survey}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{xai_instance_waterfall_example.png}
+    \caption{SHAP waterfall for a single late-payment prediction
+    ($\hat p = 0.96$). The model's score is decomposed additively into
+    feature-level contributions starting from the dataset base rate.}
+    \label{fig:waterfall}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{xai_shap_vs_lime_side_by_side.png}
+    \caption{Side-by-side SHAP vs.\ LIME explanation for the same instance.
+    Top features broadly agree; the absolute weight scale differs because
+    LIME uses a local linear surrogate while SHAP uses additive Shapley
+    values~\cite{shapley1953value,lundberg2017unified}.}
+    \label{fig:shap-vs-lime}
+\end{figure}
+
+\subsection{Why we expose both methods}
+
+SHAP gives globally consistent attributions but can be misleading when
+features are highly correlated. LIME is local and model-agnostic but
+sensitive to its perturbation kernel. The literature is divided on which to
+prefer for high-stakes decisions~\cite{rudin2019stop,doshi2017towards}; we
+take the operational position that an ERP must surface \emph{both} so that
+operators can sanity-check unusual predictions before acting on them, and
+so that auditors can later reconstruct any specific scoring decision.
 
 % =============================================================================
 \section{Discussion}
