@@ -597,3 +597,45 @@ class Command(BaseCommand):
                 gt = r.get("ground_truth", {})
                 f1 = gt.get("f1_score", "-")
                 self.stdout.write(f"  {info['name']:<35} {'F1/Count':<10} {f1!s:<10} {anomalies!s:<10}")
+
+        # ── Leakage warnings ─────────────────────────────────────────────
+        # A model is flagged as suspicious only when there is positive
+        # evidence of leakage. The shuffle test is the ground truth:
+        #   * shuffled AUC > 0.55 → features encode the label → real leak.
+        #   * shuffled AUC ≤ 0.55 with high real AUC → the data really is
+        #     separable given the features, not a leak.
+        # We only fall back to the AUC≥0.98 heuristic when no shuffle test
+        # was run, in which case the warning is *advisory* (re-run with
+        # --shuffle-labels to confirm).
+        leakage_warnings = []
+        advisory_warnings = []
+        for info in MODEL_REGISTRY:
+            k = info["key"]
+            r = results.get(k) or {}
+            if r.get("status") != "trained":
+                continue
+            shuf = r.get("shuffled_label_auc")
+            real = r.get("auc")
+            if shuf is not None and shuf > 0.55:
+                leakage_warnings.append(
+                    f"  • {info['name']}: shuffled AUC {shuf:.3f} (> 0.55) — features encode the label."
+                )
+            elif shuf is None and isinstance(real, (int, float)) and real >= 0.98:
+                advisory_warnings.append(
+                    f"  • {info['name']}: AUC {real:.3f} ≥ 0.98 (shuffle test not run). "
+                    f"Re-run with --shuffle-labels to confirm."
+                )
+
+        if leakage_warnings:
+            self.stdout.write("")
+            self.stdout.write(self.style.ERROR("  [LEAKAGE CHECK] Target leakage CONFIRMED by shuffle test:"))
+            for w in leakage_warnings:
+                self.stdout.write(self.style.ERROR(w))
+            self.stdout.write(self.style.ERROR(
+                "  → Inspect the corresponding feature builder; do not trust these scores."
+            ))
+        elif advisory_warnings:
+            self.stdout.write("")
+            self.stdout.write(self.style.WARNING("  [LEAKAGE CHECK] High AUC, shuffle test not run:"))
+            for w in advisory_warnings:
+                self.stdout.write(self.style.WARNING(w))

@@ -48,13 +48,25 @@ class DemandForecaster:
     # ── Data preparation ────────────────────────────────────────────────
 
     def _get_demand_df(self, product, warehouse) -> pd.DataFrame:
-        """Build a daily demand DataFrame from StockMovement."""
+        """Build a daily demand DataFrame from StockMovement.
+
+        The series is reindexed onto a *fixed* lookback window ending today,
+        not just the observed min/max range. This means a product with only
+        a handful of recent movements still produces a long zero-padded
+        series (e.g. 365 rows) — letting Prophet fit weekly/monthly
+        seasonality instead of skipping the SKU for "insufficient data".
+        """
+        lookback_days = getattr(settings, "ML_DEMAND_LOOKBACK_DAYS", 365)
+        end_date = pd.Timestamp.today().normalize()
+        start_date = end_date - pd.Timedelta(days=lookback_days - 1)
+
         qs = (
             StockMovement.objects.filter(
                 company=self.company,
                 product=product,
                 warehouse=warehouse,
                 movement_type__in=DEMAND_MOVEMENT_TYPES,
+                movement_date__gte=start_date,
             )
             .annotate(
                 day=TruncDate("movement_date"),
@@ -67,15 +79,17 @@ class DemandForecaster:
         )
 
         df = pd.DataFrame(list(qs))
+        full_range = pd.date_range(start_date, end_date, freq="D")
         if df.empty:
-            return df
+            # Return an all-zero series so the caller can still skip on
+            # insufficient signal rather than crashing on missing columns.
+            return pd.DataFrame({"ds": full_range, "y": 0.0})
 
         df = df.rename(columns={"day": "ds", "qty": "y"})
         df["ds"] = pd.to_datetime(df["ds"])
         df["y"] = df["y"].astype(float).abs()  # ensure positive
 
-        # Fill gaps with zero-demand days
-        full_range = pd.date_range(df["ds"].min(), df["ds"].max(), freq="D")
+        # Reindex onto the fixed window, filling gap days with 0.
         df = df.set_index("ds").reindex(full_range, fill_value=0).reset_index()
         df.columns = ["ds", "y"]
         return df
@@ -89,9 +103,15 @@ class DemandForecaster:
         or None when insufficient data.
         """
         df = self._get_demand_df(product, warehouse)
-        if len(df) < self.min_samples:
+        # Total length is now a fixed lookback window — what we really care
+        # about is whether the SKU has enough non-zero demand days to learn
+        # any pattern. Below that threshold the series is mostly zeros and
+        # Prophet will overfit the few outliers.
+        nonzero_days = int((df["y"] > 0).sum())
+        if nonzero_days < self.min_samples:
             logger.info(
-                "Insufficient data for %s @ %s (%d < %d)", product.sku, warehouse.code, len(df), self.min_samples
+                "Insufficient demand signal for %s @ %s (%d non-zero days < %d)",
+                product.sku, warehouse.code, nonzero_days, self.min_samples,
             )
             return None
 

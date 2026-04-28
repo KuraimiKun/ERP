@@ -386,25 +386,25 @@ class Command(BaseCommand):
             self.stdout.write(f"  Skipping — {existing_count} attendance records already exist.")
             return
 
-        # Generate attendance for BOTH active and terminated employees.
-        # Previously only active employees got attendance records; this
-        # status-leaks into the Attrition model because any employee
-        # whose attendance-rate feature falls back to the imputed
-        # distribution is (almost by definition) a leaver.
-        end_date = REFERENCE_DATE
-        start_date = end_date - timedelta(days=90)
+        # Generate a 90-day attendance window ending at each employee's
+        # personal snapshot date (termination_date for leavers,
+        # REFERENCE_DATE for active). This ensures both classes have the
+        # SAME number of records — previously terminated employees whose
+        # termination_date fell more than 90 days before REFERENCE_DATE
+        # got zero attendance, which let the Attrition model trivially
+        # separate the classes by record-count alone (target leakage).
+        ATT_WINDOW_DAYS = 90
 
         all_records = []
         for emp in self.employees:
-            # For terminated/resigned employees we only generate
-            # attendance up to the day they left.
-            emp_end = end_date
-            if emp.termination_date:
-                emp_end = min(end_date, emp.termination_date)
-            if emp_end < start_date:
-                # They left before the 90-day window started; skip.
+            emp_end = emp.termination_date or REFERENCE_DATE
+            emp_start = emp_end - timedelta(days=ATT_WINDOW_DAYS - 1)
+            # Don't generate before hire_date.
+            if emp.hire_date:
+                emp_start = max(emp_start, emp.hire_date)
+            if emp_start > emp_end:
                 continue
-            current = max(start_date, emp.hire_date)
+            current = emp_start
             while current <= emp_end:
                 # Skip weekends
                 if current.weekday() >= 5:
@@ -512,17 +512,32 @@ class Command(BaseCommand):
             return
 
         all_payrolls = []
-        # Generate 6 months of payroll
-        for month_offset in range(6):
-            period_start = date(2024, 1 + month_offset, 1)
-            if period_start.month == 12:
-                period_end = date(period_start.year, 12, 31)
-            else:
-                period_end = date(period_start.year, period_start.month + 1, 1) - timedelta(days=1)
+        # Generate 6 months of payroll ending at each employee's personal
+        # snapshot date (termination_date for leavers, REFERENCE_DATE for
+        # active). Without per-employee anchoring, terminated employees
+        # systematically had fewer payroll rows than active ones, which
+        # leaked the label into any window-based payroll feature.
+        for emp in self.employees:
+            emp_end = emp.termination_date or REFERENCE_DATE
+            # Find the last full month ending on/before emp_end.
+            anchor = date(emp_end.year, emp_end.month, 1)
+            for month_offset in range(6):
+                # Walk back 0..5 months from the anchor.
+                year = anchor.year
+                month = anchor.month - month_offset
+                while month <= 0:
+                    month += 12
+                    year -= 1
+                period_start = date(year, month, 1)
+                if period_start.month == 12:
+                    period_end = date(period_start.year, 12, 31)
+                else:
+                    period_end = date(period_start.year, period_start.month + 1, 1) - timedelta(days=1)
 
-            for emp in self.employees:
-                # Skip terminated employees for months after their termination
-                if emp.termination_date and emp.termination_date < period_start:
+                # Don't generate before hire_date or after termination.
+                if emp.hire_date and period_end < emp.hire_date:
+                    continue
+                if emp.termination_date and period_start > emp.termination_date:
                     continue
 
                 basic = emp.basic_salary

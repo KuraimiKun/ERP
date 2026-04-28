@@ -74,6 +74,7 @@ class LeadScorer:
             "estimated_value",
             "created_at",
             "conversion_date",
+            "last_contact_date",
             "company_name",
             "email",
             "phone",
@@ -87,25 +88,20 @@ class LeadScorer:
 
         # Features
         df["estimated_value"] = df["estimated_value"].fillna(0).astype(float)
-        # Use conversion_date (or created_at + 30 for lost leads) as the
-        # reference point so temporal features reflect lead lifetime, not
-        # absolute staleness.
-        df["_ref_date"] = pd.to_datetime(
-            df["conversion_date"],
-            utc=True,
-            errors="coerce",
-        )
+        # ── Symmetric, fixed-length observation window ─────────────────
+        # All time-based features are computed over [created_at, created_at + N days]
+        # for every lead, regardless of outcome. This removes the class-dependent
+        # window length (won leads had real conversion_date; lost leads fell back
+        # to created+30 or last_contact_date which itself correlates with status)
+        # that pushed AUC to 0.99+ purely from the *length* of the window.
+        # Realistic use case: predict conversion using only the first N days
+        # of lead activity — exactly what a model would see in production.
+        window_days = getattr(settings, "ML_LEAD_FEATURE_WINDOW_DAYS", 14)
         df["_created"] = pd.to_datetime(df["created_at"], utc=True)
-        df.loc[df["_ref_date"].isna(), "_ref_date"] = df.loc[df["_ref_date"].isna(), "_created"] + pd.Timedelta(days=30)
+        df["_ref_date"] = df["_created"] + pd.Timedelta(days=window_days)
 
-        # Activity counts — only count activities that occurred at or
-        # before the lead's reference date (outcome timestamp) so features
-        # don't leak post-conversion activity.
-        ref_dates = {
-            row["id"]: row["_ref_date"]
-            for _, row in df[["id", "_ref_date"]].iterrows()
-        }
-        ref_ids = list(ref_dates.keys())
+        # Activity counts within the symmetric window only.
+        ref_ids = df["id"].tolist()
 
         all_activities = list(
             LeadActivity.objects.filter(
@@ -119,10 +115,12 @@ class LeadScorer:
             acts_df["activity_date"] = pd.to_datetime(
                 acts_df["activity_date"], utc=True, errors="coerce"
             )
-            ref_series = pd.Series(ref_dates, name="_ref_date")
-            ref_series.index.name = "lead_id"
-            acts_df = acts_df.merge(ref_series, left_on="lead_id", right_index=True)
-            acts_df = acts_df[acts_df["activity_date"] <= acts_df["_ref_date"]]
+            window = df[["id", "_created", "_ref_date"]].rename(columns={"id": "lead_id"})
+            acts_df = acts_df.merge(window, on="lead_id", how="left")
+            acts_df = acts_df[
+                (acts_df["activity_date"] >= acts_df["_created"])
+                & (acts_df["activity_date"] <= acts_df["_ref_date"])
+            ]
 
         activity_counts = (
             acts_df.groupby("lead_id").size().to_dict() if not acts_df.empty else {}
