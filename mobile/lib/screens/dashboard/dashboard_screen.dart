@@ -168,34 +168,47 @@ class _Header extends StatelessWidget {
           Builder(
             builder: (ctx) => GestureDetector(
               onTap: () => Scaffold.of(ctx).openDrawer(),
-              child: Stack(
-                children: [
-                  Container(
-                    width: 42, height: 42,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: isDark ? MColors.darkBorder : MColors.border),
-                      color: isDark ? MColors.darkSurface : MColors.surface,
-                    ),
-                    child: const Icon(Icons.notifications_outlined, size: 18),
+              child: Container(
+                width: 42, height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: isDark ? MColors.darkBorder : MColors.border),
+                  color: isDark ? MColors.darkSurface : MColors.surface,
+                ),
+                child: const Icon(Icons.menu, size: 20),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, AppRoutes.notifications),
+            child: Stack(
+              children: [
+                Container(
+                  width: 42, height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: isDark ? MColors.darkBorder : MColors.border),
+                    color: isDark ? MColors.darkSurface : MColors.surface,
                   ),
-                  if (unread > 0)
-                    Positioned(
-                      top: 8, right: 10,
-                      child: Container(
-                        width: 8, height: 8,
-                        decoration: BoxDecoration(
-                          color: isDark ? MColors.darkError : MColors.error,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark ? MColors.darkSurface : MColors.surface,
-                            width: 1.5,
-                          ),
+                  child: const Icon(Icons.notifications_outlined, size: 18),
+                ),
+                if (unread > 0)
+                  Positioned(
+                    top: 8, right: 10,
+                    child: Container(
+                      width: 8, height: 8,
+                      decoration: BoxDecoration(
+                        color: isDark ? MColors.darkError : MColors.error,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark ? MColors.darkSurface : MColors.surface,
+                          width: 1.5,
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: 10),

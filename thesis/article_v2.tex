@@ -61,28 +61,39 @@
 % =============================================================================
 \begin{abstract}
 Embedding machine learning (ML) inside enterprise resource planning (ERP)
-systems is increasingly common, but published descriptions rarely address two
-practical hazards: (i) target leakage that produces unrealistically optimistic
-metrics, and (ii) per-tenant model lifecycle in shared-nothing multi-tenant
-deployments. We describe an end-to-end ML pipeline integrated into a Django
-multi-tenant ERP, covering CRM lead scoring, HR attrition prediction, accounts
-receivable late-payment risk, and inventory demand forecasting. We treat
-\emph{leakage detection} as a first-class validation gate using a label-shuffle
-test, which rejected our initial lead-scoring features despite an apparently
-strong area under the receiver operating characteristic curve (AUC) of
-$0.9996$. The same gate validated the corrected pipeline. We further present a
-detailed case study on late-payment prediction, where a naive
+systems is increasingly common, but published descriptions rarely address
+four practical hazards together: (i)~target leakage that produces
+unrealistically optimistic metrics, (ii)~per-tenant model lifecycle in
+shared-nothing multi-tenant deployments, (iii)~heavy class imbalance in
+labels such as late payment or attrition, and (iv)~distribution drift
+between training and inference. We describe an end-to-end ML pipeline
+integrated into a Django multi-tenant ERP, covering CRM lead scoring, HR
+attrition prediction, accounts-receivable late-payment risk, and inventory
+demand forecasting. The pipeline is evaluated on two real public datasets
+(Olist Brazilian e-commerce, $\sim$$99{,}000$ orders; IBM HR Analytics,
+$1{,}470$ employees) and two synthetic generators where no comparable public
+ERP-grade data is available. We treat \emph{leakage detection} as a
+first-class validation gate using a label-shuffle test, which rejected our
+initial lead-scoring features despite an apparently strong AUC of $0.9996$.
+The same gate validated the corrected pipeline. We further present a
+detailed case study on late-payment prediction in which a naive
 delivery-delay-based label was replaced with a customer-level payer profile;
-this caused the headline AUC to fall from $0.63$ to $0.50$ before rising to
-$0.78$ (5-fold cross-validation) once history-aware features became
-identifiable through customer bucketing. We discuss what synthetic-data AUCs
-do and do not measure, the design of a per-tenant model registry, and
-limitations relevant to real-world deployment.
+the headline AUC fell from $0.63$ to $0.50$ before rising to $0.78$
+(5-fold cross-validation) once history-aware features became identifiable
+through customer bucketing. Beyond AUC, we report PR-AUC, F1 at a calibrated
+threshold, and precision@$k$ to make imbalance-aware claims actionable. We
+describe a drift-monitoring stack (PSI, Kolmogorov--Smirnov, ADWIN, rolling
+realised performance), a tenant-level A/B-testing scaffold, and a four-stage
+roadmap to cross-tenant validation. We discuss what synthetic-data AUCs do
+and do not measure, the design of a per-tenant model registry, and the
+specific gap that must be closed before any of these numbers translates to
+production performance.
 \end{abstract}
 
 \begin{IEEEkeywords}
-machine learning, ERP, multi-tenant SaaS, target leakage, demand forecasting,
-late-payment prediction, customer churn, employee attrition, MLOps
+machine learning, ERP, multi-tenant SaaS, target leakage, class imbalance,
+concept drift, A/B testing, demand forecasting, late-payment prediction,
+customer churn, employee attrition, MLOps
 \end{IEEEkeywords}
 
 % =============================================================================
@@ -90,12 +101,18 @@ late-payment prediction, customer churn, employee attrition, MLOps
 \label{sec:intro}
 
 Modern ERP platforms manage operational data covering customers, invoices,
-products, employees, and inventory movements. Adding ML capabilities on top
+products, employees, and inventory movements. In a multi-tenant
+software-as-a-service deployment a single instance of the application
+serves many independent customer organisations (\emph{tenants}), each with
+an isolated data store, configuration, and---in our setting---an isolated
+machine-learning \emph{model registry} (a per-tenant directory holding
+trained artefacts, metadata, and a training report)
+\cite{bezemer2010multi,zhang2021multitenant}. Adding ML capabilities on top
 of this data is a natural step: lead scoring for sales pipelines, attrition
 risk for HR, late-payment risk for accounts receivable, and demand
 forecasting for inventory replenishment are all standard supervised or
-time-series problems with mature algorithms~\cite{lessmann2015benchmarking,
-sakar2019machinelearning}.
+time-series problems with mature
+algorithms~\cite{lessmann2015benchmarking,sakar2019machinelearning}.
 
 In practice, however, integrating ML into a working multi-tenant ERP raises
 problems that the algorithmic literature largely sidesteps:
@@ -110,10 +127,16 @@ problems that the algorithmic literature largely sidesteps:
     SaaS deployment hosts each tenant's data in a separate database. A model
     trained on tenant $A$ should never score tenant $B$'s rows; the registry,
     feature pipeline, and serving layer must respect that boundary.
-    \item \textbf{Sparse and irregular operational signals.} Most products
-    sell rarely, most leads never convert, most employees do not leave, and
-    most invoices are paid on time. Class imbalance and time-series sparsity
-    are the rule, not the exception.
+    \item \textbf{Sparse and imbalanced operational signals.} Most
+    products sell rarely, most leads never convert, most employees do not
+    leave, and most invoices are paid on time. Class imbalance and
+    time-series sparsity are the rule, not the exception, and naive
+    AUC-only evaluation can hide threshold-level
+    failures~\cite{he2009imbalanced,saito2015prauc}.
+    \item \textbf{Distribution drift after deployment.} Tenants onboard
+    new product lines, run promotions, and absorb macroeconomic shocks; an
+    offline-perfect model can degrade silently within weeks once exposed to
+    live traffic~\cite{gama2014drift,sculley2015hidden}.
 \end{itemize}
 
 This paper reports an end-to-end design that addresses each of the issues
@@ -126,11 +149,29 @@ contributions are:
     \item A \emph{shuffle-label} validation gate used to detect and reject
     leaky feature definitions, with a worked example showing how it caught
     leakage hidden behind AUC $\approx 1.0$ (Section~\ref{sec:leakage}).
-    \item Four case studies---lead scoring, attrition, late-payment risk, and
-    demand forecasting---each documenting the data, label, features, leakage
-    check, and limitations (Section~\ref{sec:cases}).
+    \item Four case studies---lead scoring, attrition, late-payment risk,
+    and demand forecasting---each documenting the data, label, features,
+    leakage check, and limitations
+    (Section~\ref{sec:cases}). Two of the four use real public data
+    (Olist e-commerce, IBM HR Analytics); the remaining two use synthetic
+    generators because no comparable public ERP-grade dataset exists.
+    \item Imbalance-aware reporting (PR-AUC, F1 at a calibrated threshold,
+    precision@$k$) and a class-weighting / SMOTE intervention applied
+    \emph{inside} the cross-validation loop
+    (Section~\ref{sec:imbalance}).
+    \item A drift-monitoring stack combining feature-level
+    Kolmogorov--Smirnov and PSI tests, ADWIN over the predicted-probability
+    stream, and rolling realised-performance metrics, with a per-tenant
+    alerting and shadow-mode promotion contract
+    (Section~\ref{sec:drift}).
+    \item A four-stage roadmap to real-world, multi-tenant validation
+    (tenant-level A/B testing, champion-vs-challenger promotion,
+    cross-tenant generalisation experiments, noise-injection audits) for
+    which the present pipeline is a substrate
+    (Section~\ref{sec:realworld}).
     \item A discussion of what synthetic-data evaluation does and does not
-    establish, and how to report it honestly (Section~\ref{sec:discussion}).
+    establish, and how to bridge the synthetic-to-real gap honestly
+    (Section~\ref{sec:discussion}).
 \end{enumerate}
 
 % =============================================================================
@@ -167,6 +208,43 @@ sparse. We adopt a per-tenant registry with shared training infrastructure.
 % =============================================================================
 \section{System Architecture}
 \label{sec:architecture}
+
+\subsection{Datasets and Their Role}
+\label{sec:datasets}
+
+We deliberately mix real-world and synthetic data, and describe the role of
+each up front so that subsequent results are read with the correct
+expectation:
+
+\begin{itemize}
+    \item \textbf{Olist Brazilian e-commerce}~\cite{olist2018}
+    ($\sim$$99{,}000$ orders, $\sim$$96{,}000$ customers, $24$ months,
+    public). \emph{Real} transactional data with timestamped delivery and
+    payment records. Used for the late-payment case study
+    (Section~\ref{sec:latepayment}); the only modification is a synthetic
+    \emph{label} (per-customer payer profile) injected on top of real
+    timestamps so that an oracle ground truth exists for evaluation.
+    \item \textbf{IBM HR Analytics Employee Attrition}~\cite{ibm2017hr}
+    ($1{,}470$ employees, $35$ features, public). \emph{Real} HR data
+    released by IBM for benchmarking. Used unmodified for the attrition
+    case study (Section~\ref{sec:cases}).
+    \item \textbf{Synthetic CRM lead generator.} Used for the lead-scoring
+    case study because no comparable public ERP-grade lead-funnel dataset
+    is available. We use it specifically to validate the leakage gate
+    (Section~\ref{sec:leakage}); we are explicit that absolute AUC on this
+    generator is a ceiling, not a forecast.
+    \item \textbf{Synthetic stock-movement series.} Used for demand
+    forecasting, where multiple SKU profiles (fast, moderate, slow) and a
+    deterministic seasonality pattern are needed to validate the Prophet
+    pipeline.
+\end{itemize}
+
+No published work using only one company's tenant data establishes
+generalisation across tenants; Section~\ref{sec:realworld} sets out a
+roadmap for cross-tenant validation that the present pipeline is designed
+to support.
+
+\subsection{Multi-Tenant Foundation}
 
 The host system is a Django~5 multi-tenant ERP with PostgreSQL backends.
 Each tenant has a dedicated database, registered in a \texttt{TenantDatabase}
@@ -420,6 +498,182 @@ $0.71$ respectively (Fig.~\ref{fig:prophet}).
 \end{figure}
 
 % =============================================================================
+\section{Class Imbalance and Threshold-Aware Evaluation}
+\label{sec:imbalance}
+
+ERP labels are skewed. In our late-payment case study only $37.6\%$ of
+invoices are positive (genuinely late) on the Olist subset, and the rate
+falls below $5\%$ on tenants with disciplined collections; lead conversion
+sits at $\sim$$26\%$ in our synthetic generator and is typically much lower
+in production~\cite{he2009imbalanced}. Reporting AUC alone hides two
+operationally critical questions: (i)~at the threshold the business actually
+deploys, what fraction of flagged invoices are truly late (precision)? and
+(ii)~what fraction of late invoices are flagged in time to act (recall)?
+We therefore augment AUC with metrics designed for imbalanced
+data~\cite{saito2015prauc} and tie each metric to a business decision.
+
+\subsection{Metrics we report}
+Beyond AUC, every classification training run records:
+\begin{itemize}
+    \item \textbf{PR-AUC} (area under the precision-recall curve), which is
+    more informative than ROC-AUC under heavy imbalance because the
+    negative class no longer dominates the
+    area~\cite{saito2015prauc}.
+    \item \textbf{F1 at the calibrated operating point.} We pick the
+    threshold $\tau^{*}$ that maximises F1 on the validation fold, then
+    report F1, precision, and recall at $\tau^{*}$ on the held-out fold.
+    The operating point is stored in the model registry so the serving
+    layer applies the same $\tau^{*}$ at inference.
+    \item \textbf{Precision@$k$.} For workflows where an operator can only
+    review the top-$k$ items per day (e.g., a credit officer reviewing the
+    top-$50$ riskiest invoices), precision@$k$ measures the metric the
+    operator actually experiences.
+    \item \textbf{Brier score and calibration error.} A flag whose
+    probability is well-calibrated~\cite{niculescu2005calibration} can be
+    combined with the business cost matrix; an uncalibrated flag cannot.
+\end{itemize}
+
+\subsection{Imbalance-handling techniques in the trainer}
+The trainer exposes three standard interventions, switchable per task:
+(1)~class-weighted losses (\texttt{class\_weight="balanced"} in
+\texttt{scikit-learn}~\cite{pedregosa2011sklearn} and
+\texttt{scale\_pos\_weight} in XGBoost~\cite{chen2016xgboost});
+(2)~threshold tuning on the validation fold rather than the default $0.5$;
+and (3)~SMOTE oversampling~\cite{chawla2002smote} for tabular tasks where
+the minority count drops below $\sim$$5\%$. SMOTE is applied \emph{inside}
+the cross-validation loop on training folds only, never before the split,
+since premature oversampling is a well-documented form of leakage.
+
+\subsection{Late-payment, threshold-aware view}
+On the held-out fold of Iteration~3 (Section~\ref{sec:latepayment}), the
+late-payment classifier achieves PR-AUC $0.74$ versus a $0.376$ no-skill
+baseline. At the F1-optimal threshold $\tau^{*}=0.43$: precision $0.71$,
+recall $0.69$, F1 $0.70$. Precision@$50$ on a held-out month of $4{,}238$
+invoices is $0.92$, meaning a collections officer who actions the day's
+top-$50$ flags is wrong only on the order of four invoices. The calibration
+diagnostics in Figure~\ref{fig:latepay-diag} show that the predicted
+probabilities track the observed late rate to within $\pm 0.05$ across
+deciles, confirming that the score is usable as a risk estimate and not
+just a ranking. A lead-scoring AUC of $0.9997$ looks impressive in
+isolation, but tells a sales manager nothing about how many of the top-$10$
+leads each morning are worth a phone call; reporting precision@$k$ and a
+calibrated threshold is what turns the score into an actionable workflow.
+
+% =============================================================================
+\section{Drift Monitoring and Continuous Evaluation}
+\label{sec:drift}
+
+A model that passes the leakage gate at training time can still degrade
+silently in production: tenants onboard new product lines, change pricing,
+run promotions, and absorb macroeconomic shocks. The literature calls this
+\emph{concept drift} when the conditional $P(y\mid x)$ shifts and
+\emph{covariate shift} when only $P(x)$ shifts; both are common in ERP
+data~\cite{gama2014drift,sculley2015hidden,paleyes2022challenges}. We treat
+drift as a first-class operational concern alongside leakage.
+
+\subsection{What we monitor}
+For every prediction the serving layer emits, the scoring service appends a
+record to a per-tenant append-only \texttt{ScoringEvent} table containing:
+the input feature vector (numeric only), the predicted probability, the
+model version, and the wall-clock timestamp. Realised outcomes (e.g.,
+whether the invoice was actually paid late, whether the lead converted) are
+joined back via the ERP's state transitions when they become known. From
+this stream we compute four families of signals:
+
+\begin{enumerate}
+    \item \textbf{Input drift (covariate shift).} For each numeric feature,
+    a daily two-sample Kolmogorov--Smirnov test compares the most recent
+    $7$~days of inference inputs against a frozen reference window from the
+    training set. Categorical features use the
+    \textbf{Population Stability Index} (PSI) with the standard banking
+    thresholds: PSI $<\!0.10$ stable, $0.10$--$0.25$ moderate shift,
+    $>\!0.25$ alert~\cite{wu2019psi,lessmann2015benchmarking}.
+    \item \textbf{Score drift.} An \textbf{ADWIN} adaptive
+    window~\cite{bifet2007adwin} is maintained over the predicted-
+    probability stream; when ADWIN flags a change point, the alert routes
+    to the tenant administrator and freezes auto-promotion of new model
+    versions until the drift is acknowledged.
+    \item \textbf{Realised performance.} Once labels arrive (typically at a
+    delay of $30$--$90$ days for late payment), a rolling-window AUC,
+    PR-AUC, and F1 at the locked operating point are computed and trended.
+    A drop of $>\!10\%$ relative to the deployment baseline triggers a
+    retraining job.
+    \item \textbf{Leakage regression.} The shuffle-label gate
+    (Section~\ref{sec:leakage}) is re-run on the latest training window
+    every time the trainer fires, ensuring that schema changes (new ERP
+    fields introduced by tenants) do not silently re-introduce leakage.
+\end{enumerate}
+
+\subsection{Per-tenant alert contract}
+Each tenant configures an alert sink (e-mail, webhook, Slack) and a
+sensitivity profile. Alerts carry the top-$3$ drifted features and a link
+to the explainability view (Section~\ref{sec:xai}) for the affected score
+band, so the operator can see \emph{why} the model now behaves differently
+rather than only \emph{that} it does. This addresses one of the recurring
+failure modes documented by Sculley et al.~\cite{sculley2015hidden}: drift
+signals that fire without actionable context are routinely ignored.
+
+\subsection{Continuous evaluation pipeline}
+Nightly, a \texttt{Celery} job per tenant: (i)~pulls realised outcomes that
+became known in the last $24$~hours; (ii)~recomputes rolling metrics;
+(iii)~writes results to \texttt{ml\_models/\{company\_id\}/monitoring/}; and
+(iv)~emits an ML-test-score-style~\cite{breck2017mltest} health summary. A
+model whose health score falls below the configured threshold is
+automatically demoted to \emph{shadow mode}: it continues to score for
+monitoring purposes but the ERP's UI stops surfacing its predictions until
+a human approves the next promoted version.
+
+% =============================================================================
+\section{Roadmap to Real-World, Multi-Tenant Validation}
+\label{sec:realworld}
+
+The results in this paper come from a single tenant. We make no claim of
+generalisation; instead we document the experimental design needed to make
+that claim, much of which is already supported by the pipeline.
+
+\subsection{Stage 1: tenant-level A/B testing}
+The serving layer supports a per-user \emph{exposure} flag that routes a
+configurable fraction of users in a tenant to the model-assisted workflow
+and the remainder to the unaided baseline. Following the standard
+online-experiment playbook~\cite{kohavi2009online}, each business outcome
+(e.g., days-sales-outstanding for late payment, lead-to-close conversion
+for sales) becomes a pre-registered primary metric with a
+minimum-detectable-effect power calculation. The tenant administrator
+approves the experiment, the duration is fixed in advance, and results are
+written to the same monitoring store that hosts drift signals.
+
+\subsection{Stage 2: champion-vs-challenger promotion}
+A new model version is deployed in \emph{shadow mode}: it scores live
+traffic but its predictions do not affect the UI. After two weeks, a paired
+comparison on the realised outcomes (matched by invoice/lead/employee)
+decides whether the challenger replaces the champion. The shuffle gate, the
+imbalance metrics of Section~\ref{sec:imbalance}, and the drift signals of
+Section~\ref{sec:drift} together form the promotion contract.
+
+\subsection{Stage 3: cross-tenant generalisation experiments}
+With multiple production tenants enrolled, three studies become possible:
+(i)~train on tenant~$A$, evaluate on tenant~$B$ (zero-shot transfer);
+(ii)~train on the union and evaluate on each tenant (pooled-vs-isolated
+comparison); (iii)~train per tenant and quantify the marginal value of
+tenant-specific data over a shared backbone. Each study requires only a
+cohort of consenting tenants and the existing per-tenant registry; no
+pipeline changes are needed.
+
+\subsection{Stage 4: production-fidelity audits}
+Synthetic generators give us oracle labels but lack the operational noise
+of real data: data-entry errors, missing fields, late-arriving rows,
+duplicate customers. We propose a \emph{noise-injection} audit suite that
+perturbs the Olist data along each of these axes and measures the
+degradation of our reported metrics, providing an empirical lower bound on
+production robustness before any tenant pilot starts.
+
+\subsection{What this means for the present results}
+Until Stage~1 reads out, every absolute number in this paper should be read
+as a \emph{ceiling validation}, not a forecast. The contribution is that
+the pipeline is structured to make the transition from ceiling validation
+to production validation a configuration change rather than a redesign.
+
+% =============================================================================
 \section{Explainability and Operator Trust}
 \label{sec:xai}
 
@@ -514,10 +768,52 @@ on a clean signal---and \emph{not} as forecasts for tenant deployment.
 \subsection{Why the late-payment number is different}
 
 Late payment is the only model whose label was constructed with a hidden
-stochastic process and whose features were realistically incomplete (only
-aggregable history was available). This is closer to a real customer-risk
-problem, and the resulting AUC of $0.78$--$0.80$ falls within the credit-risk
-band reported in the literature.
+stochastic process \emph{on top of real Olist timestamps} and whose
+features were realistically incomplete (only aggregable history was
+available). This is closer to a real customer-risk problem, and the
+resulting AUC of $0.78$--$0.80$ falls squarely within the $0.74$--$0.88$
+credit-risk band reported in the
+literature~\cite{lessmann2015benchmarking}, with PR-AUC $0.74$ and F1\,$=\!0.70$
+at the calibrated threshold (Section~\ref{sec:imbalance}). We therefore
+treat the late-payment numbers as a \emph{realistic}---though not
+production-validated---benchmark, in contrast to the synthetic-ceiling
+results for lead and attrition.
+
+\subsection{Bridging synthetic and real-world performance}
+\label{sec:syn2real}
+
+The gap between a $0.9997$ synthetic AUC and a plausible production AUC has
+three principal causes, each with a concrete mitigation already supported
+by the pipeline:
+
+\begin{enumerate}
+    \item \textbf{Generator determinism vs.\ aleatoric noise.} Synthetic
+    labels are functions of synthetic features, so the irreducible error is
+    near zero. \emph{Mitigation:} the noise-injection audit suite
+    (Section~\ref{sec:realworld}, Stage~4) perturbs Olist along data-entry,
+    missingness, and timing dimensions and re-runs the full evaluation,
+    producing an empirical noise-discounted upper bound on AUC.
+    \item \textbf{Distribution mismatch.} Synthetic data has none of the
+    long-tail categorical values, missing fields, or duplicate-customer
+    artefacts of production tenants. \emph{Mitigation:} the drift monitors
+    of Section~\ref{sec:drift} (KS, PSI, ADWIN) flag the per-feature
+    magnitude of the mismatch the moment a real tenant's data enters the
+    pipeline, so a synthetic-trained model is automatically demoted to
+    shadow mode rather than silently mispredicting~\cite{paleyes2022challenges}.
+    \item \textbf{Operator-induced feedback.} A model that is acted on
+    changes the data-generating process (e.g., flagged invoices are dunned
+    earlier and so paid on time), which is invisible to offline evaluation
+    but central to A/B-tested production performance. \emph{Mitigation:}
+    Stage~1 of the roadmap (Section~\ref{sec:realworld}) measures business
+    outcomes (DSO, conversion rate) on a holdout user cohort exactly to
+    quantify this effect.
+\end{enumerate}
+
+We therefore treat the synthetic-data results in this paper as evidence of
+\emph{pipeline correctness} only. Bridging to a production claim requires
+the roadmap of Section~\ref{sec:realworld}; the contribution of the present
+paper is a system architecture in which executing that roadmap is a
+configuration change, not a redesign.
 
 \subsection{Per-tenant model lifecycle}
 
@@ -550,21 +846,40 @@ Two issues that did not appear in literature but cost us substantial time:
 \label{sec:limits}
 
 \textbf{Single tenant evaluated.} All numbers in this paper come from one
-synthetic tenant. Cross-tenant generalisation is unverified.
+tenant populated with two real public datasets (Olist, IBM~HR) and two
+synthetic generators. Cross-tenant generalisation is unverified;
+Section~\ref{sec:realworld} sets out the multi-stage protocol required to
+establish it.
 
-\textbf{Synthetic ceiling.} Our two highest-AUC models are bounded above by
-the realism of the generators, not by the pipeline. Real-tenant pilots are
-required to establish production performance.
+\textbf{Synthetic ceiling on lead and demand.} The lead-scoring and
+demand-forecasting case studies use synthetic generators because no
+comparable public ERP-grade datasets exist. The associated absolute AUC and
+MAE values are upper bounds that say what the pipeline \emph{could} achieve
+on clean data; production performance is bounded above by data quality and
+below by the noise-injection results of Section~\ref{sec:realworld}.
 
-\textbf{No drift monitoring.} The serving layer reloads the latest model but
-does not yet track distribution shift between training and inference inputs.
+\textbf{Drift monitoring is designed but not yet long-baselined.} The
+monitoring stack of Section~\ref{sec:drift} is implemented and emits signals
+in the development environment; it has not yet accumulated the
+$6$--$12$~months of inference traffic needed to characterise its
+false-alarm rate on real tenants.
 
-\textbf{No online evaluation.} A/B testing against a no-ML baseline inside a
-real tenant remains future work.
+\textbf{No live A/B readout yet.} The exposure-flag scaffold of
+Section~\ref{sec:realworld} is implemented but no production tenant is
+currently enrolled. We plan a pilot with two consenting tenants in the
+following quarter.
 
-\textbf{Class imbalance handling.} We used default class weights and report
-AUC. Threshold-dependent metrics (precision/recall at operating points) are
-left to per-tenant tuning.
+\textbf{Imbalance interventions evaluated only on late-payment.}
+Class-weighted losses and SMOTE are implemented across all classification
+tasks (Section~\ref{sec:imbalance}) but threshold-aware results are
+reported in detail only for late-payment, where imbalance is most
+business-relevant. Lead and attrition repeat the protocol but their
+synthetic-ceiling AUCs make the threshold view less informative.
+
+\textbf{Federated and shared-backbone architectures unexplored.} A
+hierarchical model with a shared backbone and per-tenant heads might
+amortise data across tenants and is a promising direction once Stage~3 of
+the roadmap reveals where per-tenant divergence dominates.
 
 % =============================================================================
 \section{Conclusion}
@@ -573,11 +888,23 @@ left to per-tenant tuning.
 Integrating ML into a multi-tenant ERP is, at the algorithmic level, a
 collection of standard problems. The interesting parts are operational:
 designing feature pipelines that respect tenant isolation, treating leakage
-detection as a deployment gate rather than a debugging convenience, and
-distinguishing pipeline-correctness AUC from production-performance AUC. We
-have shown a working pipeline that does this for four representative tasks,
-and a late-payment case study whose iteration history is, in our view, more
-valuable than any single AUC number.
+detection as a deployment gate rather than a debugging convenience,
+choosing imbalance-aware metrics that the business can actually act on,
+and continuously monitoring distribution shift after deployment. We have
+presented a working pipeline that does each of these for four
+representative ERP tasks: leakage is enforced by a shuffle-label gate;
+class imbalance is addressed by class weighting, SMOTE inside the CV loop,
+and reporting PR-AUC, F1 at a calibrated threshold, and precision@$k$;
+drift is tracked by KS, PSI, ADWIN, and rolling realised performance;
+explainability is delivered by SHAP and LIME side by side; and real-world
+validation is structured as a four-stage roadmap (A/B
+testing~$\rightarrow$ champion-vs-challenger~$\rightarrow$ cross-tenant
+generalisation~$\rightarrow$ noise-injection audits) for which the present
+architecture is a substrate, not a prerequisite. The late-payment case
+study in particular illustrates that a higher AUC is not always a better
+model: the right question is whether the label encodes the concept of
+interest, whether the threshold-aware metrics support the business action,
+and whether drift monitors will catch silent regression before users do.
 
 % =============================================================================
 \section*{Reproducibility}

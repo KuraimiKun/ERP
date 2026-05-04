@@ -7,45 +7,45 @@ Reallocating 'name_of_file' (item size: 1) to 11 items.
 Database file #1: references.bib
 Warning--can't use both volume and number fields in davenport2018ai
 Warning--empty publisher in davenport2018ai
-You've used 35 entries,
+You've used 43 entries,
             1935 wiz_defined-function locations,
-            668 strings with 9543 characters,
-and the built_in function-call counts, 13905 in all, are:
-= -- 1388
-> -- 529
-< -- 36
-+ -- 184
-- -- 174
-* -- 1097
-:= -- 2385
-add.period$ -- 110
-call.type$ -- 35
-change.case$ -- 258
-chr.to.int$ -- 35
-cite$ -- 37
-duplicate$ -- 568
-empty$ -- 975
-format.name$ -- 233
-if$ -- 2769
+            713 strings with 10998 characters,
+and the built_in function-call counts, 17574 in all, are:
+= -- 1767
+> -- 658
+< -- 45
++ -- 230
+- -- 216
+* -- 1391
+:= -- 2977
+add.period$ -- 134
+call.type$ -- 43
+change.case$ -- 320
+chr.to.int$ -- 43
+cite$ -- 45
+duplicate$ -- 714
+empty$ -- 1238
+format.name$ -- 295
+if$ -- 3521
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 38
-newline$ -- 182
-num.names$ -- 107
-pop$ -- 241
+missing$ -- 45
+newline$ -- 222
+num.names$ -- 131
+pop$ -- 295
 preamble$ -- 1
-purify$ -- 261
+purify$ -- 322
 quote$ -- 0
-skip$ -- 448
+skip$ -- 569
 stack$ -- 0
-substring$ -- 923
-swap$ -- 103
-text.length$ -- 10
+substring$ -- 1238
+swap$ -- 139
+text.length$ -- 13
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 194
+type$ -- 242
 warning$ -- 2
-while$ -- 117
+while$ -- 149
 width$ -- 0
-write$ -- 464
+write$ -- 568
 (There were 2 warnings)

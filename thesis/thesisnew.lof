@@ -15,10 +15,17 @@
 \contentsline {figure}{\numberline {4.3}{\ignorespaces Data flow for instance-level SHAP/LIME explanation generation}}{46}{figure.caption.19}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {6.1}{\ignorespaces ROC/AUC comparison chart of the three classification models}}{53}{figure.caption.21}%
-\contentsline {figure}{\numberline {6.2}{\ignorespaces Late Payment global SHAP beeswarm/bar importance visual}}{54}{figure.caption.23}%
-\contentsline {figure}{\numberline {6.3}{\ignorespaces Lead Scoring global SHAP visual highlighting key engagement metrics}}{55}{figure.caption.25}%
-\contentsline {figure}{\numberline {6.4}{\ignorespaces Employee Attrition global SHAP visual analyzing driving HR factors}}{56}{figure.caption.27}%
-\contentsline {figure}{\numberline {6.5}{\ignorespaces SHAP waterfall plot of a single high-risk Late Payment prediction}}{57}{figure.caption.29}%
-\contentsline {figure}{\numberline {6.6}{\ignorespaces Side-by-side SHAP vs LIME explanation comparison visual}}{58}{figure.caption.31}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces ROC/AUC comparison chart of the three classification models with shuffled-label baselines.}}{62}{figure.caption.21}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Late Payment global SHAP beeswarm/bar importance visual.}}{64}{figure.caption.24}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces Late Payment global feature-importance bar chart corresponding to Table~\ref {tab:late_payment_shap}.}}{65}{figure.caption.25}%
+\contentsline {figure}{\numberline {6.4}{\ignorespaces Lead Scoring global SHAP beeswarm.}}{66}{figure.caption.27}%
+\contentsline {figure}{\numberline {6.5}{\ignorespaces Lead Scoring feature-importance bar chart.}}{67}{figure.caption.28}%
+\contentsline {figure}{\numberline {6.6}{\ignorespaces Employee Attrition global SHAP beeswarm.}}{68}{figure.caption.30}%
+\contentsline {figure}{\numberline {6.7}{\ignorespaces Employee Attrition feature-importance bar chart.}}{69}{figure.caption.31}%
+\contentsline {figure}{\numberline {6.8}{\ignorespaces SHAP waterfall plot of a single high-risk Late Payment prediction}}{70}{figure.caption.33}%
+\contentsline {figure}{\numberline {6.9}{\ignorespaces Side-by-side SHAP vs LIME explanation comparison visual}}{72}{figure.caption.35}%
+\contentsline {figure}{\numberline {6.10}{\ignorespaces Confusion matrices on the held-out evaluation split for the three classifiers.}}{72}{figure.caption.36}%
+\contentsline {figure}{\numberline {6.11}{\ignorespaces Reliability (calibration) curves with the diagonal reference line.}}{73}{figure.caption.37}%
+\contentsline {figure}{\numberline {6.12}{\ignorespaces Rolling-origin Prophet backtest, fast vs.\ slow-mover cohorts.}}{73}{figure.caption.38}%
+\contentsline {figure}{\numberline {6.13}{\ignorespaces Leakage-detection summary dashboard. Horizontal bars show real AUC vs.\ shuffled-label AUC and the top-feature share for each model.}}{74}{figure.caption.39}%
 \addvspace {10\p@ }

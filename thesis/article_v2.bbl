@@ -21,6 +21,17 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
+\bibitem{bezemer2010multi}
+C.-P. Bezemer and A.~Zaidman, ``Multi-tenant {SaaS} applications: Maintenance
+  dream or nightmare?'' \emph{Proceedings of the Joint ERCIM Workshop on
+  Software Evolution and International Workshop on Principles of Software
+  Evolution}, pp. 88--92, 2010.
+
+\bibitem{zhang2021multitenant}
+J.~Zhang, P.~S. Yu, X.~Li, and W.~Lu, ``Multi-tenant machine learning service:
+  Challenges and opportunities,'' in \emph{Proceedings of the IEEE
+  International Conference on Big Data}, 2021, pp. 3501--3510.
+
 \bibitem{lessmann2015benchmarking}
 S.~Lessmann, B.~Baesens, H.-V. Seow, and L.~C. Thomas, ``Benchmarking
   state-of-the-art classification algorithms for credit scoring: An update of
@@ -32,6 +43,27 @@ C.~O. Sakar, S.~O. Polat, M.~Katircioglu, and Y.~Kastro, ``Real-time prediction
   of online shoppers' purchasing intention using multilayer perceptron and
   {LSTM} recurrent neural networks,'' in \emph{Neural Computing and
   Applications}, vol.~31, no.~10, 2019, pp. 6893--6908.
+
+\bibitem{he2009imbalanced}
+H.~He and E.~A. Garcia, ``Learning from imbalanced data,'' \emph{IEEE
+  Transactions on Knowledge and Data Engineering}, vol.~21, no.~9, pp.
+  1263--1284, 2009.
+
+\bibitem{saito2015prauc}
+T.~Saito and M.~Rehmsmeier, ``The precision-recall plot is more informative
+  than the {ROC} plot when evaluating binary classifiers on imbalanced
+  datasets,'' \emph{PLOS ONE}, vol.~10, no.~3, p. e0118432, 2015.
+
+\bibitem{gama2014drift}
+J.~Gama, I.~{\v Z}liobait{\.e}, A.~Bifet, M.~Pechenizkiy, and A.~Bouchachia,
+  ``A survey on concept drift adaptation,'' \emph{ACM Computing Surveys},
+  vol.~46, no.~4, pp. 44:1--44:37, 2014.
+
+\bibitem{sculley2015hidden}
+D.~Sculley, G.~Holt, D.~Golovin, E.~Davydov, T.~Phillips, D.~Ebner,
+  V.~Chaudhary, M.~Young, J.-F. Crespo, and D.~Dennison, ``Hidden technical
+  debt in machine learning systems,'' in \emph{Advances in Neural Information
+  Processing Systems}, vol.~28, 2015, pp. 2503--2511.
 
 \bibitem{taylor2018forecasting}
 S.~J. Taylor and B.~Letham, ``Forecasting at scale,'' \emph{The American
@@ -47,30 +79,61 @@ M.~Ojala and G.~C. Garriga, ``Permutation tests for studying classifier
   performance,'' \emph{Journal of Machine Learning Research}, vol.~11, pp.
   1833--1863, 2010.
 
-\bibitem{zhang2021multitenant}
-J.~Zhang, P.~S. Yu, X.~Li, and W.~Lu, ``Multi-tenant machine learning service:
-  Challenges and opportunities,'' in \emph{Proceedings of the IEEE
-  International Conference on Big Data}, 2021, pp. 3501--3510.
-
-\bibitem{bezemer2010multi}
-C.-P. Bezemer and A.~Zaidman, ``Multi-tenant {SaaS} applications: Maintenance
-  dream or nightmare?'' \emph{Proceedings of the Joint ERCIM Workshop on
-  Software Evolution and International Workshop on Principles of Software
-  Evolution}, pp. 88--92, 2010.
-
 \bibitem{olist2018}
 {Olist}, ``Brazilian e-commerce public dataset by olist,'' Kaggle, 2018,
   \url{https://www.kaggle.com/olistbr/brazilian-ecommerce}.
+
+\bibitem{ibm2017hr}
+{IBM}, ``{IBM HR Analytics Employee Attrition \& Performance Dataset},''
+  Kaggle, 2017,
+  \url{https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset}.
 
 \bibitem{niculescu2005calibration}
 A.~Niculescu-Mizil and R.~Caruana, ``Predicting good probabilities with
   supervised learning,'' \emph{Proceedings of the 22nd International Conference
   on Machine Learning}, pp. 625--632, 2005.
 
-\bibitem{ibm2017hr}
-{IBM}, ``{IBM HR Analytics Employee Attrition \& Performance Dataset},''
-  Kaggle, 2017,
-  \url{https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset}.
+\bibitem{pedregosa2011sklearn}
+F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel,
+  M.~Blondel, P.~Prettenhofer, R.~Weiss, V.~Dubourg, J.~Vanderplas, A.~Passos,
+  D.~Cournapeau, M.~Brucher, M.~Perrot, and {\'E}.~Duchesnay, ``Scikit-learn:
+  Machine learning in {Python},'' in \emph{Journal of Machine Learning
+  Research}, vol.~12, 2011, pp. 2825--2830.
+
+\bibitem{chen2016xgboost}
+T.~Chen and C.~Guestrin, ``{XGBoost}: A scalable tree boosting system,'' in
+  \emph{Proceedings of the 22nd ACM SIGKDD International Conference on
+  Knowledge Discovery and Data Mining}, 2016, pp. 785--794.
+
+\bibitem{chawla2002smote}
+N.~V. Chawla, K.~W. Bowyer, L.~O. Hall, and W.~P. Kegelmeyer, ``{SMOTE}:
+  Synthetic minority over-sampling technique,'' \emph{Journal of Artificial
+  Intelligence Research}, vol.~16, pp. 321--357, 2002.
+
+\bibitem{paleyes2022challenges}
+A.~Paleyes, R.-G. Urma, and N.~D. Lawrence, ``Challenges in deploying machine
+  learning: A survey of case studies,'' \emph{ACM Computing Surveys}, vol.~55,
+  no.~6, pp. 114:1--114:29, 2022.
+
+\bibitem{wu2019psi}
+D.~Wu and D.~L. Olson, ``Population stability index and its use in credit risk
+  monitoring,'' SSRN Working Paper Series, Tech. Rep., 2019.
+
+\bibitem{bifet2007adwin}
+A.~Bifet and R.~Gavald{\`a}, ``Learning from time-changing data with adaptive
+  windowing,'' in \emph{Proceedings of the SIAM International Conference on
+  Data Mining}, 2007, pp. 443--448.
+
+\bibitem{breck2017mltest}
+E.~Breck, S.~Cai, E.~Nielsen, M.~Salib, and D.~Sculley, ``The {ML} test score:
+  A rubric for {ML} production readiness and technical debt reduction,'' in
+  \emph{Proceedings of the IEEE International Conference on Big Data}, 2017,
+  pp. 1123--1132.
+
+\bibitem{kohavi2009online}
+R.~Kohavi, R.~Longbotham, D.~Sommerfield, and R.~M. Henne, ``Controlled
+  experiments on the web: Survey and practical guide,'' in \emph{Data Mining
+  and Knowledge Discovery}, vol.~18, no.~1, 2009, pp. 140--181.
 
 \bibitem{molnar2022interpretable}
 C.~Molnar, \emph{Interpretable Machine Learning: A Guide for Making Black Box

@@ -6,10 +6,10 @@
 \contentsline {section}{\numberline {1.3}Project Objectives}{3}{section.1.3}%
 \contentsline {section}{\numberline {1.4}Project Scope}{4}{section.1.4}%
 \contentsline {subsection}{\numberline {1.4.1}In Scope}{5}{subsection.1.4.1}%
-\contentsline {subsection}{\numberline {1.4.2}Out of Scope}{5}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.2}Out of Scope}{6}{subsection.1.4.2}%
 \contentsline {section}{\numberline {1.5}Project Significance}{6}{section.1.5}%
-\contentsline {section}{\numberline {1.6}Project Questions}{6}{section.1.6}%
-\contentsline {section}{\numberline {1.7}Report Organization}{7}{section.1.7}%
+\contentsline {section}{\numberline {1.6}Project Questions}{7}{section.1.6}%
+\contentsline {section}{\numberline {1.7}Report Organization}{8}{section.1.7}%
 \contentsline {chapter}{\numberline {2}Literature Review}{9}{chapter.2}%
 \contentsline {section}{\numberline {2.1}Introduction}{9}{section.2.1}%
 \contentsline {section}{\numberline {2.2}Enterprise Resource Planning (ERP) Systems}{9}{section.2.2}%
@@ -76,42 +76,60 @@
 \contentsline {section}{\numberline {4.6}Database Schema Design}{44}{section.4.6}%
 \contentsline {subsection}{\numberline {4.6.1}AI/XAI Schema}{44}{subsection.4.6.1}%
 \contentsline {section}{\numberline {4.7}XAI Pipeline Architecture}{45}{section.4.7}%
-\contentsline {section}{\numberline {4.8}Summary}{46}{section.4.8}%
-\contentsline {chapter}{\numberline {5}Implementation and Testing}{47}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Introduction}{47}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Project Structure}{47}{section.5.2}%
-\contentsline {section}{\numberline {5.3}ExplainabilityService Implementation}{48}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}SHAP TreeExplainer Integration}{48}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}LIME TabularExplainer Integration}{49}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}Global Feature Importance}{49}{subsection.5.3.3}%
-\contentsline {subsection}{\numberline {5.3.4}Version Compatibility Handling}{50}{subsection.5.3.4}%
-\contentsline {section}{\numberline {5.4}Multi-Tenant Implementation}{50}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Dynamic Database Registration}{50}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}XAI in Multi-Tenant Context}{50}{subsection.5.4.2}%
-\contentsline {section}{\numberline {5.5}Testing Strategy}{51}{section.5.5}%
-\contentsline {subsection}{\numberline {5.5.1}ML Model Testing}{51}{subsection.5.5.1}%
-\contentsline {subsection}{\numberline {5.5.2}XAI Testing}{51}{subsection.5.5.2}%
-\contentsline {section}{\numberline {5.6}Summary}{51}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Results and Discussion}{52}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Introduction}{52}{section.6.1}%
-\contentsline {section}{\numberline {6.2}ML Model Performance}{52}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Global SHAP Feature Importance}{53}{section.6.3}%
-\contentsline {subsection}{\numberline {6.3.1}Late Payment Prediction}{53}{subsection.6.3.1}%
-\contentsline {subsection}{\numberline {6.3.2}Lead Scoring}{54}{subsection.6.3.2}%
-\contentsline {subsection}{\numberline {6.3.3}Employee Attrition}{55}{subsection.6.3.3}%
-\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{56}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{57}{subsection.6.4.1}%
-\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{58}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Discussion of Research Questions}{59}{section.6.6}%
-\contentsline {subsection}{\numberline {6.6.1}RQ1: Multi-Tenant Architecture}{59}{subsection.6.6.1}%
-\contentsline {subsection}{\numberline {6.6.2}RQ2: ML Model Accuracy}{59}{subsection.6.6.2}%
-\contentsline {subsection}{\numberline {6.6.3}RQ3: XAI for Data-Quality Validation}{59}{subsection.6.6.3}%
-\contentsline {subsection}{\numberline {6.6.4}RQ4: SHAP vs.\ LIME Agreement}{60}{subsection.6.6.4}%
-\contentsline {subsection}{\numberline {6.6.5}RQ5: Software Architecture for ML + XAI Integration}{60}{subsection.6.6.5}%
-\contentsline {subsection}{\numberline {6.6.6}RQ6: Agile Methodology}{60}{subsection.6.6.6}%
-\contentsline {section}{\numberline {6.7}Summary}{61}{section.6.7}%
-\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{62}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Summary of Contributions}{62}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Limitations}{62}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Future Work}{63}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Concluding Remarks}{64}{section.7.4}%
+\contentsline {section}{\numberline {4.8}Implemented System Capabilities}{46}{section.4.8}%
+\contentsline {subsection}{\numberline {4.8.1}Multi-Tenant Platform (\texttt {tenants/} app)}{47}{subsection.4.8.1}%
+\contentsline {subsection}{\numberline {4.8.2}Core ERP Domain Models (70+ Django Models)}{47}{subsection.4.8.2}%
+\contentsline {subsection}{\numberline {4.8.3}REST and Mobile API Surface}{48}{subsection.4.8.3}%
+\contentsline {subsection}{\numberline {4.8.4}Server-Rendered Views and Templates}{49}{subsection.4.8.4}%
+\contentsline {subsection}{\numberline {4.8.5}Services Layer and Cross-Cutting Concerns}{50}{subsection.4.8.5}%
+\contentsline {subsection}{\numberline {4.8.6}AI / ML Stack}{50}{subsection.4.8.6}%
+\contentsline {subsection}{\numberline {4.8.7}Reporting, Analytics and Document Generation}{51}{subsection.4.8.7}%
+\contentsline {subsection}{\numberline {4.8.8}Management Commands and Data Tooling}{52}{subsection.4.8.8}%
+\contentsline {subsection}{\numberline {4.8.9}Mobile Companion App (Flutter, \texttt {mobile/})}{52}{subsection.4.8.9}%
+\contentsline {subsection}{\numberline {4.8.10}Localisation and Accessibility}{53}{subsection.4.8.10}%
+\contentsline {subsection}{\numberline {4.8.11}Audit, Security and Observability}{53}{subsection.4.8.11}%
+\contentsline {subsection}{\numberline {4.8.12}Testing}{54}{subsection.4.8.12}%
+\contentsline {subsection}{\numberline {4.8.13}Deployment and Operations}{54}{subsection.4.8.13}%
+\contentsline {section}{\numberline {4.9}Summary}{54}{section.4.9}%
+\contentsline {chapter}{\numberline {5}Implementation and Testing}{56}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Introduction}{56}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Project Structure}{56}{section.5.2}%
+\contentsline {section}{\numberline {5.3}ExplainabilityService Implementation}{57}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}SHAP TreeExplainer Integration}{57}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}LIME TabularExplainer Integration}{58}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Global Feature Importance}{58}{subsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.3.4}Version Compatibility Handling}{59}{subsection.5.3.4}%
+\contentsline {section}{\numberline {5.4}Multi-Tenant Implementation}{59}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Dynamic Database Registration}{59}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}XAI in Multi-Tenant Context}{59}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}Testing Strategy}{60}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}ML Model Testing}{60}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}XAI Testing}{60}{subsection.5.5.2}%
+\contentsline {section}{\numberline {5.6}Summary}{60}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Results and Discussion}{61}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Introduction}{61}{section.6.1}%
+\contentsline {section}{\numberline {6.2}ML Model Performance}{61}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}The Late-Payment Concept-Iteration Journey}{62}{subsection.6.2.1}%
+\contentsline {section}{\numberline {6.3}Global SHAP Feature Importance}{63}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Late Payment Prediction}{63}{subsection.6.3.1}%
+\contentsline {subsection}{\numberline {6.3.2}Lead Scoring}{65}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}Employee Attrition}{67}{subsection.6.3.3}%
+\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{69}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{70}{subsection.6.4.1}%
+\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{71}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Calibration and Confusion-Matrix Diagnostics}{72}{section.6.6}%
+\contentsline {section}{\numberline {6.7}Demand Forecast Backtesting}{73}{section.6.7}%
+\contentsline {section}{\numberline {6.8}Leakage-Detection Summary}{73}{section.6.8}%
+\contentsline {section}{\numberline {6.9}Discussion of Research Questions}{74}{section.6.9}%
+\contentsline {subsection}{\numberline {6.9.1}RQ1: Multi-Tenant Architecture}{74}{subsection.6.9.1}%
+\contentsline {subsection}{\numberline {6.9.2}RQ2: ML Model Accuracy}{74}{subsection.6.9.2}%
+\contentsline {subsection}{\numberline {6.9.3}RQ3: XAI for Data-Quality Validation}{75}{subsection.6.9.3}%
+\contentsline {subsection}{\numberline {6.9.4}RQ4: SHAP vs.\ LIME Agreement}{75}{subsection.6.9.4}%
+\contentsline {subsection}{\numberline {6.9.5}RQ5: Software Architecture for ML + XAI Integration}{76}{subsection.6.9.5}%
+\contentsline {subsection}{\numberline {6.9.6}RQ6: Agile Methodology}{76}{subsection.6.9.6}%
+\contentsline {section}{\numberline {6.10}Summary}{76}{section.6.10}%
+\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{77}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Summary of Contributions}{77}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Limitations}{77}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Future Work}{78}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Concluding Remarks}{79}{section.7.4}%

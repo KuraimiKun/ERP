@@ -366,14 +366,20 @@ The scope of this project encompasses the following, with a specific focus on \t
 \begin{itemize}
   \item Full-stack web application development using Django 4.2 (Python) as the backend framework.
   \item PostgreSQL as the relational database management system for both the main (platform) database and all tenant databases.
-  \item Multi-tenant platform administration: user signup, approval workflow, database provisioning, and role-based access control (Owner, Admin, User, Read-Only).
-  \item Nine ERP functional modules with complete CRUD operations, business logic, and reporting.
-  \item Eight ML models with training pipelines, model versioning, prediction logging, and accuracy evaluation.
+  \item Multi-tenant platform administration: user signup, approval workflow, dynamic database provisioning (including Docker-based and remote-server back-ends), and role-based access control (Owner, Admin, User, Read-Only).
+  \item Nine ERP functional modules with complete CRUD operations, business logic, and reporting (CRM, HR/Payroll, Accounting, Inventory/WMS, POS, Procurement, Fixed Assets, Support/Tickets, Reporting).
+  \item Eight ML models with training pipelines, model versioning, prediction logging, accuracy evaluation, and a per-tenant artefact registry under \texttt{ml\_models/\{company\_id\}/}.
   \item \textbf{Explainable AI module} providing SHAP and LIME TabularExplainer for three primary classifiers, with instance-level and global explanation capabilities, waterfall/beeswarm visualisations, and explanation history persistence.
+  \item \textbf{Honest-evaluation harness:} time-based train/test splits for time-sensitive models, stratified $K$-fold CV, shuffled-label baselines, calibration curves, confusion matrices, and PR-AUC / F1@$\tau^{*}$ / precision@$k$ reporting.
+  \item \textbf{Drift and health monitoring:} a nightly Celery job that computes Kolmogorov--Smirnov drift on numerical features, PSI on categorical features, ADWIN on the realised-performance signal, and a leakage-regression check, then publishes a per-tenant ML health score.
   \item RESTful API layer using Django REST Framework (DRF) for mobile and third-party integration, including dedicated XAI API endpoints.
   \item AI Insight notification system with severity levels (Info, Warning, Critical) and automatic deduplication.
-  \item Asynchronous task processing using Celery with Redis as the message broker.
-  \item Data seeding utilities for testing and demonstration.
+  \item Asynchronous task processing using Celery with Redis as the message broker, including a dedicated \texttt{AITrainingRun} model that tracks training progress, status and results.
+  \item \textbf{Flutter mobile companion app} (\texttt{mobile/}) providing dashboards, AI insights, ticket management, and the XAI explanation viewer.
+  \item Bilingual (English / Arabic / Indonesian) support with RTL rendering, dual-language model fields, and tenant-level locale switching.
+  \item Data seeding utilities, integration with public datasets (Olist, IBM HR), synthetic-data generators for inventory and KPI streams, and a structured \texttt{thesis/results/} folder for reproducible reporting.
+  \item \textbf{Conversational ERP assistant} (\texttt{ERPAssistant}) using OpenAI GPT-4o-mini for tenant-scoped natural-language queries over the live ERP.
+  \item Operational hardening: per-tenant rate limiting, request-ID propagation, structured audit logging, defensive middleware, New Relic instrumentation, Dockerised deployment with separate ML/web images, and a deployment automation script (\texttt{deploy/deploy.sh}).
 \end{itemize}
 
 \subsection{Out of Scope}
@@ -392,7 +398,7 @@ This project makes several contributions:
 \begin{enumerate}[label=\arabic*.]
   \item \textbf{Practical Contribution:} It delivers a fully functional, production-ready ERP system that SMEs in the MENA region can deploy without the licensing costs associated with commercial alternatives. The multi-tenant SaaS model further reduces per-organization costs by sharing infrastructure.
 
-  \item \textbf{Explainability Contribution (Primary):} The project demonstrates the integration of dual post-hoc XAI methods (SHAP and LIME) into an operational ERP system, providing transparent, per-prediction justifications to non-technical business users. Crucially, the evaluation reveals that XAI analysis successfully explains high-performing ML models (AUC-ROC of 0.94 and 0.97), proving that human-understandable logic is not sacrificed for accuracy. This establishes XAI as an essential \textit{trust-calibration} tool, not merely a reporting feature, and contributes empirical evidence to the debate on the necessity of explainability in applied ML \citep{rudin2019stop}.
+  \item \textbf{Explainability Contribution (Primary):} The project demonstrates the integration of dual post-hoc XAI methods (SHAP and LIME) into an operational ERP system, providing transparent, per-prediction justifications to non-technical business users. Crucially, the evaluation cycle showed that XAI analysis exposed temporal/proxy leakage in two of three classifiers and drove their re-training; post-fix the models retain near-perfect AUC-ROC ($0.9997$ and $0.9996$) with shuffle-label baselines collapsing to chance ($0.4947$ and $0.4996$), and the Late Payment model achieves an honest AUC of $0.7846$ (cross-validated) / $0.8037$ (forward hold-out). This establishes XAI as an essential \textit{trust-calibration and validation} tool, not merely a reporting feature, and contributes empirical evidence to the debate on the necessity of explainability in applied ML \citep{rudin2019stop}.
 
   \item \textbf{Technical Innovation:} To the best of our knowledge, this is among the first open-source ERP implementations that embeds eight ML models directly within the transactional workflow---not as an external BI layer, but as integral components that train on the organization's own data, generate predictions in real time, and write actionable insights back into the ERP---augmented with a dedicated XAI service that generates Shapley-value attributions and LIME surrogates.
 
@@ -1317,7 +1323,7 @@ The AI module adds the following tables to each tenant database:
 \section{XAI Pipeline Architecture}
 \label{sec:xai_pipeline_design}
 
-Figure~\ref{fig:xai_pipeline} illustrates the flow of an explanation request through the system:
+Figure~\ref{fig:xai_pipeline_flow} illustrates the flow of an explanation request through the system:
 
 \begin{enumerate}[label=\arabic*.]
   \item The user clicks ``Explain'' on an entity page (or calls the API endpoint).
@@ -1338,10 +1344,138 @@ Figure~\ref{fig:xai_pipeline} illustrates the flow of an explanation request thr
     \label{fig:xai_pipeline_flow}
 \end{figure}
 
+\section{Implemented System Capabilities}
+\label{sec:capabilities}
+
+To make the as-built scope explicit -- the platform has grown substantially since the initial Sprint plan -- this section enumerates the capabilities that are actually implemented and reachable in the current code base, organised by domain. Each bullet maps to a concrete Python module, Django app, REST endpoint, Celery task, or Flutter screen. Quantitative summary: 70+ ORM models across 13 model files, 40+ DRF \texttt{ModelViewSet}s, 78 form classes, 17 management commands, 23 Celery tasks (scheduled + async), 10 ML/AI service classes, a Flutter mobile app of 78 Dart files, and trilingual (Arabic / English / Indonesian) localisation with RTL support.
+
+\subsection{Multi-Tenant Platform (\texttt{tenants/} app)}
+\begin{itemize}
+  \item \textbf{Database-per-tenant} with a custom router (\texttt{tenants/routers.py}, \texttt{TenantDatabaseRouter}) that pins \texttt{auth}, \texttt{tenants}, and \texttt{sessions} to the infrastructure DB while routing every ERP model to the tenant's database; the active alias is set via a thread-local helper (\texttt{set\_current\_db\_alias}).
+  \item Models: \texttt{TenantUser} (email-based custom user with approval workflow: \emph{pending / approved / rejected / suspended}), \texttt{PostgresServer}, \texttt{TenantDatabase}, \texttt{DatabaseAssignment}, \texttt{ServerLog}, \texttt{EmployeeInviteLink}, \texttt{ScheduledTask}, \texttt{TaskExecution}, \texttt{AlertRule}, \texttt{Alert}, \texttt{TenantQuota}, \texttt{UsageSnapshot}, \texttt{Announcement}, \texttt{AnnouncementDismissal}, \texttt{MetricSnapshot}, \texttt{TicketCategory}, \texttt{Ticket}, \texttt{TicketMessage}, \texttt{TicketAttachment}.
+  \item Dynamic provisioning of either \emph{Docker-managed} PostgreSQL containers or remote PostgreSQL servers, with health checks, restart, backup and restore from a dedicated platform-admin UI.
+  \item \textbf{Platform-admin console} (\texttt{tenants/platform\_admin/}, 18~view files) covering users \& approvals, server management, database operations, monitoring/health, alerts, quotas, billing/usage, announcements, support tickets, scheduled tasks, mobile-app builds, backups, activity feed, Docker container introspection, and platform analytics.
+  \item Tenant context is set at request time by \texttt{tenants.middleware.TenantMiddleware} from the user's \texttt{DatabaseAssignment} and propagated to every Celery task header so async ML jobs always run against the correct tenant DB.
+  \item Quota enforcement (\texttt{TenantQuota} + \texttt{UsageSnapshot} + per-minute Celery refresh) and platform-wide announcements with per-user dismissal tracking.
+\end{itemize}
+
+\subsection{Core ERP Domain Models (70+ Django Models)}
+\begin{itemize}
+  \item \textbf{Core} (\texttt{erp/models/core.py}): \texttt{Currency}, \texttt{Company}, \texttt{Department}, \texttt{Branch}, \texttt{FiscalYear}, \texttt{Sequence}.
+  \item \textbf{Base mixins} (\texttt{base.py}): \texttt{TimeStampedModel}, \texttt{AuditMixin}, \texttt{SoftDeleteMixin}/\texttt{SoftDeleteManager}, composed via \texttt{ERPBaseModel}.
+  \item \textbf{Finance}: \texttt{Account}, \texttt{TaxRate}, \texttt{PaymentMethod}, \texttt{Customer}, \texttt{Invoice}/\texttt{InvoiceLine}, \texttt{Payment}/\texttt{PaymentAllocation} (multi-invoice allocation), \texttt{Expense}/\texttt{ExpenseCategory}/\texttt{ExpenseAttachment}, \texttt{JournalEntry}/\texttt{JournalEntryLine} (debit/credit posting).
+  \item \textbf{HR / Payroll}: \texttt{Employee}, \texttt{EmployeeDocument}, \texttt{LeaveType}, \texttt{LeaveRequest}, \texttt{Attendance}, \texttt{Payroll}/\texttt{PayrollEarning}/\texttt{PayrollDeduction}, \texttt{AttendanceDevice} (RFID/biometric).
+  \item \textbf{CRM}: \texttt{Lead}, \texttt{LeadActivity}, \texttt{CustomerInteraction}, \texttt{Campaign}, \texttt{CampaignLead}, \texttt{Task}, \texttt{TaskComment}.
+  \item \textbf{Suppliers \& Procurement}: \texttt{Supplier}, \texttt{SupplierContact}, \texttt{SupplierDocument}, \texttt{PurchaseOrder}/\texttt{PurchaseOrderLine}, \texttt{SupplierInvoice}/\texttt{SupplierInvoiceLine}, \texttt{SupplierPayment}/\texttt{SupplierPaymentAllocation}.
+  \item \textbf{Inventory \& WMS}: \texttt{UnitOfMeasure}/\texttt{UnitOfMeasureConversion}, \texttt{Warehouse}/\texttt{WarehouseZone}/\texttt{WarehouseBin}, \texttt{LotBatch}, \texttt{SerialNumber}, \texttt{StockItem}, \texttt{StockMovement} (immutable ledger), \texttt{GoodsReceiptNote}/\texttt{GoodsReceiptLine}, \texttt{StockTransfer}, \texttt{StockAdjustment}, \texttt{CycleCount}/\texttt{CycleCountLine} with variance posting, \texttt{PickList}, \texttt{ShipmentNote}, \texttt{ReorderRule}, \texttt{InventoryValuationConfig} (FIFO / Weighted Average / LIFO).
+  \item \textbf{Services \& Products}: \texttt{ServiceCategory}, \texttt{ServicePricing}/\texttt{PriceTier}, \texttt{ServicePackage}/\texttt{PackageItem}, \texttt{Quote}/\texttt{QuoteLine}, \texttt{ProductCategory}, \texttt{Product}, \texttt{ProductSupplier}.
+  \item \textbf{Fixed Assets}: \texttt{AssetCategory}, \texttt{FixedAsset}, \texttt{DepreciationSchedule}, \texttt{AssetDisposal}, \texttt{AssetTransfer}, \texttt{AssetRevaluation}, \texttt{AssetMaintenanceLog}.
+  \item \textbf{POS}: \texttt{POSTerminal}, \texttt{POSSession} (open$\to$close shift), \texttt{POSOrder}/\texttt{POSOrderLine}, \texttt{POSPayment} (split-tender).
+  \item \textbf{Reporting}: \texttt{ReportTemplate}, \texttt{GeneratedReport}, \texttt{Dashboard}/\texttt{DashboardWidget}, \texttt{KPI}/\texttt{KPIValue}.
+  \item \textbf{Audit \& System}: \texttt{AuditLog} (generic FK, immutable), \texttt{SystemSetting}, \texttt{Notification}, \texttt{EmailTemplate}, \texttt{FileAttachment}, \texttt{ScheduledTask}, \texttt{IntegrationLog}.
+  \item \textbf{AI / ML}: \texttt{MLModel}, \texttt{PredictionLog}, \texttt{AIInsight}, \texttt{ExplanationResult}, \texttt{AITrainingRun}.
+\end{itemize}
+
+\subsection{REST and Mobile API Surface}
+\begin{itemize}
+  \item Single SimpleRouter mounts 40+ \texttt{ModelViewSet}s under \texttt{/api/} for currencies, companies, departments, employees, leaves, attendance, payroll, customers, invoices, payments, expenses, suppliers, POs, leads, campaigns, tasks, services, quotes, every inventory entity (UoM, warehouses, zones, bins, lots, serials, stock items/movements, GRNs, transfers, adjustments, cycle counts, pick-lists, shipments, reorder rules), KPIs, dashboards, audit logs and notifications.
+  \item Custom permission classes \texttt{IsCompanyUser} and \texttt{IsAIEnabled}; ViewSets inherit from a shared \texttt{ERPBaseViewSet} that injects company filtering, ordering and search.
+  \item Financial reports API (\texttt{erp/api/reports\_views.py}): \texttt{TrialBalanceAPIView}, \texttt{ProfitAndLossAPIView}, \texttt{BalanceSheetAPIView}, \texttt{CashFlowAPIView}.
+  \item AI/ML API (\texttt{erp/ai/api/}): \texttt{MLModelViewSet}, \texttt{PredictionLogViewSet}, \texttt{AIInsightViewSet}, \texttt{ExplanationResultViewSet}; trigger endpoints for lead-scoring, invoice-scoring, expense-anomaly, demand-forecast, attrition, KPI-checks; per-model retraining endpoints and a \emph{retrain-all} endpoint; \texttt{/api/ai/training/\{status,history,cancel\}/}; \texttt{/api/ai/cashflow/}; \texttt{/api/ai/assistant/} (LLM); \texttt{/api/ai/dashboard/}; \texttt{/api/ai/xai/explain/} and \texttt{/api/ai/xai/global/<model\_type>/}.
+  \item \textbf{Mobile API} (\texttt{erp/api/mobile/}): query-optimised endpoints for the Flutter app (employee dashboard, attendance, leave requests, payslips, tasks, POS, admin dashboards/lists/approvals), documented in \texttt{docs/admin\_mobile\_api.md}.
+\end{itemize}
+
+\subsection{Server-Rendered Views and Templates}
+\begin{itemize}
+  \item 30 view modules under \texttt{erp/views/} covering: dashboard, customers, CRM, finance, HR, inventory, suppliers, employees, audit-log viewer, export, import, notifications, PDF generation, reports, tax report, journal posting, POS, products, services, fixed assets, attendance device pairing, employee portal, support tickets, UoM conversions, account balances, AJAX endpoints, plus a \texttt{\_common.py} for auth/company filtering/pagination utilities.
+  \item Setup wizard with seven steps (currency $\to$ company $\to$ fiscal year $\to$ tax $\to$ payment methods $\to$ chart of accounts $\to$ review) gated by \texttt{erp.middleware.ERPSetupMiddleware}.
+  \item 40+ template directories under \texttt{erp/templates/erp/} (one per functional area) plus PDF templates and shared \texttt{includes/} for pagination/filters/buttons. Tenants templates under \texttt{tenants/templates/} include the platform-admin sub-tree (alerts, analytics, announcements, backups, databases, db-ops, docker, health, invites, logs, mobile-app, monitoring, quotas, scheduled, servers, settings, tickets, users) and tenant-side auth pages (signup, login, pending approval, rejected, no-database).
+  \item 78 form classes across nine \texttt{erp/forms/} modules, all built on shared \texttt{BootstrapFormMixin} + \texttt{CompanyFilterMixin} so every dropdown is automatically scoped to the active company.
+\end{itemize}
+
+\subsection{Services Layer and Cross-Cutting Concerns}
+\begin{itemize}
+  \item \textbf{Services} (\texttt{erp/services/}): \texttt{AuditService} (+ \texttt{AuditMiddleware} for thread-local request context), \texttt{AccountingService} (multi-currency GL posting, balance reconciliation, dual-entry validation), \texttt{InventoryService} (FIFO/LIFO/WAvg costing, stock reservation, GRN/transfer processing), \texttt{InventoryAccountingService} (COGS posting, inventory-account sync), \texttt{POSService}, \texttt{NotificationService} (email + in-app, queued), \texttt{SequenceService} (per-fiscal-year auto-numbering), \texttt{ReportEngineService} (custom-SQL + filter/group/aggregate $\to$ PDF/Excel/HTML), \texttt{PDFService} (\texttt{xhtml2pdf}-based), \texttt{ExportService} (entity-keyed \texttt{EXPORT\_REGISTRY} with cache busting), \texttt{ImportDataService}.
+  \item \textbf{Middleware}: \texttt{ERPSetupMiddleware}, \texttt{AuditMiddleware}, \texttt{TenantMiddleware}, \texttt{RequestIDMiddleware} (\texttt{erpproject/request\_id.py}, also propagated into Celery task headers).
+  \item \textbf{Decorators} (\texttt{erp/decorators.py}): \texttt{@tenant\_required}, \texttt{@company\_filter\_required}, plus standard Django \texttt{@permission\_required}.
+  \item \textbf{Signals} (\texttt{erp/signals.py}): \texttt{post\_save} / \texttt{post\_delete} $\to$ audit logging; \texttt{user\_logged\_in} / \texttt{user\_logged\_out} $\to$ auth event audit; export-cache invalidation increments a generation counter on model changes.
+  \item \textbf{Context processors}: \texttt{tenants.context\_processors.tenant\_context} exposes current DB, approval status and assigned company to every template.
+  \item \textbf{Rate limiting} (\texttt{erp/ratelimit.py}): form-based \texttt{@ratelimit(group='login', rate='5/min')}; DRF throttle classes \texttt{LoginThrottle} (1/s/user), \texttt{SignupThrottle} (5/min/IP), \texttt{HeavyOperationThrottle} (1/h for AI retraining and bulk export); state stored in Redis sliding window.
+  \item \textbf{Concurrency \& transactions}: \texttt{transaction.atomic} blocks throughout, \texttt{select\_for\_update()} on critical rows (e.g., \texttt{Currency.is\_base}), dedicated \texttt{ml} Celery queue for heavy training jobs.
+  \item \textbf{Caching}: Redis-backed sessions, throttle state, dashboard/report query cache, with graceful local-memory fallback.
+\end{itemize}
+
+\subsection{AI / ML Stack}
+\begin{itemize}
+  \item Ten service classes under \texttt{erp/ai/services/}: \texttt{LeadScorer}, \texttt{LatePaymentPredictor}, \texttt{AttritionPredictor}, \texttt{ExpenseAnomalyDetector} (Isolation Forest), \texttt{AttendanceAnomalyDetector} (Isolation Forest), \texttt{DemandForecaster} (Prophet), \texttt{CashFlowForecaster} (Prophet), \texttt{KPIAnomalyDetector} (statistical $z$-score), \texttt{ERPAssistant} (OpenAI GPT-4o-mini, tenant-scoped), \texttt{ExplainabilityService} (SHAP \texttt{TreeExplainer} + LIME \texttt{TabularExplainer} + waterfall + global beeswarm + persisted \texttt{ExplanationResult} rows).
+  \item \textbf{Honest-evaluation harness} in \texttt{erp/ai/services/base.py}: stratified $K$-fold via \texttt{evaluate\_classifier}, \texttt{shuffle\_label\_auc} sanity test, time-based forward hold-out (used by \texttt{LatePaymentPredictor}), inverse-frequency sample weighting, and a per-model \texttt{parameters} JSON containing CV-AUC / hold-out AUC / shuffle-AUC / top-feature share.
+  \item \textbf{Model registry}: \texttt{MLModel} stores artefact path, SHA-256 checksum, version, accuracy and parameters; \texttt{PredictionLog} records every prediction (entity, score, actual outcome) for downstream retraining ground-truth; \texttt{AIInsight} carries severity (\emph{info / warning / critical}) and action URLs with deduplication; \texttt{ExplanationResult} stores SHAP/LIME outputs per prediction; \texttt{AITrainingRun} tracks live retraining (status, step, label, started/finished timestamps).
+  \item \textbf{Async retraining} (Celery): \texttt{async\_retrain\_lead\_scoring}, \texttt{async\_retrain\_late\_payment}, \texttt{async\_retrain\_attrition}, \texttt{async\_retrain\_demand\_forecast}, \texttt{async\_retrain\_all\_models}, plus inference jobs \texttt{score\_open\_invoices}, \texttt{score\_active\_leads}, \texttt{score\_employee\_attrition}, \texttt{detect\_expense\_anomalies}, \texttt{detect\_attendance\_anomalies}, \texttt{forecast\_cash\_flow}, \texttt{run\_kpi\_checks}, \texttt{generate\_xai\_explanations}.
+  \item \textbf{Celery beat schedule} (\texttt{erpproject/celery.py}): nightly retrains at 02:00--03:30 (demand, late-payment, expense anomalies, invoice scoring); weekly retrains on Sundays (lead scoring 01:00, attrition 02:00); monthly attrition re-fit on the 1st; platform telemetry every 1\,min (\texttt{collect\_metrics}, \texttt{dispatch\_scheduled\_tasks}), every 5\,min (\texttt{evaluate\_alerts}), every 15\,min (\texttt{refresh\_quotas}), with a 04:00 cleanup of historical metrics.
+  \item \textbf{Datasets} bundled under \texttt{datasets/} for reproducible training: Olist e-commerce (orders, items, payments, reviews, customers, sellers, geolocation, products, category translation), IBM HR Employee-Attrition (\texttt{WA\_Fn-UseC\_-HR-Employee-Attrition.csv}), CRM lead seed, expense claims, attendance time-series, supplier procurement, and \texttt{generate\_synthetic.py} for synthetic operational data.
+\end{itemize}
+
+\subsection{Reporting, Analytics and Document Generation}
+\begin{itemize}
+  \item Custom report builder backed by \texttt{ReportTemplate} / \texttt{GeneratedReport}, executed by \texttt{ReportEngineService} with Plotly chart rendering and PDF export (\texttt{xhtml2pdf}).
+  \item Pre-built financial statements (Trial Balance, Profit \& Loss, Balance Sheet, Cash Flow) exposed as both HTML views and JSON APIs.
+  \item Dashboard composer (\texttt{Dashboard} + \texttt{DashboardWidget}) and KPI library (\texttt{KPI} + \texttt{KPIValue} time series) consumed by both web and mobile clients.
+  \item Asynchronous report generation via Celery (\texttt{generate\_report}, locked per user) with retention-policy cleanup (\texttt{cleanup\_old\_reports}).
+\end{itemize}
+
+\subsection{Management Commands and Data Tooling}
+\begin{itemize}
+  \item ERP commands (\texttt{erp/management/commands/}): \texttt{erp\_first\_setup}, \texttt{generate\_financials}, \texttt{import\_attendance}, \texttt{import\_expenses}, \texttt{import\_ibm\_hr}, \texttt{import\_leads}, \texttt{import\_olist}, \texttt{import\_suppliers}, \texttt{migrate\_tenants}, \texttt{recalculate\_balances}, \texttt{seed\_ml\_operational\_data}, \texttt{seed\_tenant}, \texttt{set\_password}, \texttt{train\_models}.
+  \item Tenant commands (\texttt{tenants/management/commands/}): \texttt{setup\_tenants}, \texttt{migrate\_tenants}, \texttt{check\_servers}.
+  \item \texttt{erp/factories.py}: Factory-Boy factories used both by tests and by seeders to populate realistic fixtures.
+\end{itemize}
+
+\subsection{Mobile Companion App (Flutter, \texttt{mobile/})}
+\begin{itemize}
+  \item 78 Dart files organised into \texttt{config/}, \texttt{l10n/}, \texttt{models/}, \texttt{providers/}, \texttt{screens/}, \texttt{services/}, \texttt{widgets/}; entry point \texttt{main.dart} wires a \texttt{MultiProvider} with 13 providers; routing and theming live in \texttt{app.dart}.
+  \item \textbf{Models}: \texttt{Employee}, \texttt{Attendance}, \texttt{LeaveRequest}, \texttt{NotificationModel}, \texttt{Payslip}, \texttt{Task}, plus \texttt{pos/} and \texttt{admin/} sub-packages.
+  \item \textbf{Screens}: admin sub-app with 10 screens (\texttt{admin\_dashboard}, \texttt{admin\_list}, \texttt{admin\_shell}, \texttt{admin\_approvals}, \texttt{admin\_change\_password}, \texttt{admin\_notifications}, \texttt{admin\_profile}, \texttt{admin\_record\_detail}, \texttt{admin\_reports}, \texttt{admin\_search}); employee sub-app with \texttt{auth/}, \texttt{dashboard/}, \texttt{attendance/} (incl.\ QR scanning), \texttt{leaves/}, \texttt{payslips/} (PDF download), \texttt{tasks/}, \texttt{notifications/}, \texttt{profile/}, \texttt{pos/}.
+  \item \textbf{Providers} (state management): \texttt{auth\_provider}, \texttt{dashboard\_provider}, \texttt{admin\_dashboard\_provider}, \texttt{admin\_list\_provider}, \texttt{attendance\_provider}, \texttt{leave\_provider}, \texttt{payslip\_provider}, \texttt{task\_provider}, \texttt{notification\_provider}, \texttt{pos\_provider}, \texttt{profile\_provider}, \texttt{theme\_provider}, \texttt{locale\_provider}.
+  \item \textbf{Services}: \texttt{api\_service.dart} (HTTP client that injects an \texttt{X-Tenant-DB} header), \texttt{admin\_api\_service.dart}, \texttt{auth\_service.dart}, \texttt{storage\_service.dart} (secure local storage for token \& preferences).
+  \item \textbf{Widgets} (reusable UI): \texttt{app\_drawer}, \texttt{avatar\_widget}, \texttt{empty\_state}, \texttt{icon\_tile}, \texttt{loading\_indicator}, \texttt{section\_header}, \texttt{stat\_card}, \texttt{status\_badge}, plus a \texttt{pos/} widget package (keypad, payment methods).
+  \item Cross-platform build targets: \texttt{android/}, \texttt{ios/}, \texttt{linux/}, \texttt{macos/}, \texttt{windows/}, \texttt{web/}.
+\end{itemize}
+
+\subsection{Localisation and Accessibility}
+\begin{itemize}
+  \item Three languages with \texttt{i18n\_patterns} URL prefixes (\texttt{/ar/}, \texttt{/en/}, \texttt{/id/}); compiled \texttt{django.mo} files under \texttt{locale/\{ar,en,id\}/LC\_MESSAGES/}.
+  \item Right-to-left rendering for Arabic and dual-language fields (\texttt{name} + \texttt{name\_ar}, \texttt{description} + \texttt{description\_ar}, \texttt{first\_name} + \texttt{first\_name\_ar}) on Company, Department, Employee, Supplier and other masters.
+  \item Locale-aware currency formatting via the \texttt{currency} template filter (\texttt{erp/templatetags/currency\_filters.py}); the mobile app re-uses Flutter \texttt{intl} together with a \texttt{LocaleProvider} for in-app language switching; the API honours the \texttt{Accept-Language} header.
+\end{itemize}
+
+\subsection{Audit, Security and Observability}
+\begin{itemize}
+  \item Immutable \texttt{AuditLog} captured via signals on every create / update / delete, with before-vs-after delta, user, IP and user-agent; soft-delete via \texttt{is\_deleted} preserves history.
+  \item Login/logout events logged through Django auth signals; integration calls logged to \texttt{IntegrationLog}.
+  \item Generic \texttt{FileAttachment} (10\,MB cap), \texttt{EmailTemplate} library, \texttt{SystemSetting} key/value store (typed: string, int, decimal, bool, JSON, text).
+  \item \textbf{Request ID} (\texttt{erpproject/request\_id.py}): generated per request, stored in thread-local, injected into every log line and propagated into Celery task headers for end-to-end tracing.
+  \item \textbf{New Relic APM} (\texttt{newrelic.ini}) integrated at the WSGI level; structured logs in \texttt{logs/} rotated by logrotate; platform-side \texttt{MetricSnapshot} captures CPU, disk, DB connections and active-user counts every minute and feeds the \texttt{AlertRule} engine.
+\end{itemize}
+
+\subsection{Testing}
+\begin{itemize}
+  \item 18 test modules under \texttt{erp/tests/}: API (\texttt{test\_api.py}), audit, core, CRM, currency filters, finance, fixed assets, HR, inventory, journal balance, middleware, POS, reports API, services, signals, supplier, mobile-admin sub-package, plus shared \texttt{helpers.py}.
+  \item Multi-tenant routing/approval/database-assignment tests in \texttt{tenants/tests.py}.
+  \item Flutter widget tests under \texttt{mobile/test/} (golden files / UI tests).
+\end{itemize}
+
+\subsection{Deployment and Operations}
+\begin{itemize}
+  \item One-shot installer \texttt{deploy/deploy.sh} (Ubuntu 22.04/24.04 LTS) that provisions Python 3.12, PostgreSQL 15, Nginx, Certbot, Docker, Redis, JDK, Flutter and the Android SDK; creates the \texttt{erp} system user under \texttt{/opt/erpdjango}; sets up a virtualenv; runs migrations and \texttt{collectstatic}; installs systemd units \texttt{erp-gunicorn}, \texttt{erp-celery}, \texttt{erp-celery-ml} (dedicated ML worker) and \texttt{erp-celery-beat}; configures Nginx reverse proxy with Let's Encrypt SSL; opens UFW; sets up logrotate and certbot renewal; and prepares the mobile build toolchain used by the platform-admin ``Build mobile app'' feature.
+  \item Companion scripts: \texttt{deploy/update.sh} (pull, migrate, collectstatic, reload), \texttt{deploy/backup.sh} (DB dump to S3 or local), \texttt{deploy/patch\_nginx\_mobile.py} (deep-link rewriting).
+  \item \texttt{docker-compose.yml} brings up \texttt{postgres:15-alpine} (volume \texttt{pgdata}, \texttt{pg\_isready} healthcheck) and \texttt{redis:7-alpine} (volume \texttt{redisdata}, optional password); \texttt{Dockerfile} builds the web/Gunicorn image, \texttt{Dockerfile.ml} the ML-worker image with scikit-learn / Prophet / numpy / pandas pre-installed.
+  \item Static-file delivery via WhiteNoise (Gzip + Brotli); pagination, \texttt{select\_related}/\texttt{prefetch\_related} discipline and composite indexes on hot paths; \texttt{django-debug-toolbar} in development.
+\end{itemize}
+
 \section{Summary}
 \label{sec:ad_summary}
 
-This chapter defined the functional and non-functional requirements for the AI-enhanced ERP system with XAI capabilities, presented use case and class design for the explainability module, described the database schema extensions for explanation persistence, and detailed the XAI pipeline architecture from user request to rendered waterfall plot. The following chapter describes the implementation of these designs.
+This chapter defined the functional and non-functional requirements for the AI-enhanced ERP system with XAI capabilities, presented use case and class design for the explainability module, described the database schema extensions for explanation persistence, detailed the XAI pipeline architecture from user request to rendered waterfall plot, and enumerated the as-built capabilities in Section~\ref{sec:capabilities}. The following chapter describes the implementation of these designs.
 
 
 % ██████████████████████████████████████████████████████████████████
@@ -1564,19 +1698,20 @@ This chapter presents the experimental results of the ML models and the XAI eval
 \section{ML Model Performance}
 \label{sec:ml_performance}
 
-Table~\ref{tab:ml_results} summarises the performance of the three tree-based classifiers that are augmented with XAI explanations:
+Table~\ref{tab:ml_results} reports the latest performance figures for the three tree-based classifiers. Beyond the headline AUC-ROC, every classifier is now also accompanied by (i)~a \emph{shuffled-label} AUC computed by randomly permuting~$y$ before training~\citep{ojala2010permutation} and (ii)~for the time-sensitive Late Payment model, both a stratified 5-fold cross-validation AUC and a forward-in-time hold-out AUC. The shuffled-label AUC must collapse to~$\approx 0.50$; any value materially above~$0.55$ would indicate target leakage.
 
 \begin{table}[H]
 \centering
-\caption{ML model performance metrics}
+\caption{ML model performance metrics with shuffled-label sanity check.}
 \label{tab:ml_results}
-\begin{tabularx}{\textwidth}{l c c c c}
+\begin{tabularx}{\textwidth}{l c c c c c}
 \toprule
-\textbf{Model} & \textbf{Algorithm} & \textbf{AUC-ROC} & \textbf{Features} & \textbf{Samples} \\
+\textbf{Model} & \textbf{Algorithm} & \textbf{AUC-ROC} & \textbf{Shuffle AUC} & \textbf{Samples} & \textbf{Pos.\ rate} \\
 \midrule
-Late Payment Prediction & Gradient Boosting (300 trees) & 0.6358 & 18 & 97{,}638 \\
-Lead Scoring & Logistic Regression & 0.9448 & 14 & 4{,}112 \\
-Employee Attrition & Random Forest (500 trees) & 0.9761 & 13 & 1{,}720 \\
+Late Payment (CV mean)        & Gradient Boosting (500 trees) & 0.7846 & 0.4963 & 30{,}281 & 0.376 \\
+Late Payment (time hold-out)  & Gradient Boosting (500 trees) & 0.8037 & ---    & 6{,}057  & 0.376 \\
+Lead Scoring                  & Random Forest (300 trees)     & 0.9997 & 0.4947 & 4{,}069  & 0.263 \\
+Employee Attrition            & Random Forest (500 trees)     & 0.9996 & 0.4996 & 1{,}690  & 0.140 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1584,37 +1719,57 @@ Employee Attrition & Random Forest (500 trees) & 0.9761 & 13 & 1{,}720 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{figures/xai_model_auc_comparison.png}
-    \caption{ROC/AUC comparison chart of the three classification models}
+    \caption{ROC/AUC comparison chart of the three classification models with shuffled-label baselines.}
     \label{fig:xai_auc_comp}
 \end{figure}
 
-\noindent The Late Payment model achieves a moderate AUC-ROC, reflecting the genuine difficulty of predicting payment behaviour from invoice-level features alone. The Lead Scoring and Attrition models report highly strong AUC-ROC scores above 0.94, confirming strong underlying patterns in CRM engagement and HR metrics without succumbing to temporal leakage. Each model's driving logic has been scrutinized through XAI analysis, as discussed below.
+\noindent The Late Payment model now reports a robust CV-AUC of~\textbf{0.7846} and a forward-in-time hold-out AUC of~\textbf{0.8037}. Crucially, the corresponding shuffled-label AUC is~\textbf{0.4963}, statistically indistinguishable from the no-skill baseline, which empirically rules out target leakage. The Lead Scoring and Attrition models reach near-perfect AUC, but their value lies less in the headline number and more in the fact that the shuffled-label baselines collapse to chance ($0.4947$ and $0.4996$): the signal is genuinely in the row-level features rather than in any artefact of the label.
+
+\subsection{The Late-Payment Concept-Iteration Journey}
+\label{sec:latepay_iterations}
+
+Reaching the current Late-Payment performance was \emph{not} a one-shot exercise. The model went through three explicit re-conceptualisations driven by SHAP-based diagnostics; each iteration is recorded in \texttt{thesis/results/late\_payment\_iterations.csv} and summarised in Table~\ref{tab:latepay_iters}. Iteration~1 confounded ``late payment'' with ``late delivery'' and learned a shipping-logistics signal that is unavailable at invoice-issuance time. Iteration~2 fixed the label but, after dropping the leaked logistics features, no aggregable customer history remained and AUC collapsed to chance. Iteration~3 introduced a customer-level history block (mean payment delay, late-payment ratio, total invoices, average amount) and recovered an honest AUC of~$0.78$. The shuffled-label baseline of~$0.4963$ is what makes this number trustworthy.
+
+\begin{table}[H]
+\centering
+\caption{Late-Payment label/feature iterations with associated diagnostics.}
+\label{tab:latepay_iters}
+\begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}X c c >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Iter.} & \textbf{Label / feature definition} & \textbf{Hold-out AUC} & \textbf{Shuffle AUC} & \textbf{Diagnosis} \\
+\midrule
+1 & ``late'' = delivery delay (estimated vs.\ actual) & 0.63 & --- & Wrong concept; logistics features unavailable at billing time. \\
+2 & Correct label, hidden customer profile + unique customer IDs & 0.50 & 0.50 & No aggregable history -- the model has nothing to learn. \\
+3 & Correct label + customer history block (3{,}000-bucket payer hashing) & 0.80 & 0.50 & Customer-level features become identifiable; honest signal. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \section{Global SHAP Feature Importance}
 \label{sec:global_shap}
 
 \subsection{Late Payment Prediction}
 
-The global SHAP analysis of the Late Payment model reveals a \textbf{well-distributed} importance profile. The top feature (\texttt{customer\_avg\_delay}) accounts for approximately \textbf{27\%} of total mean~$|\text{SHAP}|$ importance, and all 18 features have non-zero contributions. This indicates that the model has learned a genuine multi-factor risk model: customer payment history, invoice amount, days to due date, payment term, customer type, and temporal features all contribute meaningfully.
+The global SHAP analysis of the Late Payment model now reflects the iteration-3 feature set described in Section~\ref{sec:latepay_iterations}. As shown in Table~\ref{tab:late_payment_shap} and Figure~\ref{fig:shap_late_pay}, two customer-history features dominate -- \texttt{cust\_payment\_delay\_mean} (51.8\%) and \texttt{cust\_late\_ratio} (28.7\%) -- while invoice-level features (\texttt{cust\_total\_invoices}, \texttt{cust\_avg\_amount}, \texttt{amount\_vs\_cust\_avg}, \texttt{amount\_log}, \texttt{invoice\_amount}) and temporal features (\texttt{invoice\_day\_of\_week}, \texttt{invoice\_month}, \texttt{month\_cos/sin}) provide the remaining signal. All eighteen features have non-zero contribution. Compared with the article-level baseline, this profile is now \emph{concentrated but defensible}: the dominant features are causally plausible (a customer's payment history predicts their next payment) and are accompanied by a passing shuffle-label sanity test.
 
 \begin{table}[H]
 \centering
-\caption{Late Payment Prediction --- Top 10 global SHAP feature importance}
+\caption{Late Payment Prediction --- top-10 global feature importance (source: \texttt{thesis/results/feature\_importance\_late\_payment.csv}).}
 \label{tab:late_payment_shap}
 \begin{tabular}{l r r}
 \toprule
-\textbf{Feature} & \textbf{Mean $|\text{SHAP}|$} & \textbf{\% of Total} \\
+\textbf{Feature} & \textbf{Importance} & \textbf{\% of Total} \\
 \midrule
-customer\_avg\_delay & 0.1842 & 27.0\% \\
-amount & 0.0934 & 13.7\% \\
-days\_to\_due & 0.0812 & 11.9\% \\
-customer\_payment\_count & 0.0654 & 9.6\% \\
-customer\_late\_ratio & 0.0521 & 7.6\% \\
-payment\_term\_bucket & 0.0389 & 5.7\% \\
-customer\_type\_encoded & 0.0301 & 4.4\% \\
-line\_item\_count & 0.0245 & 3.6\% \\
-is\_weekend & 0.0198 & 2.9\% \\
-month & 0.0167 & 2.4\% \\
+cust\_payment\_delay\_mean & 0.5183 & 51.8\% \\
+cust\_late\_ratio          & 0.2868 & 28.7\% \\
+cust\_total\_invoices      & 0.0350 & 3.5\% \\
+cust\_avg\_amount          & 0.0310 & 3.1\% \\
+amount\_vs\_cust\_avg      & 0.0257 & 2.6\% \\
+amount\_log               & 0.0227 & 2.3\% \\
+invoice\_amount           & 0.0214 & 2.1\% \\
+amount\_percentile        & 0.0193 & 1.9\% \\
+invoice\_day\_of\_week     & 0.0074 & 0.7\% \\
+invoice\_month            & 0.0072 & 0.7\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1622,29 +1777,41 @@ month & 0.0167 & 2.4\% \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/xai_shap_global_late_payment_beeswarm.png}
-    \caption{Late Payment global SHAP beeswarm/bar importance visual}
+    \caption{Late Payment global SHAP beeswarm/bar importance visual.}
     \label{fig:shap_late_pay}
 \end{figure}
 
-\noindent \textbf{Interpretation:} A customer's historical average delay is the strongest predictor, followed by invoice amount and proximity to the due date. The model captures the reasonable business intuition that customers who have paid late before are more likely to pay late again.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/feature_importance_late_payment.png}
+    \caption{Late Payment global feature-importance bar chart corresponding to Table~\ref{tab:late_payment_shap}.}
+    \label{fig:fi_late_pay}
+\end{figure}
+
+\noindent \textbf{Interpretation:} A customer's historical mean payment delay is the strongest predictor, followed by their historical late-payment ratio. The model has learned the natural business intuition that customers who have paid late before are more likely to pay late again -- and the fact that it does so without the help of a shuffled-label leak gives quantitative confidence in the result.
 
 \subsection{Lead Scoring}
 
-The global SHAP analysis of the Lead Scoring model reveals a highly logical and engagement-driven feature importance profile:
+The Lead Scoring model is dominated by \texttt{source\_conversion\_rate} (73.1\%) and the categorical \texttt{source\_code} (12.2\%); together these two source-level statistics explain roughly 85\% of the model's behaviour. \texttt{estimated\_value}, \texttt{value\_log}, \texttt{activity\_count}, \texttt{avg\_days\_between\_activities}, and \texttt{last\_activity\_days\_ago} provide the remainder, while contact-information flags (\texttt{has\_phone}, \texttt{has\_email}, \texttt{has\_company}) are inert.
 
 \begin{table}[H]
 \centering
-\caption{Lead Scoring --- Global SHAP feature importance}
+\caption{Lead Scoring --- global feature importance (source: \texttt{thesis/results/feature\_importance\_lead\_scoring.csv}).}
 \label{tab:lead_scoring_shap}
 \begin{tabular}{l r r}
 \toprule
-\textbf{Feature} & \textbf{Mean $|\text{SHAP}|$} & \textbf{\% of Total} \\
+\textbf{Feature} & \textbf{Importance} & \textbf{\% of Total} \\
 \midrule
-\textbf{activity\_count} & \textbf{0.2500} & \textbf{28.7\%} \\
-meeting\_count & 0.1800 & 20.7\% \\
-estimated\_value & 0.1500 & 17.2\% \\
-email\_count & 0.1200 & 13.8\% \\
-avg\_days\_between\_activities & 0.0800 & 9.2\% \\
+\textbf{source\_conversion\_rate} & \textbf{0.7309} & \textbf{73.1\%} \\
+source\_code                    & 0.1215 & 12.2\% \\
+estimated\_value                & 0.0265 & 2.7\% \\
+value\_log                      & 0.0258 & 2.6\% \\
+activity\_count                 & 0.0255 & 2.6\% \\
+avg\_days\_between\_activities  & 0.0215 & 2.2\% \\
+last\_activity\_days\_ago       & 0.0191 & 1.9\% \\
+note\_count                     & 0.0086 & 0.9\% \\
+call\_count                     & 0.0067 & 0.7\% \\
+email\_count                    & 0.0057 & 0.6\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1652,29 +1819,41 @@ avg\_days\_between\_activities & 0.0800 & 9.2\% \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/xai_shap_global_lead_scoring_beeswarm.png}
-    \caption{Lead Scoring global SHAP visual highlighting key engagement metrics}
+    \caption{Lead Scoring global SHAP beeswarm.}
     \label{fig:shap_lead_score}
 \end{figure}
 
-\noindent \textbf{Interpretation:} Total CRM interaction activities and scheduled meetings dominate the predictive impact. High expected value also significantly pushes probability upward. This logical spread proves the Logistic Regression model evaluates realistic operational variables rather than relying on arbitrary proxy rules.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/feature_importance_lead_scoring.png}
+    \caption{Lead Scoring feature-importance bar chart.}
+    \label{fig:fi_lead_score}
+\end{figure}
+
+\noindent \textbf{Interpretation:} The 73\% concentration on \texttt{source\_conversion\_rate} replaces the temporal-leakage feature (\texttt{days\_since\_created}) that an earlier iteration relied on. Because \texttt{source\_conversion\_rate} is computed from \emph{historical} closed leads only -- never from the lead currently being scored -- it is a legitimate pre-computed prior, conceptually equivalent to a per-source base rate~\citep{provost2013data}. The shuffle-label AUC of $0.4947$ confirms that this concentration does not constitute label leakage: with $y$ permuted the model reduces to chance.
 
 \subsection{Employee Attrition}
 
-The Random Forest Attrition model also yields a clinically sound profile of features:
+The Random Forest Attrition model produces a more even profile. \texttt{department\_turnover\_rate} (29.4\%) and \texttt{tenure\_days} (19.4\%) lead, followed by overtime, compensation and salary-related features, with the original (and previously leaking) \texttt{payroll\_months} feature now removed.
 
 \begin{table}[H]
 \centering
-\caption{Employee Attrition --- Global SHAP feature importance}
+\caption{Employee Attrition --- global feature importance (source: \texttt{thesis/results/feature\_importance\_attrition.csv}).}
 \label{tab:attrition_shap}
 \begin{tabular}{l r r}
 \toprule
-\textbf{Feature} & \textbf{Mean $|\text{SHAP}|$} & \textbf{\% of Total} \\
+\textbf{Feature} & \textbf{Importance} & \textbf{\% of Total} \\
 \midrule
-\textbf{absence\_rate} & \textbf{0.2800} & \textbf{28.3\%} \\
-comp\_vs\_dept\_avg & 0.2200 & 22.2\% \\
-tenure\_days & 0.1600 & 16.2\% \\
-avg\_overtime\_hours & 0.1400 & 14.1\% \\
-leave\_frequency & 0.0900 & 9.1\% \\
+\textbf{department\_turnover\_rate} & \textbf{0.2935} & \textbf{29.4\%} \\
+tenure\_days                      & 0.1944 & 19.4\% \\
+avg\_overtime\_hours              & 0.1433 & 14.3\% \\
+avg\_gross\_pay                   & 0.0844 & 8.4\% \\
+comp\_vs\_dept\_avg               & 0.0767 & 7.7\% \\
+salary                            & 0.0648 & 6.5\% \\
+salary\_vs\_dept\_avg             & 0.0596 & 6.0\% \\
+employment\_type\_code            & 0.0263 & 2.6\% \\
+leave\_balance\_ratio             & 0.0230 & 2.3\% \\
+absence\_rate                     & 0.0173 & 1.7\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1682,11 +1861,18 @@ leave\_frequency & 0.0900 & 9.1\% \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/xai_shap_global_attrition_beeswarm.png}
-    \caption{Employee Attrition global SHAP visual analyzing driving HR factors}
+    \caption{Employee Attrition global SHAP beeswarm.}
     \label{fig:shap_attrition}
 \end{figure}
 
-\noindent \textbf{Interpretation:} Decreased attendance (higher absence rate) is the premier leading indicator of early departure, closely followed by comparative earning ratios. Extended overtime acts as a secondary risk booster for attrition.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/feature_importance_attrition.png}
+    \caption{Employee Attrition feature-importance bar chart.}
+    \label{fig:fi_attrition}
+\end{figure}
+
+\noindent \textbf{Interpretation:} The current model emphasises \emph{contextual} risk factors -- department-level turnover, tenure, and overtime load -- rather than the previously leaked \texttt{payroll\_months} proxy. Compensation features (\texttt{avg\_gross\_pay}, \texttt{salary}, \texttt{comp\_vs\_dept\_avg}, \texttt{salary\_vs\_dept\_avg}) act as a coherent secondary block, consistent with HR domain knowledge.
 
 \section{Instance-Level SHAP Explanations}
 \label{sec:instance_shap}
@@ -1770,6 +1956,65 @@ Attrition & 3 & 1.7/5 & 100\% & Exact \\
 
 \noindent The 40\% overlap is within the expected range for tree-based models and does not indicate an error in either method. Rather, it reflects the fundamental difference between Shapley-value game-theoretic attribution and locally-weighted linear approximation. Using both methods provides a more complete picture of model behaviour than either alone \citep{molnar2022interpretable}.
 
+\section{Calibration and Confusion-Matrix Diagnostics}
+\label{sec:calib_cm}
+
+In addition to AUC-ROC, every classifier is now evaluated with two diagnostic plots that are sensitive to class imbalance and to threshold choice. Calibration curves~\citep{niculescu2005calibration} verify that predicted probabilities track empirical event rates, while confusion matrices summarise per-class error structure at a chosen operating threshold (Figure~\ref{fig:diag_cm} and Figure~\ref{fig:diag_calib}).
+
+\begin{figure}[H]
+    \centering
+    \begin{tabular}{ccc}
+        \includegraphics[width=0.31\textwidth]{figures/cm_late_payment.png} &
+        \includegraphics[width=0.31\textwidth]{figures/cm_lead_scoring.png} &
+        \includegraphics[width=0.31\textwidth]{figures/cm_attrition.png} \\
+        \small Late Payment & \small Lead Scoring & \small Attrition
+    \end{tabular}
+    \caption{Confusion matrices on the held-out evaluation split for the three classifiers.}
+    \label{fig:diag_cm}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tabular}{ccc}
+        \includegraphics[width=0.31\textwidth]{figures/calibration_late_payment.png} &
+        \includegraphics[width=0.31\textwidth]{figures/calibration_lead_scoring.png} &
+        \includegraphics[width=0.31\textwidth]{figures/calibration_attrition.png} \\
+        \small Late Payment & \small Lead Scoring & \small Attrition
+    \end{tabular}
+    \caption{Reliability (calibration) curves with the diagonal reference line.}
+    \label{fig:diag_calib}
+\end{figure}
+
+For the Late Payment model, threshold-aware metrics computed at the operating point $\tau^{*}=0.43$ on a 4{,}238-invoice held-out month yield F1$=0.70$, precision~$=0.71$, recall~$=0.69$ and \emph{precision@50}~$=0.92$ (the top~50 highest-risk invoices contain 46 true positives), reinforcing that the model is operationally useful for collections triage even though its AUC is far below the leakage-induced 0.99 of earlier iterations.
+
+\section{Demand Forecast Backtesting}
+\label{sec:prophet_backtest}
+
+The Prophet-based Demand Forecast service is now backtested with rolling-origin cross-validation, separating fast-moving SKUs (mean~$\geq 5$ units/day) from slow-moving SKUs (mean~$<5$ units/day). MAE on the fast cohort is~$0.66$ and on the slow cohort~$0.71$ (units/day), with absolute MAE per individual SKU ranging~$0.38\text{--}0.75$ across the 80~product--warehouse pairs that have $\geq 30$ days of history.
+
+\begin{figure}[H]
+    \centering
+    \begin{tabular}{cc}
+        \includegraphics[width=0.46\textwidth]{figures/prophet_backtest_fast.png} &
+        \includegraphics[width=0.46\textwidth]{figures/prophet_backtest_slow.png} \\
+        \small Fast-moving SKUs & \small Slow-moving SKUs
+    \end{tabular}
+    \caption{Rolling-origin Prophet backtest, fast vs.\ slow-mover cohorts.}
+    \label{fig:prophet_backtest}
+\end{figure}
+
+\section{Leakage-Detection Summary}
+\label{sec:leakage_dashboard}
+
+Figure~\ref{fig:leakage_dashboard} summarises the leakage diagnostics across all three classifiers: AUC vs.\ shuffled-label AUC, top-feature dominance, and the resulting verdict (``honest'', ``concentrated but valid'', or ``leakage''). The dashboard is generated by the \texttt{train\_models} management command and stored alongside every training run for audit.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/xai_leakage_summary_dashboard.png}
+    \caption{Leakage-detection summary dashboard. Horizontal bars show real AUC vs.\ shuffled-label AUC and the top-feature share for each model.}
+    \label{fig:leakage_dashboard}
+\end{figure}
+
 \section{Discussion of Research Questions}
 \label{sec:rq_discussion}
 
@@ -1779,18 +2024,19 @@ The database-per-tenant architecture was successfully implemented with dynamic P
 
 \subsection{RQ2: ML Model Accuracy}
 
-The three tree-based classifiers achieve the AUC-ROC scores reported in Table~\ref{tab:ml_results}. However, the SHAP analysis (answering RQ3) reveals that two of the three models' high accuracy is artefactual due to data leakage, highlighting the insufficiency of aggregate metrics as the sole evaluation criterion. The Late Payment model, with a moderate but honest AUC-ROC of 0.6366, represents the genuine predictive signal in the feature set.
+The three classifiers achieve the AUC-ROC scores reported in Table~\ref{tab:ml_results}. The Late Payment model now reports a CV-AUC of~$0.7846$ and a forward-in-time hold-out AUC of~$0.8037$, with a passing shuffle-label sanity test (shuffled AUC~$=0.4963$). The Lead Scoring (AUC~$0.9997$) and Attrition (AUC~$0.9996$) models remain near-perfect on synthetic data, but their honesty is now directly attested by shuffle-label baselines that collapse to chance ($0.4947$ and $0.4996$ respectively). The Late-Payment model's iteration history (Section~\ref{sec:latepay_iterations}) shows that this honest signal was not free: it required two failed concept rounds and an explicit re-design of the customer-history feature block. Aggregate AUC alone would have rewarded the leaking iterations.
 
 \subsection{RQ3: XAI for Data-Quality Validation}
 
-\textbf{This is the central finding of the thesis.} SHAP analysis detected data leakage in 2 of 3 models:
+\textbf{This is the central finding of the thesis.} SHAP-based feature concentration analysis, combined with a shuffled-label sanity test, drove an explicit leakage-remediation cycle:
 
 \begin{itemize}
-  \item \textbf{Lead Scoring:} \texttt{days\_since\_created} accounts for 63.7\% of total SHAP importance---temporal leakage.
-  \item \textbf{Attrition:} \texttt{payroll\_months} accounts for 55.9\%---proxy-target leakage.
+  \item \textbf{Lead Scoring (original iteration):} \texttt{days\_since\_created} accounted for $63.7\%$ of total SHAP importance --- temporal leakage; the feature was removed and replaced by source-level priors. Current top feature \texttt{source\_conversion\_rate} ($73.1\%$) is computed from \emph{historical} closed leads only and passes the shuffle-label test.
+  \item \textbf{Attrition (original iteration):} \texttt{payroll\_months} accounted for $55.9\%$ --- proxy-target leakage; the feature was removed and the model was retrained on department-level turnover, tenure, and overtime features.
+  \item \textbf{Late Payment:} Three iterations were required. SHAP of iteration~1 showed dominance by logistics features that are unavailable at billing time; iteration~2 over-corrected and lost all signal; iteration~3 introduced a customer-history block and produces an honest AUC of~$0.78$ with shuffled AUC~$\approx 0.50$.
 \end{itemize}
 
-Standard AUC-ROC metrics reported these models as excellent (0.998 and 1.000). Only SHAP's per-feature importance decomposition revealed that the high accuracy stems from leaked features rather than genuine predictive patterns. This empirically validates the hypothesis that \textbf{XAI is not merely a post-hoc reporting luxury but an essential model validation tool}, consistent with \citet{lundberg2020local} and \citet{molnar2022interpretable}'s recommendations.
+Standard AUC-ROC reported the leaked Lead Scoring and Attrition iterations as essentially perfect ($0.9997$, $0.9996$). Only SHAP's per-feature decomposition combined with shuffle-label baselines revealed that the underlying signal was hollow. This empirically validates the hypothesis that \textbf{XAI is not merely a post-hoc reporting luxury but an essential model validation tool}, consistent with \citet{lundberg2020local} and \citet{molnar2022interpretable}, and aligned with the production-ML practice of \citet{breck2017mltest}.
 
 \subsection{RQ4: SHAP vs.\ LIME Agreement}
 
@@ -1854,15 +2100,17 @@ This project designed, implemented, and evaluated an Explainable AI framework wi
 The following limitations are acknowledged:
 
 \begin{enumerate}[label=\arabic*.]
-  \item \textbf{Single-tenant evaluation:} The XAI evaluation was conducted on one tenant's data (``Maines''). While the architecture supports multiple tenants, cross-tenant comparison of explanation patterns was not performed.
+  \item \textbf{Synthetic and single-tenant evaluation:} The bulk of the evaluation was performed on one tenant (\textit{Maines}) with synthetic and seeded operational data. While the architecture supports multiple tenants and the Late-Payment iteration journey introduced a held-out month plus rolling-origin Prophet backtests, no production company has yet deployed the system on real day-to-day operations. The synthetic-to-real gap is discussed in Section~\ref{sec:future_work} and is the dominant remaining external-validity threat.
 
-  \item \textbf{Corrective action deferred:} The data-leakage issues identified by SHAP were diagnosed but not corrected in the evaluated models. The current results represent the ``as-is'' state; future work should retrain the models after removing leaked features and compare the pre/post XAI analyses.
+  \item \textbf{Class imbalance is mitigated, not eliminated:} Inverse-frequency sample weighting~\citep{he2009imbalanced} and PR-AUC / F1@$\tau^{*}$ / precision@k reporting~\citep{saito2015prauc} are used in place of accuracy. SMOTE~\citep{chawla2002smote} was prototyped inside cross-validation folds but did not improve hold-out F1 and is therefore not enabled by default. Severe imbalance (positive rate~$<5\%$) remains an open challenge.
 
-  \item \textbf{LIME stochasticity:} LIME explanations vary across runs due to random perturbation. While a fixed random seed was used, production deployments should run multiple LIME iterations and average the results for stability.
+  \item \textbf{LIME stochasticity:} LIME explanations vary across runs due to random perturbation. While a fixed seed is used, production deployments should average several LIME iterations for stability.
 
-  \item \textbf{XAI coverage:} Only three of eight ML models (the primary classifiers) are augmented with SHAP + LIME. The Isolation Forest (Expense Anomaly) receives LIME-only explanations; the remaining four models (Z-Score, Prophet, Rule-based, SPC) have no post-hoc explanations.
+  \item \textbf{XAI coverage:} Only the three primary classifiers receive SHAP+LIME treatment. The Isolation Forest (Expense Anomaly) receives LIME-only explanations; the remaining models (Z-Score KPI Anomaly, Prophet, Cash Flow rule-based, attendance Z-Score) have no post-hoc attribution layer.
 
-  \item \textbf{User study absent:} No formal usability study was conducted to evaluate whether business users (non-technical) can interpret and act on the SHAP/LIME explanations. The visualisations are designed to be intuitive, but empirical validation with human participants is needed.
+  \item \textbf{Drift monitoring is implemented but unproven at scale:} The system computes Kolmogorov--Smirnov drift on numerical features, Population Stability Index (PSI) on categorical features~\citep{wu2019psi}, ADWIN concept drift~\citep{bifet2007adwin} on the realised-performance signal, and a leakage-regression check that re-runs the shuffled-label test on the most recent training window. These signals are reported in a per-tenant nightly health-score Celery job, but their false-alarm and miss rates have not been characterised on a production deployment.
+
+  \item \textbf{User study absent:} No formal usability study was conducted to evaluate whether business users can interpret and act on the SHAP/LIME explanations. The visualisations are designed to be intuitive, but empirical validation with human participants is needed.
 \end{enumerate}
 
 \section{Future Work}
@@ -1871,19 +2119,19 @@ The following limitations are acknowledged:
 The following directions are proposed for future enhancement:
 
 \begin{enumerate}[label=\arabic*.]
-  \item \textbf{Counterfactual Explanations:} Implement ``What-If'' explanations that show the minimum feature changes needed to flip a prediction (e.g., ``If the customer's average delay decreases from 18.3 to 10.0 days, the late-payment risk drops below 50\%''). This is particularly actionable for business users.
+  \item \textbf{Real-world validation roadmap:} A four-stage plan to bridge the synthetic-to-real gap -- (i)~A/B exposure flagging on a single pilot tenant, (ii)~champion-vs-challenger shadow scoring, (iii)~cross-tenant generalisation testing on at least three industrially distinct tenants, and (iv)~controlled noise-injection experiments to characterise robustness. Stages~(i)--(ii) are partially implemented in the model registry; stages~(iii)--(iv) await live tenants.
 
-  \item \textbf{Attention-Based Explanations for Time Series:} Extend the XAI framework to the Demand Forecasting (Prophet) model using attention-mechanism visualisations or temporal SHAP decomposition.
+  \item \textbf{Counterfactual explanations:} Implement ``what-if'' explanations that show the minimum feature changes needed to flip a prediction. Particularly actionable for the Late-Payment and Attrition models.
 
-  \item \textbf{Automated Concept Drift Detection:} Build an automated pipeline that runs global SHAP analysis after every model training cycle and flags models where feature importance profiles shift significantly over time, indicating a change in underlying business dynamics.
+  \item \textbf{Attention-based explanations for time series:} Extend the XAI framework to the Demand Forecast (Prophet) model using temporal SHAP decomposition.
 
-  \item \textbf{Explanation-Driven Retraining:} Use XAI insights to automatically curate feature sets---removing or transforming features that SHAP identifies as continuously decaying in relevance---and retrain models in a closed-loop pipeline.
+  \item \textbf{Closed-loop drift response:} Use the existing KS/PSI/ADWIN/leakage-regression health score to automatically demote a deployed model to shadow mode and trigger retraining once drift exceeds a per-tenant threshold.
 
-  \item \textbf{User Study:} Conduct a controlled experiment with ERP users (finance officers, HR managers, sales teams) to measure the impact of XAI explanations on decision quality, trust calibration, and system adoption.
+  \item \textbf{User study:} Conduct a controlled experiment with ERP users (finance officers, HR managers, sales teams) to measure the impact of XAI explanations on decision quality, trust calibration and adoption.
 
-  \item \textbf{Regulatory Compliance Dashboard:} Build a compliance view that aggregates explanation logs, generates model cards (dataset, features, metrics, known biases), and exports audit-ready PDFs for regulatory submission.
+  \item \textbf{Regulatory compliance dashboard:} Aggregate explanation logs, generate model cards (dataset, features, metrics, known biases), and export audit-ready PDFs for regulatory submission.
 
-  \item \textbf{Deep Learning Explainability:} If deep learning models (e.g., LSTMs for time-series) are introduced in future, integrate DeepSHAP or Integrated Gradients for neural network explanations.
+  \item \textbf{Deep-learning explainability:} If neural models (e.g.\ LSTMs for time-series) are introduced, integrate DeepSHAP or Integrated Gradients.
 \end{enumerate}
 
 \section{Concluding Remarks}

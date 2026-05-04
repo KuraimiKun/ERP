@@ -119,6 +119,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
     return Scaffold(
       backgroundColor: isDark ? MColors.darkBg : MColors.bg,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             // Top bar
@@ -146,7 +147,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
               child: Form(
                 key: _formKey,
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  padding: EdgeInsets.fromLTRB(16, 4, 16, MediaQuery.of(context).padding.bottom + 24),
                   children: [
                     // Leave type dropdown
                     _Label('Leave type'),

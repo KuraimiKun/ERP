@@ -63,7 +63,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
 
             if (provider.balances.isNotEmpty)
               SizedBox(
-                height: 100,
+                height: 120,
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   scrollDirection: Axis.horizontal,
@@ -156,7 +156,7 @@ class _BalanceCard extends StatelessWidget {
 
     return Container(
       width: 165,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? MColors.darkSurface : MColors.surface,
         borderRadius: BorderRadius.circular(16),
