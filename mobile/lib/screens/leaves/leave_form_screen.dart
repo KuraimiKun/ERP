@@ -37,7 +37,8 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
     int days = 0;
     var d = _startDate!;
     while (!d.isAfter(_endDate!)) {
-      if (d.weekday != DateTime.saturday && d.weekday != DateTime.sunday) days++;
+      if (d.weekday != DateTime.saturday && d.weekday != DateTime.sunday)
+        days++;
       d = d.add(const Duration(days: 1));
     }
     return days;
@@ -90,10 +91,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
       initialDate: initial,
       firstDate: first,
       lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx),
-        child: child!,
-      ),
+      builder: (ctx, child) => Theme(data: Theme.of(ctx), child: child!),
     );
     if (picked != null) {
       setState(() {
@@ -113,7 +111,9 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final selectedBalance = _selectedLeaveType != null
-        ? provider.balances.where((b) => b.leaveTypeId == _selectedLeaveType).firstOrNull
+        ? provider.balances
+              .where((b) => b.leaveTypeId == _selectedLeaveType)
+              .firstOrNull
         : null;
 
     return Scaffold(
@@ -129,14 +129,21 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: Icon(Icons.close_rounded, size: 22,
-                        color: isDark ? MColors.darkText : MColors.text),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 22,
+                      color: isDark ? MColors.darkText : MColors.text,
+                    ),
                   ),
                   const Spacer(),
-                  Text('New Leave Request', style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700,
-                    color: isDark ? MColors.darkText : MColors.text,
-                  )),
+                  Text(
+                    'New Leave Request',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? MColors.darkText : MColors.text,
+                    ),
+                  ),
                   const Spacer(),
                   const SizedBox(width: 22),
                 ],
@@ -147,30 +154,48 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
               child: Form(
                 key: _formKey,
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(16, 4, 16, MediaQuery.of(context).padding.bottom + 24),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    4,
+                    16,
+                    MediaQuery.of(context).padding.bottom + 24,
+                  ),
                   children: [
                     // Leave type dropdown
                     _Label('Leave type'),
                     const SizedBox(height: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? MColors.darkSurfaceAlt : MColors.surfaceAlt,
+                        color: isDark
+                            ? MColors.darkSurfaceAlt
+                            : MColors.surfaceAlt,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: isDark ? MColors.darkBorder : MColors.border, width: 1,
+                          color: isDark ? MColors.darkBorder : MColors.border,
+                          width: 1,
                         ),
                       ),
                       child: DropdownButtonFormField<int>(
                         initialValue: _selectedLeaveType,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
-                        hint: Text('Select leave type',
-                            style: TextStyle(color: isDark ? MColors.darkTextFaint : MColors.textFaint)),
+                        hint: Text(
+                          'Select leave type',
+                          style: TextStyle(
+                            color: isDark
+                                ? MColors.darkTextFaint
+                                : MColors.textFaint,
+                          ),
+                        ),
                         items: provider.leaveTypes.map((t) {
                           final bal = provider.balances
-                              .where((b) => b.leaveTypeId == t.id).firstOrNull;
+                              .where((b) => b.leaveTypeId == t.id)
+                              .firstOrNull;
                           return DropdownMenuItem(
                             value: t.id,
                             child: Row(
@@ -178,16 +203,26 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                               children: [
                                 Text(t.name),
                                 if (bal != null)
-                                  Text('${bal.remaining.toStringAsFixed(0)} days left',
-                                      style: TextStyle(fontSize: 12,
-                                          color: isDark ? MColors.darkTextSub : MColors.textSub)),
+                                  Text(
+                                    '${bal.remaining.toStringAsFixed(0)} days left',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? MColors.darkTextSub
+                                          : MColors.textSub,
+                                    ),
+                                  ),
                               ],
                             ),
                           );
                         }).toList(),
-                        onChanged: (v) => setState(() => _selectedLeaveType = v),
-                        validator: (v) => v == null ? 'Select a leave type' : null,
-                        dropdownColor: isDark ? MColors.darkSurfaceAlt : MColors.surface,
+                        onChanged: (v) =>
+                            setState(() => _selectedLeaveType = v),
+                        validator: (v) =>
+                            v == null ? 'Select a leave type' : null,
+                        dropdownColor: isDark
+                            ? MColors.darkSurfaceAlt
+                            : MColors.surface,
                       ),
                     ),
 
@@ -195,20 +230,35 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     if (selectedBalance != null) ...[
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
-                          color: isDark ? MColors.darkPrimarySoft : MColors.primarySoft,
+                          color: isDark
+                              ? MColors.darkPrimarySoft
+                              : MColors.primarySoft,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.info_outline_rounded, size: 14,
-                                color: isDark ? MColors.darkPrimary : MColors.primary),
+                            Icon(
+                              Icons.info_outline_rounded,
+                              size: 14,
+                              color: isDark
+                                  ? MColors.darkPrimary
+                                  : MColors.primary,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               '${selectedBalance.remaining.toStringAsFixed(0)} days remaining of ${selectedBalance.daysAllowed} allowed',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500,
-                                  color: isDark ? MColors.darkPrimary : MColors.primary),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? MColors.darkPrimary
+                                    : MColors.primary,
+                              ),
                             ),
                           ],
                         ),
@@ -256,20 +306,35 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     if (_startDate != null && _endDate != null) ...[
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
-                          color: isDark ? MColors.darkSuccessSoft : MColors.successSoft,
+                          color: isDark
+                              ? MColors.darkSuccessSoft
+                              : MColors.successSoft,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle_outline_rounded, size: 14,
-                                color: isDark ? MColors.darkSuccess : MColors.success),
+                            Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 14,
+                              color: isDark
+                                  ? MColors.darkSuccess
+                                  : MColors.success,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               '$_workingDays working ${_workingDays == 1 ? 'day' : 'days'} selected',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                                  color: isDark ? MColors.darkSuccess : MColors.success),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? MColors.darkSuccess
+                                    : MColors.success,
+                              ),
                             ),
                           ],
                         ),
@@ -288,8 +353,11 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                       decoration: InputDecoration(
                         hintText: 'Add a note for your manager...',
                         hintStyle: TextStyle(
-                            color: isDark ? MColors.darkTextFaint : MColors.textFaint,
-                            fontSize: 14),
+                          color: isDark
+                              ? MColors.darkTextFaint
+                              : MColors.textFaint,
+                          fontSize: 14,
+                        ),
                         alignLabelWithHint: true,
                       ),
                     ),
@@ -301,10 +369,21 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                       child: ElevatedButton(
                         onPressed: _submitting ? null : _submit,
                         child: _submitting
-                            ? const SizedBox(width: 20, height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Text('Submit request',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Submit request',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
                   ],
@@ -324,10 +403,15 @@ class _Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Text(text, style: TextStyle(
-      fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.1,
-      color: isDark ? MColors.darkTextMid : MColors.textMid,
-    ));
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.1,
+        color: isDark ? MColors.darkTextMid : MColors.textMid,
+      ),
+    );
   }
 }
 
@@ -348,19 +432,25 @@ class _DateField extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark ? MColors.darkSurfaceAlt : MColors.surfaceAlt,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isDark ? MColors.darkBorder : MColors.border),
+          border: Border.all(
+            color: isDark ? MColors.darkBorder : MColors.border,
+          ),
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today_outlined, size: 16,
-                color: isDark ? MColors.darkTextSub : MColors.textSub),
+            Icon(
+              Icons.calendar_today_outlined,
+              size: 16,
+              color: isDark ? MColors.darkTextSub : MColors.textSub,
+            ),
             const SizedBox(width: 10),
             Text(
               value != null
                   ? '${value!.year}-${value!.month.toString().padLeft(2, '0')}-${value!.day.toString().padLeft(2, '0')}'
                   : hint,
               style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w500,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
                 color: value != null
                     ? (isDark ? MColors.darkText : MColors.text)
                     : (isDark ? MColors.darkTextFaint : MColors.textFaint),

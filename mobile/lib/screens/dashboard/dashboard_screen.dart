@@ -42,61 +42,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: dashboard.isLoading
             ? const _DashboardShimmer()
             : dashboard.error != null
-                ? _ErrorState(error: dashboard.error!, onRetry: () => dashboard.loadDashboard())
-                : RefreshIndicator(
-                    onRefresh: () => dashboard.loadDashboard(),
-                    color: isDark ? MColors.darkPrimary : MColors.primary,
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: _Header(
-                            employee: employee,
-                            unread: dashboard.data?.unreadNotifications ?? 0,
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: _AttendanceCard(
-                              data: dashboard.data,
-                              canScan: perms.canScanQr,
-                            ),
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                            child: _MonthStatRow(data: dashboard.data),
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: SectionHeader(title: 'Quick actions'),
-                        ),
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: _QuickActionsGrid(
-                              perms: perms,
-                              data: dashboard.data,
-                            ),
-                          ),
-                        ),
-                        if (perms.canViewPayslips && (dashboard.data?.recentPayslips.isNotEmpty ?? false)) ...[
-                          SliverToBoxAdapter(
-                            child: SectionHeader(
-                              title: 'Recent payslips',
-                              actionLabel: 'See all',
-                              onAction: () => Navigator.pushNamed(context, AppRoutes.payslips),
-                            ),
-                          ),
-                          SliverToBoxAdapter(
-                            child: _PayslipRow(payslips: dashboard.data!.recentPayslips),
-                          ),
-                        ],
-                        const SliverToBoxAdapter(child: SizedBox(height: 32)),
-                      ],
+            ? _ErrorState(
+                error: dashboard.error!,
+                onRetry: () => dashboard.loadDashboard(),
+              )
+            : RefreshIndicator(
+                onRefresh: () => dashboard.loadDashboard(),
+                color: isDark ? MColors.darkPrimary : MColors.primary,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _Header(
+                        employee: employee,
+                        unread: dashboard.data?.unreadNotifications ?? 0,
+                      ),
                     ),
-                  ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _AttendanceCard(
+                          data: dashboard.data,
+                          canScan: perms.canScanQr,
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                        child: _MonthStatRow(data: dashboard.data),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SectionHeader(title: 'Quick actions'),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _QuickActionsGrid(
+                          perms: perms,
+                          data: dashboard.data,
+                        ),
+                      ),
+                    ),
+                    if (perms.canViewPayslips &&
+                        (dashboard.data?.recentPayslips.isNotEmpty ??
+                            false)) ...[
+                      SliverToBoxAdapter(
+                        child: SectionHeader(
+                          title: 'Recent payslips',
+                          actionLabel: 'See all',
+                          onAction: () =>
+                              Navigator.pushNamed(context, AppRoutes.payslips),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: _PayslipRow(
+                          payslips: dashboard.data!.recentPayslips,
+                        ),
+                      ),
+                    ],
+                    const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -119,8 +127,29 @@ class _Header extends StatelessWidget {
 
   String _dateStr() {
     final now = DateTime.now();
-    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
     return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]} ${now.year}';
   }
 
@@ -141,7 +170,8 @@ class _Header extends StatelessWidget {
                 Text(
                   _greeting(),
                   style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                     color: isDark ? MColors.darkTextSub : MColors.textSub,
                   ),
                 ),
@@ -149,7 +179,8 @@ class _Header extends StatelessWidget {
                 Text(
                   name,
                   style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.w700,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: -0.4,
                     color: isDark ? MColors.darkText : MColors.text,
                   ),
@@ -169,10 +200,13 @@ class _Header extends StatelessWidget {
             builder: (ctx) => GestureDetector(
               onTap: () => Scaffold.of(ctx).openDrawer(),
               child: Container(
-                width: 42, height: 42,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: isDark ? MColors.darkBorder : MColors.border),
+                  border: Border.all(
+                    color: isDark ? MColors.darkBorder : MColors.border,
+                  ),
                   color: isDark ? MColors.darkSurface : MColors.surface,
                 ),
                 child: const Icon(Icons.menu, size: 20),
@@ -185,19 +219,24 @@ class _Header extends StatelessWidget {
             child: Stack(
               children: [
                 Container(
-                  width: 42, height: 42,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: isDark ? MColors.darkBorder : MColors.border),
+                    border: Border.all(
+                      color: isDark ? MColors.darkBorder : MColors.border,
+                    ),
                     color: isDark ? MColors.darkSurface : MColors.surface,
                   ),
                   child: const Icon(Icons.notifications_outlined, size: 18),
                 ),
                 if (unread > 0)
                   Positioned(
-                    top: 8, right: 10,
+                    top: 8,
+                    right: 10,
                     child: Container(
-                      width: 8, height: 8,
+                      width: 8,
+                      height: 8,
                       decoration: BoxDecoration(
                         color: isDark ? MColors.darkError : MColors.error,
                         shape: BoxShape.circle,
@@ -258,11 +297,14 @@ class _AttendanceCard extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            top: -30, right: -30,
+            top: -30,
+            right: -30,
             child: Container(
-              width: 140, height: 140,
+              width: 140,
+              height: 140,
               decoration: const BoxDecoration(
-                color: Color(0x14FFFFFF), shape: BoxShape.circle,
+                color: Color(0x14FFFFFF),
+                shape: BoxShape.circle,
               ),
             ),
           ),
@@ -272,18 +314,25 @@ class _AttendanceCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 6, height: 6,
+                    width: 6,
+                    height: 6,
                     decoration: BoxDecoration(
-                      color: checkedIn ? const Color(0xFF34D399) : Colors.white54,
+                      color: checkedIn
+                          ? const Color(0xFF34D399)
+                          : Colors.white54,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    checkedIn ? (checkedOut ? 'Checked out' : 'Checked in') : 'Not checked in',
+                    checkedIn
+                        ? (checkedOut ? 'Checked out' : 'Checked in')
+                        : 'Not checked in',
                     style: const TextStyle(
-                      fontSize: 11, color: Color(0xCCFFFFFF),
-                      fontWeight: FontWeight.w600, letterSpacing: 0.8,
+                      fontSize: 11,
+                      color: Color(0xCCFFFFFF),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
                     ),
                   ),
                 ],
@@ -293,26 +342,41 @@ class _AttendanceCard extends StatelessWidget {
                 Text(
                   _formatTime(att.checkIn.toString()),
                   style: const TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.w700,
-                    color: Colors.white, letterSpacing: -0.6,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.6,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  checkedOut ? 'Checked out at ${_formatTime(att.checkOut.toString())}' : 'Working now',
-                  style: const TextStyle(fontSize: 13, color: Color(0xCCFFFFFF)),
+                  checkedOut
+                      ? 'Checked out at ${_formatTime(att.checkOut.toString())}'
+                      : 'Working now',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xCCFFFFFF),
+                  ),
                 ),
               ] else
                 const Text(
                   'Tap below to check in',
-                  style: TextStyle(fontSize: 16, color: Color(0xB3FFFFFF), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xB3FFFFFF),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               if (canScan && !checkedOut) ...[
                 const SizedBox(height: 18),
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.qrScanner),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.qrScanner),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0x26FFFFFF),
                       borderRadius: BorderRadius.circular(12),
@@ -320,14 +384,26 @@ class _AttendanceCard extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.qr_code_rounded, size: 18, color: Colors.white),
+                        const Icon(
+                          Icons.qr_code_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
                         const SizedBox(width: 10),
                         Text(
                           checkedIn ? 'Scan to check out' : 'Scan to check in',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                         const Spacer(),
-                        const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                       ],
                     ),
                   ),
@@ -372,19 +448,25 @@ class _MonthStatRow extends StatelessWidget {
 
     final stats = [
       {
-        'v': present, 'l': 'Present',
+        'v': present,
+        'l': 'Present',
         'icon': Icons.check_circle_outline_rounded,
-        'col': sem.success, 'bg': sem.successContainer,
+        'col': sem.success,
+        'bg': sem.successContainer,
       },
       {
-        'v': absent, 'l': 'Absent',
+        'v': absent,
+        'l': 'Absent',
         'icon': Icons.cancel_outlined,
-        'col': sem.danger, 'bg': sem.dangerContainer,
+        'col': sem.danger,
+        'bg': sem.dangerContainer,
       },
       {
-        'v': late, 'l': 'Late',
+        'v': late,
+        'l': 'Late',
         'icon': Icons.schedule_rounded,
-        'col': sem.warning, 'bg': sem.warningContainer,
+        'col': sem.warning,
+        'bg': sem.warningContainer,
       },
     ];
 
@@ -407,13 +489,16 @@ class _MonthStatRow extends StatelessWidget {
                   icon: s['icon'] as IconData,
                   bg: s['bg'] as Color,
                   color: s['col'] as Color,
-                  size: 30, iconSize: 16, radius: 8,
+                  size: 30,
+                  iconSize: 16,
+                  radius: 8,
                 ),
                 const SizedBox(height: 10),
                 Text(
                   '${s['v']}',
                   style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.w700,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: -0.4,
                     color: isDark ? MColors.darkText : MColors.text,
                   ),
@@ -422,7 +507,8 @@ class _MonthStatRow extends StatelessWidget {
                 Text(
                   '${s['l']}',
                   style: TextStyle(
-                    fontSize: 11.5, fontWeight: FontWeight.w500,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
                     color: isDark ? MColors.darkTextSub : MColors.textSub,
                   ),
                 ),
@@ -559,12 +645,16 @@ class _QuickActionCard extends StatelessWidget {
                   icon: item.icon,
                   bg: item.iconBg,
                   color: item.iconColor,
-                  size: 32, iconSize: 17,
+                  size: 32,
+                  iconSize: 17,
                 ),
                 const Spacer(),
                 if ((item.badge ?? 0) > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: item.badgeColor,
                       borderRadius: BorderRadius.circular(11),
@@ -572,7 +662,9 @@ class _QuickActionCard extends StatelessWidget {
                     child: Text(
                       '${item.badge}',
                       style: const TextStyle(
-                        color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -582,7 +674,8 @@ class _QuickActionCard extends StatelessWidget {
             Text(
               item.title,
               style: TextStyle(
-                fontSize: 13.5, fontWeight: FontWeight.w600,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
                 color: isDark ? MColors.darkText : MColors.text,
               ),
             ),
@@ -623,7 +716,11 @@ class _PayslipRow extends StatelessWidget {
         itemBuilder: (ctx, i) {
           final p = payslips[i];
           return GestureDetector(
-            onTap: () => Navigator.pushNamed(ctx, AppRoutes.payslipDetail, arguments: p.id),
+            onTap: () => Navigator.pushNamed(
+              ctx,
+              AppRoutes.payslipDetail,
+              arguments: p.id,
+            ),
             child: Container(
               width: 180,
               padding: const EdgeInsets.all(14),
@@ -638,7 +735,8 @@ class _PayslipRow extends StatelessWidget {
                   Text(
                     '${p.periodStart ?? ''} ${p.periodEnd ?? ''}'.trim(),
                     style: TextStyle(
-                      fontSize: 11.5, fontWeight: FontWeight.w600,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
                       color: isDark ? MColors.darkTextSub : MColors.textSub,
                       letterSpacing: 0.4,
                     ),
@@ -647,13 +745,17 @@ class _PayslipRow extends StatelessWidget {
                   Text(
                     p.netSalary ?? '—',
                     style: TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: -0.3,
                       color: isDark ? MColors.darkText : MColors.text,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  StatusBadge(kind: statusToBadge(p.status ?? 'draft'), small: true),
+                  StatusBadge(
+                    kind: statusToBadge(p.status ?? 'draft'),
+                    small: true,
+                  ),
                 ],
               ),
             ),
@@ -679,14 +781,37 @@ class _DashboardShimmer extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Container(height: 44, decoration: BoxDecoration(color: shimmerColor, borderRadius: BorderRadius.circular(12))),
+          Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: shimmerColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
           const SizedBox(height: 16),
-          Container(height: 120, decoration: BoxDecoration(color: shimmerColor, borderRadius: BorderRadius.circular(20))),
+          Container(
+            height: 120,
+            decoration: BoxDecoration(
+              color: shimmerColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
           const SizedBox(height: 16),
-          Row(children: List.generate(3, (_) => Expanded(child: Container(
-            height: 90, margin: const EdgeInsets.only(right: 10),
-            decoration: BoxDecoration(color: shimmerColor, borderRadius: BorderRadius.circular(16)),
-          )))),
+          Row(
+            children: List.generate(
+              3,
+              (_) => Expanded(
+                child: Container(
+                  height: 90,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    color: shimmerColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -708,7 +833,11 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_outlined, size: 56, color: AppTheme.semantics(context).textMuted),
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 56,
+              color: AppTheme.semantics(context).textMuted,
+            ),
             const SizedBox(height: 16),
             Text(error, textAlign: TextAlign.center),
             const SizedBox(height: 20),

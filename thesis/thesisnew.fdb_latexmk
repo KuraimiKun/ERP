@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex thesisnew"] 1777401576.49177 "thesisnew.aux" "thesisnew.bbl" "thesisnew" 1777401585.96931 0
+["bibtex thesisnew"] 1777904866.45891 "thesisnew.aux" "thesisnew.bbl" "thesisnew" 1777904888.15257 0
   "./references.bib" 1777399821 17462 ac170f0a050fd8df1915e3d595165d59 ""
   "C:/Program Files/MiKTeX/bibtex/bst/bibtex/apalike.bst" 1291972791 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "thesisnew.aux" 1777401584 41867 b7b1cd96fe67fc9936d98d7be9586cb4 "pdflatex"
+  "thesisnew.aux" 1777904886 43097 9e8c4df4e972e74a46b58789bfbe5820 "pdflatex"
   (generated)
   "thesisnew.bbl"
   "thesisnew.blg"
   (rewritten before read)
-["pdflatex"] 1777401576.94976 "f:/erpdjango/thesis/thesisnew.tex" "thesisnew.pdf" "thesisnew" 1777401585.97004 0
+["pdflatex"] 1777904866.89507 "f:/erpdjango/thesis/thesisnew.tex" "thesisnew.pdf" "thesisnew" 1777904888.15411 0
   "C:/Program Files/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8r.tfm" 1136765053 1292 3059476c50a24578715759f22652f3d0 ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8t.tfm" 1136765053 1384 87406e4336af44af883a035f17f319d9 ""
@@ -221,7 +221,7 @@
   "C:/Program Files/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1750586519 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1750586599 13225209 1d52f8f13f365b1dcbc035b4ee098197 ""
-  "f:/erpdjango/thesis/thesisnew.tex" 1777401408 152386 13651afa04c3d5ea92adf533cebf22f6 ""
+  "f:/erpdjango/thesis/thesisnew.tex" 1777904861 169228 885787e5270753c1ba0804cf3de40d1a ""
   "figures/Lambang-UM.png" 1773374375 310576 b6512df05f8c555e29ee41f1291af35c ""
   "figures/calibration_attrition.png" 1777393079 39708 7781c7e9ea41a9e364119df98a019040 ""
   "figures/calibration_late_payment.png" 1777393100 39740 09ea6ccf6c7b58ad236b483f5739dc65 ""
@@ -251,13 +251,13 @@
   "figures/xai_shap_global_lead_scoring_beeswarm.png" 1777395972 123681 6fe2819a988621ecc3d4daa52f48a190 ""
   "figures/xai_shap_vs_lime_side_by_side.png" 1777395976 96358 48d8f75a65a636b51612f31082271c0e ""
   "figures/xai_use_case_diagram.png" 1773364990 27913 80e92a7c28631f9e4310469a3ebe8a36 ""
-  "thesisnew.aux" 1777401584 41867 b7b1cd96fe67fc9936d98d7be9586cb4 "pdflatex"
-  "thesisnew.bbl" 1777401576 10874 28139f2a3505dcf129cccbb967f4a2f7 "bibtex thesisnew"
-  "thesisnew.lof" 1777401584 3539 a92600fa6109b399ce201af6c24c4cbb "pdflatex"
-  "thesisnew.lot" 1777401584 2661 9883277b7ee1d5c61e20fb1b643c581b "pdflatex"
-  "thesisnew.out" 1777401584 23592 f3f3c0b1225a19515a908506e204aa4a "pdflatex"
-  "thesisnew.tex" 1777401408 152386 13651afa04c3d5ea92adf533cebf22f6 ""
-  "thesisnew.toc" 1777401584 11415 4aec00c054c341bbdf9d2c1d090a1389 "pdflatex"
+  "thesisnew.aux" 1777904886 43097 9e8c4df4e972e74a46b58789bfbe5820 "pdflatex"
+  "thesisnew.bbl" 1777904866 10874 28139f2a3505dcf129cccbb967f4a2f7 "bibtex thesisnew"
+  "thesisnew.lof" 1777904886 3539 01e2865d4b81c7d4820d26cbf14e4f7c "pdflatex"
+  "thesisnew.lot" 1777904886 2661 183caa960a48b43d6ea0d1c18a6a21f0 "pdflatex"
+  "thesisnew.out" 1777904886 25737 46cf4dba540527c186a0daea2fff01ad "pdflatex"
+  "thesisnew.tex" 1777904861 169228 885787e5270753c1ba0804cf3de40d1a ""
+  "thesisnew.toc" 1777904886 12315 dc1e8c15d0b6d7dc9169d59970ad70a7 "pdflatex"
   (generated)
   "thesisnew.aux"
   "thesisnew.lof"

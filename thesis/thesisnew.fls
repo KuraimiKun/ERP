@@ -483,6 +483,9 @@ INPUT .\figures\xai_pipeline_architecture.png
 INPUT .\figures\xai_pipeline_architecture.png
 INPUT .\figures\xai_pipeline_architecture.png
 INPUT .\figures\xai_pipeline_architecture.png
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrb8t.tfm
+INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\courier\pcrb8t.vf
+INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrb8r.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\courier\pcrr8t.tfm
 INPUT C:\Program Files\MiKTeX\fonts\tfm\adobe\times\ptmr8t.tfm
 INPUT C:\Program Files\MiKTeX\fonts\vf\adobe\times\ptmr8t.vf
