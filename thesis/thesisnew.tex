@@ -1645,6 +1645,230 @@ def add_tenant_database(db_assignment):
 
 The \texttt{ExplainabilityService} is always instantiated with a \texttt{company} object that belongs to the current tenant's database. All model registry queries and entity lookups are automatically routed to the correct tenant database by Django's ORM routing, ensuring that one tenant's explanations never access another tenant's data.
 
+\section{User Interface and System Screenshots}
+\label{sec:ui_screenshots}
+
+This section presents screenshots of the deployed system as evidence that the design and capabilities described in earlier chapters have been implemented and are operational. The screenshots are grouped into six categories: (i) the public landing page and authenticated dashboards, (ii) tenant administration and governance, (iii) finance and accounting, (iv) operations (inventory, point-of-sale, services and assets), (v) human resources and attendance, (vi) the AI/ML and Explainable AI modules, and (vii) the Flutter mobile companion. Each figure is captioned with the workflow it depicts and is referenced from the corresponding capability subsection in Section~\ref{sec:capabilities}.
+
+\subsection{Landing Page and Dashboards}
+
+Figure~\ref{fig:ui_landing} shows the public marketing landing page that anonymous visitors and prospective tenants see before signing up. After authentication, owners are redirected to the multi-tenant owner dashboard (Figure~\ref{fig:ui_owner_dashboard}), which aggregates KPIs, recent activity, and shortcuts to the operational modules. Employees enter a role-restricted portal (Figure~\ref{fig:ui_employee_portal}) that exposes only the workflows their position permits.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/web_main_page.png}
+\caption{Public landing page of the ERP platform.}
+\label{fig:ui_landing}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/owner_dashboard.png}
+\caption{Owner dashboard with cross-module KPIs and quick links.}
+\label{fig:ui_owner_dashboard}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Employee_Web_Portal.png}
+\caption{Employee web portal showing role-scoped navigation.}
+\label{fig:ui_employee_portal}
+\end{figure}
+
+\subsection{Tenant Administration and Governance}
+
+The administrative surface supports the full employee lifecycle and produces a tamper-evident audit trail. Figure~\ref{fig:ui_employees} lists the tenant's employees, while Figure~\ref{fig:ui_invite_link} shows the secure invitation-link workflow used to onboard new staff without exposing passwords. Privileged actions such as approvals and audit-log inspection are illustrated in Figures~\ref{fig:ui_approvals},~\ref{fig:ui_audit_log},~\ref{fig:ui_support_ticket}, and~\ref{fig:ui_tasks}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Employees.png}
+\caption{Employee directory with role and status filters.}
+\label{fig:ui_employees}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{system_photos/Employee_Invite_Link.png}
+\caption{Secure invitation-link generation for onboarding employees.}
+\label{fig:ui_invite_link}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Review_Employee_Approval.png}
+\caption{Owner review and approval queue for pending employee actions.}
+\label{fig:ui_approvals}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Audit_Log.png}
+\caption{Tamper-evident audit log with actor, target, and timestamp.}
+\label{fig:ui_audit_log}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Support_Tiket.png}
+\caption{Support-ticket interface for tenant-to-platform communication.}
+\label{fig:ui_support_ticket}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Tasks.png}
+\caption{Task management board for assigning and tracking work items.}
+\label{fig:ui_tasks}
+\end{figure}
+
+\subsection{Finance and Accounting}
+
+The finance module implements double-entry journal entries (Figure~\ref{fig:ui_journal}), produces standard financial reports (Figure~\ref{fig:ui_financial_reports}), exposes a configurable report builder for ad-hoc analysis (Figure~\ref{fig:ui_report_builder}), and tracks fixed assets with depreciation schedules (Figure~\ref{fig:ui_assets}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Journal_enteries.png}
+\caption{Journal-entry creation screen enforcing double-entry balance.}
+\label{fig:ui_journal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Finincial_Reports.png}
+\caption{Standard financial reports (P\&L, balance sheet, cash flow).}
+\label{fig:ui_financial_reports}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Report_Builder.png}
+\caption{Drag-and-drop report builder for custom analytics.}
+\label{fig:ui_report_builder}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Assets.png}
+\caption{Fixed-asset register with depreciation tracking.}
+\label{fig:ui_assets}
+\end{figure}
+
+\subsection{Operations: Inventory, POS and Services}
+
+Operational modules cover multi-warehouse inventory (Figure~\ref{fig:ui_warehouses}), a touch-friendly point-of-sale terminal (Figure~\ref{fig:ui_pos}), and a service-catalog page used for non-stock offerings (Figure~\ref{fig:ui_services}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Warehouses.png}
+\caption{Multi-warehouse inventory management view.}
+\label{fig:ui_warehouses}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/POS_Terminal.png}
+\caption{Point-of-sale terminal optimised for touch input.}
+\label{fig:ui_pos}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Services_Page.png}
+\caption{Service catalogue for non-stock offerings.}
+\label{fig:ui_services}
+\end{figure}
+
+\subsection{Human Resources and Attendance}
+
+The HR module supports both biometric/IP-based attendance devices (Figure~\ref{fig:ui_attendance_devices}) and contactless QR-code check-in (Figure~\ref{fig:ui_attendance_qr}), giving tenants flexibility in how they capture workforce presence.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Attendence_Devices.png}
+\caption{Configuration page for networked attendance devices.}
+\label{fig:ui_attendance_devices}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{system_photos/Attendence_QR_code.png}
+\caption{Per-employee QR-code attendance check-in.}
+\label{fig:ui_attendance_qr}
+\end{figure}
+
+\subsection{AI/ML and Explainable AI Modules}
+
+The AI/ML console (Figure~\ref{fig:ui_aiml}) lets owners trigger training, monitor pipeline runs, and review model metadata. The Explainable AI page (Figure~\ref{fig:ui_xai}) renders global feature importance and per-prediction explanations, with side-by-side SHAP/LIME comparisons (Figure~\ref{fig:ui_shap_lime}) that operationalise the methodology described in Chapter~\ref{ch:methodology}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/AI_ML_Page.png}
+\caption{AI/ML console for managing models, training, and predictions.}
+\label{fig:ui_aiml}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Explainable_AI_PAge.png}
+\caption{Explainable AI dashboard with global and local explanations.}
+\label{fig:ui_xai}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{system_photos/Shap_Lime_Example.png}
+\caption{Side-by-side SHAP and LIME explanation for a single prediction.}
+\label{fig:ui_shap_lime}
+\end{figure}
+
+\subsection{Flutter Mobile Companion}
+
+The Flutter mobile application reuses the same JWT-authenticated REST API as the web client and renders role-specific dashboards. Figures~\ref{fig:mobile_login}--\ref{fig:mobile_employee_menu} show the login screen, owner dashboard and menu, and the employee dashboard and menu.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.32\textwidth}
+\centering
+\includegraphics[width=\linewidth]{system_photos/login_page_mobile.png}
+\caption{Login screen.}
+\label{fig:mobile_login}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.32\textwidth}
+\centering
+\includegraphics[width=\linewidth]{system_photos/owner_dashboard_mobile.png}
+\caption{Owner dashboard.}
+\label{fig:mobile_owner_dashboard}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.32\textwidth}
+\centering
+\includegraphics[width=\linewidth]{system_photos/owner_menu_mobile.png}
+\caption{Owner navigation menu.}
+\label{fig:mobile_owner_menu}
+\end{subfigure}
+\caption{Mobile companion: authentication and owner experience.}
+\label{fig:mobile_owner}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.4\textwidth}
+\centering
+\includegraphics[width=\linewidth]{system_photos/employee_dashboard_mobile.png}
+\caption{Employee dashboard.}
+\label{fig:mobile_employee_dashboard}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.4\textwidth}
+\centering
+\includegraphics[width=\linewidth]{system_photos/employee_menu_mobile.png}
+\caption{Employee navigation menu.}
+\label{fig:mobile_employee_menu}
+\end{subfigure}
+\caption{Mobile companion: employee experience.}
+\label{fig:mobile_employee}
+\end{figure}
+
+Together these screenshots demonstrate that every module described in Section~\ref{sec:capabilities}---from finance and inventory to attendance, AI/ML and the mobile companion---is implemented, accessible to authenticated users, and visually consistent with the multi-tenant design presented in Chapter~\ref{ch:analysis_design}.
+
 \section{Testing Strategy}
 \label{sec:testing}
 

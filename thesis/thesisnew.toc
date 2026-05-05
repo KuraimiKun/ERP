@@ -1,5 +1,5 @@
 \babel@toc {english}{}\relax 
-\contentsline {chapter}{List of Abbreviations}{vii}{chapter*.1}%
+\contentsline {chapter}{List of Abbreviations}{viii}{chapter*.1}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Overview}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Problem Statement}{2}{section.1.2}%
@@ -102,34 +102,42 @@
 \contentsline {section}{\numberline {5.4}Multi-Tenant Implementation}{59}{section.5.4}%
 \contentsline {subsection}{\numberline {5.4.1}Dynamic Database Registration}{59}{subsection.5.4.1}%
 \contentsline {subsection}{\numberline {5.4.2}XAI in Multi-Tenant Context}{59}{subsection.5.4.2}%
-\contentsline {section}{\numberline {5.5}Testing Strategy}{60}{section.5.5}%
-\contentsline {subsection}{\numberline {5.5.1}ML Model Testing}{60}{subsection.5.5.1}%
-\contentsline {subsection}{\numberline {5.5.2}XAI Testing}{60}{subsection.5.5.2}%
-\contentsline {section}{\numberline {5.6}Summary}{60}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Results and Discussion}{61}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Introduction}{61}{section.6.1}%
-\contentsline {section}{\numberline {6.2}ML Model Performance}{61}{section.6.2}%
-\contentsline {subsection}{\numberline {6.2.1}The Late-Payment Concept-Iteration Journey}{62}{subsection.6.2.1}%
-\contentsline {section}{\numberline {6.3}Global SHAP Feature Importance}{63}{section.6.3}%
-\contentsline {subsection}{\numberline {6.3.1}Late Payment Prediction}{63}{subsection.6.3.1}%
-\contentsline {subsection}{\numberline {6.3.2}Lead Scoring}{65}{subsection.6.3.2}%
-\contentsline {subsection}{\numberline {6.3.3}Employee Attrition}{67}{subsection.6.3.3}%
-\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{69}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{70}{subsection.6.4.1}%
-\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{71}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Calibration and Confusion-Matrix Diagnostics}{72}{section.6.6}%
-\contentsline {section}{\numberline {6.7}Demand Forecast Backtesting}{73}{section.6.7}%
-\contentsline {section}{\numberline {6.8}Leakage-Detection Summary}{73}{section.6.8}%
-\contentsline {section}{\numberline {6.9}Discussion of Research Questions}{74}{section.6.9}%
-\contentsline {subsection}{\numberline {6.9.1}RQ1: Multi-Tenant Architecture}{74}{subsection.6.9.1}%
-\contentsline {subsection}{\numberline {6.9.2}RQ2: ML Model Accuracy}{74}{subsection.6.9.2}%
-\contentsline {subsection}{\numberline {6.9.3}RQ3: XAI for Data-Quality Validation}{75}{subsection.6.9.3}%
-\contentsline {subsection}{\numberline {6.9.4}RQ4: SHAP vs.\ LIME Agreement}{75}{subsection.6.9.4}%
-\contentsline {subsection}{\numberline {6.9.5}RQ5: Software Architecture for ML + XAI Integration}{76}{subsection.6.9.5}%
-\contentsline {subsection}{\numberline {6.9.6}RQ6: Agile Methodology}{76}{subsection.6.9.6}%
-\contentsline {section}{\numberline {6.10}Summary}{76}{section.6.10}%
-\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{77}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Summary of Contributions}{77}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Limitations}{77}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Future Work}{78}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Concluding Remarks}{79}{section.7.4}%
+\contentsline {section}{\numberline {5.5}User Interface and System Screenshots}{60}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Landing Page and Dashboards}{60}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}Tenant Administration and Governance}{61}{subsection.5.5.2}%
+\contentsline {subsection}{\numberline {5.5.3}Finance and Accounting}{64}{subsection.5.5.3}%
+\contentsline {subsection}{\numberline {5.5.4}Operations: Inventory, POS and Services}{66}{subsection.5.5.4}%
+\contentsline {subsection}{\numberline {5.5.5}Human Resources and Attendance}{68}{subsection.5.5.5}%
+\contentsline {subsection}{\numberline {5.5.6}AI/ML and Explainable AI Modules}{69}{subsection.5.5.6}%
+\contentsline {subsection}{\numberline {5.5.7}Flutter Mobile Companion}{70}{subsection.5.5.7}%
+\contentsline {section}{\numberline {5.6}Testing Strategy}{72}{section.5.6}%
+\contentsline {subsection}{\numberline {5.6.1}ML Model Testing}{72}{subsection.5.6.1}%
+\contentsline {subsection}{\numberline {5.6.2}XAI Testing}{73}{subsection.5.6.2}%
+\contentsline {section}{\numberline {5.7}Summary}{73}{section.5.7}%
+\contentsline {chapter}{\numberline {6}Results and Discussion}{74}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Introduction}{74}{section.6.1}%
+\contentsline {section}{\numberline {6.2}ML Model Performance}{74}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}The Late-Payment Concept-Iteration Journey}{75}{subsection.6.2.1}%
+\contentsline {section}{\numberline {6.3}Global SHAP Feature Importance}{76}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Late Payment Prediction}{76}{subsection.6.3.1}%
+\contentsline {subsection}{\numberline {6.3.2}Lead Scoring}{78}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}Employee Attrition}{80}{subsection.6.3.3}%
+\contentsline {section}{\numberline {6.4}Instance-Level SHAP Explanations}{82}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Example: Late Payment Instance Explanation}{83}{subsection.6.4.1}%
+\contentsline {section}{\numberline {6.5}LIME Explanations and Cross-Method Comparison}{84}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Calibration and Confusion-Matrix Diagnostics}{85}{section.6.6}%
+\contentsline {section}{\numberline {6.7}Demand Forecast Backtesting}{86}{section.6.7}%
+\contentsline {section}{\numberline {6.8}Leakage-Detection Summary}{86}{section.6.8}%
+\contentsline {section}{\numberline {6.9}Discussion of Research Questions}{87}{section.6.9}%
+\contentsline {subsection}{\numberline {6.9.1}RQ1: Multi-Tenant Architecture}{87}{subsection.6.9.1}%
+\contentsline {subsection}{\numberline {6.9.2}RQ2: ML Model Accuracy}{87}{subsection.6.9.2}%
+\contentsline {subsection}{\numberline {6.9.3}RQ3: XAI for Data-Quality Validation}{88}{subsection.6.9.3}%
+\contentsline {subsection}{\numberline {6.9.4}RQ4: SHAP vs.\ LIME Agreement}{88}{subsection.6.9.4}%
+\contentsline {subsection}{\numberline {6.9.5}RQ5: Software Architecture for ML + XAI Integration}{89}{subsection.6.9.5}%
+\contentsline {subsection}{\numberline {6.9.6}RQ6: Agile Methodology}{89}{subsection.6.9.6}%
+\contentsline {section}{\numberline {6.10}Summary}{89}{section.6.10}%
+\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{90}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Summary of Contributions}{90}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Limitations}{90}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Future Work}{91}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Concluding Remarks}{92}{section.7.4}%

@@ -17,11 +17,11 @@
 \contentsline {table}{\numberline {4.4}{\ignorespaces AI/XAI database tables}}{45}{table.caption.18}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.1}{\ignorespaces ML model performance metrics with shuffled-label sanity check.}}{61}{table.caption.20}%
-\contentsline {table}{\numberline {6.2}{\ignorespaces Late-Payment label/feature iterations with associated diagnostics.}}{63}{table.caption.22}%
-\contentsline {table}{\numberline {6.3}{\ignorespaces Late Payment Prediction --- top-10 global feature importance (source: \texttt {thesis/results/feature\_importance\_late\_payment.csv}).}}{64}{table.caption.23}%
-\contentsline {table}{\numberline {6.4}{\ignorespaces Lead Scoring --- global feature importance (source: \texttt {thesis/results/feature\_importance\_lead\_scoring.csv}).}}{66}{table.caption.26}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces Employee Attrition --- global feature importance (source: \texttt {thesis/results/feature\_importance\_attrition.csv}).}}{68}{table.caption.29}%
-\contentsline {table}{\numberline {6.6}{\ignorespaces Instance-level SHAP explanation for a high-risk invoice}}{70}{table.caption.32}%
-\contentsline {table}{\numberline {6.7}{\ignorespaces SHAP vs.\ LIME top-5 feature overlap across models}}{71}{table.caption.34}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces ML model performance metrics with shuffled-label sanity check.}}{74}{table.caption.43}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Late-Payment label/feature iterations with associated diagnostics.}}{76}{table.caption.45}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Late Payment Prediction --- top-10 global feature importance (source: \texttt {thesis/results/feature\_importance\_late\_payment.csv}).}}{77}{table.caption.46}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Lead Scoring --- global feature importance (source: \texttt {thesis/results/feature\_importance\_lead\_scoring.csv}).}}{79}{table.caption.49}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Employee Attrition --- global feature importance (source: \texttt {thesis/results/feature\_importance\_attrition.csv}).}}{81}{table.caption.52}%
+\contentsline {table}{\numberline {6.6}{\ignorespaces Instance-level SHAP explanation for a high-risk invoice}}{83}{table.caption.55}%
+\contentsline {table}{\numberline {6.7}{\ignorespaces SHAP vs.\ LIME top-5 feature overlap across models}}{84}{table.caption.57}%
 \addvspace {10\p@ }
