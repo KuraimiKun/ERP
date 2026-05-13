@@ -784,8 +784,8 @@ def maintenance_list(request):
     logs, current_sort, current_order = apply_sorting(
         request,
         logs,
-        allowed_fields=["maintenance_date", "cost", "status", "maintenance_type"],
-        default="-maintenance_date",
+        allowed_fields=["scheduled_date", "cost", "status", "maintenance_type"],
+        default="-scheduled_date",
     )
     page_obj, query_string = paginate_qs(request, logs)
 
