@@ -81,7 +81,6 @@ class StorageService {
   Future<void> deleteUserRole() async {
     await _prefs.remove(_adminUserKey);
     await _prefs.remove(_userRoleKey);
-    await _prefs.remove(_userRoleKey);
   }
 
   // Locale
@@ -107,5 +106,7 @@ class StorageService {
     await _secure.deleteAll();
     await _prefs.remove(_tenantDbKey);
     await _prefs.remove(_employeeKey);
+    await _prefs.remove(_adminUserKey);
+    await _prefs.remove(_userRoleKey);
   }
 }

@@ -289,7 +289,7 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
     <h1>Your Work,<br><span>In Your Pocket</span></h1>
     <p>Stay connected to your workplace from anywhere. Clock in, request leave, view payslips, and manage tasks — all from your phone.</p>
     <div class="hero-actions">
-        <a href="{% static 'downloads/kuraimi-erp-employee.apk' %}" class="btn-download" download>
+        <a href="{{ apk_url }}" class="btn-download" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
@@ -356,7 +356,7 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
         <h2>Everything employees need — one app</h2>
         <p>Give your team a beautiful, fast mobile experience. Available now for Android, with iOS coming soon.</p>
         <div class="platform-badges">
-            <a href="{% static 'downloads/kuraimi-erp-employee.apk' %}" class="platform-badge" download>
+            <a href="{{ apk_url }}" class="platform-badge" download>
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24C14.9 8.13 13.49 7.75 12 7.75s-2.9.38-4.47 1.16L5.65 5.67c-.19-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25S6.31 12.75 7 12.75s1.25.56 1.25 1.25S7.69 15.25 7 15.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
                 Android APK
             </a>
@@ -484,7 +484,7 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
 <section class="cta-section">
     <h2>Ready to download?</h2>
     <p>Join your team on Kuraimi ERP — access everything you need, from anywhere.</p>
-    <a href="{% static 'downloads/kuraimi-erp-employee.apk' %}" class="btn-download" download>
+    <a href="{{ apk_url }}" class="btn-download" download>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# ERP Django – One-Script VPS Deployment
+# ERP Django â€“ One-Script VPS Deployment
 #
 # Tested on: Ubuntu 22.04 / 24.04 LTS
 #
@@ -26,34 +26,120 @@
 #   - Sets up log rotation
 ###############################################################################
 
+# â”€â”€â”€ Early self-heal for Windows CRLF line endings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# If this script has CRLF, bash may fail before regular runtime logic kicks in
+# (e.g., "set: pipefail\r: invalid option"). Re-exec a cleaned temp copy first.
+ORIGINAL_SCRIPT_PATH=""
+if [[ "${1:-}" == "--original-script" ]]; then
+    ORIGINAL_SCRIPT_PATH="${2:-}"
+    shift 2
+fi
+
+SELF_PATH="${ORIGINAL_SCRIPT_PATH:-${BASH_SOURCE[0]}}"
+if LC_ALL=C grep -q $'\r' "$SELF_PATH" 2>/dev/null; then
+    CLEAN_SCRIPT="$(mktemp /tmp/erpdjango-deploy.XXXXXX.sh)"
+    tr -d '\r' < "$SELF_PATH" > "$CLEAN_SCRIPT"
+    chmod +x "$CLEAN_SCRIPT"
+    exec /usr/bin/env bash "$CLEAN_SCRIPT" --original-script "$SELF_PATH" "$@"
+fi
+
 set -euo pipefail
 
-# ─── Fix Windows CRLF line endings ─────────────────────────────────────────
-fix_crlf() { sed -i 's/\r$//' "$1" 2>/dev/null || true; }
-fix_crlf "${BASH_SOURCE[0]}"
-
-# ─── Color helpers ──────────────────────────────────────────────────────────
+# â”€â”€â”€ Color helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
 info()  { echo -e "${BLUE}[INFO]${NC}  $*"; }
 ok()    { echo -e "${GREEN}[OK]${NC}    $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 err()   { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
-# ─── Must be root ──────────────────────────────────────────────────────────
+# â”€â”€â”€ Must be root â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 [[ $EUID -ne 0 ]] && err "This script must be run as root (use sudo)."
 
-# ─── Resolve script & project paths ────────────────────────────────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# â”€â”€â”€ Resolve script & project paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+SCRIPT_SOURCE="${ORIGINAL_SCRIPT_PATH:-${BASH_SOURCE[0]}}"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
-# ─── Load config ───────────────────────────────────────────────────────────
+# â”€â”€â”€ Load config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 ENV_FILE="${SCRIPT_DIR}/.env.production"
 if [[ ! -f "$ENV_FILE" ]]; then
     err "Missing ${ENV_FILE}. Copy deploy/.env.production.example and fill in your values."
 fi
-# Strip CRLF from env file before sourcing
-fix_crlf "$ENV_FILE"
-source "$ENV_FILE"
+
+load_env_file() {
+    local file="$1"
+    local line key value
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        line="${line%$'\r'}"
+        [[ -z "${line//[[:space:]]/}" ]] && continue
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+
+        # Accept optional `export KEY=VALUE` syntax.
+        line="${line#export }"
+
+        if [[ "$line" != *"="* ]]; then
+            warn "Skipping malformed .env line: $line"
+            continue
+        fi
+
+        key="${line%%=*}"
+        value="${line#*=}"
+
+        # Trim surrounding spaces from key only.
+        key="$(printf '%s' "$key" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+        [[ -z "$key" ]] && continue
+
+        if [[ ! "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+            warn "Skipping invalid env var name: $key"
+            continue
+        fi
+
+        # Remove one layer of matching quotes in values, if present.
+        if [[ "$value" =~ ^\".*\"$ ]] || [[ "$value" =~ ^\'.*\'$ ]]; then
+            value="${value:1:${#value}-2}"
+        fi
+
+        export "$key=$value"
+    done < "$file"
+}
+
+upsert_env_value() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+
+    if grep -qE "^${key}=" "$file"; then
+        sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+    else
+        printf '%s=%s\n' "$key" "$value" >> "$file"
+    fi
+}
+
+generate_fernet_key() {
+    python3 - <<'PY'
+from cryptography.fernet import Fernet
+print(Fernet.generate_key().decode())
+PY
+}
+
+is_valid_fernet_key() {
+    local key="$1"
+    python3 - "$key" <<'PY'
+import sys
+from cryptography.fernet import Fernet
+
+try:
+    Fernet(sys.argv[1].encode())
+except Exception:
+    raise SystemExit(1)
+PY
+}
+
+# Strip CRLF from env file and parse it without shell `source` so values like
+# `NEW_RELIC_APP_NAME=ERP Django` do not break deployment.
+sed -i 's/\r$//' "$ENV_FILE"
+load_env_file "$ENV_FILE"
 
 # Defaults
 APP_USER="${APP_USER:-erp}"
@@ -71,17 +157,24 @@ TIMEZONE="${TIMEZONE:-UTC}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.12}"
 PG_VERSION="${PG_VERSION:-15}"
 
+if [[ -z "${FIELD_ENCRYPTION_KEY:-}" ]] || ! is_valid_fernet_key "$FIELD_ENCRYPTION_KEY"; then
+    warn "FIELD_ENCRYPTION_KEY is missing or invalid; generating a valid Fernet key."
+    FIELD_ENCRYPTION_KEY="$(generate_fernet_key)"
+    upsert_env_value "$ENV_FILE" "FIELD_ENCRYPTION_KEY" "$FIELD_ENCRYPTION_KEY"
+    ok "Generated and persisted FIELD_ENCRYPTION_KEY in ${ENV_FILE}"
+fi
+
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
-echo "  ERP Django — VPS Deployment"
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ"
+echo "  ERP Django â€” VPS Deployment"
+echo "â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ"
 echo "  Domain      : ${DOMAIN}"
 echo "  App Dir     : ${APP_DIR}"
 echo "  DB          : ${DB_NAME} (user: ${DB_USER})"
 echo "  SSL         : ${ENABLE_SSL}"
 echo "  Workers     : ${GUNICORN_WORKERS}"
 echo "  Celery conc : ${CELERY_CONCURRENCY}"
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ"
 echo ""
 
 ###############################################################################
@@ -91,7 +184,7 @@ info "Updating system packages..."
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 # NOTE: We deliberately do NOT run 'apt-get upgrade' here.
-# A full system upgrade can silently promote postgresql-15 → 18 (or similar),
+# A full system upgrade can silently promote postgresql-15 â†’ 18 (or similar),
 # breaking the version-pinned install below and causing gpg pipe errors on
 # subsequent runs.  Security updates are handled by unattended-upgrades.
 
@@ -117,7 +210,7 @@ apt-get install -yqq \
     gettext \
     acl
 
-# ─── Python ────────────────────────────────────────────────────────────────
+# â”€â”€â”€ Python â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 info "Installing Python ${PYTHON_VERSION}..."
 add-apt-repository -y ppa:deadsnakes/ppa 2>/dev/null || true
 apt-get update -qq
@@ -127,14 +220,14 @@ apt-get install -yqq \
     "python${PYTHON_VERSION}-dev"
 ok "Python $(python${PYTHON_VERSION} --version 2>&1)"
 
-# ─── PostgreSQL ────────────────────────────────────────────────────────────
+# â”€â”€â”€ PostgreSQL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 info "Installing PostgreSQL ${PG_VERSION}..."
 if ! dpkg -l | grep -q "postgresql-${PG_VERSION}"; then
     # Add PGDG sources list only if not already present
     if [[ ! -f /etc/apt/sources.list.d/pgdg.list ]]; then
         sh -c "echo 'deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
     fi
-    # Import GPG key only if not already present — gpg refuses to overwrite an
+    # Import GPG key only if not already present â€” gpg refuses to overwrite an
     # existing key file and the broken pipe causes curl to exit with code 23.
     if [[ ! -f /etc/apt/trusted.gpg.d/pgdg.gpg ]]; then
         curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
@@ -145,7 +238,7 @@ apt-get install -yqq "postgresql-${PG_VERSION}" "postgresql-contrib-${PG_VERSION
 systemctl enable --now postgresql
 ok "PostgreSQL ${PG_VERSION} installed"
 
-# ─── Redis ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€ Redis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 info "Installing Redis (Celery broker/result backend)..."
 apt-get install -yqq redis-server
 # Bind to localhost only for security
@@ -155,20 +248,20 @@ sed -i 's/^# save /save /' /etc/redis/redis.conf
 systemctl enable --now redis-server
 ok "Redis $(redis-server --version | awk '{print $3}') installed"
 
-# ─── Nginx ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€ Nginx â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 info "Installing Nginx..."
 apt-get install -yqq nginx
 systemctl enable nginx
 ok "Nginx installed"
 
-# ─── Certbot ───────────────────────────────────────────────────────────────
+# â”€â”€â”€ Certbot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if [[ "$ENABLE_SSL" == "true" ]]; then
     info "Installing Certbot..."
     apt-get install -yqq certbot python3-certbot-nginx
     ok "Certbot installed"
 fi
 
-# ─── Docker (for tenant DB containers) ─────────────────────────────────────
+# â”€â”€â”€ Docker (for tenant DB containers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 info "Installing Docker..."
 if ! command -v docker &>/dev/null; then
     curl -fsSL https://get.docker.com | sh
@@ -176,7 +269,7 @@ fi
 systemctl enable --now docker
 ok "Docker $(docker --version 2>&1 | awk '{print $3}')"
 
-# ─── Set timezone ──────────────────────────────────────────────────────────
+# â”€â”€â”€ Set timezone â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 timedatectl set-timezone "$TIMEZONE"
 ok "Timezone set to $TIMEZONE"
 
@@ -200,7 +293,7 @@ ok "User '${APP_USER}' ready"
 # `flutter build apk --release` against ${APP_DIR}/mobile.
 #
 # Notes:
-#   * We deliberately do NOT use the Flutter snap — classic-snap confinement
+#   * We deliberately do NOT use the Flutter snap â€” classic-snap confinement
 #     refuses to access paths outside /home (such as ${APP_DIR} under /opt).
 #   * Flutter + Android SDK are owned by ${APP_USER} so Gradle/Pub caches and
 #     Flutter's own self-updates under FLUTTER_ROOT/bin/cache work without
@@ -216,7 +309,7 @@ ANDROID_BUILD_TOOLS="${ANDROID_BUILD_TOOLS:-34.0.0}"
 # This script is typically invoked from /home/<deploy-user> (e.g. /home/ubuntu),
 # whose mode is 0750 and unreadable by other users. When we drop privileges with
 # `sudo -u "${APP_USER}"` further down, the child process inherits the cwd but
-# cannot access it — sdkmanager's wrapper (`cd "$SAVED"`) and Flutter's
+# cannot access it â€” sdkmanager's wrapper (`cd "$SAVED"`) and Flutter's
 # `precache` (which shells out to `find`) then spam "Permission denied" and the
 # step exits non-zero. Move to a world-readable cwd before anything is
 # delegated to the unprivileged user, and also pass --chdir=/tmp to every
@@ -226,7 +319,7 @@ cd /tmp
 info "Installing JDK 17 + unzip (Android toolchain prerequisites)..."
 apt-get install -yqq openjdk-17-jdk-headless unzip
 # Resolve JAVA_HOME by following the `java` binary symlink to its real path
-# and taking the grandparent dir (…/jdk/bin/java -> …/jdk).
+# and taking the grandparent dir (â€¦/jdk/bin/java -> â€¦/jdk).
 JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
 ok "Java $(java -version 2>&1 | head -n1) (JAVA_HOME=${JAVA_HOME})"
 
@@ -316,7 +409,7 @@ ok "Application files deployed"
 ###############################################################################
 info "Writing production .env..."
 cat > "${APP_DIR}/.env" <<ENVEOF
-# Auto-generated by deploy.sh — $(date -Iseconds)
+# Auto-generated by deploy.sh â€” $(date -Iseconds)
 SECRET_KEY=${SECRET_KEY}
 DEBUG=False
 ALLOWED_HOSTS=${DOMAIN},www.${DOMAIN}
@@ -343,16 +436,16 @@ DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@${DOMAIN}}
 
 FIELD_ENCRYPTION_KEY=${FIELD_ENCRYPTION_KEY}
 
-# ── Celery / Redis ───────────────────────────────────────────────────────────
+# â”€â”€ Celery / Redis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 REDIS_URL=redis://127.0.0.1:6379/1
 CELERY_BROKER_URL=redis://127.0.0.1:6379/0
 CELERY_RESULT_BACKEND=redis://127.0.0.1:6379/0
 
-# ── Docker Socket Proxy ───────────────────────────────────────────────────────
+# â”€â”€ Docker Socket Proxy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # The app connects to the restricted proxy, NOT the raw /var/run/docker.sock.
 DOCKER_HOST=tcp://127.0.0.1:2375
 
-# ── Mobile app build toolchain ───────────────────────────────────────────────
+# â”€â”€ Mobile app build toolchain â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Consumed by tenants/platform_admin/views_mobile_app.py when a superuser
 # clicks "Build mobile app". PATH is extended so flutter/gradle can find
 # sdkmanager, adb, and the JDK without hard-coding them in the app code.
@@ -383,13 +476,13 @@ ok "Web dependencies installed"
 info "Installing ML worker dependencies (requirements-ml.txt)..."
 # Installed into the same venv; never imported by Gunicorn workers because
 # all erp.ai.services imports are inside Celery task function bodies (lazy).
-# In Docker the web and ML images are fully separate — this shared-venv
+# In Docker the web and ML images are fully separate â€” this shared-venv
 # approach is a pragmatic simplification for single-VPS deployments.
 pip install -r "${APP_DIR}/requirements-ml.txt" -q
 ok "ML dependencies installed"
 
 ###############################################################################
-# 6. PostgreSQL – Create Database & User
+# 6. PostgreSQL â€“ Create Database & User
 ###############################################################################
 info "Setting up PostgreSQL database..."
 sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" | grep -q 1 || \
@@ -461,7 +554,7 @@ chmod -R 750 "${APP_DIR}"
 # Securing .env (only owner can read)
 chmod 600 "${APP_DIR}/.env"
 
-# Gunicorn socket dir — owned by erp:www-data so Nginx can connect
+# Gunicorn socket dir â€” owned by erp:www-data so Nginx can connect
 chown "${APP_USER}:www-data" "${APP_DIR}/run"
 chmod 770 "${APP_DIR}/run"
 # Media dir writeable
@@ -473,7 +566,7 @@ ok "Permissions set"
 ###############################################################################
 info "Configuring Gunicorn service..."
 
-# Gunicorn owns its socket via --bind unix:... — no socket unit needed.
+# Gunicorn owns its socket via --bind unix:... â€” no socket unit needed.
 # Using a socket unit alongside --bind causes both to fight over the same
 # socket file, resulting in startup failures and 502s on every deploy.
 cat > /etc/systemd/system/erp-gunicorn.service <<SVCEOF
@@ -563,7 +656,7 @@ Group=${APP_USER}
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${APP_DIR}/.env
 PIDFile=${APP_DIR}/run/celery-worker.pid
-# --queues excludes 'ml' — this worker never imports sklearn/numpy/prophet,
+# --queues excludes 'ml' â€” this worker never imports sklearn/numpy/prophet,
 # keeping its RSS footprint the same as the Gunicorn web workers.
 ExecStart=${APP_DIR}/venv/bin/celery \\
     -A erpproject worker \\
@@ -587,7 +680,7 @@ CELWEOF
 info "Configuring Celery ML worker service (queue: ml)..."
 cat > /etc/systemd/system/erp-celery-ml-worker.service <<CELMLEOF
 [Unit]
-Description=ERP Django Celery ML Worker (ml queue — scikit-learn, prophet, numpy)
+Description=ERP Django Celery ML Worker (ml queue â€” scikit-learn, prophet, numpy)
 After=network.target postgresql.service redis-server.service
 
 [Service]
@@ -657,12 +750,12 @@ ok "Celery worker, ML worker, and beat services active"
 info "Configuring Nginx..."
 
 cat > /etc/nginx/sites-available/erp <<'NGINXEOF'
-# ── Upstream ────────────────────────────────────────────────────────────────
+# â”€â”€ Upstream â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 upstream erp_backend {
     server unix:APP_DIR_PLACEHOLDER/run/gunicorn.sock fail_timeout=0;
 }
 
-# ── HTTP — mobile API passthrough + ACME + redirect everything else ────────
+# â”€â”€ HTTP â€” mobile API passthrough + ACME + redirect everything else â”€â”€â”€â”€â”€â”€â”€â”€
 server {
     listen 80;
     listen [::]:80;
@@ -691,13 +784,13 @@ server {
     }
 }
 
-# ── HTTPS Server ───────────────────────────────────────────────────────────
+# â”€â”€ HTTPS Server â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
     server_name DOMAIN_PLACEHOLDER www.DOMAIN_PLACEHOLDER;
 
-    # SSL — will be replaced by Certbot or self-signed
+    # SSL â€” will be replaced by Certbot or self-signed
     ssl_certificate     /etc/ssl/certs/erp-selfsigned.crt;
     ssl_certificate_key /etc/ssl/private/erp-selfsigned.key;
 
@@ -718,7 +811,7 @@ server {
 
     client_max_body_size 20M;
 
-    # ── Static files (WhiteNoise pre-compresses; Nginx serves gzip/br) ──
+    # â”€â”€ Static files (WhiteNoise pre-compresses; Nginx serves gzip/br) â”€â”€
     location /static/ {
         alias APP_DIR_PLACEHOLDER/staticfiles/;
         expires max;
@@ -726,19 +819,19 @@ server {
         gzip_static on;
     }
 
-    # ── Media files ────────────────────────────────────────────────────────
+    # â”€â”€ Media files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     location /media/ {
         alias APP_DIR_PLACEHOLDER/media/;
         expires 7d;
     }
 
-    # ── Favicon ────────────────────────────────────────────────────────────
+    # â”€â”€ Favicon â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     location = /favicon.ico {
         access_log off;
         log_not_found off;
     }
 
-    # ── Application ────────────────────────────────────────────────────────
+    # â”€â”€ Application â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     location / {
         proxy_pass http://erp_backend;
         proxy_set_header Host $host;
@@ -784,7 +877,7 @@ if [[ "$ENABLE_SSL" == "true" && -n "$SSL_EMAIL" ]]; then
         --agree-tos \
         --non-interactive \
         --redirect \
-        || warn "Certbot failed — check DNS points to this server. Using self-signed cert."
+        || warn "Certbot failed â€” check DNS points to this server. Using self-signed cert."
     ok "SSL certificate installed"
 fi
 
@@ -857,31 +950,31 @@ sleep 2
 if systemctl is-active --quiet erp-gunicorn; then
     ok "Gunicorn is running"
 else
-    warn "Gunicorn is not running — check: journalctl -u erp-gunicorn"
+    warn "Gunicorn is not running â€” check: journalctl -u erp-gunicorn"
 fi
 
 if systemctl is-active --quiet erp-celery-worker; then
     ok "Celery worker is running (queues: celery, default)"
 else
-    warn "Celery worker is not running — check: journalctl -u erp-celery-worker"
+    warn "Celery worker is not running â€” check: journalctl -u erp-celery-worker"
 fi
 
 if systemctl is-active --quiet erp-celery-ml-worker; then
     ok "Celery ML worker is running (queue: ml)"
 else
-    warn "Celery ML worker is not running — check: journalctl -u erp-celery-ml-worker"
+    warn "Celery ML worker is not running â€” check: journalctl -u erp-celery-ml-worker"
 fi
 
 if systemctl is-active --quiet erp-celery-beat; then
     ok "Celery beat is running"
 else
-    warn "Celery beat is not running — check: journalctl -u erp-celery-beat"
+    warn "Celery beat is not running â€” check: journalctl -u erp-celery-beat"
 fi
 
 if systemctl is-active --quiet nginx; then
     ok "Nginx is running"
 else
-    warn "Nginx is not running — check: journalctl -u nginx"
+    warn "Nginx is not running â€” check: journalctl -u nginx"
 fi
 
 if systemctl is-active --quiet postgresql; then
@@ -906,16 +999,16 @@ fi
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q erp_docker_proxy; then
     ok "Docker Socket Proxy is running (app connects to tcp://127.0.0.1:2375)"
 else
-    warn "Docker Socket Proxy is not running — check: docker ps -a | grep erp_docker_proxy"
+    warn "Docker Socket Proxy is not running â€” check: docker ps -a | grep erp_docker_proxy"
 fi
 
 ###############################################################################
 # Done!
 ###############################################################################
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ"
 echo -e "  ${GREEN}Deployment complete!${NC}"
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ"
 echo ""
 echo "  URL        : https://${DOMAIN}"
 echo "  App Dir    : ${APP_DIR}"
@@ -942,4 +1035,4 @@ echo ""
 echo "  Re-deploy after code changes:"
 echo "    sudo bash deploy/deploy.sh"
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
+echo "â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ"

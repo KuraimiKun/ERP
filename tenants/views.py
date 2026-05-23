@@ -4,6 +4,9 @@ Views for Tenant Management
 Handles user signup, login, and status pages.
 """
 
+from pathlib import Path
+
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -17,7 +20,18 @@ from .models import TenantUser
 
 def download_app(request):
     """Public download page for the employee mobile app."""
-    return render(request, "tenants/download_app.html")
+    static_url = settings.STATIC_URL
+    if not static_url.startswith("/"):
+        static_url = f"/{static_url}"
+    if not static_url.endswith("/"):
+        static_url = f"{static_url}/"
+
+    apk_path = Path(settings.STATIC_ROOT) / "downloads" / "kuraimi-erp-employee.apk"
+    apk_url = f"{static_url}downloads/kuraimi-erp-employee.apk"
+    if apk_path.exists():
+        apk_url = f"{apk_url}?v={apk_path.stat().st_mtime_ns}"
+
+    return render(request, "tenants/download_app.html", {"apk_url": apk_url})
 
 
 def home(request):

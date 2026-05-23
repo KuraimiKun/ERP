@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex article_v2"] 1777400535.49355 "article_v2.aux" "article_v2.bbl" "article_v2" 1777400539.64018 0
+["bibtex article_v2"] 1777400535.49355 "article_v2.aux" "article_v2.bbl" "article_v2" 1778891231.43677 0
   "./references.bib" 1777399821 17462 ac170f0a050fd8df1915e3d595165d59 ""
   "C:/Program Files/MiKTeX/bibtex/bst/ieeetran/IEEEtran.bst" 1440622569 57748 7c8250ecf02814ce6ddc0cdbb63df1dd ""
-  "article_v2.aux" 1777400538 16242 594e37b399bf0282cba0f81e73f14cc4 "pdflatex"
+  "article_v2.aux" 1778891230 16242 594e37b399bf0282cba0f81e73f14cc4 "pdflatex"
   (generated)
   "article_v2.bbl"
   "article_v2.blg"
   (rewritten before read)
-["pdflatex"] 1777400535.95995 "f:/erpdjango/thesis/article_v2.tex" "article_v2.pdf" "article_v2" 1777400539.64086 0
+["pdflatex"] 1778891225.76158 "f:/erpdjango/thesis/article_v2.tex" "article_v2.pdf" "article_v2" 1778891231.43739 0
   "C:/Program Files/MiKTeX/fonts/enc/dvips/base/8r.enc" 1458473887 4993 80dc9bab7f31fb78a000ccfed0e27cab ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8r.tfm" 1136765053 1292 3059476c50a24578715759f22652f3d0 ""
   "C:/Program Files/MiKTeX/fonts/tfm/adobe/courier/pcrb8t.tfm" 1136765053 1384 87406e4336af44af883a035f17f319d9 ""
@@ -136,11 +136,11 @@
   "C:/Program Files/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1750586519 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/Kuraimi/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1750586599 13225209 1d52f8f13f365b1dcbc035b4ee098197 ""
-  "article_v2.aux" 1777400538 16242 594e37b399bf0282cba0f81e73f14cc4 "pdflatex"
+  "article_v2.aux" 1778891230 16242 594e37b399bf0282cba0f81e73f14cc4 "pdflatex"
   "article_v2.bbl" 1777400535 9084 13e29d7cdfc6a769f5014f44eb79f265 "bibtex article_v2"
-  "article_v2.out" 1777400538 7915 476d6a3c5954d9b1922853b06c703492 "pdflatex"
-  "article_v2.tex" 1777400365 47118 911eeea95ee2923ec835b916a260c5fb ""
-  "f:/erpdjango/thesis/article_v2.tex" 1777400365 47118 911eeea95ee2923ec835b916a260c5fb ""
+  "article_v2.out" 1778891230 7915 476d6a3c5954d9b1922853b06c703492 "pdflatex"
+  "article_v2.tex" 1778891222 47181 a31863129cddba7bf2651a76f47f7aea ""
+  "f:/erpdjango/thesis/article_v2.tex" 1778891222 47181 a31863129cddba7bf2651a76f47f7aea ""
   "figures/calibration_late_payment.png" 1777393100 39740 09ea6ccf6c7b58ad236b483f5739dc65 ""
   "figures/cm_late_payment.png" 1777393100 27102 9a53fa088c8597ad814639a0037103e2 ""
   "figures/feature_importance_late_payment.png" 1777393104 49302 f98a564ff6e4999e4bd7df595bc6f38b ""

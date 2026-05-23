@@ -111,6 +111,52 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 
+  /// Validate the persisted session before routing into authenticated screens.
+  /// Unauthorized cached sessions are cleared so the app returns to login.
+  Future<bool> hasValidStoredSession() async {
+    final token = await _storage.getToken();
+    if (token == null || token.isEmpty) {
+      return false;
+    }
+
+    final role = _storage.getUserRole();
+    if (role == 'admin' || role == 'owner') {
+      if (_storage.getAdminUser() == null) {
+        await _storage.clearAll();
+        return false;
+      }
+
+      try {
+        await _api.get(ApiConfig.adminMe);
+        return true;
+      } on DioException catch (e) {
+        final status = e.response?.statusCode;
+        if (status == 401 || status == 403) {
+          await _storage.clearAll();
+          return false;
+        }
+        return true;
+      }
+    }
+
+    if (_storage.getEmployeeData() == null) {
+      await _storage.clearAll();
+      return false;
+    }
+
+    try {
+      await _api.get(ApiConfig.profile);
+      return true;
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      if (status == 401 || status == 403) {
+        await _storage.clearAll();
+        return false;
+      }
+      return true;
+    }
+  }
+
   /// Get stored employee from local storage.
   Employee? getStoredEmployee() {
     final json = _storage.getEmployeeData();

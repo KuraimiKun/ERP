@@ -43,8 +43,14 @@ class AuthProvider extends ChangeNotifier {
 
   /// Check stored auth on app startup
   Future<void> checkAuth() async {
-    final loggedIn = await _authService.isLoggedIn();
+    final loggedIn = await _authService.hasValidStoredSession();
     if (!loggedIn) {
+      _employee = null;
+      _company = null;
+      _admin = null;
+      _role = null;
+      _isLoggedIn = false;
+      _error = null;
       notifyListeners();
       return;
     }
