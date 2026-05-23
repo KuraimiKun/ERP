@@ -7,38 +7,42 @@ class ApiService {
   final StorageService _storage;
 
   ApiService(this._storage) {
-    _dio = Dio(BaseOptions(
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
+    _dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
 
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        // Add auth token
-        final token = await _storage.getToken();
-        if (token != null) {
-          options.headers['Authorization'] = 'Token $token';
-        }
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          // Add auth token
+          final token = await _storage.getToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Token $token';
+          }
 
-        // Add tenant DB header
-        final tenantDb = _storage.getTenantDb();
-        if (tenantDb != null) {
-          options.headers['X-Tenant-DB'] = tenantDb;
-        }
+          // Add tenant DB header
+          final tenantDb = _storage.getTenantDb();
+          if (tenantDb != null) {
+            options.headers['X-Tenant-DB'] = tenantDb;
+          }
 
-        // Add locale
-        options.headers['Accept-Language'] = _storage.getLocale();
+          // Add locale
+          options.headers['Accept-Language'] = _storage.getLocale();
 
-        handler.next(options);
-      },
-      onError: (error, handler) {
-        handler.next(error);
-      },
-    ));
+          handler.next(options);
+        },
+        onError: (error, handler) {
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   Dio get dio => _dio;
