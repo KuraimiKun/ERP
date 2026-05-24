@@ -3,7 +3,7 @@ Platform Admin - Mobile App (Flutter) Build Management
 
 Provides a page for superusers to trigger a release build of the
 Flutter mobile app and replace the APK served from the downloads folder
-(``static/downloads/kuraimi-erp-employee.apk``).
+(``static/downloads/intara-erp-employee.apk``).
 
 The build runs in a background thread. Its status is stored in the
 Django cache so the page can reflect progress across requests.
@@ -39,7 +39,7 @@ CACHE_TTL_SECONDS = 7 * 24 * 60 * 60  # 7 days
 MOBILE_APP_DIR = Path(settings.BASE_DIR) / "mobile"
 APK_OUTPUT_RELATIVE = Path("build") / "app" / "outputs" / "flutter-apk" / "app-release.apk"
 DOWNLOADS_DIR = Path(settings.BASE_DIR) / "static" / "downloads"
-DOWNLOADS_APK_NAME = "kuraimi-erp-employee.apk"
+DOWNLOADS_APK_NAME = "intara-erp-employee.apk"
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

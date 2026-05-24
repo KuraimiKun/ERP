@@ -26,8 +26,8 @@ def download_app(request):
     if not static_url.endswith("/"):
         static_url = f"{static_url}/"
 
-    apk_path = Path(settings.STATIC_ROOT) / "downloads" / "kuraimi-erp-employee.apk"
-    apk_url = f"{static_url}downloads/kuraimi-erp-employee.apk"
+    apk_path = Path(settings.STATIC_ROOT) / "downloads" / "intara-erp-employee.apk"
+    apk_url = f"{static_url}downloads/intara-erp-employee.apk"
     if apk_path.exists():
         apk_url = f"{apk_url}?v={apk_path.stat().st_mtime_ns}"
 

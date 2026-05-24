@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {{ company.name|default:"Kuraimi" }}</title>
+    <title>{% block title %}{% trans "Enterprise Resource Planning" %}{% endblock %} - {{ company.name|default:"Intara" }}</title>
 
     <!-- Bootstrap 5 CSS -->
     {% if LANGUAGE_BIDI %}
@@ -124,10 +124,10 @@
         <!-- Brand -->
         <div class="erp-sidebar-brand">
             <div class="brand-logo">
-                <i class="bi bi-building-fill"></i>
+                <img src="{% static 'logo.svg' %}" alt="Intara ERP logo">
             </div>
             <div class="brand-text">
-                <span class="brand-name">Kuraimi ERP</span>
+                <span class="brand-name">Intara ERP</span>
                 {% if company %}<small class="brand-company">{{ company.name }}</small>{% endif %}
             </div>
         </div>

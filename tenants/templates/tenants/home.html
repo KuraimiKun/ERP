@@ -1,6 +1,7 @@
 {% extends 'tenants/base.html' %}
+{% load static %}
 
-{% block title %}Kuraimi ERP — Enterprise Resource Planning{% endblock %}
+{% block title %}Intara ERP — Enterprise Resource Planning{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -76,10 +77,17 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
 .lp-logo-icon {
     width: 38px; height: 38px;
     border-radius: var(--r-sm);
-    background: var(--grad-primary);
+    background: #fff;
+    border: 1px solid rgba(226,232,240,.9);
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 1.2rem;
-    box-shadow: var(--shadow-primary);
+    box-shadow: 0 8px 20px rgba(15,23,42,.22);
+}
+.lp-logo-icon i { display: none; }
+.lp-logo-icon::before {
+    content: '';
+    width: 24px;
+    height: 24px;
+    background: url("{% static 'logo.svg' %}") center/contain no-repeat;
 }
 .lp-logo-text { font-weight: 800; font-size: 1.1rem; color: #fff; letter-spacing: -.01em; }
 .lp-nav.scrolled .lp-logo-text { color: var(--c-dark); }
@@ -516,11 +524,11 @@ section { padding: 5rem 2rem; }
     <div class="lp-nav-inner">
         <a href="#" class="lp-logo">
             <div class="lp-logo-icon"><i class="bi bi-building-fill"></i></div>
-            <span class="lp-logo-text">Kuraimi ERP</span>
+            <span class="lp-logo-text">Intara ERP</span>
         </a>
         <div class="lp-nav-links d-none d-lg-flex">
             <a href="#features">Features</a>
-            <a href="#why">Why Kuraimi</a>
+            <a href="#why">Why Intara</a>
             <a href="#how">How It Works</a>
             <a href="#modules">Modules</a>
         </div>
@@ -570,7 +578,7 @@ section { padding: 5rem 2rem; }
                     <div class="trust-avatar" style="background: linear-gradient(135deg,#f59e0b,#d97706);">خ</div>
                     <div class="trust-avatar" style="background: linear-gradient(135deg,#06b6d4,#0891b2);">ف</div>
                 </div>
-                <p class="trust-text"><strong>500+</strong> businesses already using Kuraimi ERP</p>
+                <p class="trust-text"><strong>500+</strong> businesses already using Intara ERP</p>
             </div>
         </div>
 
@@ -589,7 +597,7 @@ section { padding: 5rem 2rem; }
                     <div class="mockup-dot mockup-dot-r"></div>
                     <div class="mockup-dot mockup-dot-y"></div>
                     <div class="mockup-dot mockup-dot-g"></div>
-                    <div class="mockup-title-bar">Kuraimi ERP — Dashboard</div>
+                    <div class="mockup-title-bar">Intara ERP — Dashboard</div>
                 </div>
                 <div class="mockup-body">
                     <div class="mockup-stats">
@@ -781,9 +789,9 @@ section { padding: 5rem 2rem; }
     <div class="section-inner">
         <div class="why-grid">
             <div>
-                <div class="section-eyebrow fade-up"><i class="bi bi-award"></i> Why Kuraimi</div>
+                <div class="section-eyebrow fade-up"><i class="bi bi-award"></i> Why Intara</div>
                 <h2 class="section-title fade-up">Built for the MENA region</h2>
-                <p class="section-sub fade-up">Most ERPs are built for western markets and retrofitted for Arabic. Kuraimi was designed from day one for bilingual, RTL-first enterprises.</p>
+                <p class="section-sub fade-up">Most ERPs are built for western markets and retrofitted for Arabic. Intara was designed from day one for bilingual, RTL-first enterprises.</p>
                 <ul class="why-list">
                     <li class="why-item fade-up fade-up-d1">
                         <div class="why-item-icon" style="background: rgba(99,102,241,.1); color: #6366f1;"><i class="bi bi-translate"></i></div>
@@ -903,7 +911,7 @@ section { padding: 5rem 2rem; }
 <section class="cta-section">
     <div class="cta-inner">
         <h2 class="cta-title fade-up">Ready to transform your business?</h2>
-        <p class="cta-sub fade-up fade-up-d1">Join 500+ businesses already running on Kuraimi ERP. No credit card required. Full access from day one.</p>
+        <p class="cta-sub fade-up fade-up-d1">Join 500+ businesses already running on Intara ERP. No credit card required. Full access from day one.</p>
         <div class="cta-actions fade-up fade-up-d2">
             <a href="{% url 'tenants:signup' %}" class="btn-cta-white">
                 <i class="bi bi-lightning-charge-fill"></i> Start Free Trial
@@ -925,7 +933,7 @@ section { padding: 5rem 2rem; }
             <div>
                 <a href="#" class="lp-logo" style="margin-bottom: .75rem;">
                     <div class="lp-logo-icon"><i class="bi bi-building-fill"></i></div>
-                    <span class="lp-logo-text">Kuraimi ERP</span>
+                    <span class="lp-logo-text">Intara ERP</span>
                 </a>
                 <p class="footer-brand-desc">A complete multi-tenant ERP platform built for modern enterprises in the MENA region. Arabic-first, cloud-native, AI-powered.</p>
             </div>
@@ -959,7 +967,7 @@ section { padding: 5rem 2rem; }
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; {% now "Y" %} Kuraimi ERP. All rights reserved.</span>
+            <span>&copy; {% now "Y" %} Intara ERP. All rights reserved.</span>
             <div class="footer-socials">
                 <a href="#" class="footer-social"><i class="bi bi-twitter-x"></i></a>
                 <a href="#" class="footer-social"><i class="bi bi-linkedin"></i></a>

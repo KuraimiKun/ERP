@@ -745,7 +745,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get welcomeBack => 'مرحبًا بعودتك';
 
   @override
-  String get signInToContinue => 'سجّل الدخول لمتابعة Kuraimi Group';
+  String get signInToContinue => 'سجّل الدخول لمتابعة Intara Group';
 
   @override
   String get signIn => 'تسجيل الدخول';

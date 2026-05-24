@@ -1567,7 +1567,7 @@ abstract class AppLocalizations {
   /// No description provided for @signInToContinue.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to continue to Kuraimi Group'**
+  /// **'Sign in to continue to Intara Group'**
   String get signInToContinue;
 
   /// No description provided for @signIn.

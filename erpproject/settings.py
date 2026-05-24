@@ -424,8 +424,8 @@ REST_FRAMEWORK = {
 
 # ── OpenAPI / Swagger documentation ─────────────────────────────────────────
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Kuraimi ERP API",
-    "DESCRIPTION": "REST API for Kuraimi ERP — finance, HR, CRM, inventory, suppliers, services, reporting, and AI modules.",
+    "TITLE": "Intara ERP API",
+    "DESCRIPTION": "REST API for Intara ERP — finance, HR, CRM, inventory, suppliers, services, reporting, and AI modules.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": r"/api/",

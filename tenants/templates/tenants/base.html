@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,14 +79,21 @@
         .brand-panel-logo-icon {
             width: 44px;
             height: 44px;
-            background: var(--gradient-primary);
+            background: #fff;
+            border: 1px solid rgba(226,232,240,0.9);
             border-radius: var(--border-radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-size: 1.3rem;
-            box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(15,23,42,0.18);
+        }
+        .brand-panel-logo-icon i { display: none; }
+        .brand-panel-logo-icon::before {
+            content: '';
+            width: 28px;
+            height: 28px;
+            background: url("{% static 'logo.svg' %}") center/contain no-repeat;
         }
         .brand-panel-logo-text {
             color: #fff;
@@ -155,13 +163,20 @@
         .auth-form-logo-icon {
             width: 36px;
             height: 36px;
-            background: var(--gradient-primary);
+            background: #fff;
+            border: 1px solid var(--border-color);
             border-radius: var(--border-radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-size: 1rem;
+            overflow: hidden;
+        }
+        .auth-form-logo-icon i { display: none; }
+        .auth-form-logo-icon::before {
+            content: '';
+            width: 22px;
+            height: 22px;
+            background: url("{% static 'logo.svg' %}") center/contain no-repeat;
         }
         .auth-form-logo-text {
             font-size: 1.1rem;

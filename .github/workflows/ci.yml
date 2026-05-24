@@ -136,7 +136,7 @@ jobs:
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: kuraimi-erp-employee-apk
+        name: intara-erp-employee-apk
         path: mobile/build/app/outputs/flutter-apk/app-release.apk
         if-no-files-found: error
         retention-days: 14

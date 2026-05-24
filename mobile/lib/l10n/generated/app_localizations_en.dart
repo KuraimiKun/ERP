@@ -745,7 +745,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeBack => 'Welcome back';
 
   @override
-  String get signInToContinue => 'Sign in to continue to Kuraimi Group';
+  String get signInToContinue => 'Sign in to continue to Intara Group';
 
   @override
   String get signIn => 'Sign In';

@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% trans "Employee Portal" %}{% endblock %} — Kuraimi ERP</title>
+    <title>{% block title %}{% trans "Employee Portal" %}{% endblock %} — Intara ERP</title>
 
     {% if LANGUAGE_BIDI %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -34,8 +34,8 @@
 
             <!-- Brand -->
             <a href="{% url 'erp:employee_portal' %}" class="portal-brand flex-shrink-0">
-                <div class="portal-brand-icon"><i class="bi bi-person-badge-fill"></i></div>
-                <span class="d-none d-sm-inline">Kuraimi <span style="opacity:0.6; font-weight:400;">Portal</span></span>
+                <div class="portal-brand-icon"><img src="{% static 'logo.svg' %}" alt="Intara ERP logo"></div>
+                <span class="d-none d-sm-inline">Intara <span style="opacity:0.6; font-weight:400;">Portal</span></span>
             </a>
 
             <!-- Nav links (desktop) -->

@@ -260,23 +260,17 @@ class _HeroGradient extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0x3FFFFFFF)),
                   ),
-                  child: Center(
-                    child: Transform.rotate(
-                      angle: 0.785,
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Image.asset(
+                      'assets/branding/logo.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'Kuraimi',
+                  'Intara',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w700,

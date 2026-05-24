@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found — Kuraimi ERP</title>
+    <title>Page Not Found — Intara ERP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,9 +43,17 @@
         }
         .error-logo-icon {
             width: 36px; height: 36px; border-radius: 8px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: #fff;
+            border: 1px solid #e2e8f0;
             display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 1.1rem;
+            overflow: hidden;
+        }
+        .error-logo-icon i { display: none; }
+        .error-logo-icon::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            background: url("{% static 'logo.svg' %}") center/contain no-repeat;
         }
         .error-logo-text {
             font-size: 1.15rem; font-weight: 700; color: var(--clr-gray-900);
@@ -85,7 +94,7 @@
     <div class="error-card">
         <div class="error-logo">
             <div class="error-logo-icon"><i class="bi bi-building-fill"></i></div>
-            <span class="error-logo-text">Kuraimi ERP</span>
+            <span class="error-logo-text">Intara ERP</span>
         </div>
         <div class="error-icon"><i class="bi bi-search"></i></div>
         <div class="error-code">404</div>
@@ -98,7 +107,7 @@
             <i class="bi bi-arrow-left"></i> Go to Dashboard
         </a>
         <div class="error-footer">
-            &copy; {% now "Y" %} Kuraimi ERP
+            &copy; {% now "Y" %} Intara ERP
         </div>
     </div>
 </body>

@@ -745,7 +745,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get welcomeBack => 'Selamat datang kembali';
 
   @override
-  String get signInToContinue => 'Masuk untuk melanjutkan ke Kuraimi Group';
+  String get signInToContinue => 'Masuk untuk melanjutkan ke Intara Group';
 
   @override
   String get signIn => 'Masuk';

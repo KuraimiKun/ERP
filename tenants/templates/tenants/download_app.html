@@ -1,7 +1,7 @@
 {% extends 'tenants/base.html' %}
 {% load static i18n %}
 
-{% block title %}Download Kuraimi ERP Employee App{% endblock %}
+{% block title %}Download Intara ERP Employee App{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -39,8 +39,17 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
     box-shadow: 0 1px 0 var(--c-border);
 }
 .nav-brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
-.nav-logo  { width: 36px; height: 36px; border-radius: 10px; background: var(--grad-primary); display: grid; place-items: center; }
-.nav-logo svg { width: 20px; height: 20px; fill: #fff; }
+.nav-logo  {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid rgba(226,232,240,.9);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+}
+.nav-logo img { width: 22px; height: 22px; object-fit: contain; }
 .nav-name  { font-weight: 700; font-size: 1.1rem; color: #fff; transition: color .25s; }
 .lp-nav.scrolled .nav-name { color: var(--c-dark); }
 .nav-actions { margin-left: auto; display: flex; gap: .75rem; }
@@ -138,7 +147,7 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
     display: grid; place-items: center;
     box-shadow: 0 8px 24px rgba(99,102,241,.5);
 }
-.phone-app-icon svg { width: 36px; height: 36px; fill: #fff; }
+.phone-app-icon img { width: 36px; height: 36px; object-fit: contain; }
 .phone-app-name { color: #fff; font-weight: 700; font-size: 1rem; }
 .phone-screens-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: .5rem;
@@ -270,9 +279,9 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
 <nav class="lp-nav" id="lp-nav">
     <a href="{% url 'tenants:home' %}" class="nav-brand">
         <div class="nav-logo">
-            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <img src="{% static 'logo.svg' %}" alt="Intara ERP logo">
         </div>
-        <span class="nav-name">Kuraimi ERP</span>
+        <span class="nav-name">Intara ERP</span>
     </a>
     <div class="nav-actions">
         <a href="{% url 'tenants:home' %}" class="btn-nav btn-nav-ghost">Home</a>
@@ -327,9 +336,9 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
             <div class="phone-notch"></div>
             <div class="phone-screen">
                 <div class="phone-app-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <img src="{% static 'logo.svg' %}" alt="Intara ERP logo">
                 </div>
-                <div class="phone-app-name">Kuraimi ERP</div>
+                <div class="phone-app-name">Intara ERP</div>
                 <div class="phone-screens-grid">
                     <div class="phone-screen-card">
                         <div class="phone-screen-card-label">Today</div>
@@ -483,7 +492,7 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
 <!-- CTA -->
 <section class="cta-section">
     <h2>Ready to download?</h2>
-    <p>Join your team on Kuraimi ERP — access everything you need, from anywhere.</p>
+    <p>Join your team on Intara ERP — access everything you need, from anywhere.</p>
     <a href="{{ apk_url }}" class="btn-download" download>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -494,8 +503,8 @@ body { margin: 0; background: #fff; font-family: 'Inter', 'Tajawal', sans-serif;
 
 <!-- Footer -->
 <footer class="lp-footer">
-    <p>© 2026 Kuraimi ERP · <a href="{% url 'tenants:home' %}">Back to Home</a> · <a href="{% url 'tenants:login' %}">Sign In</a></p>
-    <p>Built with Flutter · Served by Kuraimi ERP</p>
+    <p>© 2026 Intara ERP · <a href="{% url 'tenants:home' %}">Back to Home</a> · <a href="{% url 'tenants:login' %}">Sign In</a></p>
+    <p>Built with Flutter · Served by Intara ERP</p>
 </footer>
 
 <script>

@@ -1,6 +1,6 @@
 <div align="center">
 
-# Kuraimi ERP
+# Intara ERP
 
 **A full-stack, multi-tenant ERP platform built with Django and Flutter**
 

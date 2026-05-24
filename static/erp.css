@@ -143,6 +143,12 @@ a:hover { color: var(--clr-primary-hover); }
   box-shadow: var(--shadow-primary);
 }
 
+.brand-logo img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
 .brand-name {
   display: block;
   color: #fff;
@@ -1728,13 +1734,19 @@ th:hover .erp-sort-icon-idle,
   width: 30px;
   height: 30px;
   border-radius: 7px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #fff;
+  border: 1px solid rgba(226,232,240,0.9);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  color: #fff;
+  overflow: hidden;
   flex-shrink: 0;
+}
+
+.portal-brand-icon img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 .portal-nav-link {
   display: inline-flex;
