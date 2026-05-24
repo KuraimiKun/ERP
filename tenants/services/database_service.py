@@ -69,6 +69,119 @@ class DatabaseService:
     - Health checks and status monitoring
     """
 
+    MIGRATION_APPS = ("contenttypes", "auth", "authtoken", "tenants", "erp", "erp_ai")
+
+    def update_creation_progress(
+        self,
+        tenant_db,
+        progress,
+        message,
+        *,
+        status=None,
+        error_message=None,
+        is_migrated=None,
+        mark_complete=False,
+    ):
+        """Persist database creation progress for live UI polling."""
+        from ..models import TenantDatabase
+
+        progress = max(0, min(100, int(progress)))
+        updates = {
+            "creation_progress": progress,
+            "creation_status_message": message or "",
+            "updated_at": timezone.now(),
+        }
+        if status is not None:
+            updates["status"] = status
+        if error_message is not None:
+            updates["error_message"] = error_message
+        if is_migrated is not None:
+            updates["is_migrated"] = is_migrated
+        if mark_complete:
+            updates["creation_completed_at"] = timezone.now()
+
+        TenantDatabase.objects.filter(pk=tenant_db.pk).update(**updates)
+
+        for field, value in updates.items():
+            setattr(tenant_db, field, value)
+
+        return tenant_db
+
+    def initialize_tenant_database(self, server, name=None, display_name=None, created_by=None):
+        """Create the tenant database record before provisioning starts."""
+        from ..models import TenantDatabase, generate_db_password
+
+        if server.is_full:
+            raise ValueError(f"Server {server.name} has reached its database limit")
+
+        tenant_db = TenantDatabase(
+            server=server,
+            name=name or "",
+            display_name=display_name or "",
+            db_password=generate_db_password(),
+            status="creating",
+            created_by=created_by,
+            creation_progress=5,
+            creation_status_message="Queued for provisioning.",
+        )
+
+        if not tenant_db.name:
+            tenant_db.name = f"erp_tenant_{str(tenant_db.id).replace('-', '')[:16]}"
+        if not tenant_db.db_username:
+            tenant_db.db_username = f"user_{str(tenant_db.id).replace('-', '')[:12]}"
+
+        tenant_db.save()
+        return tenant_db
+
+    def provision_tenant_database(self, tenant_db, created_by=None):
+        """Create and migrate the underlying PostgreSQL database for an existing record."""
+        from ..models import ServerLog
+
+        try:
+            self.update_creation_progress(tenant_db, 15, "Creating PostgreSQL database...", status="creating")
+            self.create_database(
+                server=tenant_db.server,
+                db_name=tenant_db.name,
+                db_username=tenant_db.db_username,
+                db_password=tenant_db.db_password,
+            )
+
+            self.update_creation_progress(tenant_db, 55, "Database created. Running migrations...", status="creating")
+            self.run_migrations(tenant_db, progress_start=60, progress_end=90)
+            self.update_creation_progress(tenant_db, 90, "Schema ready. Finalizing setup...", status="creating")
+
+            ServerLog.objects.create(
+                server=tenant_db.server,
+                database=tenant_db,
+                action="database_create",
+                level="success",
+                message=f"Database {tenant_db.name} created successfully",
+                user=created_by,
+            )
+
+            return tenant_db
+
+        except Exception as e:
+            self.update_creation_progress(
+                tenant_db,
+                tenant_db.creation_progress or 0,
+                f"Provisioning failed: {str(e)}",
+                status="error",
+                error_message=str(e),
+                mark_complete=True,
+            )
+
+            ServerLog.objects.create(
+                server=tenant_db.server,
+                database=tenant_db,
+                action="database_create",
+                level="error",
+                message=f"Failed to create database: {str(e)}",
+                user=created_by,
+            )
+
+            raise
+
     # ── .pgpass helpers ──────────────────────────────────────────────────
 
     @staticmethod
@@ -287,73 +400,17 @@ class DatabaseService:
         Returns:
             TenantDatabase: The created database instance
         """
-        from ..models import TenantDatabase, ServerLog, generate_db_password
-
-        if server.is_full:
-            raise ValueError(f"Server {server.name} has reached its database limit")
-
-        # Create the database record first to get an ID
-        tenant_db = TenantDatabase(
+        tenant_db = self.initialize_tenant_database(
             server=server,
-            name=name or "",
-            display_name=display_name or "",
-            db_password=generate_db_password(),
-            status="creating",
+            name=name,
+            display_name=display_name,
             created_by=created_by,
         )
+        self.provision_tenant_database(tenant_db, created_by=created_by)
+        self.update_creation_progress(tenant_db, 100, "Database is ready.", status="active", mark_complete=True)
+        return tenant_db
 
-        # Generate name and username if not provided
-        if not tenant_db.name:
-            tenant_db.name = f"erp_tenant_{str(tenant_db.id).replace('-', '')[:16]}"
-        if not tenant_db.db_username:
-            tenant_db.db_username = f"user_{str(tenant_db.id).replace('-', '')[:12]}"
-
-        tenant_db.save()
-
-        try:
-            # Create the actual database
-            self.create_database(
-                server=server,
-                db_name=tenant_db.name,
-                db_username=tenant_db.db_username,
-                db_password=tenant_db.db_password,
-            )
-
-            # Update status
-            tenant_db.status = "active"
-            tenant_db.save()
-
-            ServerLog.objects.create(
-                server=server,
-                database=tenant_db,
-                action="database_create",
-                level="success",
-                message=f"Database {tenant_db.name} created successfully",
-                user=created_by,
-            )
-
-            # Run migrations
-            self.run_migrations(tenant_db)
-
-            return tenant_db
-
-        except Exception as e:
-            tenant_db.status = "error"
-            tenant_db.error_message = str(e)
-            tenant_db.save()
-
-            ServerLog.objects.create(
-                server=server,
-                database=tenant_db,
-                action="database_create",
-                level="error",
-                message=f"Failed to create database: {str(e)}",
-                user=created_by,
-            )
-
-            raise
-
-    def run_migrations(self, tenant_db):
+    def run_migrations(self, tenant_db, progress_start=None, progress_end=None):
         """
         Run Django migrations on a tenant database.
 
@@ -370,13 +427,26 @@ class DatabaseService:
 
         try:
             out = StringIO()
+            apps = self.MIGRATION_APPS
 
             # Run dependent app migrations first (ERP models have FKs
             # to auth.User / tenants.TenantUser and contenttypes)
-            for app in ("contenttypes", "auth", "authtoken", "tenants", "erp", "erp_ai"):
+            for index, app in enumerate(apps, start=1):
+                if progress_start is not None and progress_end is not None:
+                    span = max(progress_end - progress_start, 0)
+                    current_progress = progress_start + round(((index - 1) / len(apps)) * span)
+                    self.update_creation_progress(
+                        tenant_db,
+                        current_progress,
+                        f"Running {app} migrations...",
+                        status="creating",
+                    )
                 call_command("migrate", app, database=db_alias, verbosity=1, interactive=False, stdout=out)
 
             migration_output = out.getvalue()
+
+            if progress_start is not None and progress_end is not None:
+                self.update_creation_progress(tenant_db, progress_end, "Finishing migration setup...", status="creating")
 
             # Update migration status
             tenant_db.is_migrated = True
@@ -401,6 +471,15 @@ class DatabaseService:
 
             tenant_db.error_message = f"Migration error: {error_msg}"
             tenant_db.save()
+
+            if progress_start is not None and progress_end is not None:
+                self.update_creation_progress(
+                    tenant_db,
+                    tenant_db.creation_progress or progress_start,
+                    f"Migration failed: {error_msg}",
+                    status="error",
+                    error_message=f"Migration error: {error_msg}",
+                )
 
             ServerLog.objects.create(
                 server=tenant_db.server,

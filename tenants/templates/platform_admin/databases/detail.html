@@ -23,9 +23,25 @@
                 </div>
                 <h5 class="fw-bold mb-1">{{ database.display_name|default:database.name }}</h5>
                 <small class="text-muted d-block mb-2">{{ database.name }}</small>
-                <span class="badge badge-status badge-{{ database.status }} fs-6">{{ database.get_status_display }}</span>
+                <span id="db-status-badge" class="badge badge-status badge-{{ database.status }} fs-6">{{ database.get_status_display }}</span>
             </div>
         </div>
+
+        {% if database.status == 'creating' %}
+        <div class="pa-card mb-4" id="db-progress-card">
+            <div class="pa-card-header"><h5>{% trans "Provisioning Progress" %}</h5></div>
+            <div class="pa-card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span id="db-progress-message" class="fw-semibold">{% if database.creation_status_message %}{{ database.creation_status_message }}{% else %}{% trans "Queued for provisioning." %}{% endif %}</span>
+                    <span id="db-progress-percent" class="text-primary fw-bold">{{ database.creation_progress }}%</span>
+                </div>
+                <div class="progress" role="progressbar" aria-label="{% trans 'Database creation progress' %}" aria-valuemin="0" aria-valuemax="100">
+                    <div id="db-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: {{ database.creation_progress }}%">{{ database.creation_progress }}%</div>
+                </div>
+                <small class="text-muted d-block mt-2">{% trans "This page updates automatically while the database is being created." %}</small>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Connection Info -->
         <div class="pa-card mb-4">
@@ -81,6 +97,11 @@
         <div class="pa-card mb-4">
             <div class="pa-card-header"><h5>{% trans "Actions" %}</h5></div>
             <div class="pa-card-body d-grid gap-2">
+                {% if database.status == 'creating' %}
+                <div class="alert alert-info mb-0">
+                    {% trans "Database actions will be available after provisioning completes." %}
+                </div>
+                {% else %}
                 <form method="post" action="{% url 'tenants:pa_database_test' database.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-primary btn-sm w-100">
@@ -94,6 +115,7 @@
                         <i class="bi bi-arrow-repeat me-1"></i>{% trans "Run Migrations" %}
                     </button>
                 </form>
+                {% endif %}
             </div>
         </div>
 
@@ -281,4 +303,82 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+{% if database.status == 'creating' %}
+<script>
+(() => {
+    const statusUrl = `${window.location.pathname}?progress=1`;
+    const progressBar = document.getElementById("db-progress-bar");
+    const progressPercent = document.getElementById("db-progress-percent");
+    const progressMessage = document.getElementById("db-progress-message");
+    const statusBadge = document.getElementById("db-status-badge");
+    const progressCard = document.getElementById("db-progress-card");
+
+    const badgeClassMap = {
+        creating: "badge-creating",
+        active: "badge-active",
+        error: "badge-error",
+        suspended: "badge-suspended",
+        inactive: "badge-inactive",
+    };
+
+    const updateBadge = (status, label) => {
+        statusBadge.textContent = label;
+        statusBadge.className = `badge badge-status fs-6 ${badgeClassMap[status] || "badge-inactive"}`;
+    };
+
+    const applyProgress = (payload) => {
+        const percent = Math.max(0, Math.min(100, Number(payload.progress || 0)));
+        progressBar.style.width = `${percent}%`;
+        progressBar.textContent = `${percent}%`;
+        progressBar.setAttribute("aria-valuenow", String(percent));
+        progressPercent.textContent = `${percent}%`;
+        progressMessage.textContent = payload.message || "Working...";
+        updateBadge(payload.status, payload.status_label);
+
+        if (payload.status === "error") {
+            progressBar.classList.remove("progress-bar-animated", "progress-bar-striped");
+            progressBar.classList.add("bg-danger");
+        }
+    };
+
+    const poll = async () => {
+        try {
+            const response = await fetch(statusUrl, {
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+                cache: "no-store",
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const payload = await response.json();
+            applyProgress(payload);
+
+            if (payload.is_complete) {
+                if (payload.is_ready) {
+                    progressMessage.textContent = payload.message || "Database is ready.";
+                    progressBar.classList.remove("progress-bar-animated");
+                    setTimeout(() => window.location.reload(), 800);
+                    return;
+                }
+
+                progressCard.classList.add("border-danger");
+                progressBar.classList.remove("progress-bar-animated");
+                return;
+            }
+        } catch (error) {
+            console.error("Failed to fetch database progress", error);
+        }
+
+        window.setTimeout(poll, 2000);
+    };
+
+    window.setTimeout(poll, 1200);
+})();
+</script>
+{% endif %}
 {% endblock %}

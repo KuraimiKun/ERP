@@ -250,6 +250,9 @@ class TenantDatabase(models.Model):
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="creating")
     error_message = models.TextField(blank=True)
+    creation_progress = models.PositiveSmallIntegerField(default=0)
+    creation_status_message = models.CharField(max_length=255, blank=True)
+    creation_completed_at = models.DateTimeField(null=True, blank=True)
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)

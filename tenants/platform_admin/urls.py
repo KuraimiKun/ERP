@@ -31,6 +31,7 @@ from .views_servers import (
 from .views_databases import (
     pa_database_list,
     pa_database_detail,
+    pa_database_progress,
     pa_database_migrate,
     pa_database_test,
     pa_database_create,
@@ -169,6 +170,7 @@ urlpatterns = [
     path("databases/", pa_database_list, name="pa_database_list"),
     path("databases/create/", pa_database_create, name="pa_database_create"),
     path("databases/<uuid:pk>/", pa_database_detail, name="pa_database_detail"),
+    path("databases/<uuid:pk>/progress/", pa_database_progress, name="pa_database_progress"),
     path("databases/<uuid:pk>/migrate/", pa_database_migrate, name="pa_database_migrate"),
     path("databases/<uuid:pk>/test/", pa_database_test, name="pa_database_test"),
     path("databases/<uuid:pk>/suspend/", pa_database_suspend, name="pa_database_suspend"),
