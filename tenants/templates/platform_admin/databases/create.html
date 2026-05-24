@@ -19,22 +19,24 @@
                 <h5><i class="bi bi-database-add me-2"></i>{% trans "New Tenant Database" %}</h5>
             </div>
             <div class="pa-card-body">
-                {% if servers %}
+                {% if has_available_servers %}
                 <form method="post">
                     {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
 
                     <div class="row g-3">
                         <!-- Server Selection -->
                         <div class="col-12">
                             <label class="form-label fw-semibold">{% trans "Server" %} <span class="text-danger">*</span></label>
-                            <select name="server_id" class="form-select" required>
-                                <option value="">{% trans "Select a server..." %}</option>
-                                {% for s in servers %}
-                                <option value="{{ s.pk }}">
-                                    {{ s.name }} ({{ s.get_server_type_display }}) — {{ s.db_count }}/{{ s.max_databases }} {% trans "databases" %}
-                                </option>
-                                {% endfor %}
-                            </select>
+                            {{ form.server }}
+                            {% for error in form.server.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             <small class="text-muted">{% trans "Only active servers with available capacity are shown" %}</small>
                         </div>
 
@@ -43,12 +45,14 @@
                         <!-- Database Details -->
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Database Name" %}</label>
-                            <input type="text" name="name" class="form-control" placeholder="{% trans 'Auto-generated if empty' %}">
+                            {{ form.name }}
+                            {% for error in form.name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             <small class="text-muted">{% trans "PostgreSQL identifier (letters, digits, underscores only)" %}</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Display Name" %}</label>
-                            <input type="text" name="display_name" class="form-control" placeholder="{% trans 'e.g. Acme Corp ERP' %}">
+                            {{ form.display_name }}
+                            {% for error in form.display_name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
 
                         <div class="col-12"><hr class="my-1"></div>
@@ -56,21 +60,13 @@
                         <!-- User Assignment (optional) -->
                         <div class="col-12">
                             <label class="form-label fw-semibold">{% trans "Assign to User" %} <small class="text-muted fw-normal">({% trans "optional" %})</small></label>
-                            <select name="assign_user_id" class="form-select">
-                                <option value="">{% trans "No user assignment" %}</option>
-                                {% for u in approved_users %}
-                                <option value="{{ u.pk }}">{{ u.get_full_name }} ({{ u.email }}) {% if u.company_name %}— {{ u.company_name }}{% endif %}</option>
-                                {% endfor %}
-                            </select>
+                            {{ form.assign_user }}
+                            {% for error in form.assign_user.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Role" %}</label>
-                            <select name="role" class="form-select">
-                                <option value="owner">{% trans "Owner" %}</option>
-                                <option value="admin">{% trans "Admin" %}</option>
-                                <option value="user">{% trans "User" %}</option>
-                                <option value="readonly">{% trans "Read Only" %}</option>
-                            </select>
+                            {{ form.role }}
+                            {% for error in form.role.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                     </div>
 

@@ -17,6 +17,7 @@ from tenants.models import (
     ServerLog,
     EmployeeInviteLink,
 )
+from tenants.platform_admin.forms import PlatformAdminDatabaseCreateForm
 from . import platform_admin_required, pa_context, paginate
 
 
@@ -152,56 +153,42 @@ def pa_database_test(request, pk):
 @require_http_methods(["GET", "POST"])
 def pa_database_create(request):
     """Create a new tenant database on a server."""
-    servers = (
-        PostgresServer.objects.filter(status="active")
-        .annotate(db_count=Count("databases"))
-        .filter(db_count__lt=F("max_databases"))
-    )
+    form = PlatformAdminDatabaseCreateForm(request.POST or None)
 
     if request.method == "POST":
-        server_id = request.POST.get("server_id")
-        db_name = request.POST.get("name", "").strip()
-        display_name = request.POST.get("display_name", "").strip()
-        assign_user_id = request.POST.get("assign_user_id")
+        if form.is_valid():
+            try:
+                from tenants.services import DatabaseService
 
-        try:
-            server = get_object_or_404(PostgresServer, pk=server_id, status="active")
+                server = form.cleaned_data["server"]
+                tenant_db = DatabaseService().create_tenant_database(
+                    server=server,
+                    name=form.cleaned_data.get("name"),
+                    display_name=form.cleaned_data.get("display_name"),
+                    created_by=request.user,
+                )
 
-            from tenants.services import DatabaseService
-
-            db_service = DatabaseService()
-            tenant_db = db_service.create_tenant_database(
-                server=server,
-                name=db_name or None,
-                display_name=display_name,
-                created_by=request.user,
-            )
-
-            # Optionally assign a user
-            if assign_user_id:
-                try:
-                    user_obj = TenantUser.objects.get(pk=assign_user_id, is_approved=True)
+                assign_user = form.cleaned_data.get("assign_user")
+                if assign_user:
                     DatabaseAssignment.objects.create(
-                        user=user_obj,
+                        user=assign_user,
                         database=tenant_db,
-                        role=request.POST.get("role", "owner"),
+                        role=form.cleaned_data.get("role") or "owner",
                         assigned_by=request.user,
                     )
-                except TenantUser.DoesNotExist:
-                    pass
 
-            messages.success(request, _("Database created successfully."))
-            return redirect("tenants:pa_database_detail", pk=tenant_db.pk)
-        except Exception as e:
-            messages.error(request, _(f"Failed to create database: {e}"))
-
-    approved_users = TenantUser.objects.filter(approval_status="approved", is_staff=False).order_by("email")
+                messages.success(request, _("Database created successfully."))
+                return redirect("tenants:pa_database_detail", pk=tenant_db.pk)
+            except Exception as e:
+                messages.error(request, _("Failed to create database: %(error)s") % {"error": str(e)})
+        else:
+            messages.error(request, _("Please correct the errors below."))
 
     context = pa_context(
         request,
         {
-            "servers": servers,
-            "approved_users": approved_users,
+            "form": form,
+            "has_available_servers": form.fields["server"].queryset.exists(),
         },
     )
     return render(request, "platform_admin/databases/create.html", context)

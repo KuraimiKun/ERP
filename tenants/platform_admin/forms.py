@@ -4,7 +4,11 @@ Platform Admin - Forms
 Admin-specific forms separated from the public tenant forms.
 """
 
+import secrets
+import string
+
 from django import forms
+from django.db.models import Count, F
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from tenants.models import (
@@ -45,10 +49,40 @@ class PostgresServerForm(forms.ModelForm):
             "host": forms.TextInput(attrs={"class": "form-control", "placeholder": "hostname or IP"}),
             "port": forms.NumberInput(attrs={"class": "form-control", "placeholder": "5432"}),
             "admin_username": forms.TextInput(attrs={"class": "form-control", "placeholder": "postgres"}),
-            "admin_password": forms.PasswordInput(attrs={"class": "form-control", "render_value": True}),
+            "admin_password": forms.TextInput(attrs={"class": "form-control", "style": "font-family: monospace;"}),
             "max_databases": forms.NumberInput(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-select"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance._state.adding:
+            auto_pass = "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(20))
+            self.fields["admin_password"].initial = auto_pass
+
+            used_ports = set(PostgresServer.objects.values_list("port", flat=True))
+            next_port = 5432
+            while next_port in used_ports:
+                next_port += 1
+
+            self.fields["port"].initial = next_port
+            self.fields["host"].initial = "localhost"
+            self.fields["admin_username"].initial = "postgres"
+            self.fields["max_databases"].initial = 50
+            self.fields["status"].initial = "inactive"
+
+    def clean(self):
+        cleaned = super().clean()
+        server_type = cleaned.get("server_type")
+
+        if server_type == "remote":
+            if not cleaned.get("host"):
+                self.add_error("host", "Host is required for remote servers.")
+            if not cleaned.get("admin_password"):
+                self.add_error("admin_password", "Password is required for remote servers.")
+
+        return cleaned
 
 
 class DockerServerForm(forms.Form):
@@ -153,6 +187,51 @@ class DatabaseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["server"].queryset = PostgresServer.objects.filter(status="active")
         self.fields["name"].required = False
+
+
+class PlatformAdminDatabaseCreateForm(forms.ModelForm):
+    """Form for platform-admin database creation with optional user assignment."""
+
+    assign_user = forms.ModelChoiceField(
+        queryset=TenantUser.objects.none(),
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select"}),
+        empty_label="No user assignment",
+    )
+    role = forms.ChoiceField(
+        choices=DatabaseAssignment.ROLE_CHOICES,
+        required=False,
+        initial="owner",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
+    class Meta:
+        model = TenantDatabase
+        fields = ["server", "name", "display_name"]
+        widgets = {
+            "server": forms.Select(attrs={"class": "form-select"}),
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Database name (auto-generated if empty)"}
+            ),
+            "display_name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Acme Corp ERP"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["server"].queryset = (
+            PostgresServer.objects.filter(status="active").annotate(db_count=Count("databases")).filter(db_count__lt=F("max_databases"))
+        )
+        self.fields["name"].required = False
+        self.fields["assign_user"].queryset = TenantUser.objects.filter(approval_status="approved", is_staff=False).order_by("email")
+
+    def clean_name(self):
+        name = (self.cleaned_data.get("name") or "").strip()
+        return name or None
+
+    def clean_display_name(self):
+        return (self.cleaned_data.get("display_name") or "").strip()
 
 
 class InviteLinkForm(forms.ModelForm):

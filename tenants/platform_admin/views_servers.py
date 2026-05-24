@@ -10,6 +10,7 @@ from django.db.models import Count, Q
 from django.views.decorators.http import require_POST, require_http_methods
 
 from tenants.models import PostgresServer, TenantDatabase, ServerLog
+from tenants.platform_admin.forms import PostgresServerForm
 from . import platform_admin_required, pa_context
 
 
@@ -145,43 +146,52 @@ def pa_server_toggle(request, pk):
 @require_http_methods(["GET", "POST"])
 def pa_server_create(request):
     """Create a new PostgreSQL server."""
-    if request.method == "POST":
-        try:
-            server = PostgresServer(
-                name=request.POST["name"],
-                description=request.POST.get("description", ""),
-                server_type=request.POST.get("server_type", "docker"),
-                host=request.POST["host"],
-                port=int(request.POST.get("port", 5432)),
-                admin_username=request.POST.get("admin_username", "postgres"),
-                admin_password=request.POST["admin_password"],
-                max_databases=int(request.POST.get("max_databases", 50)),
-                status=request.POST.get("status", "inactive"),
-                created_by=request.user,
-            )
-            # Docker-specific fields
-            if server.server_type == "docker":
-                server.docker_container_name = request.POST.get("docker_container_name", "")
-                server.docker_volume_name = request.POST.get("docker_volume_name", "")
-            server.save()
+    form = PostgresServerForm(request.POST or None)
 
-            ServerLog.objects.create(
-                server=server,
-                user=request.user,
-                action="server_create",
-                level="success",
-                message=f'Server "{server.name}" created.',
-            )
-            messages.success(request, _("Server created successfully."))
-            return redirect("tenants:pa_server_detail", pk=server.pk)
-        except Exception as e:
-            messages.error(request, _(f"Failed to create server: {e}"))
+    if request.method == "POST":
+        if form.is_valid():
+            try:
+                cleaned = form.cleaned_data
+                if cleaned["server_type"] == "docker":
+                    from tenants.services.docker_service import DockerService
+
+                    docker_service = DockerService()
+                    safe_name = cleaned["name"].lower()
+                    server = docker_service.create_postgres_container(
+                        name=cleaned["name"],
+                        description=cleaned.get("description", ""),
+                        container_name=f"erp_pg_{''.join(ch if ch.isalnum() or ch in '_-' else '_' for ch in safe_name).strip('_')}",
+                        port=cleaned["port"],
+                        postgres_password=cleaned["admin_password"],
+                        max_databases=cleaned["max_databases"],
+                        created_by=request.user,
+                    )
+                    messages.success(
+                        request,
+                        _("Docker PostgreSQL server created successfully. Health status has been checked automatically."),
+                    )
+                else:
+                    server = form.save(commit=False)
+                    server.created_by = request.user
+                    server.save()
+                    ServerLog.objects.create(
+                        server=server,
+                        user=request.user,
+                        action="server_create",
+                        level="success",
+                        message=f'Server "{server.name}" created.',
+                    )
+                    messages.success(request, _("Server created successfully."))
+                return redirect("tenants:pa_server_detail", pk=server.pk)
+            except Exception as e:
+                messages.error(request, _("Failed to create server: %(error)s") % {"error": str(e)})
+        else:
+            messages.error(request, _("Please correct the errors below."))
 
     context = pa_context(
         request,
         {
-            "server_type_choices": PostgresServer.SERVER_TYPE_CHOICES,
-            "status_choices": PostgresServer.STATUS_CHOICES,
+            "form": form,
         },
     )
     return render(request, "platform_admin/servers/create.html", context)
@@ -192,34 +202,24 @@ def pa_server_create(request):
 def pa_server_edit(request, pk):
     """Edit an existing PostgreSQL server."""
     server = get_object_or_404(PostgresServer, pk=pk)
+    form = PostgresServerForm(request.POST or None, instance=server)
 
     if request.method == "POST":
-        try:
-            server.name = request.POST["name"]
-            server.description = request.POST.get("description", "")
-            server.server_type = request.POST.get("server_type", server.server_type)
-            server.host = request.POST["host"]
-            server.port = int(request.POST.get("port", 5432))
-            server.admin_username = request.POST.get("admin_username", "postgres")
-            if request.POST.get("admin_password"):
-                server.admin_password = request.POST["admin_password"]
-            server.max_databases = int(request.POST.get("max_databases", 50))
-            server.status = request.POST.get("status", server.status)
-            if server.server_type == "docker":
-                server.docker_container_name = request.POST.get("docker_container_name", "")
-                server.docker_volume_name = request.POST.get("docker_volume_name", "")
-            server.save()
-            messages.success(request, _("Server updated successfully."))
-            return redirect("tenants:pa_server_detail", pk=server.pk)
-        except Exception as e:
-            messages.error(request, _(f"Failed to update server: {e}"))
+        if form.is_valid():
+            try:
+                server = form.save()
+                messages.success(request, _("Server updated successfully."))
+                return redirect("tenants:pa_server_detail", pk=server.pk)
+            except Exception as e:
+                messages.error(request, _("Failed to update server: %(error)s") % {"error": str(e)})
+        else:
+            messages.error(request, _("Please correct the errors below."))
 
     context = pa_context(
         request,
         {
             "server": server,
-            "server_type_choices": PostgresServer.SERVER_TYPE_CHOICES,
-            "status_choices": PostgresServer.STATUS_CHOICES,
+            "form": form,
         },
     )
     return render(request, "platform_admin/servers/edit.html", context)

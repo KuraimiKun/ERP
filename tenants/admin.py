@@ -286,7 +286,7 @@ class PostgresServerAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # When adding a new server, provide smart Docker defaults
-        if not self.instance.pk:
+        if self.instance._state.adding:
             # Auto-generate a secure password
             import secrets
             import string

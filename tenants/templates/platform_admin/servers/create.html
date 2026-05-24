@@ -22,27 +22,40 @@
                 <form method="post">
                     {% csrf_token %}
 
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <div class="row g-3">
                         <!-- Server Name -->
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Server Name" %} <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control" required placeholder="{% trans 'e.g. production-pg-01' %}">
+                            {{ form.name }}
+                            {% for error in form.name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
 
                         <!-- Server Type -->
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Server Type" %}</label>
-                            <select name="server_type" class="form-select" id="serverType">
-                                {% for val, label in server_type_choices %}
-                                <option value="{{ val }}">{{ label }}</option>
-                                {% endfor %}
-                            </select>
+                            {{ form.server_type }}
+                            {% for error in form.server_type.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
 
                         <!-- Description -->
                         <div class="col-12">
                             <label class="form-label fw-semibold">{% trans "Description" %}</label>
-                            <textarea name="description" class="form-control" rows="2" placeholder="{% trans 'Optional description...' %}"></textarea>
+                            {{ form.description }}
+                            {% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">
+                                {% trans "Docker servers are auto-provisioned with recommended defaults, like the Django admin create flow. Remote servers must provide working connection details." %}
+                            </div>
                         </div>
 
                         <div class="col-12"><hr class="my-1"></div>
@@ -50,34 +63,24 @@
                         <!-- Connection Details -->
                         <div class="col-md-8">
                             <label class="form-label fw-semibold">{% trans "Host" %} <span class="text-danger">*</span></label>
-                            <input type="text" name="host" class="form-control" required placeholder="{% trans 'e.g. localhost or 192.168.1.100' %}">
+                            {{ form.host }}
+                            {% for error in form.host.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">{% trans "Port" %}</label>
-                            <input type="number" name="port" class="form-control" value="5432" min="1" max="65535">
+                            {{ form.port }}
+                            {% for error in form.port.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Admin Username" %}</label>
-                            <input type="text" name="admin_username" class="form-control" value="postgres">
+                            {{ form.admin_username }}
+                            {% for error in form.admin_username.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Admin Password" %} <span class="text-danger">*</span></label>
-                            <input type="password" name="admin_password" class="form-control" required>
-                        </div>
-
-                        <!-- Docker Fields -->
-                        <div class="col-12 docker-fields">
-                            <hr class="my-1">
-                            <p class="fw-semibold text-muted mb-2"><i class="bi bi-box me-1"></i>{% trans "Docker Configuration" %}</p>
-                        </div>
-                        <div class="col-md-6 docker-fields">
-                            <label class="form-label fw-semibold">{% trans "Container Name" %}</label>
-                            <input type="text" name="docker_container_name" class="form-control" placeholder="{% trans 'e.g. erp-postgres-01' %}">
-                        </div>
-                        <div class="col-md-6 docker-fields">
-                            <label class="form-label fw-semibold">{% trans "Volume Name" %}</label>
-                            <input type="text" name="docker_volume_name" class="form-control" placeholder="{% trans 'e.g. pgdata-01' %}">
+                            {{ form.admin_password }}
+                            {% for error in form.admin_password.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
 
                         <div class="col-12"><hr class="my-1"></div>
@@ -85,15 +88,13 @@
                         <!-- Capacity & Status -->
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Max Databases" %}</label>
-                            <input type="number" name="max_databases" class="form-control" value="50" min="1">
+                            {{ form.max_databases }}
+                            {% for error in form.max_databases.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">{% trans "Initial Status" %}</label>
-                            <select name="status" class="form-select">
-                                {% for val, label in status_choices %}
-                                <option value="{{ val }}" {% if val == 'inactive' %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
+                            {{ form.status }}
+                            {% for error in form.status.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                         </div>
                     </div>
 
@@ -113,12 +114,14 @@
 {% block extra_js %}
 <script>
     function toggleDockerFields() {
-        const isDocker = document.getElementById('serverType').value === 'docker';
-        document.querySelectorAll('.docker-fields').forEach(el => {
-            el.style.display = isDocker ? '' : 'none';
-        });
+        const serverTypeField = document.getElementById('id_server_type');
+        const isDocker = serverTypeField && serverTypeField.value === 'docker';
+        const hostInput = document.getElementById('id_host');
+        if (isDocker && hostInput && !hostInput.value) {
+            hostInput.value = 'localhost';
+        }
     }
-    document.getElementById('serverType').addEventListener('change', toggleDockerFields);
+    document.getElementById('id_server_type').addEventListener('change', toggleDockerFields);
     toggleDockerFields();
 </script>
 {% endblock %}
