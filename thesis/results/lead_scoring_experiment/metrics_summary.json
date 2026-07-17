@@ -1,0 +1,117 @@
+{
+  "A_data_rich": {
+    "n_rows": 5000,
+    "auc_roc": 0.702,
+    "f1": 0.1134,
+    "shap_top5": {
+      "probability": 0.80726,
+      "days_in_pipeline": 0.08963,
+      "estimated_value": 0.08568,
+      "activity_count": 0.05419,
+      "country_UAE": 0.04214
+    },
+    "lime_top5": {
+      "probability": 0.14882,
+      "source_exhibition": 0.02459,
+      "service_interest_Mobile App": 0.02313,
+      "source_other": 0.02198,
+      "country_UAE": 0.02142
+    },
+    "shap_entropy_mean": 1.713,
+    "shap_abs_variance": 0.030666,
+    "lime_local_jaccard_top5": 0.2131,
+    "spearman_shap_vs_A": 1.0
+  },
+  "B_medium": {
+    "n_rows": 1000,
+    "auc_roc": 0.7326,
+    "f1": 0.3158,
+    "shap_top5": {
+      "probability": 0.70768,
+      "estimated_value": 0.30342,
+      "days_in_pipeline": 0.17783,
+      "job_title_CEO": 0.1255,
+      "service_interest_Network Infrastructure": 0.10111
+    },
+    "lime_top5": {
+      "probability": 0.15524,
+      "service_interest_Network Infrastructure": 0.08993,
+      "job_title_CEO": 0.05827,
+      "job_title_VP": 0.05124,
+      "source_exhibition": 0.04653
+    },
+    "shap_entropy_mean": 2.1318,
+    "shap_abs_variance": 0.027136,
+    "lime_local_jaccard_top5": 0.3016,
+    "spearman_shap_vs_A": 0.4075
+  },
+  "C_sparse": {
+    "n_rows": 300,
+    "auc_roc": 0.617,
+    "f1": 0.2667,
+    "shap_top5": {
+      "probability": 0.92444,
+      "estimated_value": 0.50103,
+      "activity_count": 0.35164,
+      "job_title_CTO": 0.24948,
+      "days_in_pipeline": 0.16273
+    },
+    "lime_top5": {
+      "service_interest_Web Development": 0.1477,
+      "probability": 0.10178,
+      "job_title_CTO": 0.08305,
+      "job_title_CEO": 0.07944,
+      "activity_count": 0.07634
+    },
+    "shap_entropy_mean": 2.1653,
+    "shap_abs_variance": 0.064342,
+    "lime_local_jaccard_top5": 0.3873,
+    "spearman_shap_vs_A": 0.332
+  },
+  "D_very_sparse": {
+    "n_rows": 100,
+    "auc_roc": 0.5469,
+    "f1": 0.0,
+    "shap_top5": {
+      "probability": 1.32393,
+      "estimated_value": 0.79298,
+      "source_website": 0.41719,
+      "job_title_CEO": 0.26508,
+      "days_in_pipeline": 0.23558
+    },
+    "lime_top5": {
+      "service_interest_Web Development": 0.17954,
+      "source_cold_call": 0.12555,
+      "source_website": 0.1146,
+      "job_title_CEO": 0.10611,
+      "probability": 0.09907
+    },
+    "shap_entropy_mean": 2.0878,
+    "shap_abs_variance": 0.125139,
+    "lime_local_jaccard_top5": 0.4571,
+    "spearman_shap_vs_A": 0.3717
+  },
+  "E_cold_start": {
+    "n_rows": 30,
+    "auc_roc": 0.2,
+    "f1": 0.0,
+    "shap_top5": {
+      "service_interest_IT Support": 1.51861,
+      "service_interest_Mobile App": 0.97358,
+      "activity_count": 0.67953,
+      "country_Egypt": 0.49564,
+      "days_in_pipeline": 0.42992
+    },
+    "lime_top5": {
+      "service_interest_IT Support": 0.70341,
+      "service_interest_Mobile App": 0.67288,
+      "service_interest_Web Development": 0.1147,
+      "source_social": 0.06844,
+      "country_Egypt": 0.05029
+    },
+    "shap_entropy_mean": 2.1001,
+    "shap_abs_variance": 0.34393,
+    "lime_local_jaccard_top5": 0.7057,
+    "spearman_shap_vs_A": 0.4928
+  }
+}

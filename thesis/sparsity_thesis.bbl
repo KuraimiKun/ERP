@@ -1,0 +1,60 @@
+\begin{thebibliography}{8}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bezemer and Zaidman(2010)]{bezemer2010multi}
+Cor-Paul Bezemer and Andy Zaidman.
+\newblock Multi-tenant {SaaS} applications: maintenance dream or nightmare?
+\newblock \emph{Proc.\ of the Joint ERCIM Workshop on Software Evolution and
+  Int.\ Workshop on Principles of Software Evolution}, pages 88--92, 2010.
+
+\bibitem[{European Commission}(2024)]{eu2024aiact}
+{European Commission}.
+\newblock Regulation of the european parliament and of the council laying down
+  harmonised rules on artificial intelligence ({AI Act}).
+\newblock Official Journal of the European Union, 2024.
+
+\bibitem[Krebs et~al.(2014)Krebs, Momm, and Kounev]{krebs2014multitenancy}
+Rouven Krebs, Christof Momm, and Samuel Kounev.
+\newblock Architectural concerns in multi-tenant {SaaS} applications.
+\newblock \emph{Proc.\ of the 2nd Int.\ Conf.\ on Cloud Computing and Services
+  Science}, 2014.
+
+\bibitem[Lipton(2018)]{lipton2018mythos}
+Zachary~C. Lipton.
+\newblock The mythos of model interpretability.
+\newblock \emph{Communications of the ACM}, 61\penalty0 (10):\penalty0 36--43,
+  2018.
+
+\bibitem[Lundberg and Lee(2017)]{lundberg2017unified}
+Scott~M Lundberg and Su-In Lee.
+\newblock A unified approach to interpreting model predictions.
+\newblock \emph{Advances in Neural Information Processing Systems}, 30, 2017.
+
+\bibitem[Lundberg et~al.(2020)Lundberg, Erion, Chen, DeGrave, Prutkin, Nair,
+  Katz, Himmelfarb, Bansal, and Lee]{lundberg2020local}
+Scott~M Lundberg, Gabriel Erion, Hugh Chen, Alex DeGrave, Jordan~M Prutkin,
+  Bala Nair, Ronit Katz, Jonathan Himmelfarb, Nisha Bansal, and Su-In Lee.
+\newblock From local explanations to global understanding with explainable {AI}
+  for trees.
+\newblock \emph{Nature Machine Intelligence}, 2\penalty0 (1):\penalty0 56--67,
+  2020.
+
+\bibitem[Ribeiro et~al.(2016)Ribeiro, Singh, and Guestrin]{ribeiro2016why}
+Marco~Tulio Ribeiro, Sameer Singh, and Carlos Guestrin.
+\newblock ``{W}hy should {I} trust you?'': {E}xplaining the predictions of any
+  classifier.
+\newblock In \emph{Proc.\ of the 22nd ACM SIGKDD Int.\ Conf.\ on Knowledge
+  Discovery and Data Mining}, pages 1135--1144, 2016.
+
+\bibitem[Rudin(2019)]{rudin2019stop}
+Cynthia Rudin.
+\newblock Stop explaining black box machine learning models for high stakes
+  decisions and use interpretable models instead.
+\newblock \emph{Nature Machine Intelligence}, 1\penalty0 (5):\penalty0
+  206--215, 2019.
+
+\end{thebibliography}

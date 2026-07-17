@@ -1,0 +1,117 @@
+{
+  "A_data_rich": {
+    "n_rows": 50000,
+    "auc_roc": 0.6556,
+    "f1": 0.0263,
+    "shap_top5": {
+      "freight_value": 0.29684,
+      "estimated_delivery_days": 0.25259,
+      "approval_delay_hours": 0.09816,
+      "num_items": 0.09798,
+      "purchase_hour": 0.02224
+    },
+    "lime_top5": {
+      "num_items": 0.03034,
+      "freight_value": 0.0278,
+      "estimated_delivery_days": 0.02581,
+      "payment_type_debit_card": 0.01227,
+      "approval_delay_hours": 0.01159
+    },
+    "shap_entropy_mean": 1.4466,
+    "shap_abs_variance": 0.022444,
+    "lime_local_jaccard_top5": 0.5655,
+    "spearman_shap_vs_A": 1.0
+  },
+  "B_medium": {
+    "n_rows": 5000,
+    "auc_roc": 0.6249,
+    "f1": 0.1136,
+    "shap_top5": {
+      "estimated_delivery_days": 0.28197,
+      "freight_value": 0.2065,
+      "approval_delay_hours": 0.15373,
+      "payment_value": 0.10315,
+      "price_total": 0.07218
+    },
+    "lime_top5": {
+      "estimated_delivery_days": 0.02681,
+      "approval_delay_hours": 0.02567,
+      "num_items": 0.02556,
+      "payment_type_debit_card": 0.02489,
+      "payment_type_voucher": 0.01888
+    },
+    "shap_entropy_mean": 1.6285,
+    "shap_abs_variance": 0.024454,
+    "lime_local_jaccard_top5": 0.4635,
+    "spearman_shap_vs_A": 0.8571
+  },
+  "C_sparse": {
+    "n_rows": 1000,
+    "auc_roc": 0.6094,
+    "f1": 0.0,
+    "shap_top5": {
+      "payment_value": 0.3839,
+      "estimated_delivery_days": 0.32413,
+      "freight_value": 0.27741,
+      "price_total": 0.20655,
+      "purchase_hour": 0.20389
+    },
+    "lime_top5": {
+      "payment_type_debit_card": 0.07199,
+      "payment_value": 0.04904,
+      "price_total": 0.04321,
+      "payment_type_boleto": 0.033,
+      "payment_type_voucher": 0.0285
+    },
+    "shap_entropy_mean": 1.9353,
+    "shap_abs_variance": 0.051046,
+    "lime_local_jaccard_top5": 0.5319,
+    "spearman_shap_vs_A": 0.6429
+  },
+  "D_very_sparse": {
+    "n_rows": 200,
+    "auc_roc": 0.6126,
+    "f1": 0.0,
+    "shap_top5": {
+      "price_total": 0.66702,
+      "approval_delay_hours": 0.57629,
+      "estimated_delivery_days": 0.52345,
+      "purchase_dow": 0.50983,
+      "freight_value": 0.41098
+    },
+    "lime_top5": {
+      "payment_type_debit_card": 0.0328,
+      "price_total": 0.02934,
+      "payment_type_voucher": 0.02843,
+      "estimated_delivery_days": 0.02539,
+      "purchase_dow": 0.01878
+    },
+    "shap_entropy_mean": 1.8843,
+    "shap_abs_variance": 0.201675,
+    "lime_local_jaccard_top5": 0.3789,
+    "spearman_shap_vs_A": 0.6154
+  },
+  "E_cold_start": {
+    "n_rows": 50,
+    "auc_roc": 0.8889,
+    "f1": 0.6667,
+    "shap_top5": {
+      "estimated_delivery_days": 4.77031,
+      "payment_value": 0.19294,
+      "payment_installments": 0.14298,
+      "payment_type_debit_card": 0.07351,
+      "freight_value": 0.06094
+    },
+    "lime_top5": {
+      "estimated_delivery_days": 0.07833,
+      "num_items": 0.05129,
+      "payment_type_debit_card": 0.05059,
+      "price_total": 0.02648,
+      "payment_value": 0.02348
+    },
+    "shap_entropy_mean": 0.8288,
+    "shap_abs_variance": 5.039234,
+    "lime_local_jaccard_top5": 0.3758,
+    "spearman_shap_vs_A": 0.4485
+  }
+}

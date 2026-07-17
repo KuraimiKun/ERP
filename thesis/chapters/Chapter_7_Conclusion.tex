@@ -1,0 +1,47 @@
+% ██████████████████████████████████████████████████████████████████
+%  CHAPTER 7 — CONCLUSION AND FUTURE WORK
+% ██████████████████████████████████████████████████████████████████
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+\section{Summary of Contributions}
+\label{sec:conclusion_summary}
+
+This thesis investigated the reliability of post-hoc Explainable AI methods in the under-examined operating regime of multi-tenant ERP systems. Four contributions were delivered:
+
+\begin{enumerate}[label=\arabic*.]
+  \item An empirical characterisation of SHAP and LIME degradation profiles across a geometrically spaced data-volume sweep, expressed through Spearman fidelity, SHAP attribution variance, LIME Jaccard stability, and Shannon entropy of normalised importances.
+
+  \item Identification of a practical \emph{reliability cliff} located at $n \approx 1{,}000$ rows, at which Spearman fidelity against a data-rich reference crosses below $\rho = 0.7$.
+
+  \item Design of a \emph{Maturity-Aware AI Routing} architectural pattern that gates the delivery of XAI outputs on the tenant's data maturity.
+
+  \item Reference implementation of the gate (\texttt{LatePaymentPredictor.predict\_or\_heuristic}) as a backward-compatible extension of the production Django service layer, paired with a versioned global-heuristic JSON artefact derived from the data-rich tenant.
+\end{enumerate}
+
+\section{Answers to the Research Questions}
+\label{sec:conclusion_rqs}
+
+\textbf{RQ1.} Data sparsity quantitatively degrades XAI fidelity: AUC falls from $0.741$ to $0.500$, Spearman $\rho$ falls from $1.000$ to $0.550$, and SHAP attribution variance rises from $0.066$ to $0.176$ as data volume drops from $50{,}000$ to $50$ rows.
+
+\textbf{RQ2.} A discernible reliability threshold exists at approximately $n = 1{,}000$ rows, where Spearman fidelity crosses below the $\rho = 0.7$ band.
+
+\textbf{RQ3.} The Maturity-Aware AI Routing pattern conditions XAI delivery on tenant maturity, suppressing local explanations below the threshold and substituting cross-tenant heuristics above it.
+
+\textbf{RQ4.} The global-heuristic fallback derived from Tenant~A's SHAP attributions preserves business actionability by surfacing platform-wide late-payment drivers (\emph{freight value}, \emph{carrier-delay hours}, \emph{estimated delivery days}) even in the absence of a reliable local model.
+
+\section{Limitations}
+\label{sec:conclusion_limitations}
+
+The study is bounded by the assumptions enumerated in Section~\ref{sec:problem_limitation}. In particular, tenant heterogeneity is approximated through stratified slicing of a single source corpus rather than through longitudinal observation of live SaaS customers; the experiment focuses on a single classifier family (Gradient Boosted Trees); and the reliability threshold is calibrated on one prediction task (Late-Payment) and should be re-validated for Lead Scoring and Employee Attrition before generalisation.
+
+\section{Future Work}
+\label{sec:conclusion_future}
+
+\begin{itemize}
+  \item Extension of the sparsity sweep to the Lead Scoring (CRM) and Employee Attrition (HR) classifiers, with task-specific threshold calibration.
+  \item Integration of counterfactual explainers (e.g., DiCE) as an intermediate tier between local SHAP/LIME and global heuristics.
+  \item Longitudinal validation against live SaaS tenants over their first $24$ months of platform usage, to assess threshold stability under concept drift.
+  \item User-study evaluation of the heuristic-tier interface to confirm that the proposed safeguards translate into improved decision quality for SME end users.
+  \item Generalisation of the routing pattern to non-tabular modalities and to LLM-backed enterprise assistants, where analogous hallucinated-explanation failure modes are increasingly reported.
+\end{itemize}

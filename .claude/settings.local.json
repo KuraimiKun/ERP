@@ -26,7 +26,12 @@
       "Bash(grep -n \"class.*Credit\\\\|class.*Debit\" /f/erpdjango/erp/models/*.py)",
       "Bash(grep -n \"^class.*Quote\" /f/erpdjango/erp/models/*.py)",
       "Bash(python manage.py shell --settings=erpproject.test_settings -c ' *)",
-      "Bash(python manage.py spectacular --settings=erpproject.test_settings)"
+      "Bash(python manage.py spectacular --settings=erpproject.test_settings)",
+      "PowerShell(pandoc --version)",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; foreach \\($f in 'sparsity_fig_3_2_routing_architecture.png','sparsity_fig_4_2_reliability_cliff.png'\\) { $img = [System.Drawing.Image]::FromFile\\(\"F:\\\\erpdjango\\\\thesis\\\\figures\\\\$f\"\\); \"$f $\\($img.Width\\)x$\\($img.Height\\)\"; $img.Dispose\\(\\) })",
+      "PowerShell($env:PYTHONIOENCODING='utf-8'; python \"C:\\\\Users\\\\Kuraimi\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\cca9ab2c-13ab-4304-a02a-92f6497954d4\\\\943676fd-ea44-47ad-a256-27ac21acbb3d\\\\skills\\\\docx\\\\scripts\\\\office\\\\validate.py\" F:\\\\erpdjango\\\\thesis\\\\paper_sparsity.docx)",
+      "PowerShell($soffice = @\\(\"C:\\\\Program Files\\\\LibreOffice\\\\program\\\\soffice.exe\",\"C:\\\\Program Files \\(x86\\)\\\\LibreOffice\\\\program\\\\soffice.exe\"\\) | Where-Object { Test-Path $_ } | Select-Object -First 1; if \\($soffice\\) { & $soffice --headless --convert-to pdf --outdir F:\\\\erpdjango\\\\thesis\\\\preview_docx F:\\\\erpdjango\\\\thesis\\\\paper_sparsity.docx } else { \"LibreOffice not found\"; \\(Get-Command winword -ErrorAction SilentlyContinue\\).Source })",
+      "PowerShell(New-Item -ItemType Directory -Force F:\\\\erpdjango\\\\thesis\\\\preview_docx | Out-Null; $word = New-Object -ComObject Word.Application; $word.Visible = $false; $doc = $word.Documents.Open\\(\"F:\\\\erpdjango\\\\thesis\\\\paper_sparsity.docx\", $false, $true\\); $doc.SaveAs\\([ref]\"F:\\\\erpdjango\\\\thesis\\\\preview_docx\\\\paper_sparsity.pdf\", [ref]17\\); $doc.Close\\($false\\); $word.Quit\\(\\); \"PDF exported\")"
     ]
   }
 }

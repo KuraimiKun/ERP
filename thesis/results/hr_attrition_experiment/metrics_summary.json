@@ -1,0 +1,117 @@
+{
+  "A_data_rich": {
+    "n_rows": 1000,
+    "auc_roc": 0.7747,
+    "f1": 0.4091,
+    "shap_top5": {
+      "OverTime_Yes": 0.47592,
+      "StockOptionLevel": 0.37589,
+      "MonthlyIncome": 0.33821,
+      "EnvironmentSatisfaction": 0.27465,
+      "DistanceFromHome": 0.23475
+    },
+    "lime_top5": {
+      "OverTime_Yes": 0.12443,
+      "JobRole_Sales Representative": 0.09491,
+      "StockOptionLevel": 0.06275,
+      "MonthlyIncome": 0.04455,
+      "EnvironmentSatisfaction": 0.03876
+    },
+    "shap_entropy_mean": 2.9948,
+    "shap_abs_variance": 0.025117,
+    "lime_local_jaccard_top5": 0.5645,
+    "spearman_shap_vs_A": 1.0
+  },
+  "B_medium": {
+    "n_rows": 500,
+    "auc_roc": 0.8065,
+    "f1": 0.3,
+    "shap_top5": {
+      "OverTime_Yes": 0.53821,
+      "NumCompaniesWorked": 0.3639,
+      "EnvironmentSatisfaction": 0.2929,
+      "DailyRate": 0.28738,
+      "StockOptionLevel": 0.27222
+    },
+    "lime_top5": {
+      "OverTime_Yes": 0.157,
+      "JobRole_Laboratory Technician": 0.05893,
+      "BusinessTravel_Travel_Frequently": 0.057,
+      "MonthlyIncome": 0.05037,
+      "NumCompaniesWorked": 0.0445
+    },
+    "shap_entropy_mean": 2.9277,
+    "shap_abs_variance": 0.030997,
+    "lime_local_jaccard_top5": 0.3944,
+    "spearman_shap_vs_A": 0.7823
+  },
+  "C_sparse": {
+    "n_rows": 200,
+    "auc_roc": 0.6618,
+    "f1": 0.25,
+    "shap_top5": {
+      "MonthlyIncome": 0.81164,
+      "MonthlyRate": 0.56793,
+      "DistanceFromHome": 0.41977,
+      "JobRole_Sales Executive": 0.39332,
+      "JobSatisfaction": 0.3708
+    },
+    "lime_top5": {
+      "MonthlyIncome": 0.05677,
+      "JobSatisfaction": 0.0508,
+      "JobRole_Sales Executive": 0.03951,
+      "MonthlyRate": 0.03586,
+      "JobRole_Sales Representative": 0.03273
+    },
+    "shap_entropy_mean": 2.7248,
+    "shap_abs_variance": 0.060535,
+    "lime_local_jaccard_top5": 0.2738,
+    "spearman_shap_vs_A": 0.7244
+  },
+  "D_very_sparse": {
+    "n_rows": 100,
+    "auc_roc": 0.549,
+    "f1": 0.4,
+    "shap_top5": {
+      "MonthlyIncome": 1.82416,
+      "YearsWithCurrManager": 0.86376,
+      "NumCompaniesWorked": 0.5795,
+      "StockOptionLevel": 0.54225,
+      "HourlyRate": 0.41074
+    },
+    "lime_top5": {
+      "MonthlyIncome": 0.26021,
+      "EducationField_Other": 0.06364,
+      "JobRole_Manager": 0.05691,
+      "JobRole_Sales Representative": 0.05507,
+      "JobRole_Human Resources": 0.05412
+    },
+    "shap_entropy_mean": 1.9404,
+    "shap_abs_variance": 0.27369,
+    "lime_local_jaccard_top5": 0.1746,
+    "spearman_shap_vs_A": 0.4739
+  },
+  "E_cold_start": {
+    "n_rows": 30,
+    "auc_roc": 0.5,
+    "f1": 0.0,
+    "shap_top5": {
+      "MonthlyIncome": 3.67089,
+      "Age": 0.0,
+      "DistanceFromHome": 0.0,
+      "DailyRate": 0.0,
+      "Education": 0.0
+    },
+    "lime_top5": {
+      "MonthlyIncome": 0.29815,
+      "JobRole_Manager": 0.07918,
+      "JobRole_Research Director": 0.0676,
+      "JobRole_Human Resources": 0.05582,
+      "JobRole_Manufacturing Director": 0.05244
+    },
+    "shap_entropy_mean": 0.0,
+    "shap_abs_variance": 0.2993,
+    "lime_local_jaccard_top5": 0.1841,
+    "spearman_shap_vs_A": 0.2342
+  }
+}

@@ -1,0 +1,11 @@
+\babel@toc {english}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Literature review of previous research.}}{17}{table.caption.3}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Simulated tenant tiers used in the sparsity experiment.}}{24}{table.caption.7}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Comprehensive Results Summary --- Simulated Multi-Tenant Tiers (Late Delivery Risk task, Gradient Boosting, Olist corpus). All features are restricted to order-time / invoice-time observables per the leakage-avoidance constraint of Section~\ref {para:leakage-avoidance}.}}{35}{table.caption.10}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Cross-tier results, Employee Attrition (IBM HR Analytics).}}{44}{table.caption.13}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Cross-tier results, Lead Scoring (synthetic CRM Leads).}}{46}{table.caption.16}%
+\addvspace {10\p@ }

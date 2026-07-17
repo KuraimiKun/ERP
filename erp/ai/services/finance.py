@@ -6,8 +6,10 @@ Financial ML Services
 3. Cash-Flow Forecasting          – 30/60/90-day cash-position projection
 """
 
+import json
 import logging
 from datetime import timedelta, date as dt_date
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -441,6 +443,88 @@ class LatePaymentPredictor:
                 ]
             ]
         )
+
+    # ── Tiered prediction: cold-start heuristic gate ────────────────────
+    #
+    # Empirical evidence (see thesis/results/sparsity_experiment/) shows that
+    # the global SHAP feature ranking diverges sharply from the data-rich
+    # reference (Spearman ρ < 0.7) once a tenant has fewer than ~1,000 closed
+    # invoices, and AUC collapses toward 0.5. Below that threshold we refuse to
+    # serve a local prediction and instead return platform-wide Global SHAP
+    # heuristics derived from the full dataset.
+
+    COLD_START_INVOICE_THRESHOLD = 1000
+
+    # Resolved at import time relative to repo root.
+    _HEURISTIC_PATH = (
+        Path(__file__).resolve().parents[3]
+        / "thesis"
+        / "results"
+        / "sparsity_experiment"
+        / "cold_start_heuristic.json"
+    )
+    _heuristic_cache: dict | None = None
+
+    @classmethod
+    def _load_global_heuristic(cls) -> dict:
+        """Load (and memoize) the cold-start heuristic JSON."""
+        if cls._heuristic_cache is not None:
+            return cls._heuristic_cache
+        try:
+            cls._heuristic_cache = json.loads(cls._HEURISTIC_PATH.read_text())
+        except (OSError, ValueError) as exc:
+            logger.warning("Cold-start heuristic unavailable: %s", exc)
+            cls._heuristic_cache = {
+                "heuristic": (
+                    "Platform-wide late-payment drivers unavailable; please "
+                    "ensure thesis/results/sparsity_experiment/"
+                    "cold_start_heuristic.json exists."
+                ),
+                "top_features": [],
+            }
+        return cls._heuristic_cache
+
+    def _invoice_count(self) -> int:
+        return Invoice.objects.filter(
+            company=self.company,
+            status__in=["paid", "overdue", "partial"],
+        ).count()
+
+    def predict_or_heuristic(self, invoice: Invoice) -> dict:
+        """Tiered prediction:
+
+        * Tier 1 (cold-start, < 1,000 closed invoices): return the global
+          SHAP-derived business heuristic — no local probability is exposed
+          because explanation stability is empirically unreliable.
+        * Tier 2 (mature tenant): return the local model probability plus the
+          regular feature-level explanation.
+
+        Returns a dict with a stable ``mode`` discriminator so callers (UI /
+        API serializers) can render the two cases differently.
+        """
+        n = self._invoice_count()
+        if n < self.COLD_START_INVOICE_THRESHOLD:
+            h = self._load_global_heuristic()
+            return {
+                "mode": "global_heuristic",
+                "tenant_invoice_count": n,
+                "threshold": self.COLD_START_INVOICE_THRESHOLD,
+                "reason": (
+                    "Local model is below the explanation-reliability "
+                    "threshold (Spearman ρ < 0.7 vs reference). Falling back "
+                    "to platform-wide Global SHAP heuristic."
+                ),
+                "heuristic": h.get("heuristic", ""),
+                "top_features": h.get("top_features", []),
+                "invoice_id": invoice.pk,
+            }
+        return {
+            "mode": "local_prediction",
+            "tenant_invoice_count": n,
+            "threshold": self.COLD_START_INVOICE_THRESHOLD,
+            "invoice_id": invoice.pk,
+            "late_probability": self.predict(invoice),
+        }
 
     def predict(self, invoice: Invoice) -> float:
         """Return the probability (0–1) that an invoice will be paid late."""

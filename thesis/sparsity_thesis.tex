@@ -1,0 +1,159 @@
+% ==========================================================================
+%  Bachelor Thesis — Explainable AI in Multi-Tenant ERPs:
+%                    Navigating Data Sparsity and the Cold-Start Problem
+%
+%  Build with:  latexmk -pdf sparsity_thesis.tex
+%  Bibliography: natbib + plainnat, references_sparsity.bib
+% ==========================================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ── Encoding / language ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage[english]{babel}
+
+% ── Page layout ───────────────────────────────────────────────────
+\usepackage[a4paper,top=3cm,bottom=3cm,left=4cm,right=3cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ── Graphics / figures / tables ───────────────────────────────────
+\usepackage{graphicx}
+\graphicspath{{figures/}{results/sparsity_experiment/figures/}{results/hr_attrition_experiment/figures/}{results/lead_scoring_experiment/figures/}}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+% ── Lists / code / colour ─────────────────────────────────────────
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codecomment}{RGB}{106,153,85}
+\definecolor{codekeyword}{RGB}{0,0,180}
+\definecolor{codestring}{RGB}{163,21,21}
+\lstdefinestyle{pystyle}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  commentstyle=\color{codecomment}\itshape,
+  keywordstyle=\color{codekeyword}\bfseries,
+  stringstyle=\color{codestring},
+  numbers=left, numberstyle=\tiny\color{gray},
+  frame=single, framesep=4pt, rulecolor=\color{gray!40},
+  breaklines=true, showstringspaces=false, captionpos=b, tabsize=2,
+}
+\lstset{style=pystyle}
+
+% ── Math ──────────────────────────────────────────────────────────
+\usepackage{amsmath, amssymb, amsfonts}
+
+% ── TikZ for native diagrams (Figures 1.1, 2.3, 3.2) ──────────────
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc,decorations.pathreplacing}
+
+% ── References / hyperlinks ───────────────────────────────────────
+\usepackage[round,authoryear]{natbib}
+\usepackage{url}
+\usepackage[hidelinks,colorlinks=false]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+
+% ── Header / footer ───────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[R]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ── Chapter / section titling ─────────────────────────────────────
+\titleformat{\chapter}[display]
+  {\normalfont\Large\bfseries\centering}
+  {\MakeUppercase{\chaptertitlename}\ \thechapter}{14pt}{\Large}
+\titlespacing*{\chapter}{0pt}{-20pt}{30pt}
+
+% ── Project-wide macros ───────────────────────────────────────────
+\newcommand{\projecttitle}{Explainable AI in Multi-Tenant ERPs:\\Navigating Data Sparsity and the Cold-Start Problem}
+\newcommand{\authorname}{Ahmed Ameen Hassan Alkuraimi}
+\newcommand{\studentid}{NIM / 220535618354}
+\newcommand{\advisorone}{Dr. Eng. Muhammad Ashar, S.T., M.T.}
+\newcommand{\institution}{Faculty of Engineering\\State University of Malang}
+\newcommand{\submissionyear}{2026}
+
+\hypersetup{
+  pdftitle={\projecttitle},
+  pdfauthor={\authorname},
+  pdfsubject={Explainable AI, Multi-Tenant ERP, Cold-Start Problem},
+  pdfkeywords={XAI, SHAP, LIME, multi-tenant, ERP, cold-start, Django},
+}
+
+% ==========================================================================
+\begin{document}
+% ==========================================================================
+
+% ── Front matter ──────────────────────────────────────────────────
+\pagenumbering{roman}
+
+% Title page
+\begin{titlepage}
+  \centering
+  \vspace*{1cm}
+  {\Large\bfseries \projecttitle\par}
+  \vspace{1.5cm}
+  {\large \textit{A Bachelor's Thesis}\par}
+  \vspace{0.4cm}
+  {\normalsize Submitted in partial fulfilment of the requirements\\for the degree of Bachelor of Computer Science\par}
+  \vspace{1.2cm}
+  \includegraphics[width=0.32\textwidth]{Lambang-UM.png}\par
+  \vspace{1.2cm}
+  {\large \textbf{\authorname}\par}
+  {\normalsize \studentid\par}
+  \vspace{2cm}
+  {\normalsize Supervised by\par}
+  {\large \advisorone\par}
+  \vfill
+  {\normalsize \institution\par}
+  {\normalsize \submissionyear\par}
+\end{titlepage}
+
+% Abstract
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\markboth{Abstract}{Abstract}
+
+The proliferation of multi-tenant Enterprise Resource Planning (ERP) systems has democratized access to embedded Machine Learning (ML) services for Small and Medium-sized Enterprises (SMEs). Modern ERP platforms ship with predictive modules for late-payment risk, lead scoring, and employee attrition, and increasingly augment these models with post-hoc Explainable AI (XAI) techniques such as SHAP and LIME. While the data-rich enterprise regime is well served by this combination, the long tail of cold-start tenants---those with only tens or hundreds of historical records---reveals a previously under-examined failure mode: \emph{hallucinated explanations}. SHAP and LIME continue to produce confident, well-formatted attributions even when the underlying classifier is statistically equivalent to random guessing, exposing SME users to authoritative-looking but epistemically empty recommendations.
+
+This thesis quantifies the phenomenon through a controlled sparsity experiment across five simulated tenants ($50{,}000$; $5{,}000$; $1{,}000$; $200$; $50$ rows) drawn from the Brazilian Olist e-commerce corpus, operationalised as a \emph{Late Delivery Risk} prediction task ($\mathbf{1}[\textit{delivered\_customer\_date} > \textit{estimated\_delivery\_date}]$) that serves as a structural ERP-style operational-risk substrate generalising to the studied system's late-payment module, and trained under a strict leakage-avoidance regime in which only order-time observables are admitted into the feature matrix. Classical predictive metrics fail to track the regime change: AUC-ROC remains uniformly modest across the data-rich, medium, sparse, and very-sparse tiers ($0.6556$, $0.6249$, $0.6094$, $0.6126$) and \emph{rises} anomalously to $0.8889$ at the cold-start tier as a small-sample artefact. Baseline rank agreement of SHAP explanations against the data-rich reference tenant (a reference-aligned explanation-stability measure, not a ground-truth fidelity claim), quantified by the Spearman rank correlation of global SHAP importances, drops monotonically from $\rho = 1.000$ to $\rho = 0.4485$, crossing below the $\rho = 0.70$ reliability threshold at the $1{,}000$-row mark ($\rho_C = 0.6429$). Explanation volatility, measured by the variance of absolute SHAP values, expands by more than two orders of magnitude---from $0.0224$ at the data-rich tier to $5.0392$ at the cold-start tier. The qualitative cliff is replicated under the same pipeline on two further ERP-native tasks (IBM HR Analytics Employee Attrition; synthetic CRM Lead Scoring), supporting the external validity of the architectural finding. Building on these empirical findings, the thesis proposes and implements a \textbf{Maturity-Aware AI Routing} pattern in a Django~4.2 multi-tenant ERP: a tier-logic gate (\texttt{LatePaymentPredictor.predict\_or\_heuristic}) that suppresses local predictions for tenants below the $1{,}000$-invoice threshold and substitutes platform-wide global heuristics derived from the data-rich reference. The proposed architecture provides a concrete, auditable systems-level control against hallucinated explanations and offers SaaS vendors a scalable cold-start fallback consistent with emerging AI-accountability regulation.
+
+\noindent\textbf{Keywords:} Explainable AI, SHAP, LIME, multi-tenant SaaS, ERP, cold-start, data sparsity, Django, reliability cliff.
+
+% Tables of contents / figures / tables
+\tableofcontents
+\listoffigures
+\listoftables
+
+% ── Main matter ───────────────────────────────────────────────────
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{chapters/Chapter_1_Introduction_v2}
+\input{chapters/Chapter_2_LiteratureReview_v2}
+\input{chapters/Chapter_3_Methodology_v2}
+\input{chapters/Chapter_4_Results_v2}
+\input{chapters/Chapter_5_Conclusion_v2}
+
+% ── Bibliography ──────────────────────────────────────────────────
+\bibliographystyle{plainnat}
+\bibliography{references_sparsity}
+
+\end{document}
