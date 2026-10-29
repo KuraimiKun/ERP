@@ -1,4 +1,0 @@
-iteration,label_definition,auc_holdout,shuffled_auc,note
-1,delivery delay (estimated vs actual),0.63,,wrong concept; model relied on logistics features
-2,"hidden customer payer profile, unique cust IDs",0.5,0.5,correct label but no aggregable history
-3,payer profile + 3000-bucket customer hashing,0.8,0.5,customer-level features become identifiable

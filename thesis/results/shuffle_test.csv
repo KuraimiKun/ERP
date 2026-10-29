@@ -1,4 +1,0 @@
-model,real_auc_oof,shuffled_auc,samples,positive_rate
-lead_scoring,0.9997,0.4947,4069,0.2625
-attrition,0.9996,0.4996,1690,0.1402
-late_payment,0.7846,0.4963,30281,0.376
